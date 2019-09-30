@@ -1,0 +1,11 @@
+name: Professions
+main: git.doomshade.professions.Professions
+author: Doomshade
+version: 1.0
+description: Best plugin EU
+depend: [GUIApi, ProtocolLib, SkillAPI]
+softdepend: [Citizens, Vault]
+
+commands:
+  prof:
+    description: default cmd
