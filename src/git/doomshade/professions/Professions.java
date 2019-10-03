@@ -73,7 +73,6 @@ public class Professions extends JavaPlugin implements Setup {
     }
 
     public static Professions getInstance() {
-        // TODO Auto-generated method stub
         return instance;
     }
 
@@ -105,12 +104,10 @@ public class Professions extends JavaPlugin implements Setup {
     }
 
     public static User getUser(Player hrac) {
-        // TODO Auto-generated method stub
         return User.getUser(hrac);
     }
 
     public static User getUser(UUID hrac) {
-        // TODO Auto-generated method stub
         return User.getUser(hrac);
     }
 
@@ -402,7 +399,7 @@ public class Professions extends JavaPlugin implements Setup {
                 }
             }
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
+
             e.printStackTrace();
         }
 

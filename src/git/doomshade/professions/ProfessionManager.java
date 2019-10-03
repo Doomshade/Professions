@@ -221,7 +221,7 @@ public final class ProfessionManager implements Setup, Backup {
         if (!loader.getKeys(false).contains(prof.getID())) {
             return;
         }
-        Profession<? extends IProfessionType> fileProf = Profession
+        Profession<?> fileProf = Profession
                 .deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
         prof.setName(fileProf.getName());
         prof.setProfessionType(fileProf.getProfessionType());

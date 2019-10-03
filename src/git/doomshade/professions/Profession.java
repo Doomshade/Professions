@@ -90,6 +90,21 @@ public abstract class Profession<T extends IProfessionType>
 
             }
 
+            @Override
+            public Type getType() {
+                return null;
+            }
+
+            @Override
+            public int compareTo(Profession o) {
+                return 0;
+            }
+
+
+            @Override
+            public int compareTo(Object o) {
+                return 0;
+            }
         };
     }
 

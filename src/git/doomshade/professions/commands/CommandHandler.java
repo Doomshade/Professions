@@ -222,5 +222,4 @@ public class CommandHandler implements CommandExecutor, TabCompleter, Setup, Bac
         // TODO Auto-generated method stub
         return new File[]{file};
     }
-
 }
