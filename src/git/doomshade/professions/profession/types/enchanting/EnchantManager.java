@@ -41,6 +41,7 @@ public class EnchantManager {
         Constructor<T> constructor = enchant.getDeclaredConstructor(ItemStack.class);
         constructor.setAccessible(true);
         T enchantToRegister = constructor.newInstance(enchantItem);
+        enchantToRegister.init();
         Enchant.ENCHANTS.putIfAbsent(enchantToRegister.getClass(), enchantToRegister);
     }
 

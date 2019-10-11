@@ -12,7 +12,7 @@ public class ExpMultiplierCommand extends AbstractCommand {
 
     public ExpMultiplierCommand() {
         // TODO Auto-generated constructor stub
-        setArg(true, Arrays.asList("multiplier", "skillapi/git.doomshade.professions"));
+        setArg(true, Arrays.asList("multiplier", "skillapi/professions"));
         setCommand("exp-multiplier");
         setDescription("Sets the exp multiplier. (Default 1)");
         setRequiresOp(true);

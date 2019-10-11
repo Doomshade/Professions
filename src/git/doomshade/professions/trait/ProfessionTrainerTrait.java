@@ -31,22 +31,16 @@ public class ProfessionTrainerTrait extends Trait {
         }
 
         if (profession == null) {
-            throw new IllegalStateException(profession + " is not a profession!");
+            throw new IllegalStateException("Could not find a profession!");
         }
 
         Optional<? extends GUI> opt = Professions.getManager().getGui(ProfessionTrainerGUI.class, e.getClicker());
         if (opt.isPresent()) {
             GUI gui = opt.get();
             gui.getContext().addContext(ProfessionTrainerGUI.KEY_PROFESSION, profession);
-            gui.setOnPostInit(new Function<Void, Void>() {
-
-                @Override
-                public Void apply(Void t) {
-                    // TODO Auto-generated method stub
-                    gui.getInventory().setTitle(e.getNPC().getName());
-                    return null;
-                }
-
+            gui.setOnPostInit(t -> {
+                gui.getInventory().setTitle(e.getNPC().getName());
+                return null;
             });
             Professions.getManager().openGui(gui);
         }
@@ -56,6 +50,7 @@ public class ProfessionTrainerTrait extends Trait {
     @Override
     public void load(DataKey key) {
         this.profession = Professions.fromName(key.getString(KEY_PROFESSION));
+
     }
 
     @Override
@@ -66,7 +61,6 @@ public class ProfessionTrainerTrait extends Trait {
 
     @Override
     public void onAttach() {
-        // TODO Auto-generated method stub
         this.profession = Professions.fromName("enchanting");
     }
 }

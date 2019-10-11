@@ -8,21 +8,27 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public abstract class Enchant implements ConfigurationSerializable {
+    protected final Random random;
 
     public static final int DEFAULT_INTENSITY = 0;
-    protected static final List<Pattern> attributePatterns = new ArrayList<>();
+    private static final List<Pattern> attributePatterns = new ArrayList<>();
     static final HashMap<Class<? extends Enchant>, Enchant> ENCHANTS = new HashMap<>();
     private static final String ITEMSTACK = "itemstack", CLASS = "class", CRAFT_EXP_YIELD = "craft-exp-yield";
+    private BiConsumer<ItemStack, Integer> function = null;
 
     static {
+
+        // LA
         attributePatterns.add(Pattern.compile("[+][0-9]+ [\\D]+"));
+
+        // SAPI
         attributePatterns.add(Pattern.compile("[\\D]+: [0-9]+"));
     }
 
@@ -32,10 +38,11 @@ public abstract class Enchant implements ConfigurationSerializable {
     protected Enchant(ItemStack item) {
         setItem(item);
         this.setCraftExpYield(0);
+        this.random = new Random();
     }
 
     @SuppressWarnings("unchecked")
-    public static Enchant deserialize(Map<String, Object> map) {
+    static Enchant deserialize(Map<String, Object> map) {
 
         try {
             MemorySection mem = (MemorySection) map.get(ITEMSTACK);
@@ -53,11 +60,11 @@ public abstract class Enchant implements ConfigurationSerializable {
         return null;
     }
 
-    protected static final boolean isEnchantable(ItemStack item) {
+    protected static boolean isEnchantable(ItemStack item) {
         return isEnchantable(item, true, true, true);
     }
 
-    protected static final boolean isEnchantable(ItemStack item, boolean hasDisplay, boolean hasLore,
+    protected static boolean isEnchantable(ItemStack item, boolean hasDisplay, boolean hasLore,
                                                  boolean hasAttributes) {
         if (item == null || !item.hasItemMeta()) {
             return false;
@@ -67,23 +74,12 @@ public abstract class Enchant implements ConfigurationSerializable {
             return false;
         }
         if (hasAttributes) {
-            List<String> lore = new ArrayList<>(meta.getLore());
-            String toLower = ChatColor.stripColor(meta.getDisplayName().toLowerCase());
-            for (String s : lore) {
-                if (s.isEmpty()) {
-                    continue;
-                }
-                String copy = ChatColor.stripColor(s);
-                if (copy.contains("Obrana") || copy.contains("Po�kozen�") || toLower.contains("h�l")) {
-                    return true;
-                }
-            }
-            return false;
+            return !getAttributes(item).isEmpty();
         }
         return true;
     }
 
-    protected static final List<ItemAttribute> getAttributes(ItemStack item) {
+    protected static List<ItemAttribute> getAttributes(ItemStack item) {
         List<ItemAttribute> attributes = new ArrayList<>();
         if (item == null || !item.hasItemMeta()) {
             return attributes;
@@ -113,7 +109,7 @@ public abstract class Enchant implements ConfigurationSerializable {
         return attributes;
     }
 
-    protected static final ItemAttribute getAttribute(String loreLine) {
+    protected static ItemAttribute getAttribute(String loreLine) {
         if (loreLine.isEmpty()) {
             return null;
         }
@@ -133,7 +129,7 @@ public abstract class Enchant implements ConfigurationSerializable {
         return null;
     }
 
-    protected static final void applyAttributes(List<ItemAttribute> attrs, ItemStack on) {
+    protected static void replaceAttributeValues(List<ItemAttribute> attrs, ItemStack on) {
         if (on == null || !on.hasItemMeta()) {
             return;
         }
@@ -160,7 +156,8 @@ public abstract class Enchant implements ConfigurationSerializable {
             }
             for (int i = 0; i < noColorLore.size(); i++) {
                 String s = noColorLore.get(i);
-                // Firstly if it contains attribute name then assure it's a valid attribute
+
+                // Firstly: if it contains attribute name -> assure it's a valid attribute
                 if (s.contains(ChatColor.stripColor(attr)) && itemAttribute.getPattern().matcher(s).find()) {
                     lore.set(i, itemAttribute.toString());
                 }
@@ -178,12 +175,6 @@ public abstract class Enchant implements ConfigurationSerializable {
         this.item = item;
     }
 
-    public final void use(ItemStack on) {
-        use(on, Enchant.DEFAULT_INTENSITY);
-    }
-
-    public abstract void use(ItemStack on, int intensity);
-
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
@@ -198,6 +189,7 @@ public abstract class Enchant implements ConfigurationSerializable {
         return "enchant name: " + getClass().getSimpleName() + "\nitem: " + item;
     }
 
+    // TODO might not be used
     public abstract List<Integer> getIntensities();
 
     public int getCraftExpYield() {
@@ -207,4 +199,18 @@ public abstract class Enchant implements ConfigurationSerializable {
     public void setCraftExpYield(int craftExpYield) {
         this.craftExpYield = craftExpYield;
     }
+
+    public void setEnchantFunction(BiConsumer<ItemStack, Integer> func){
+        this.function = func;
+    }
+
+    public final void use(ItemStack item, int intensity){
+         function.accept(item, intensity);
+    }
+
+    public final void use(ItemStack item){
+        use(item, DEFAULT_INTENSITY);
+    }
+
+    protected abstract void init();
 }

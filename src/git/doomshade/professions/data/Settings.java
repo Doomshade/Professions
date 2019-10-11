@@ -30,7 +30,6 @@ public class Settings implements Setup {
 
 
     public static final Settings getInstance() {
-        // TODO Auto-generated method stub
         return instance;
     }
 
