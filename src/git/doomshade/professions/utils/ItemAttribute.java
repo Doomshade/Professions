@@ -10,6 +10,10 @@ public class ItemAttribute {
     private final Pattern pattern;
     private int value;
 
+    public ItemAttribute(String attribute, int value, AttributeType type){
+        this(attribute, value, type, type == AttributeType.SKILLAPI ? Pattern.compile("[\\D]+: [0-9]+") : Pattern.compile("[+][0-9]+ [\\D]+"));
+    }
+
     public ItemAttribute(String attribute, int value, AttributeType type, Pattern pattern) {
         this.attribute = attribute;
         this.value = value;
@@ -36,11 +40,7 @@ public class ItemAttribute {
     }
 
     public void setValue(int value) {
-        if (value < 0) {
-            this.value = 0;
-        } else {
-            this.value = value;
-        }
+        this.value = Math.max(value, 0);
     }
 
     public Pattern getPattern() {

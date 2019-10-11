@@ -6,6 +6,7 @@ import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
+import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
@@ -16,6 +17,7 @@ import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Backup;
@@ -113,7 +115,7 @@ public class Professions extends JavaPlugin implements Setup {
 
     /**
      * @param clazz class extending ItemType class
-     * @return
+     * @return the itemtype
      * @see #registerItemTypeHolder(Class)
      */
     @SuppressWarnings("unchecked")
@@ -163,10 +165,10 @@ public class Professions extends JavaPlugin implements Setup {
      * Registers an item type holder. Calls
      * {@link ProfessionManager#registerItemTypeHolder(Class)} method.
      *
-     * @param clazz
+     * @param clazz the itemtype holder class
      * @see git.doomshade.professions.ProfessionManager#registerItemTypeHolder(Class)
      */
-    public static final <ItTypeHolder extends ItemTypeHolder<?>> void registerItemTypeHolder(
+    public static <ItTypeHolder extends ItemTypeHolder<?>> void registerItemTypeHolder(
             Class<ItTypeHolder> clazz) {
         profMan.registerItemTypeHolder(clazz);
     }
@@ -176,7 +178,7 @@ public class Professions extends JavaPlugin implements Setup {
      *
      * @param clazz ProfessionType class
      */
-    public static final void registerProfessionType(Class<? extends IProfessionType> clazz) {
+    public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
         profMan.registerInterface(clazz);
     }
 
@@ -185,7 +187,7 @@ public class Professions extends JavaPlugin implements Setup {
      *
      * @param profession Profession to register
      */
-    public static final void registerProfession(Profession<? extends IProfessionType> profession) {
+    public static void registerProfession(Profession<? extends IProfessionType> profession) {
         profMan.registerProfession(profession);
     }
 
@@ -209,12 +211,7 @@ public class Professions extends JavaPlugin implements Setup {
         settings.reload();
 
         // any class with setup() method contains a file
-        try {
-            setupFiles();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        setupFiles();
 
         new BukkitRunnable() {
 
@@ -299,7 +296,7 @@ public class Professions extends JavaPlugin implements Setup {
         return settings;
     }
 
-    private void setupFiles() throws IOException {
+    private void setupFiles() {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
@@ -339,7 +336,7 @@ public class Professions extends JavaPlugin implements Setup {
         return itemFolder;
     }
 
-    public void registerSetups() {
+    private void registerSetups() {
         for (Settings s : Settings.SETTINGS) {
             registerSetup(s);
         }
@@ -370,7 +367,7 @@ public class Professions extends JavaPlugin implements Setup {
         profMan.ITEMTYPES.clear();
     }
 
-    public void registerSetup(Setup setup) {
+    private void registerSetup(Setup setup) {
         if (!SETUPS.contains(setup))
             SETUPS.add(setup);
     }
