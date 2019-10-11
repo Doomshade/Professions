@@ -4,7 +4,6 @@ import git.doomshade.professions.Professions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.io.IOException;
 import java.util.List;
 
 public class BackupCommand extends AbstractCommand {
@@ -20,12 +19,7 @@ public class BackupCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // TODO Auto-generated method stub
-        try {
-            Professions.getInstance().backup();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        Professions.getInstance().backup();
         return true;
     }
 
@@ -40,5 +34,6 @@ public class BackupCommand extends AbstractCommand {
         // TODO Auto-generated method stub
         return "backup";
     }
+
 
 }

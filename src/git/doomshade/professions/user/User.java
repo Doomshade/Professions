@@ -18,8 +18,8 @@ import java.util.*;
 
 public class User implements Backup {
 
-    public static final String KEY_NAME = "name";
-    public static final String KEY_PROFESSIONS = "professions";
+    private static final String KEY_NAME = "name";
+    private static final String KEY_PROFESSIONS = "professions";
     private static final Map<UUID, User> USERS = new HashMap<>();
     private static User noUser;
     private final Player player;
@@ -68,7 +68,12 @@ public class User implements Backup {
 
     public static User getNoUser() {
         if (noUser == null) {
-            noUser = new User();
+            noUser = new User() {
+                @Override
+                public File[] getFiles() {
+                    return new File[]{Professions.getInstance().getPlayerFolder()};
+                }
+            };
         }
         return noUser;
     }
@@ -90,8 +95,9 @@ public class User implements Backup {
             return null;
         }
         String fileName = file.getName();
-        System.out.println(fileName.substring(0, fileName.length() - 4));
-        return getUser(UUID.fromString(fileName.substring(0, fileName.length() - 4)));
+        String substring = fileName.substring(0, fileName.length() - 4);
+        System.out.println(substring);
+        return getUser(UUID.fromString(substring));
     }
 
     public static void loadUser(Player hrac) {
@@ -100,7 +106,7 @@ public class User implements Backup {
         }
     }
 
-    public static boolean isLoaded(Player hrac) {
+    private static boolean isLoaded(Player hrac) {
         return USERS.containsKey(hrac.getUniqueId());
     }
 
@@ -133,7 +139,8 @@ public class User implements Backup {
         this.professions = new HashMap<>();
         profSection.getKeys(false).forEach(x -> {
             Profession<? extends IProfessionType> prof = Professions.getProfessionManager().fromName(x);
-            professions.put(prof.getClass(), new UserProfessionData(this, prof));
+            if (prof != null)
+                professions.put(prof.getClass(), new UserProfessionData(this, prof));
         });
         usedProfessionTypes = new HashMap<>();
         for (ProfessionType type : ProfessionType.values()) {
@@ -170,10 +177,10 @@ public class User implements Backup {
     }
 
     /**
-     * @param type
+     * @param type the profession type
      * @return true if this user has already a profession of that type
      */
-    public boolean hasProfessionType(ProfessionType type) {
+    private boolean hasProfessionType(ProfessionType type) {
         return usedProfessionTypes.get(type);
     }
 
@@ -217,7 +224,7 @@ public class User implements Backup {
     }
 
     public void sendMessage(List<String> messages) {
-        messages.forEach(x -> sendMessage(x));
+        messages.forEach(this::sendMessage);
     }
 
     public void sendMessage(String[] messages) {
@@ -277,7 +284,7 @@ public class User implements Backup {
 
     public void setBypass(boolean bypass) {
         this.bypass = bypass;
-        if (bypass == false) {
+        if (!bypass) {
             setSuppressExpEvent(false);
         }
     }

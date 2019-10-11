@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -23,6 +24,7 @@ public class SaveCommand extends AbstractCommand {
         try {
             sender.sendMessage("Saving files...");
             Professions.getInstance().saveFiles();
+            sender.sendMessage(ChatColor.GREEN + "Files saved successfully");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

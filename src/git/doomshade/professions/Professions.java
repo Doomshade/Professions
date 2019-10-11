@@ -16,6 +16,9 @@ import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
+import git.doomshade.professions.task.BackupTask;
+import git.doomshade.professions.task.UserSaveTask;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Backup;
@@ -32,15 +35,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class Professions extends JavaPlugin implements Setup {
     private static Professions instance;
@@ -52,6 +52,10 @@ public class Professions extends JavaPlugin implements Setup {
     private static int LOOPS = 0;
     // 5 minutes
     private final int SAVE_DELAY = 5 * 60;
+
+    // 1 hr
+    private final int BACKUP_DELAY = 60 * 60;
+
     private final ArrayList<Setup> SETUPS = new ArrayList<>();
     private final ArrayList<Backup> BACKUPS = new ArrayList<>();
     private final File backupFolder = new File(getDataFolder(), "backup");
@@ -59,6 +63,22 @@ public class Professions extends JavaPlugin implements Setup {
     private final File configFile = new File(getDataFolder(), "config.yml");
     private final File itemFolder = new File(getDataFolder(), "itemtypes");
     private FileConfiguration configLoader;
+
+    /**
+     * @param clazz class extending ItemType class
+     * @return
+     * @see #registerItemTypeHolder(Class)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends ItemType<?>> ItemType<T> getItemType(Class<T> clazz, int id) {
+        for (ItemType<?> type : profMan.ITEMTYPES) {
+            if (type.getClass().getSimpleName().equals(clazz.getSimpleName()) && type.getId() == id) {
+                return (ItemType<T>) type;
+            }
+        }
+        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()), clazz);
+        return null;
+    }
 
     public static Economy getEconomy() {
         return econ;
@@ -114,24 +134,6 @@ public class Professions extends JavaPlugin implements Setup {
         return User.getUser(hrac);
     }
 
-    /**
-     * @param clazz class extending ItemType class
-     * @return
-     * @see #registerItemTypeHolder(Class)
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends ItemType<?>> ItemType<T> getItemType(Class<T> clazz, int id) {
-        for (ItemType<?> type : profMan.ITEMTYPES) {
-            if (type.getClass().getSimpleName().equals(clazz.getSimpleName()) && type.getId() == id) {
-                return (ItemType<T>) type;
-            }
-        }
-        Bukkit.getLogger().log(Level.WARNING, getPrefix("Professions") + clazz.getSimpleName()
-                        + " is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)",
-                clazz);
-        return null;
-    }
-
     @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>, T extends ItemTypeHolder<?>> T getItemTypeHolder(Class<T> clazz) {
         for (ItemTypeHolder<?> holder : profMan.ITEMTYPEHOLDERS) {
@@ -143,23 +145,16 @@ public class Professions extends JavaPlugin implements Setup {
 
         LOOPS++;
         registerItemTypeHolder(clazz);
-        Bukkit.getLogger().log(Level.WARNING, getPrefix("Professions") + clazz.getSimpleName()
-                        + " is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)",
+        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()),
                 clazz);
 
         if (LOOPS >= 5) {
-            Bukkit.getLogger().log(Level.SEVERE, getPrefix("Professions") + "Could not register "
-                            + clazz.getSimpleName()
-                            + " as a registered item type holder! Consider registering it via Professions.registerItemType(Class<? extends ItemTypeHolder<?>>)",
+            instance.getLogger().log(Level.SEVERE, String.format("Could not register %s as a registered item type holder! Consider registering it via Professions.registerItemType(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()),
                     clazz);
             LOOPS = 0;
             return null;
         }
         return getItemTypeHolder(clazz);
-    }
-
-    public static Profession<? extends IProfessionType> getProfession(Class<? extends IProfessionType> profType) {
-        return profMan.getProfession(profType);
     }
 
     /**
@@ -169,9 +164,13 @@ public class Professions extends JavaPlugin implements Setup {
      * @param clazz
      * @see git.doomshade.professions.ProfessionManager#registerItemTypeHolder(Class)
      */
-    public static final <ItTypeHolder extends ItemTypeHolder<?>> void registerItemTypeHolder(
+    public static <ItTypeHolder extends ItemTypeHolder<?>> void registerItemTypeHolder(
             Class<ItTypeHolder> clazz) {
         profMan.registerItemTypeHolder(clazz);
+    }
+
+    public static Profession<? extends IProfessionType> getProfession(Class<? extends IProfessionType> profType) {
+        return profMan.getProfession(profType);
     }
 
     /**
@@ -179,7 +178,7 @@ public class Professions extends JavaPlugin implements Setup {
      *
      * @param clazz ProfessionType class
      */
-    public static final void registerProfessionType(Class<? extends IProfessionType> clazz) {
+    public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
         profMan.registerInterface(clazz);
     }
 
@@ -188,8 +187,12 @@ public class Professions extends JavaPlugin implements Setup {
      *
      * @param profession Profession to register
      */
-    public static final void registerProfession(Profession<? extends IProfessionType> profession) {
+    public static void registerProfession(Profession<? extends IProfessionType> profession) {
         profMan.registerProfession(profession);
+    }
+
+    public File getBackupFolder() {
+        return backupFolder;
     }
 
     public static void unloadUser(User user) throws IOException {
@@ -212,31 +215,9 @@ public class Professions extends JavaPlugin implements Setup {
         settings.reload();
 
         // any class with setup() method contains a file
-        try {
-            setupFiles();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        setupFiles();
 
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                // TODO Auto-generated method stub
-                try {
-                    if (Bukkit.getOnlinePlayers().isEmpty()) {
-                        return;
-                    }
-                    saveFiles();
-
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
-
-        }.runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
+        scheduleTasks();
 
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new UserListener(), this);
@@ -246,6 +227,11 @@ public class Professions extends JavaPlugin implements Setup {
         hookGuiApi();
         hookCitizens();
         setupEconomy();
+    }
+
+    private void scheduleTasks() {
+        new UserSaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
+        new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
     }
 
     private void hookGuiApi() {
@@ -302,7 +288,7 @@ public class Professions extends JavaPlugin implements Setup {
         return settings;
     }
 
-    private void setupFiles() throws IOException {
+    private void setupFiles() {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
@@ -342,12 +328,13 @@ public class Professions extends JavaPlugin implements Setup {
         return itemFolder;
     }
 
-    public void registerSetups() {
+    private void registerSetups() {
         for (Settings s : Settings.SETTINGS) {
             registerSetup(s);
         }
         registerSetup(Messages.getInstance());
-        registerSetup(CommandHandler.getInstance());
+        registerSetup(CommandHandler.getInstance(CommandHandler.class));
+        registerSetup(CommandHandler.getInstance(MiningCommandHandler.class));
         registerSetup(ProfessionManager.getInstance());
     }
 
@@ -373,39 +360,20 @@ public class Professions extends JavaPlugin implements Setup {
         profMan.ITEMTYPES.clear();
     }
 
-    public void registerSetup(Setup setup) {
+    private void registerSetup(Setup setup) {
         if (!SETUPS.contains(setup))
             SETUPS.add(setup);
     }
 
     private void registerBackups() {
-        registerBackup(CommandHandler.getInstance());
+        registerBackup(CommandHandler.getInstance(CommandHandler.class));
+        registerBackup(CommandHandler.getInstance(MiningCommandHandler.class));
         registerBackup(ProfessionManager.getInstance());
         registerBackup(User.getNoUser());
     }
 
-    public void backup() throws IOException {
-        try (ZipOutputStream zout = new ZipOutputStream(new FileOutputStream(
-                new File(backupFolder.getAbsolutePath(), "backup-" + new Date().getTime() + ".zip")))) {
-            for (Backup backup : BACKUPS) {
-                for (File file : backup.getFiles()) {
-                    try (FileInputStream fis = new FileInputStream(file)) {
-                        sendConsoleMessage("Backing up " + file.getName());
-                        zout.putNextEntry(new ZipEntry(file.getName()));
-                        byte[] buffer = new byte[1024];
-                        int read;
-                        while ((read = fis.read(buffer)) > 0) {
-                            zout.write(buffer, 0, read);
-                        }
-                        zout.closeEntry();
-                    }
-                }
-            }
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+    public void backup() {
+        new BackupTask().run();
     }
 
     private void registerBackup(Backup backup) {

@@ -1,8 +1,12 @@
 package git.doomshade.professions.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
+import ru.tehkode.permissions.PermissionUser;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,16 +16,23 @@ import java.util.Map;
 /**
  * @author Doomshade
  */
-abstract class AbstractCommand implements ConfigurationSerializable {
+public abstract class AbstractCommand implements ConfigurationSerializable {
 
-    protected String command = "";
-    protected String description = "";
-    protected List<String> messages = new ArrayList<>();
-    protected Map<Boolean, List<String>> args = new HashMap<>();
-    protected boolean requiresPlayer = false, requiresOp = false;
+    private static final String COMMAND = "command";
+    private static final String DESCRIPTION = "description";
+    private static final String REQUIRES_PLAYER = "requiresPlayer";
+    private static final String REQUIRES_OP = "requiresOp";
+    private static final String ARG_TRUE = "arg-true";
+    private static final String ARG_FALSE = "arg-false";
+    private static final String MESSAGE = "message";
+    private String command = "";
+    private String description = "";
+    private List<String> messages = new ArrayList<>();
+    private Map<Boolean, List<String>> args = new HashMap<>();
+    private boolean requiresPlayer = false, requiresOp = false;
 
     /**
-     * @param map
+     * @param map the map
      * @return partly deserialized command
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
@@ -43,33 +54,36 @@ abstract class AbstractCommand implements ConfigurationSerializable {
             public Map<Boolean, List<String>> getArgs() {
                 // TODO Auto-generated method stub
                 Map<Boolean, List<String>> args = new HashMap<>();
-                args.put(true, CommandHandler.cast(map.get("arg-true")));
-                args.put(false, CommandHandler.cast(map.get("arg-false")));
+                final CommandHandler instance = AbstractCommandHandler.getInstance(CommandHandler.class);
+                if (instance != null) {
+                    args.put(true, instance.cast(map.get(ARG_TRUE)));
+                    args.put(false, instance.cast(map.get(ARG_FALSE)));
+                }
                 return args;
             }
 
             @Override
             public String getCommand() {
                 // TODO Auto-generated method stub
-                return map.get("command").toString();
+                return map.get(COMMAND).toString();
             }
 
             @Override
             public String getDescription() {
                 // TODO Auto-generated method stub
-                return map.get("description").toString();
+                return map.get(DESCRIPTION).toString();
             }
 
             @Override
             public boolean requiresPlayer() {
                 // TODO Auto-generated method stub
-                return (boolean) map.get("requiresPlayer");
+                return (boolean) map.get(REQUIRES_PLAYER);
             }
 
             @Override
             public boolean requiresOp() {
                 // TODO Auto-generated method stub
-                return (boolean) map.get("requiresOp");
+                return (boolean) map.get(REQUIRES_OP);
             }
 
             @Override
@@ -82,7 +96,7 @@ abstract class AbstractCommand implements ConfigurationSerializable {
             @Override
             public List<String> getMessages() {
                 // TODO Auto-generated method stub
-                return (List<String>) map.get("message");
+                return (List<String>) map.get(MESSAGE);
             }
 
         };
@@ -116,7 +130,7 @@ abstract class AbstractCommand implements ConfigurationSerializable {
     /**
      * @param args the args to set
      */
-    public void setArgs(Map<Boolean, List<String>> args) {
+    public final void setArgs(Map<Boolean, List<String>> args) {
         this.args = args;
     }
 
@@ -130,7 +144,7 @@ abstract class AbstractCommand implements ConfigurationSerializable {
     /**
      * @param command the command to set
      */
-    public void setCommand(String command) {
+    public final void setCommand(String command) {
         this.command = command;
     }
 
@@ -144,7 +158,7 @@ abstract class AbstractCommand implements ConfigurationSerializable {
     /**
      * @param description the description to set
      */
-    public void setDescription(String description) {
+    public final void setDescription(String description) {
         this.description = description;
     }
 
@@ -170,18 +184,18 @@ abstract class AbstractCommand implements ConfigurationSerializable {
     /**
      * @param requiresPlayer the requiresPlayer to set
      */
-    public void setRequiresPlayer(boolean requiresPlayer) {
+    public final void setRequiresPlayer(boolean requiresPlayer) {
         this.requiresPlayer = requiresPlayer;
     }
 
     /**
      * @param requiresOp the requiresOp to set
      */
-    public void setRequiresOp(boolean requiresOp) {
+    public final void setRequiresOp(boolean requiresOp) {
         this.requiresOp = requiresOp;
     }
 
-    public void setArg(boolean bool, List<String> args) {
+    public final void setArg(boolean bool, List<String> args) {
         this.args.put(bool, args);
     }
 
@@ -189,7 +203,7 @@ abstract class AbstractCommand implements ConfigurationSerializable {
         return messages;
     }
 
-    public void setMessages(List<String> messages) {
+    public final void setMessages(List<String> messages) {
         this.messages = messages;
     }
 
@@ -197,15 +211,50 @@ abstract class AbstractCommand implements ConfigurationSerializable {
     public Map<String, Object> serialize() {
         // TODO Auto-generated method stub
         Map<String, Object> map = new HashMap<>();
-        map.put("command", getCommand());
-        map.put("description", getDescription());
-        map.put("requiresPlayer", requiresPlayer());
-        map.put("requiresOp", requiresOp());
-        map.put("arg-true", getArgs().get(true));
-        map.put("arg-false", getArgs().get(false));
-        map.put("message", getMessages());
+        map.put(COMMAND, getCommand());
+        map.put(DESCRIPTION, getDescription());
+        map.put(REQUIRES_PLAYER, requiresPlayer());
+        map.put(REQUIRES_OP, requiresOp());
+        map.put(ARG_TRUE, getArgs().get(true));
+        map.put(ARG_FALSE, getArgs().get(false));
+        map.put(MESSAGE, getMessages());
         return map;
+    }
 
+    public boolean hasPermission(CommandSender sender) {
+        for (CommandPermission perm : CommandPermission.values()) {
+            if (!hasPermission(sender, perm)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean hasPermission(CommandSender sender, CommandPermission perm) {
+        switch (perm) {
+            case PLAYER_ONLY:
+                return sender instanceof Player;
+            case BUILDER:
+                if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
+                    return false;
+                }
+                PermissionUser permUser = PermissionsEx.getUser((Player) sender);
+                return permUser.inGroup("Builder");
+            case ADMIN:
+                if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
+                    return false;
+                }
+                permUser = PermissionsEx.getUser((Player) sender);
+                return permUser.inGroup("Admin");
+            case OP:
+                return sender.isOp();
+        }
+        return false;
+    }
+
+
+    public enum CommandPermission {
+        PLAYER_ONLY, BUILDER, ADMIN, OP
     }
 
 }

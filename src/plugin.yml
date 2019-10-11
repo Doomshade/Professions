@@ -4,8 +4,10 @@ author: Doomshade
 version: 1.0
 description: Best plugin EU
 depend: [GUIApi, ProtocolLib, SkillAPI]
-softdepend: [Citizens, Vault]
+softdepend: [Citizens, Vault, PermissionsEx]
 
 commands:
   prof:
     description: default cmd
+  prof-mining:
+    description: mining cmd
