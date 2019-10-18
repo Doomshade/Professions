@@ -18,7 +18,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
-import git.doomshade.professions.task.UserSaveTask;
+import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Backup;
@@ -50,6 +50,7 @@ public class Professions extends JavaPlugin implements Setup {
     private static GUIManager guiManager;
     private static Economy econ;
     private static int LOOPS = 0;
+
     // 5 minutes
     private final int SAVE_DELAY = 5 * 60;
 
@@ -58,10 +59,11 @@ public class Professions extends JavaPlugin implements Setup {
 
     private final ArrayList<Setup> SETUPS = new ArrayList<>();
     private final ArrayList<Backup> BACKUPS = new ArrayList<>();
-    private final File backupFolder = new File(getDataFolder(), "backup");
-    private final File playerFolder = new File(getDataFolder(), "playerdata");
-    private final File configFile = new File(getDataFolder(), "config.yml");
-    private final File itemFolder = new File(getDataFolder(), "itemtypes");
+    private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
+    private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
+    private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
+    private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
+
     private FileConfiguration configLoader;
 
     /**
@@ -145,14 +147,11 @@ public class Professions extends JavaPlugin implements Setup {
 
         LOOPS++;
         registerItemTypeHolder(clazz);
-        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()),
-                clazz);
+        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()), clazz);
 
         if (LOOPS >= 5) {
-            instance.getLogger().log(Level.SEVERE, String.format("Could not register %s as a registered item type holder! Consider registering it via Professions.registerItemType(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()),
-                    clazz);
             LOOPS = 0;
-            return null;
+            throw new RuntimeException(String.format("Could not register %s as a registered item type holder! Consider registering it via Professions.registerItemType(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName(), clazz));
         }
         return getItemTypeHolder(clazz);
     }
@@ -179,7 +178,7 @@ public class Professions extends JavaPlugin implements Setup {
      * @param clazz ProfessionType class
      */
     public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
-        profMan.registerInterface(clazz);
+        profMan.registerProfessionType(clazz);
     }
 
     /**
@@ -187,13 +186,11 @@ public class Professions extends JavaPlugin implements Setup {
      *
      * @param profession Profession to register
      */
-    public static void registerProfession(Profession<? extends IProfessionType> profession) {
+    public static void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
         profMan.registerProfession(profession);
     }
 
-    public File getBackupFolder() {
-        return backupFolder;
-    }
+
 
     public static void unloadUser(User user) throws IOException {
         user.save();
@@ -208,6 +205,9 @@ public class Professions extends JavaPlugin implements Setup {
     @Override
     public void onEnable() {
         setInstance(this);
+        hookGuiApi();
+        hookCitizens();
+        setupEconomy();
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
 
@@ -224,13 +224,11 @@ public class Professions extends JavaPlugin implements Setup {
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
 
-        hookGuiApi();
-        hookCitizens();
-        setupEconomy();
+
     }
 
     private void scheduleTasks() {
-        new UserSaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
+        new SaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
         new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
     }
 
@@ -292,14 +290,14 @@ public class Professions extends JavaPlugin implements Setup {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
-        if (!backupFolder.isDirectory()) {
-            backupFolder.mkdirs();
+        if (!BACKUP_FOLDER.isDirectory()) {
+            BACKUP_FOLDER.mkdirs();
         }
-        if (!playerFolder.isDirectory()) {
-            playerFolder.mkdirs();
+        if (!PLAYER_FOLDER.isDirectory()) {
+            PLAYER_FOLDER.mkdirs();
         }
-        if (!itemFolder.isDirectory()) {
-            itemFolder.mkdirs();
+        if (!ITEM_FOLDER.isDirectory()) {
+            ITEM_FOLDER.mkdirs();
         }
         saveDefaultConfig();
         reloadConfig();
@@ -312,7 +310,7 @@ public class Professions extends JavaPlugin implements Setup {
     @Override
     public void reloadConfig() {
         // TODO Auto-generated method stub
-        configLoader = YamlConfiguration.loadConfiguration(configFile);
+        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
     }
 
     @Override
@@ -320,12 +318,25 @@ public class Professions extends JavaPlugin implements Setup {
         return configLoader;
     }
 
+    public File getBackupFolder() {
+        if (!BACKUP_FOLDER.isDirectory()) {
+            BACKUP_FOLDER.mkdirs();
+        }
+        return BACKUP_FOLDER;
+    }
+
     public File getPlayerFolder() {
-        return playerFolder;
+        if (!PLAYER_FOLDER.isDirectory()) {
+            PLAYER_FOLDER.mkdirs();
+        }
+        return PLAYER_FOLDER;
     }
 
     public File getItemsFolder() {
-        return itemFolder;
+        if (!ITEM_FOLDER.isDirectory()) {
+            ITEM_FOLDER.mkdirs();
+        }
+        return ITEM_FOLDER;
     }
 
     private void registerSetups() {

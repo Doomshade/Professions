@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ public abstract class Profession<T extends IProfessionType>
     private static final String ICON = "icon";
     private static final String TYPE = "type";
     private static final String NAME = "name";
+    static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     @SuppressWarnings("serial")
     private final TypeToken<T> typeToken = new TypeToken<T>(getClass()) {
     };
@@ -48,7 +50,8 @@ public abstract class Profession<T extends IProfessionType>
     private Map<Class<? extends ItemTypeHolder<?>>, List<ItemType<?>>> items = new HashMap<>();
     private ItemStack icon = new ItemStack(Material.CHEST);
 
-    protected Profession() {
+    public Profession() {
+        INITED_PROFESSIONS.add(getClass());
     }
 
     @SuppressWarnings("rawtypes")

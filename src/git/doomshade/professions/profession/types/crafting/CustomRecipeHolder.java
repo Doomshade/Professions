@@ -24,14 +24,9 @@ public class CustomRecipeHolder extends ItemTypeHolder<CustomRecipe> {
         meta.setLore(Arrays.asList("This", "is", "a fokin", "test"));
         result.setItemMeta(meta);
         ShapedRecipe recipe = new ShapedRecipe(result).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
-        ShapedRecipe recipee = new ShapedRecipe(new ItemStack(Material.STONE)).shape("abc", "def", "ghi")
-                .setIngredient('e', Material.ARROW);
-        ShapedRecipe recipeee = new ShapedRecipe(new ItemStack(Material.STONE)).shape("abc", "def", "ghi")
-                .setIngredient('e', Material.CHEST);
-
-        registerObject(new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500));
-        registerObject(new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipee), 1500));
-        registerObject(new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipeee), 2500));
+        CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
+        cr.setName(ChatColor.DARK_GREEN + "Test recipe");
+        registerObject(cr);
 
         // clear these recipes if they exist, let the CustomRecipe class handle it!
         Iterator<Recipe> bukkitRecipes = Bukkit.getServer().recipeIterator();

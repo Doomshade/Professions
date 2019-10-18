@@ -8,6 +8,7 @@ import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemTypeHolder;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.profession.types.gathering.GatherItem;
+import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
 import org.bukkit.Material;
@@ -196,7 +197,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         if (entity == null || !(entity.getKiller() instanceof Player)) {
             return;
         }
-        callEvent(entity.getKiller(), entity.getType(), Prey.class);
+        callEvent(entity.getKiller(), new Mob(entity.getType()), Prey.class);
     }
 
 }

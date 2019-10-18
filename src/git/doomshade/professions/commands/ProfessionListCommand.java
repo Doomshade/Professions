@@ -13,9 +13,8 @@ import java.util.*;
 public class ProfessionListCommand extends AbstractCommand {
 
     public ProfessionListCommand() {
-        // TODO Auto-generated constructor stub
         setCommand("list");
-        setDescription("shows a sorted list of git.doomshade.professions");
+        setDescription("Shows a list of professions");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }

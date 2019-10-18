@@ -22,7 +22,7 @@ public class AddExpCommand extends AbstractCommand {
         args.put(false, Arrays.asList("player"));
         setArgs(args);
         setCommand("exp");
-        setDescription("Gives or sets exp to the player");
+        setDescription("Gives exp to the player or sets it");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }

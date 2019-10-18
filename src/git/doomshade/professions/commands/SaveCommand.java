@@ -11,7 +11,6 @@ import java.util.List;
 public class SaveCommand extends AbstractCommand {
 
     public SaveCommand() {
-        // TODO Auto-generated constructor stub
         setCommand("save");
         setDescription("Saves player data");
         setRequiresOp(true);

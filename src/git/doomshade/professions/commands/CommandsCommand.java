@@ -7,6 +7,13 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 
 public class CommandsCommand extends AbstractCommand {
+
+    public CommandsCommand() {
+        setCommand("cmds");
+        setDescription("Shows all available commands");
+        setRequiresOp(true);
+        setRequiresPlayer(false);
+    }
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         sender.sendMessage("Available commands:");

@@ -20,7 +20,7 @@ public class LevelCommand extends AbstractCommand {
         setRequiresOp(true);
         setCommand("level");
         setRequiresPlayer(false);
-        setDescription("Navýší/setne level profky");
+        setDescription("Adds levels or sets the level of the player");
     }
 
     @Override

@@ -1,5 +1,7 @@
 package git.doomshade.professions;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
 import git.doomshade.professions.profession.professions.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.MiningProfession;
@@ -35,7 +37,7 @@ import java.util.Map.Entry;
 public final class ProfessionManager implements Setup, Backup {
     private static ProfessionManager instance;
     @SuppressWarnings("rawtypes")
-    public final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
+    final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
     final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
     final HashSet<ItemType<?>> ITEMTYPES = new HashSet<>();
     final HashSet<ItemTypeHolder<?>> ITEMTYPEHOLDERS = new HashSet<>();
@@ -55,29 +57,29 @@ public final class ProfessionManager implements Setup, Backup {
         return instance;
     }
 
-    public Set<ItemTypeHolder<?>> getItemTypeHolders() {
-        return new HashSet<>(ITEMTYPEHOLDERS);
+    public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
+        return ImmutableSet.copyOf(ITEMTYPEHOLDERS);
     }
 
-    public Set<ItemType<?>> getItemTypes() {
-        return new HashSet<>(ITEMTYPES);
+    public ImmutableSet<ItemType<?>> getItemTypes() {
+        return ImmutableSet.copyOf(ITEMTYPES);
     }
 
-    public Set<Class<? extends IProfessionType>> getProfessionTypes() {
-        return new HashSet<>(PROFESSION_TYPES);
+    public ImmutableSet<Class<? extends IProfessionType>> getProfessionTypes() {
+        return ImmutableSet.copyOf(PROFESSION_TYPES);
     }
 
     @SuppressWarnings("rawtypes")
-    public HashSet<Class<? extends Profession>> getRegisteredProfessions() {
-        return new HashSet<>(REGISTERED_PROFESSIONS);
+    public ImmutableSet<Class<? extends Profession>> getRegisteredProfessions() {
+        return ImmutableSet.copyOf(REGISTERED_PROFESSIONS);
     }
 
-    public Map<String, Profession<? extends IProfessionType>> getProfessionsById() {
-        return PROFESSIONS_ID;
+    public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsById() {
+        return ImmutableMap.copyOf(PROFESSIONS_ID);
     }
 
-    public Map<String, Profession<? extends IProfessionType>> getProfessionsByName() {
-        return PROFESSIONS_NAME;
+    public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsByName() {
+        return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
     public void updateProfessions() {
@@ -95,17 +97,20 @@ public final class ProfessionManager implements Setup, Backup {
     }
 
     private void register() {
-        registerInterfaces();
-        registerTypes();
+        registerProfessionTypes();
+        registerItemTypeHolders();
     }
 
-    private void registerTypes() {
+    private void registerItemTypeHolders() {
         registerItemTypeHolder(OreHolder.class);
         registerItemTypeHolder(PreyHolder.class);
         registerItemTypeHolder(GatherItemHolder.class);
         registerItemTypeHolder(EnchantedItemTypeHolder.class);
         registerItemTypeHolder(CustomRecipeHolder.class);
+        updateItemTypeHolders();
+    }
 
+    public void updateItemTypeHolders() {
         for (ItemTypeHolder<?> type : ITEMTYPEHOLDERS) {
             if (!type.isInitialized()) {
                 type.init();
@@ -140,12 +145,12 @@ public final class ProfessionManager implements Setup, Backup {
 
     }
 
-    private void registerInterfaces() {
-        registerInterface(IMining.class);
-        registerInterface(IHunting.class);
-        registerInterface(IGathering.class);
-        registerInterface(IEnchanting.class);
-        registerInterface(ICrafting.class);
+    private void registerProfessionTypes() {
+        registerProfessionType(IMining.class);
+        registerProfessionType(IHunting.class);
+        registerProfessionType(IGathering.class);
+        registerProfessionType(IEnchanting.class);
+        registerProfessionType(ICrafting.class);
     }
 
     private void createProfessionsFile() throws IOException {
@@ -185,7 +190,14 @@ public final class ProfessionManager implements Setup, Backup {
                 + Professions.getInstance().getDescription().getAuthors());
     }
 
-    public void registerProfession(Profession<? extends IProfessionType> prof) {
+    private void registerProfession(Profession<? extends IProfessionType> prof) {
+        if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
+            try {
+                throw new IllegalAccessException("Do not override nor create any new constructors in your profession class!");
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
         prof.onLoad();
         PROFESSIONS_ID.forEach((y, x) -> {
             if (x.getID().equalsIgnoreCase(prof.getID())) {
@@ -209,10 +221,18 @@ public final class ProfessionManager implements Setup, Backup {
             Professions.getInstance().sendConsoleMessage("Could not update " + prof.getID() + " profession. Reason:");
             e.printStackTrace();
         }
-
     }
 
-    public void registerInterface(Class<? extends IProfessionType> clazz) {
+    public void registerProfession(Class<Profession<? extends IProfessionType>> prof) {
+        try {
+            registerProfession(prof.newInstance());
+        } catch (Exception e) {
+            Professions.getInstance().sendConsoleMessage("Do not override nor create any new constructors in your profession class!");
+            e.printStackTrace();
+        }
+    }
+
+    public void registerProfessionType(Class<? extends IProfessionType> clazz) {
         PROFESSION_TYPES.add(clazz);
     }
 
@@ -243,7 +263,7 @@ public final class ProfessionManager implements Setup, Backup {
         Map<String, Profession<? extends IProfessionType>> MAP_COPY = new HashMap<String, Profession<? extends IProfessionType>>(
                 PROFESSIONS_ID);
         PROFESSIONS_ID = sortByValue(MAP_COPY);
-        MAP_COPY = new HashMap<String, Profession<?>>(PROFESSIONS_NAME);
+        MAP_COPY = new HashMap<>(PROFESSIONS_NAME);
         PROFESSIONS_NAME = sortByValue(MAP_COPY);
     }
 
@@ -272,7 +292,7 @@ public final class ProfessionManager implements Setup, Backup {
      *
      * @param itemType the item type to register
      */
-    private final void registerItemType(Class<?> itemType) {
+    private void registerItemType(Class<?> itemType) {
         try {
             Constructor<?> c = itemType.getDeclaredConstructor();
             c.setAccessible(true);

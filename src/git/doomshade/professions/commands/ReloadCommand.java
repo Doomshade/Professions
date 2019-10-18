@@ -13,7 +13,7 @@ public class ReloadCommand extends AbstractCommand {
 
     public ReloadCommand() {
         setCommand("reload");
-        setDescription("reloads plugin");
+        setDescription("Reloads plugin");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }

@@ -18,6 +18,7 @@ public class AddExtraCommand extends AbstractCommand {
     public AddExtraCommand() {
         setDescription("Adds an \"extra\" to a profession for requirement purposes");
         setArg(true, Arrays.asList("user", "profession", "extra"));
+        setCommand("extra");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }

@@ -18,7 +18,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
         args.put(false, Arrays.asList("player"));
         setArgs(args);
         setCommand("info");
-        setDescription("shows all information about a player");
+        setDescription("Shows all information about a player profession");
         setRequiresOp(false);
         setRequiresPlayer(false);
     }
@@ -28,7 +28,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
         // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         if (user.getProfessions().isEmpty()) {
-            user.sendMessage("Nem� ��dn� profese");
+            user.sendMessage("Nemáš žádné profese");
             return true;
         }
         for (UserProfessionData prof : user.getProfessions()) {

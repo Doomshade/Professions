@@ -25,11 +25,11 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     private static final String ARG_TRUE = "arg-true";
     private static final String ARG_FALSE = "arg-false";
     private static final String MESSAGE = "message";
-    private String command = "";
-    private String description = "";
-    private List<String> messages = new ArrayList<>();
-    private Map<Boolean, List<String>> args = new HashMap<>();
-    private boolean requiresPlayer = false, requiresOp = false;
+    protected String command = "";
+    protected String description = "";
+    protected List<String> messages = new ArrayList<>();
+    protected Map<Boolean, List<String>> args = new HashMap<>();
+    protected boolean requiresPlayer = false, requiresOp = false;
 
     /**
      * @param map the map

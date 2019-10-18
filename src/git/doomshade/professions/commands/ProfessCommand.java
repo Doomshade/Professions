@@ -21,7 +21,7 @@ public class ProfessCommand extends AbstractCommand {
         args.put(true, Arrays.asList("profession"));
         args.put(false, Arrays.asList("player"));
         setCommand("profess");
-        setDescription("gives a profession");
+        setDescription("Professes a player");
         setRequiresOp(true);
         setRequiresPlayer(false);
 

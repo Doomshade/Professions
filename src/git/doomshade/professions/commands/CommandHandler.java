@@ -21,7 +21,7 @@ public class CommandHandler extends AbstractCommandHandler {
         registerCommand(new BackupCommand());
         registerCommand(new SaveCommand());
         registerCommand(new AddExpCommand());
-        registerCommand(new ExpMultiplierCommand());
+        //registerCommand(new ExpMultiplierCommand());
         registerCommand(new PlayerGuiCommand());
         registerCommand(new BypassCommand());
         registerCommand(new NormalizeLevelsCommand());

@@ -17,8 +17,13 @@ saving:
 items:
   default-lore:
     - '&aJméno: &b{name}'
-    - '&aPožadovaný level: {level-req-color}{level-req}'
+    - '{level-req-color}&lPožadovaný level: {level-req}'
 profession:
+  defaults:
+    sorted-by:
+      - level-req
+      - exp
+      - name
   trainable:
     trained:
       - '&aJiz nauceno'
@@ -32,19 +37,19 @@ profession:
     ## color-change-after = after how many levels should the color change
     ## for example: an item type is made for level 10, if everything has color-change-after: 3, then the color
     ## will change as for user has: red 0-9 level, yellow 10-13 level, green 14-17 level, gray 18+ levels
-    exp-settings:
-      gray:
-        chance: 0
-        color: '&7'
-      green:
-        chance: 50
-        color: '&a'
-        color-change-after: 3
-      yellow:
-        chance: 100
-        color: '&e'
-        color-change-after: 3
-      red:
-        color: '&c'
+  exp-settings:
+    gray:
+      chance: 0
+      color: '7'
+    green:
+      chance: 50
+      color: 'a'
+      color-change-after: 3
+    yellow:
+      chance: 100
+      color: 'e'
+      color-change-after: 3
+    red:
+      color: 'c'
 
 

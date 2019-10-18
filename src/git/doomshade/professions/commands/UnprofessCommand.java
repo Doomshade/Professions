@@ -3,6 +3,7 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.user.User;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -14,13 +15,12 @@ import java.util.*;
 public class UnprofessCommand extends AbstractCommand {
 
     public UnprofessCommand() {
-        // TODO Auto-generated constructor stub
         args = new HashMap<>();
         args.put(true, Arrays.asList("profession"));
         args.put(false, Arrays.asList("player"));
         setArgs(args);
         setCommand("unprofess");
-        setDescription("unprofesses a player");
+        setDescription("Unprofesses a player");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }
@@ -30,14 +30,16 @@ public class UnprofessCommand extends AbstractCommand {
         // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         Profession<?> prof = Professions.getProfessionManager().fromName(args[1]);
+        Messages.MessageBuilder builder = Messages.getInstance().MessageBuilder().setPlayer(user);
         if (prof == null) {
-            user.sendMessage("Tato profese neexistuje");
+            user.sendMessage(builder.setMessage(Messages.Message.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
+        builder = builder.setProfession(prof);
         if (user.unprofess(prof)) {
-            user.sendMessage("Uz nemas profku nubko - " + prof.getColoredName());
+            user.sendMessage(builder.setMessage(Messages.Message.SUCCESSFULLY_UNPROFESSED).build());
         } else {
-            user.sendMessage("Tuto profku nemas");
+            user.sendMessage(builder.setMessage(Messages.Message.ALREADY_PROFESSED).build());
         }
         return true;
     }

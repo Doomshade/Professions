@@ -219,12 +219,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
 
     public final void setLevelReq(int levelReq) {
         int cap = Settings.getInstance().getExpSettings().getLevelCap();
-        if (levelReq < 0)
-            this.levelReq = 0;
-        else if (levelReq > cap)
-            this.levelReq = cap;
-        else
-            this.levelReq = levelReq;
+
+        // nastaví na cap, pokud je levelReq větší než cap
+        this.levelReq = Math.min(/* nastaví na 0, pokud je levelReq menší než 0*/Math.max(levelReq, 0), cap);
     }
 
     @Override

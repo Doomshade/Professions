@@ -6,7 +6,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 
-public class UserSaveTask extends BukkitRunnable {
+public class SaveTask extends BukkitRunnable {
     @Override
     public void run() {
         try {

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public class Settings implements Setup {
 
+    private static MiningSettings miningSettings;
+
     public static final ArrayList<Settings> SETTINGS = new ArrayList<>();
     protected static FileConfiguration config;
     protected static Professions plugin;
@@ -26,6 +28,10 @@ public class Settings implements Setup {
         SETTINGS.add(saveSettings = new SaveSettings());
         SETTINGS.add(itemSettings = new ItemSettings());
         SETTINGS.add(professionSettings = new ProfessionSettings());
+        SETTINGS.add(miningSettings = new MiningSettings());
+    }
+
+    Settings() {
     }
 
 
@@ -74,6 +80,19 @@ public class Settings implements Setup {
     public final ProfessionSettings getProfessionSettings() {
         return professionSettings;
     }
+
+    public final MiningSettings getMiningSettings() {
+        return miningSettings;
+    }
+
+    /*protected final void printError(Object value, String... section){
+        plugin.sendConsoleMessage("Your configuration file is outdated!");
+        plugin.sendConsoleMessage(String.format("Missing \"%s\" section!", Arrays.asList(section).stream().map(x -> x + ".").collect(Collectors.toList())));
+        if (value == null)
+            plugin.sendConsoleMessage("Using default values.");
+        else
+            plugin.sendConsoleMessage(String.format("Using %s as default value.", value.toString()));
+    }*/
 
     protected final void printError(String section, Object value) {
         plugin.sendConsoleMessage("Your configuration file is outdated!");

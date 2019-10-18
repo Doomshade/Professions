@@ -13,7 +13,7 @@ public class PlayerGuiCommand extends AbstractCommand {
     public PlayerGuiCommand() {
         // TODO Auto-generated constructor stub
         setCommand("gui");
-        setDescription("Otev�e GUI profes�");
+        setDescription("Opens the professions GUI");
         setRequiresOp(false);
         setRequiresPlayer(true);
     }

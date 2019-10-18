@@ -1,5 +1,6 @@
 package git.doomshade.professions.data;
 
+import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.profession.types.Trainable;
 import org.bukkit.ChatColor;
@@ -10,9 +11,11 @@ import java.util.List;
 
 public class ProfessionSettings extends Settings {
     private static final String SECTION = "profession", LEVEL_THRESHOLD = "level-threshold",
-            TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained", EXP_SETTINGS = "exp-settings", COLOR = "color", CHANCE = "chance", COLOR_CHANGE_AFTER = "color-change-after";
+            TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained",
+            EXP_SETTINGS = "exp-settings", COLOR = "color", CHANCE = "chance", COLOR_CHANGE_AFTER = "color-change-after",
+            DEFAULTS = "defaults", SORTED_BY = "sorted-by";
     private int levelThreshold = 3;
-    private List<String> trainedLore, notTrainedLore;
+    private List<String> trainedLore, notTrainedLore, sortedBy;
 
     ProfessionSettings() {
 
@@ -20,9 +23,10 @@ public class ProfessionSettings extends Settings {
 
     @Override
     public void setup() throws Exception {
-        trainedLore = notTrainedLore = new ArrayList<>();
+        trainedLore = notTrainedLore = sortedBy = new ArrayList<>();
         if (isSection(SECTION)) {
             ConfigurationSection section = config.getConfigurationSection(SECTION);
+
             ConfigurationSection trainableSection = section.getConfigurationSection(TRAINABLE_SECTION);
             if (trainableSection != null) {
                 levelThreshold = trainableSection.getInt(LEVEL_THRESHOLD);
@@ -46,6 +50,7 @@ public class ProfessionSettings extends Settings {
                 printError(SECTION + "." + TRAINABLE_SECTION, null);
             }
 
+
             ConfigurationSection expSection = section.getConfigurationSection(EXP_SETTINGS);
             if (expSection != null) {
                 for (String key : expSection.getKeys(false)) {
@@ -58,6 +63,14 @@ public class ProfessionSettings extends Settings {
                 }
             } else {
                 printError(SECTION + "." + EXP_SETTINGS, null);
+            }
+
+
+            ConfigurationSection defaultsSection = section.getConfigurationSection(DEFAULTS);
+            if (defaultsSection != null) {
+                this.sortedBy = defaultsSection.getStringList(SORTED_BY);
+            } else {
+                printError(SECTION + "." + DEFAULTS, null);
             }
         }
     }
@@ -78,5 +91,9 @@ public class ProfessionSettings extends Settings {
             trainedLore.set(i, trainedLore.get(i).replaceAll(Trainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
         }
         return trainedLore;
+    }
+
+    public ImmutableList<String> getSortedBy() {
+        return ImmutableList.copyOf(sortedBy);
     }
 }

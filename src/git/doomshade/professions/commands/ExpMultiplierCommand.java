@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import java.util.Arrays;
 import java.util.List;
 
+@Deprecated
 public class ExpMultiplierCommand extends AbstractCommand {
 
     public ExpMultiplierCommand() {
