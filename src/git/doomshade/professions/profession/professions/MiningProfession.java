@@ -5,7 +5,6 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
-import git.doomshade.professions.profession.types.mining.OreHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Material;
@@ -19,7 +18,6 @@ public class MiningProfession extends Profession<IMining> {
     public void onLoad() {
         setName("&aKopani");
         setProfessionType(ProfessionType.SEKUNDARNI);
-        addItems(OreHolder.class);
     }
 
     @Override
@@ -29,6 +27,7 @@ public class MiningProfession extends Profession<IMining> {
         meta.setDisplayName(getColoredName());
         item.setItemMeta(meta);
         setIcon(item);
+        addItems(Ore.class);
     }
 
     @Override

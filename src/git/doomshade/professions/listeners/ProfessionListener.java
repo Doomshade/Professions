@@ -5,7 +5,6 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.enchanting.Enchant;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemTypeHolder;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.profession.types.gathering.GatherItem;
 import git.doomshade.professions.profession.types.hunting.Mob;
@@ -179,7 +178,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        for (EnchantedItemType enchItemType : Professions.getItemTypeHolder(EnchantedItemTypeHolder.class)
+        for (EnchantedItemType enchItemType : Professions.getItemTypeHolder(EnchantedItemType.class)
                 .getRegisteredItemTypes()) {
             Enchant eit = enchItemType.getObject();
             if (areSimilar(eit.getItem(), mh)) {

@@ -17,16 +17,12 @@ public class EnchantedItemType extends CraftableItemType<Enchant> implements Tra
     private boolean trainable = true;
     private int cost = 0;
 
-    public EnchantedItemType(Enchant item, int exp) {
-        super(item, exp);
-    }
-
-    protected EnchantedItemType() {
+    public EnchantedItemType() {
         super();
     }
 
-    protected EnchantedItemType(Map<String, Object> map, int id) {
-        super(map, id);
+    public EnchantedItemType(Enchant object, int exp) {
+        super(object, exp);
     }
 
     @Override
@@ -48,11 +44,6 @@ public class EnchantedItemType extends CraftableItemType<Enchant> implements Tra
         this.trainable = (boolean) map.get(TRAINABLE);
         this.cost = (int) map.get(COST);
         return Enchant.deserialize(((MemorySection) map.get(ENCHANT)).getValues(true));
-    }
-
-    @Override
-    public Class<? extends ItemTypeHolder<?>> getHolder() {
-        return EnchantedItemTypeHolder.class;
     }
 
     @Override

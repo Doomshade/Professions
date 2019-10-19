@@ -1,5 +1,6 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
@@ -7,9 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ProfessionInfoCommand extends AbstractCommand {
 
@@ -25,15 +24,23 @@ public class ProfessionInfoCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         if (user.getProfessions().isEmpty()) {
             user.sendMessage("Nemáš žádné profese");
             return true;
         }
-        for (UserProfessionData prof : user.getProfessions()) {
-            for (int i = 0; i < getMessages().size(); i++) {
-                String s = getMessages().get(i);
+        final List<String> messages = getMessages();
+        if (messages.isEmpty()) {
+            return true;
+        }
+
+        // get a  better way of doing this..
+        user.sendMessage(ChatColor.translateAlternateColorCodes('&', messages.get(0)).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
+        ArrayList<UserProfessionData> profs = new ArrayList<>(user.getProfessions());
+        profs.sort(Comparator.comparing(x -> x.getProfession().getProfessionType()));
+        for (UserProfessionData prof : profs) {
+            for (int i = 1; i < messages.size(); i++) {
+                String s = messages.get(i);
 
                 for (Regex regex : Regex.values()) {
                     if (s.isEmpty()) {
@@ -61,8 +68,16 @@ public class ProfessionInfoCommand extends AbstractCommand {
                         case REQ_EXP:
                             replacement = String.valueOf(prof.getRequiredExp());
                             break;
+                        case PROFESSION_TYPE:
+                            replacement = prof.getProfession().getProfessionType().toString();
+                            replacement = replacement.charAt(0) + replacement.toLowerCase().substring(1);
+                            break;
+                        case USER:
+                            replacement = user.getPlayer().getDisplayName();
+                            break;
                     }
                     s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "\\}", replacement));
+                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold\\}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
                 }
                 user.sendMessage(s);
             }
@@ -83,7 +98,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
     }
 
     private enum Regex {
-        LEVEL, MAX_LEVEL, EXP, REQ_EXP, PROFESSION
+        LEVEL, MAX_LEVEL, EXP, REQ_EXP, PROFESSION, PROFESSION_TYPE, USER
     }
 
 }

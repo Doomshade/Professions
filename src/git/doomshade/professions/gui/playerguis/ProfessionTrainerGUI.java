@@ -7,6 +7,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.Trainable;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -67,7 +68,7 @@ public class ProfessionTrainerGUI extends GUI {
 
         ProfessionSettings settings = Settings.getInstance().getProfessionSettings();
 
-        for (List<ItemType<?>> itemTypes : prof.getItems().values()) {
+        for (ItemTypeHolder<?> itemTypes : prof.getItems()) {
             for (ItemType<?> itemType : itemTypes) {
                 if (itemType instanceof Trainable) {
                     Trainable trainable = (Trainable) itemType;

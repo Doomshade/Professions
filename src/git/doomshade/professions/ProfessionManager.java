@@ -9,28 +9,37 @@ import git.doomshade.professions.profession.professions.SkinningProfession;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.crafting.CustomRecipeHolder;
+import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemTypeHolder;
+import git.doomshade.professions.profession.types.enchanting.EnchantManager;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
-import git.doomshade.professions.profession.types.gathering.GatherItemHolder;
+import git.doomshade.professions.profession.types.enchanting.enchants.RandomAttributeEnchant;
+import git.doomshade.professions.profession.types.gathering.GatherItem;
 import git.doomshade.professions.profession.types.gathering.IGathering;
 import git.doomshade.professions.profession.types.hunting.IHunting;
-import git.doomshade.professions.profession.types.hunting.PreyHolder;
+import git.doomshade.professions.profession.types.hunting.Mob;
+import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.IMining;
-import git.doomshade.professions.profession.types.mining.OreHolder;
+import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.utils.Backup;
 import git.doomshade.professions.utils.Setup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -39,8 +48,7 @@ public final class ProfessionManager implements Setup, Backup {
     @SuppressWarnings("rawtypes")
     final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
     final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
-    final HashSet<ItemType<?>> ITEMTYPES = new HashSet<>();
-    final HashSet<ItemTypeHolder<?>> ITEMTYPEHOLDERS = new HashSet<>();
+    final HashMap<ItemTypeHolder<?>, ItemType<?>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
     Map<String, Profession<? extends IProfessionType>> PROFESSIONS_ID = new HashMap<>();
@@ -57,12 +65,17 @@ public final class ProfessionManager implements Setup, Backup {
         return instance;
     }
 
-    public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
-        return ImmutableSet.copyOf(ITEMTYPEHOLDERS);
+    public ImmutableMap<ItemTypeHolder<?>, ItemType<?>> getItemTypeHolders() {
+        return ImmutableMap.copyOf(ITEMS);
     }
 
-    public ImmutableSet<ItemType<?>> getItemTypes() {
-        return ImmutableSet.copyOf(ITEMTYPES);
+    public <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
+        for (Entry<ItemTypeHolder<?>, ItemType<?>> entry : ITEMS.entrySet()) {
+            if (entry.getValue().getClass().equals(clazz)) {
+                return (ItemTypeHolder<A>) entry.getKey();
+            }
+        }
+        throw new RuntimeException(clazz + " is not a registered item type holder!");
     }
 
     public ImmutableSet<Class<? extends IProfessionType>> getProfessionTypes() {
@@ -93,57 +106,105 @@ public final class ProfessionManager implements Setup, Backup {
         createProfessionsFile();
         registerProfessions();
         setupProfessionsFile();
-
     }
 
-    private void register() {
+    private void register() throws IOException {
         registerProfessionTypes();
         registerItemTypeHolders();
     }
 
-    private void registerItemTypeHolders() {
-        registerItemTypeHolder(OreHolder.class);
-        registerItemTypeHolder(PreyHolder.class);
-        registerItemTypeHolder(GatherItemHolder.class);
-        registerItemTypeHolder(EnchantedItemTypeHolder.class);
-        registerItemTypeHolder(CustomRecipeHolder.class);
-        updateItemTypeHolders();
-    }
+    private void registerItemTypeHolders() throws IOException {
+        registerItemTypeHolder(new ItemTypeHolder<Ore>() {
 
-    public void updateItemTypeHolders() {
-        for (ItemTypeHolder<?> type : ITEMTYPEHOLDERS) {
-            if (!type.isInitialized()) {
-                type.init();
+            @Override
+            public Ore getObject() {
+                Ore ore = new Ore(Material.OBSIDIAN, 100);
+                ore.setName(ChatColor.GRAY + "Obsidian");
+                return ore;
+            }
+        });
+        registerItemTypeHolder(new ItemTypeHolder<Prey>() {
+            @Override
+            public Prey getObject() {
+                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
+                prey.setName(ChatColor.YELLOW + "Kostlivec");
+                return prey;
+            }
+        });
+
+        registerItemTypeHolder(new ItemTypeHolder<GatherItem>() {
+            @Override
+            public GatherItem getObject() {
+                ItemStack item = new ItemStack(Material.GLASS);
+                ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName(ChatColor.BLUE + "Test gathered item");
+                meta.setLore(Arrays.asList("Yay"));
+                item.setItemMeta(meta);
+                GatherItem gatherItem = new GatherItem(item, 500);
+                gatherItem.setName(ChatColor.DARK_AQUA + "Test gather item");
+                return gatherItem;
+            }
+        });
+        registerItemTypeHolder(new ItemTypeHolder<EnchantedItemType>() {
+            @Override
+            public EnchantedItemType getObject() {
+                EnchantManager enchm = EnchantManager.getInstance();
                 try {
-                    type.save();
-                } catch (IOException e) {
+                    enchm.registerEnchant(RandomAttributeEnchant.class, new ItemStack(Material.GLASS));
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-                type.load();
-                type.setInitialized(true);
+                RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
+                EnchantedItemType eit = new EnchantedItemType(ench, 69);
+                ItemStack craftRequirement = new ItemStack(Material.GLASS);
+                ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
+                craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
+                craftRequirementMeta.setLore(Arrays.asList("Japato"));
+                craftRequirement.setItemMeta(craftRequirementMeta);
+                eit.addCraftingRequirement(craftRequirement);
+                eit.setName(ChatColor.RED + "Test random attribute enchantment");
+                return eit;
             }
-        }
+        });
+
+        registerItemTypeHolder(new ItemTypeHolder<CustomRecipe>() {
+            @Override
+            public CustomRecipe getObject() {
+                ItemStack result = new ItemStack(Material.STONE);
+                ItemMeta meta = result.getItemMeta();
+                meta.setDisplayName(ChatColor.GREEN + "Test");
+                meta.setLore(Arrays.asList("This", "is", "a fokin", "test"));
+                result.setItemMeta(meta);
+                ShapedRecipe recipe = new ShapedRecipe(result).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
+                CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
+                cr.setName(ChatColor.DARK_GREEN + "Test recipe");
+                registerObject(cr);
+
+                // clear these recipes if they exist, let the CustomRecipe class handle it!
+                final Server server = Bukkit.getServer();
+                Iterator<Recipe> bukkitRecipes = server.recipeIterator();
+                while (bukkitRecipes.hasNext()) {
+                    Recipe bukkitRecipe = bukkitRecipes.next();
+                    if (!(bukkitRecipe instanceof ShapedRecipe)) {
+                        continue;
+                    }
+                    CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
+                    for (CustomRecipe customRecipe : getRegisteredItemTypes()) {
+                        if (customRecipe.isValid(bukkitShapedRecipe)) {
+                            bukkitRecipes.remove();
+                        }
+                    }
+                }
+                return cr;
+            }
+        });
     }
 
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(Class<T> itemTypeHolder) {
-        try {
-            Constructor<T> c = itemTypeHolder.getDeclaredConstructor();
-            c.setAccessible(true);
-            T holder = c.newInstance();
-            ITEMTYPEHOLDERS.add(holder);
-            String className = holder.getClass().getGenericSuperclass().toString();
-            String[] split = className.split("[.]");
-
-            String name = "";
-            for (int i = 5; i < split.length; i++) {
-                name += split[i] + ".";
-            }
-            registerItemType(Class.forName(name.substring(15, name.length() - 2)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
+        itemTypeHolder.update();
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem());
     }
+
 
     private void registerProfessionTypes() {
         registerProfessionType(IMining.class);
@@ -225,7 +286,7 @@ public final class ProfessionManager implements Setup, Backup {
 
     public void registerProfession(Class<Profession<? extends IProfessionType>> prof) {
         try {
-            registerProfession(prof.newInstance());
+            registerProfession(prof.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             Professions.getInstance().sendConsoleMessage("Do not override nor create any new constructors in your profession class!");
             e.printStackTrace();
@@ -285,27 +346,6 @@ public final class ProfessionManager implements Setup, Backup {
     @Override
     public File[] getFiles() {
         return new File[]{file};
-    }
-
-    /**
-     * Registers an item type
-     *
-     * @param itemType the item type to register
-     */
-    private void registerItemType(Class<?> itemType) {
-        try {
-            Constructor<?> c = itemType.getDeclaredConstructor();
-            c.setAccessible(true);
-            ITEMTYPES.add((ItemType<?>) c.newInstance());
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            Professions.getInstance().sendConsoleMessage("Could not register " + itemType.getSimpleName()
-                    + " as it does not implement a no-args constructor!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
 }

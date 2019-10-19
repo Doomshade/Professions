@@ -5,7 +5,6 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemTypeHolder;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.user.User;
@@ -20,7 +19,6 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
     public void onLoad() {
         setName("&aEnchanting");
         setProfessionType(ProfessionType.PRIMARNI);
-        addItems(EnchantedItemTypeHolder.class);
     }
 
     @Override
@@ -30,6 +28,7 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
         meta.setDisplayName(getColoredName());
         item.setItemMeta(meta);
         setIcon(item);
+        addItems(EnchantedItemType.class);
     }
 
     @Override
@@ -69,8 +68,9 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
                 break;
         }
 
-
     }
+
+
 
     public enum ProfessionEventType {
         CRAFT, ENCHANT

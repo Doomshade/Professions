@@ -38,6 +38,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -69,17 +70,16 @@ public class Professions extends JavaPlugin implements Setup {
     /**
      * @param clazz class extending ItemType class
      * @return
-     * @see #registerItemTypeHolder(Class)
+     * @see #registerItemTypeHolder(ItemTypeHolder)
      */
     @SuppressWarnings("unchecked")
     public static <T extends ItemType<?>> ItemType<T> getItemType(Class<T> clazz, int id) {
-        for (ItemType<?> type : profMan.ITEMTYPES) {
+        for (ItemType<?> type : profMan.ITEMS.values()) {
             if (type.getClass().getSimpleName().equals(clazz.getSimpleName()) && type.getId() == id) {
                 return (ItemType<T>) type;
             }
         }
-        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()), clazz);
-        return null;
+        throw new RuntimeException(String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder()", clazz.getSimpleName()));
     }
 
     public static Economy getEconomy() {
@@ -137,35 +137,19 @@ public class Professions extends JavaPlugin implements Setup {
     }
 
     @SuppressWarnings("unchecked")
-    public static <A extends ItemType<?>, T extends ItemTypeHolder<?>> T getItemTypeHolder(Class<T> clazz) {
-        for (ItemTypeHolder<?> holder : profMan.ITEMTYPEHOLDERS) {
-            if (holder.getClass().getSimpleName().equals(clazz.getSimpleName())) {
-                LOOPS = 0;
-                return (T) holder;
-            }
-        }
-
-        LOOPS++;
-        registerItemTypeHolder(clazz);
-        instance.getLogger().log(Level.WARNING, String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName()), clazz);
-
-        if (LOOPS >= 5) {
-            LOOPS = 0;
-            throw new RuntimeException(String.format("Could not register %s as a registered item type holder! Consider registering it via Professions.registerItemType(Class<? extends ItemTypeHolder<?>>)", clazz.getSimpleName(), clazz));
-        }
-        return getItemTypeHolder(clazz);
+    public static <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
+        return profMan.getItemTypeHolder(clazz);
     }
 
     /**
      * Registers an item type holder. Calls
-     * {@link ProfessionManager#registerItemTypeHolder(Class)} method.
+     * {@link ProfessionManager#registerItemTypeHolder(ItemTypeHolder)} method.
      *
-     * @param clazz
-     * @see git.doomshade.professions.ProfessionManager#registerItemTypeHolder(Class)
+     * @param itemTypeHolder
+     * @see git.doomshade.professions.ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
      */
-    public static <ItTypeHolder extends ItemTypeHolder<?>> void registerItemTypeHolder(
-            Class<ItTypeHolder> clazz) {
-        profMan.registerItemTypeHolder(clazz);
+    public static <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
+        profMan.registerItemTypeHolder(itemTypeHolder);
     }
 
     public static Profession<? extends IProfessionType> getProfession(Class<? extends IProfessionType> profType) {
@@ -189,7 +173,6 @@ public class Professions extends JavaPlugin implements Setup {
     public static void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
         profMan.registerProfession(profession);
     }
-
 
 
     public static void unloadUser(User user) throws IOException {
@@ -367,8 +350,7 @@ public class Professions extends JavaPlugin implements Setup {
         profMan.PROFESSION_TYPES.clear();
         profMan.PROFESSIONS_ID.clear();
         profMan.PROFESSIONS_NAME.clear();
-        profMan.ITEMTYPEHOLDERS.clear();
-        profMan.ITEMTYPES.clear();
+        profMan.ITEMS.clear();
     }
 
     private void registerSetup(Setup setup) {

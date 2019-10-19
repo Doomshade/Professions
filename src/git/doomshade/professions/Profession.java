@@ -5,6 +5,7 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.types.ProfessionEventable;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
@@ -15,10 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Interfaces extending IProfessionType
@@ -35,7 +33,7 @@ import java.util.Map;
  *            then register it by calling
  */
 public abstract class Profession<T extends IProfessionType>
-        implements Listener, ConfigurationSerializable, Comparable<Profession<?>> {
+        implements Listener, ConfigurationSerializable, Comparable<Profession<?>>, ProfessionEventable {
 
     private static final String ICON = "icon";
     private static final String TYPE = "type";
@@ -47,7 +45,7 @@ public abstract class Profession<T extends IProfessionType>
     private final Type type = typeToken.getType();
     private String name = "";
     private ProfessionType pt = ProfessionType.PRIMARNI;
-    private Map<Class<? extends ItemTypeHolder<?>>, List<ItemType<?>>> items = new HashMap<>();
+    private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
     private ItemStack icon = new ItemStack(Material.CHEST);
 
     public Profession() {
@@ -140,11 +138,11 @@ public abstract class Profession<T extends IProfessionType>
     }
 
     @SuppressWarnings("unchecked")
-    protected final void addItems(Class<? extends ItemTypeHolder<?>> items) {
-        this.items.put(items, (List<ItemType<?>>) Professions.getItemTypeHolder(items).getRegisteredItemTypes());
+    protected final void addItems(Class<? extends ItemType<?>> items) {
+        this.items.add(Professions.getItemTypeHolder(items));
     }
 
-    public final Map<Class<? extends ItemTypeHolder<?>>, List<ItemType<?>>> getItems() {
+    public final Set<ItemTypeHolder<?>> getItems() {
         return items;
     }
 
@@ -190,13 +188,6 @@ public abstract class Profession<T extends IProfessionType>
     }
 
     /**
-     * Handles an event
-     *
-     * @param e the event called
-     */
-    public abstract <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e);
-
-    /**
      * @param e    event to check for
      * @param item the event type
      * @return true if event has registered an object of item type
@@ -204,8 +195,14 @@ public abstract class Profession<T extends IProfessionType>
     protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e,
                                                                              Class<ItemTypeClass> item) {
         ItemType<?> obj = e.getObject();
-        return items.containsKey(obj.getHolder()) && playerHasProfession(e)
-                && obj.getClass().getSimpleName().equalsIgnoreCase(item.getSimpleName());
+        for (ItemTypeHolder<?> ith : items) {
+            for (ItemType<?> it : ith) {
+                if (it.getClass().equals(obj.getClass())) {
+                    return playerHasProfession(e) && obj.getClass().getSimpleName().equalsIgnoreCase(item.getSimpleName());
+                }
+            }
+        }
+        return false;
     }
 
     /**

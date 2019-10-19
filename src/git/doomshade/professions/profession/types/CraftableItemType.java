@@ -17,8 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class CraftableItemType<T> extends ItemType<T> {
-    private Requirements craftingRequirements = new Requirements(new ArrayList<ItemStack>());
-    private Requirements inventoryRequirements = new Requirements(new ArrayList<ItemStack>());
+    private Requirements craftingRequirements = new Requirements(new ArrayList<>());
+    private Requirements inventoryRequirements = new Requirements(new ArrayList<>());
     private ItemStack result = new ItemStack(Material.GLASS);
     private double craftingTime = 5d;
 
@@ -29,36 +29,12 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
         result.setItemMeta(meta);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected CraftableItemType(Map<String, Object> map, int id) {
-        super(map, id);
-        MemorySection itemReqSection = (MemorySection) map.get(Key.ITEM_REQUIREMENTS.toString());
-        if (itemReqSection != null)
-            this.craftingRequirements = Requirements.deserialize(itemReqSection.getValues(false));
-
-        MemorySection invReqSection = (MemorySection) map.get(Key.ITEM_REQUIREMENTS.toString());
-        if (invReqSection != null)
-            this.inventoryRequirements = Requirements.deserialize(invReqSection.getValues(false));
-
-        this.result = ItemStack.deserialize(((MemorySection) map.get(Key.RESULT.toString())).getValues(true));
-        this.craftingTime = (double) map.get(Key.CRAFTING_TIME.toString());
-
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected CraftableItemType(T t, int exp) {
-        super(t, exp);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected CraftableItemType() {
+    public CraftableItemType() {
         super();
+    }
+
+    public CraftableItemType(T object, int exp) {
+        super(object, exp);
     }
 
     public final Requirements getInventoryRequirements() {
@@ -69,12 +45,20 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
         return craftingRequirements;
     }
 
-    public final void addCraftRequirement(ItemStack item) {
+    public final void addCraftingRequirement(ItemStack item) {
         craftingRequirements.addRequirement(item);
     }
 
     public final void addInventoryRequirement(ItemStack item) {
         inventoryRequirements.addRequirement(item);
+    }
+
+    public void setCraftingRequirements(Requirements craftingRequirements) {
+        this.craftingRequirements = craftingRequirements;
+    }
+
+    public void setInventoryRequirements(Requirements inventoryRequirements) {
+        this.inventoryRequirements = inventoryRequirements;
     }
 
     public final boolean meetsInventoryRequirements(Player player) {
@@ -126,7 +110,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
 
     @Override
     public Map<String, Object> serialize() {
-        // TODO Auto-generated method stub
         Map<String, Object> map = super.serialize();
         map.put(Key.ITEM_REQUIREMENTS.toString(), craftingRequirements.serialize());
         map.put(Key.RESULT.toString(), result.serialize());
@@ -149,5 +132,21 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
 
     public void setCraftingTime(double craftingTime) {
         this.craftingTime = craftingTime;
+    }
+
+    @Override
+    void deserialize(Map<String, Object> map, int id) {
+        super.deserialize(map, id);
+        MemorySection itemReqSection = (MemorySection) map.get(Key.ITEM_REQUIREMENTS.toString());
+
+        if (itemReqSection != null)
+            setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
+
+        MemorySection invReqSection = (MemorySection) map.get(Key.ITEM_REQUIREMENTS.toString());
+        if (invReqSection != null)
+            setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+
+        setResult(ItemStack.deserialize(((MemorySection) map.get(Key.RESULT.toString())).getValues(true)));
+        setCraftingTime((double) map.get(Key.CRAFTING_TIME.toString()));
     }
 }

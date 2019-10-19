@@ -235,17 +235,13 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
             case PLAYER_ONLY:
                 return sender instanceof Player;
             case BUILDER:
-                if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
-                    return false;
-                }
-                PermissionUser permUser = PermissionsEx.getUser((Player) sender);
-                return permUser.inGroup("Builder");
             case ADMIN:
                 if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
                     return false;
                 }
-                permUser = PermissionsEx.getUser((Player) sender);
-                return permUser.inGroup("Admin");
+                PermissionUser permUser = PermissionsEx.getUser((Player) sender);
+                final String s = perm.toString();
+                return permUser.inGroup(s.charAt(0) + s.toLowerCase().substring(1));
             case OP:
                 return sender.isOp();
         }

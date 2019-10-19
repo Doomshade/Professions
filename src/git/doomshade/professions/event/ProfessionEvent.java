@@ -27,7 +27,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         this.t = t;
         this.user = user;
         this.exp = t.getExp();
-        this.errorMessage = Professions.getItemTypeHolder(t.getHolder()).getErrorMessage();
+        this.errorMessage = Professions.getItemTypeHolder(t.getClass()).getErrorMessage();
     }
 
     public static HandlerList getHandlerList() {

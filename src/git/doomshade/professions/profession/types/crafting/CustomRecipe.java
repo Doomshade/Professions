@@ -15,16 +15,12 @@ import java.util.Map.Entry;
 public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     private static final String RESULT = "result", SHAPE = "shape", INGREDIENTS = "ingredients";
 
-    protected CustomRecipe(CraftShapedRecipe item, int exp) {
-        super(item, exp);
-    }
-
-    protected CustomRecipe() {
+    public CustomRecipe() {
         super();
     }
 
-    protected CustomRecipe(Map<String, Object> map, int id) {
-        super(map, id);
+    public CustomRecipe(CraftShapedRecipe object, int exp) {
+        super(object, exp);
     }
 
     @Override
@@ -112,11 +108,6 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         // must register the recipe
         Bukkit.addRecipe(recipe);
         return CraftShapedRecipe.fromBukkitRecipe(recipe);
-    }
-
-    @Override
-    public Class<? extends ItemTypeHolder<?>> getHolder() {
-        return CustomRecipeHolder.class;
     }
 
     @Override

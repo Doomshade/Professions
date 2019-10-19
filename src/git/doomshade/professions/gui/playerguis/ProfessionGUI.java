@@ -49,10 +49,9 @@ public class ProfessionGUI extends GUI {
         int pos = 0;
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
-        for (Entry<Class<? extends ItemTypeHolder<?>>, List<ItemType<?>>> entry : prof.getItems().entrySet()) {
-            for (ItemType<?> item : entry.getValue()) {
+        for (ItemTypeHolder<?> entry : prof.getItems()) {
+            for (ItemType<?> item : entry) {
                 ItemStack icon = item.getIcon(upd);
-                Bukkit.getConsoleSender().sendMessage(icon.toString());
                 GUIItem guiItem = new GUIItem(icon.getType(), pos);
                 boolean hasRecipe = upd.hasExtra(icon.getItemMeta().getDisplayName());
                 boolean meetsLevel = item.meetsLevelReq(upd.getLevel() + levelThreshold);
@@ -87,8 +86,8 @@ public class ProfessionGUI extends GUI {
                 || !(prof.getType() instanceof ICrafting || prof instanceof ICrafting)) {
             return;
         }
-        for (Entry<Class<? extends ItemTypeHolder<?>>, List<ItemType<?>>> entry : prof.getItems().entrySet()) {
-            for (ItemType<?> item : entry.getValue()) {
+        for (ItemTypeHolder<?> entry : prof.getItems()) {
+            for (ItemType<?> item : entry) {
                 if (!(item instanceof CraftableItemType)) {
                     continue;
                 }
@@ -114,15 +113,10 @@ public class ProfessionGUI extends GUI {
                 pe.addExtra(new PreEnchantedItem(eit.getObject(), currentItem));
                 pe.addExtra(ProfessionEventType.CRAFT);
 
-                craftingItem.setEvent(GUIEventType.CRAFTING_END_EVENT, new CraftingEvent() {
-
-                    @Override
-                    public void onEvent(Progress arg0) {
-                        craftable.removeCraftingRequirements(getHolder());
-                        getHolder().getInventory().addItem(craftable.getResult());
-                        em.callEvent(pe);
-                    }
-
+                craftingItem.setEvent(GUIEventType.CRAFTING_END_EVENT, arg0 -> {
+                    craftable.removeCraftingRequirements(getHolder());
+                    getHolder().getInventory().addItem(craftable.getResult());
+                    em.callEvent(pe);
                 });
                 craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
                         craftable.getCraftingTime(), this, INTERVAL));

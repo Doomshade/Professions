@@ -12,16 +12,12 @@ public class Prey extends ItemType<Mob> {
     private static final String ENTITY = "entity";
     public static final String CONFIG_NAME = "config-name";
 
-    protected Prey(Mob item, int exp) {
-        super(item, exp);
-    }
-
-    protected Prey() {
+    public Prey() {
         super();
     }
 
-    protected Prey(Map<String, Object> map, int id) {
-        super(map, id);
+    public Prey(Mob object, int exp) {
+        super(object, exp);
     }
 
     @Override
@@ -45,13 +41,7 @@ public class Prey extends ItemType<Mob> {
     }
 
     @Override
-    public Class<? extends ItemTypeHolder<?>> getHolder() {
-        return PreyHolder.class;
-    }
-
-    @Override
     public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        // TODO Auto-generated method stub
         return IHunting.class;
     }
 

@@ -3,22 +3,19 @@ package git.doomshade.professions.profession.types.gathering;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
 public class GatherItem extends ItemType<ItemStack> {
 
-    protected GatherItem(ItemStack item, int exp) {
-        super(item, exp);
-    }
-
-    protected GatherItem() {
+    public GatherItem() {
         super();
     }
 
-    protected GatherItem(Map<String, Object> map, int id) {
-        super(map, id);
+    public GatherItem(ItemStack object, int exp) {
+        super(object, exp);
     }
 
     @Override
@@ -34,11 +31,6 @@ public class GatherItem extends ItemType<ItemStack> {
     @Override
     protected ItemStack deserializeObject(Map<String, Object> map) {
         return null;
-    }
-
-    @Override
-    public Class<? extends ItemTypeHolder<?>> getHolder() {
-        return GatherItemHolder.class;
     }
 
     @Override

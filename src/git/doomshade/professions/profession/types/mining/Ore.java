@@ -11,16 +11,12 @@ import java.util.Map;
 public class Ore extends ItemType<Material> {
     private static final String KEY_MATERIAL = "material";
 
-    protected Ore(Material item, int exp) {
-        super(item, exp);
-    }
-
-    protected Ore() {
+    public Ore() {
         super();
     }
 
-    protected Ore(Map<String, Object> map, int id) {
-        super(map, id);
+    public Ore(Material object, int exp) {
+        super(object, exp);
     }
 
     @Override
@@ -33,11 +29,6 @@ public class Ore extends ItemType<Material> {
     @Override
     protected Material deserializeObject(Map<String, Object> map) {
         return Material.getMaterial((String) map.get(KEY_MATERIAL));
-    }
-
-    @Override
-    public Class<? extends ItemTypeHolder<?>> getHolder() {
-        return OreHolder.class;
     }
 
     @Override

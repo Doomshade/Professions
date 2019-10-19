@@ -35,23 +35,17 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
     private int exp, levelReq;
     private T item;
     private File itemFile;
-    private String name;
+    private String name = "";
     private List<String> description, restrictedWorlds;
     private Material guiMaterial = Material.CHEST;
     private int itemTypeId;
     private boolean hiddenWhenUnavailable;
 
-    /**
-     * Override this constructor and call super(item, exp) Use this constructor to
-     * register objects via registerObject() method.
-     *
-     * @param item
-     * @param exp
-     * @see #registerObject(ItemType)
-     */
-    protected ItemType(T item, int exp) {
-        this.item = item;
-        this.exp = exp;
+    public ItemType(){
+        this(null, 100);
+    }
+
+    public ItemType(T object, int exp){
         this.itemFile = getFile(getClass());
         if (!itemFile.exists()) {
             try {
@@ -61,53 +55,43 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
             }
         }
         this.setLevelReq(1);
-        this.name = item.toString();
+        this.setExp(exp);
+        this.setObject(object);
         this.description = new ArrayList<>(Settings.getInstance().getItemSettings().getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
         this.setHiddenWhenUnavailable(false);
     }
 
-    /**
-     * Override this constructor and call super()
-     */
-    protected ItemType() {
-    }
-
-    /**
-     * Override this constructor and call super(map)
-     *
-     * @param map
-     */
-
-    protected ItemType(Map<String, Object> map, int id) {
+    void deserialize(Map<String, Object> map, int id) {
         MemorySection mem = (MemorySection) map.get(Key.OBJECT.toString());
         if (mem != null) {
-            this.item = deserializeObject(mem.getValues(true));
+            setObject(deserializeObject(mem.getValues(true)));
         }
-        this.setId(id);
-        this.setExp((int) map.get(Key.EXP.toString()));
-        this.setLevelReq((int) map.get(Key.LEVEL_REQ.toString()));
-        this.setName((String) map.get(Key.NAME.toString()));
+        setId(id);
+        setExp((int) map.get(Key.EXP.toString()));
+        setLevelReq((int) map.get(Key.LEVEL_REQ.toString()));
+        setName((String) map.get(Key.NAME.toString()));
         if (!getName().isEmpty()) {
-            this.setName(ChatColor.translateAlternateColorCodes('&', getName()));
+            setName(ChatColor.translateAlternateColorCodes('&', getName()));
         }
-        this.setDescription(ItemUtils.getItemTypeLore(this));
-        this.setGuiMaterial(Material.getMaterial((String) map.get(Key.MATERIAL.toString())));
-        this.setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
+        setDescription(ItemUtils.getItemTypeLore(this));
+        setGuiMaterial(Material.getMaterial((String) map.get(Key.MATERIAL.toString())));
+        setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
     }
 
     @Nullable
     public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) {
         Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
         try {
-            Constructor<A> c = clazz.getDeclaredConstructor(Map.class, int.class);
+            Constructor<A> c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
-            A instance = c.newInstance(map, id);
+            A instance = c.newInstance();
+            instance.deserialize(map, id);
             return instance;
         } catch (Exception e) {
             e.printStackTrace();
             Professions.getInstance().sendConsoleMessage("Could not deserialize " + clazz.getSimpleName()
-                    + " from file as it does not override an ItemType(Map<String, Object>) constructor!");
+                    + " from file as it does not override an ItemType() constructor!");
         }
         return null;
     }
@@ -120,15 +104,13 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
 
     protected abstract T deserializeObject(Map<String, Object> map);
 
-    public abstract Class<? extends ItemTypeHolder<?>> getHolder();
-
     public abstract Class<? extends IProfessionType> getDeclaredProfessionType();
 
     public final List<String> getDescription() {
         return description;
     }
 
-    public final void setDescription(List<String> description) {
+    public void setDescription(List<String> description) {
         this.description = description;
     }
 
@@ -136,7 +118,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return name;
     }
 
-    public final void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -160,7 +142,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return itemTypeId;
     }
 
-    private void setId(int id) {
+    final void setId(int id) {
         this.itemTypeId = id;
     }
 
@@ -182,11 +164,18 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return item;
     }
 
+    public final void setObject(T item) {
+        this.item = item;
+        if (name.isEmpty() && item != null){
+            this.name = item.toString();
+        }
+    }
+
     public final int getExp() {
         return exp;
     }
 
-    public void setExp(int exp) {
+    public final void setExp(int exp) {
         this.exp = exp;
     }
 
@@ -237,8 +226,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
     }
 
     @Override
-    public final int compareTo(ItemType<T> o) {
-        // TODO Auto-generated method stub
+    public int compareTo(ItemType<T> o) {
         return getLevelReq() > o.getLevelReq() ? 1 : getLevelReq() < o.getLevelReq() ? -1 : 0;
     }
 
@@ -246,7 +234,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return hiddenWhenUnavailable;
     }
 
-    public void setHiddenWhenUnavailable(boolean hiddenWhenUnavailable) {
+    public final void setHiddenWhenUnavailable(boolean hiddenWhenUnavailable) {
         this.hiddenWhenUnavailable = hiddenWhenUnavailable;
     }
 

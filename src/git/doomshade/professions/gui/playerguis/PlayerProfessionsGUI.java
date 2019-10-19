@@ -43,7 +43,6 @@ public class PlayerProfessionsGUI extends GUI {
 
     @Override
     public void onGuiClick(GUIClickEvent e) {
-        // TODO Auto-generated method stub
         InventoryClickEvent event = e.getEvent();
         event.setCancelled(true);
         ItemStack currentItem = event.getCurrentItem();

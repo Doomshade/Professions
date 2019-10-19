@@ -87,7 +87,7 @@ public class ItemUtils {
         return ((MemorySection) itemsSection.get(itemId)).getValues(true);
     }
 
-    public static <A extends ItemType<?>> File getFile(Class<A> clazz) {
+    public static <A extends ItemType<?>> File getFile(Class<?> clazz) {
         return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase() + ".yml");
     }
 
