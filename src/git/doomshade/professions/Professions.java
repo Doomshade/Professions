@@ -206,8 +206,6 @@ public class Professions extends JavaPlugin implements Setup {
         pm.registerEvents(new UserListener(), this);
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
-
-
     }
 
     private void scheduleTasks() {
