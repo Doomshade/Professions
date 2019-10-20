@@ -44,11 +44,11 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public final class ProfessionManager implements Setup, Backup {
-    private static ProfessionManager instance;
+    private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
     final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
     final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
-    final HashMap<ItemTypeHolder<?>, ItemType<?>> ITEMS = new HashMap<>();
+    final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
     Map<String, Profession<? extends IProfessionType>> PROFESSIONS_ID = new HashMap<>();
@@ -59,19 +59,16 @@ public final class ProfessionManager implements Setup, Backup {
     }
 
     public static ProfessionManager getInstance() {
-        if (instance == null) {
-            instance = new ProfessionManager();
-        }
         return instance;
     }
 
-    public ImmutableMap<ItemTypeHolder<?>, ItemType<?>> getItemTypeHolders() {
-        return ImmutableMap.copyOf(ITEMS);
+    public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
+        return ImmutableSet.copyOf(ITEMS.keySet());
     }
 
     public <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
-        for (Entry<ItemTypeHolder<?>, ItemType<?>> entry : ITEMS.entrySet()) {
-            if (entry.getValue().getClass().equals(clazz)) {
+        for (Entry<ItemTypeHolder<?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
+            if (entry.getValue().equals(clazz)) {
                 return (ItemTypeHolder<A>) entry.getKey();
             }
         }
@@ -202,7 +199,7 @@ public final class ProfessionManager implements Setup, Backup {
 
     public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem());
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem().getClass());
     }
 
 

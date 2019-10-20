@@ -25,12 +25,12 @@ public class GatherItem extends ItemType<ItemStack> {
 
     @Override
     protected Map<String, Object> getSerializedObject(ItemStack object) {
-        return null;
+        return object.serialize();
     }
 
     @Override
     protected ItemStack deserializeObject(Map<String, Object> map) {
-        return null;
+        return ItemStack.deserialize(map);
     }
 
     @Override
