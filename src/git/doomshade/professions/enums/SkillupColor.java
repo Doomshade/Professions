@@ -21,23 +21,13 @@ public enum SkillupColor {
 
     public static SkillupColor getSkillupColor(int itemTypeLvl, int userProfessionLvl) {
         int difference = userProfessionLvl - itemTypeLvl;
-
-        //
-        // DEBUG
-        System.out.println("Difference: " + difference);
         int curr = 0;
         SkillupColor color = SkillupColor.RED;
         int pos = 0;
         for (int i = difference; i >= 0 && pos != values().length; ) {
             color = SkillupColor.values()[pos++];
             curr += color.changeAfter;
-            //
-            // DEBUG
-            System.out.println("color change after: " + curr);
             i -= curr;
-            //
-            // DEBUG
-            System.out.println("Current difference: " + i);
         }
         return color;
     }

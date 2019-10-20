@@ -60,9 +60,19 @@ public class Messages implements Setup {
     }
 
     public enum Message {
-        EXP_GAIN("exp-gain"), EXP_LOSE("exp-lose"), LEVEL_UP("level-up"), PROFESSION_DOESNT_EXIST(
-                "profession-doesnt-exist"), SUCCESSFULLY_PROFESSED("successfully-professed"), ALREADY_PROFESSED(
-                "already-professed"), ALREADY_PROFESSED_TYPE("already-professed-profession-type"), MAX_LEVEL_REACHED("max-level-reached"), SUCCESSFULLY_UNPROFESSED("successfully-unprofessed");
+        EXP_GAIN("exp-gain"),
+        EXP_LOSE("exp-lose"),
+        LEVEL_UP("level-up"),
+        PROFESSION_DOESNT_EXIST("profession-doesnt-exist"),
+        SUCCESSFULLY_PROFESSED("successfully-professed"),
+        ALREADY_PROFESSED("already-professed"),
+        ALREADY_PROFESSED_TYPE("already-professed-profession-type"),
+        MAX_LEVEL_REACHED("max-level-reached"),
+        SUCCESSFULLY_UNPROFESSED("successfully-unprofessed"),
+        REQUIREMENTS_NOT_MET("requirements-not-met"),
+        INVALID_REPEAT_AMOUNT("invalid-repeat-amount-input"),
+        REPEAT_AMOUNT("repeat-amount-input");
+
         private final String fileId;
 
         Message(String fileId) {

@@ -148,5 +148,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
 
         setResult(ItemStack.deserialize(((MemorySection) map.get(Key.RESULT.toString())).getValues(true)));
         setCraftingTime((double) map.get(Key.CRAFTING_TIME.toString()));
+        System.out.println("Craftable item: " + true);
     }
 }

@@ -66,7 +66,7 @@ public class ItemUtils {
                 if (s.isEmpty()) {
                     continue;
                 }
-                desc.set(i, ChatColor.translateAlternateColorCodes('&', (s = s.replaceAll(regex, replacement))));
+                desc.set(i, ChatColor.translateAlternateColorCodes('&', (s.replaceAll(regex, replacement))));
             }
         }
         return desc;

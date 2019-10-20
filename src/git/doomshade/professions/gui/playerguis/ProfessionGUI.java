@@ -1,38 +1,28 @@
 package git.doomshade.professions.gui.playerguis;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.guiapi.CraftingItem.GUIEventType;
-import git.doomshade.guiapi.CraftingItem.Progress;
 import git.doomshade.guiapi.GUIInventory.Builder;
-import git.doomshade.guiapi.event.CraftingEvent;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.event.EventManager;
-import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.profession.professions.EnchantingProfession.ProfessionEventType;
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.enums.Messages;
+import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
-import git.doomshade.professions.profession.types.enchanting.EnchantManager;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
-import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
-import git.doomshade.professions.profession.types.enchanting.enchants.RandomAttributeEnchant;
+import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.List;
-import java.util.Map.Entry;
+import java.util.UUID;
 
 public class ProfessionGUI extends GUI {
     static final String POSITION_GUI = "position";
-    private static final int INTERVAL = 1;
     private final int levelThreshold;
     private Profession<?> prof;
 
@@ -86,46 +76,44 @@ public class ProfessionGUI extends GUI {
                 || !(prof.getType() instanceof ICrafting || prof instanceof ICrafting)) {
             return;
         }
-        for (ItemTypeHolder<?> entry : prof.getItems()) {
-            for (ItemType<?> item : entry) {
-                if (!(item instanceof CraftableItemType)) {
-                    continue;
-                }
-                CraftableItemType<?> craftable = (CraftableItemType<?>) item;
-                if (!craftable.getIcon(upd).isSimilar(currentItem)) {
-                    continue;
-                }
-                if (!craftable.meetsCraftingRequirements(getHolder())) {
-                    getHolder().sendMessage("Nemáš requirementy boi");
-                    return;
-                }
-                EventManager em = EventManager.getInstance();
-                EnchantedItemType eit = em.getItemType(
-                        EnchantManager.getInstance().getEnchant(RandomAttributeEnchant.class), EnchantedItemType.class);
-                ProfessionEvent<EnchantedItemType> pe = em.getEvent(eit, user);
-                if (!craftable.meetsLevelReq(user.getProfessionData(prof).getLevel())) {
-                    pe.printErrorMessage(upd);
-                    return;
-                }
+        final CraftingTask task = new CraftingTask(upd, currentItem, slot, this);
+        final Professions plugin = Professions.getInstance();
+        switch (event.getClick()) {
+            case LEFT:
+                task.setRepeat(false);
+                task.runTask(plugin);
+                break;
+            case SHIFT_LEFT:
+                task.setRepeat(true);
+                task.runTask(plugin);
+                break;
+            case RIGHT:
+                final Player player = user.getPlayer();
+                player.closeInventory();
+                final UUID uniqueId = player.getUniqueId();
+                PluginProfessionListener.PENDING_REPEAT_AMOUNT.put(uniqueId, task);
+                user.sendMessage(Messages.getInstance().MessageBuilder().setMessage(Messages.Message.REPEAT_AMOUNT).setPlayer(user).setProfession(upd.getProfession()).build());
 
-                CraftingItem craftingItem = new CraftingItem(currentItem, slot);
+                // cancel the task after one minute
+                new BukkitRunnable() {
 
-                pe.addExtra(new PreEnchantedItem(eit.getObject(), currentItem));
-                pe.addExtra(ProfessionEventType.CRAFT);
-
-                craftingItem.setEvent(GUIEventType.CRAFTING_END_EVENT, arg0 -> {
-                    craftable.removeCraftingRequirements(getHolder());
-                    getHolder().getInventory().addItem(craftable.getResult());
-                    em.callEvent(pe);
-                });
-                craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
-                        craftable.getCraftingTime(), this, INTERVAL));
-
-                return;
-
-            }
+                    @Override
+                    public void run() {
+                        PluginProfessionListener.PENDING_REPEAT_AMOUNT.remove(uniqueId);
+                    }
+                }.runTaskLater(plugin, 60 * 20L);
+                break;
+            case SHIFT_RIGHT:
+                task.setRepeat(true);
+                task.setRepeatAmount(64);
+                task.runTask(plugin);
+                break;
+            default:
+                break;
         }
 
+
     }
+
 
 }
