@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Backup;
 import git.doomshade.professions.utils.ItemUtils;
@@ -86,6 +87,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
             Constructor<A> c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
             A instance = c.newInstance();
+
+
             instance.deserialize(map, id);
             return instance;
         } catch (Exception e) {
@@ -144,6 +147,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
 
     final void setId(int id) {
         this.itemTypeId = id;
+    }
+
+    public SkillupColor getSkillupColor(UserProfessionData upd) {
+        return upd.getSkillupColor(this);
     }
 
     public ItemStack getIcon(UserProfessionData upd) {

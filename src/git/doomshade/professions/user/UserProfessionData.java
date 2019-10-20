@@ -5,6 +5,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Message;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
+import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
@@ -186,6 +187,10 @@ public class UserProfessionData {
             default:
                 throw new IllegalArgumentException(key.toString() + " is not a number key value!");
         }
+    }
+
+    public SkillupColor getSkillupColor(ItemType<?> itemType) {
+        return SkillupColor.getSkillupColor(itemType.getLevelReq(), getLevel());
     }
 
     public void addExtra(String extra) {

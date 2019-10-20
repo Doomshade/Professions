@@ -15,15 +15,20 @@ import java.util.Iterator;
 import java.util.List;
 
 public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
-    private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by";
-    private final List<SortType> sortTypes = new ArrayList<>();
-
+    private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
     // must be list for ordering in file
     private List<Type> objects = new ArrayList<>();
+
+    private final List<SortType> sortTypes = new ArrayList<>();
     private List<String> errorMessage = new ArrayList<>();
+    private List<String> newItemsMessage = new ArrayList<>();
 
     public List<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public List<String> getNewItemsMessage() {
+        return newItemsMessage;
     }
 
     private Type object;
@@ -55,6 +60,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         loader.addDefault(ERROR_MESSAGE, errorMessage);
         loader.addDefault(SORTED_BY, Settings.getInstance().getProfessionSettings().getSortedBy());
+        loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
         ConfigurationSection itemsSection;
         if (loader.isConfigurationSection(ItemType.KEY)) {
             itemsSection = loader.getConfigurationSection(ItemType.KEY);
@@ -114,6 +120,8 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
                 this.sortTypes.add(sortType);
             }
         }
+
+        this.newItemsMessage = ItemUtils.getDescription(object, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
         Iterator<String> it = itemsSection.getKeys(false).iterator();

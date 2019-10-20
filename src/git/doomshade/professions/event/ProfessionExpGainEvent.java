@@ -1,5 +1,6 @@
 package git.doomshade.professions.event;
 
+import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.Cancellable;
@@ -14,9 +15,7 @@ public class ProfessionExpGainEvent extends AbstractProfessionEvent implements C
         super(data);
     }
 
-    public ProfessionExpGainEvent(UserProfessionData data, ItemType<?> source,
-                                  double exp) {
-        // TODO Auto-generated constructor stub
+    public ProfessionExpGainEvent(UserProfessionData data, ItemType<?> source, double exp) {
         this(data);
         this.source = source;
         this.exp = exp;
@@ -38,9 +37,12 @@ public class ProfessionExpGainEvent extends AbstractProfessionEvent implements C
         return source;
     }
 
+    public SkillupColor getSkillupColor() {
+        return getUserProfessionData().getSkillupColor(getSource());
+    }
+
     @Override
     public HandlerList getHandlers() {
-        // TODO Auto-generated method stub
         return handlerList;
     }
 

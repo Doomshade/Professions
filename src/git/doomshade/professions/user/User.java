@@ -58,10 +58,6 @@ public class User implements Backup {
         usedProfessionTypes = new HashMap<>();
     }
 
-    private User(UUID uuid) {
-        this(Bukkit.getPlayer(uuid));
-    }
-
     public static void removeUser(Player user) {
         getUser(user).unload();
     }
@@ -116,10 +112,6 @@ public class User implements Backup {
         }
     }
 
-    FileConfiguration getLoader() {
-        return loader;
-    }
-
     ConfigurationSection getProfessionsSection() {
         return profSection;
     }
@@ -129,10 +121,6 @@ public class User implements Backup {
             return null;
         }
         return profSection.getConfigurationSection(prof.getID());
-    }
-
-    File getPlayerFile() {
-        return file;
     }
 
     private void loadProfessions() {
