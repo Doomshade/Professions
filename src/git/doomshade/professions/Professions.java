@@ -38,10 +38,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class Professions extends JavaPlugin implements Setup {
     private static Professions instance;
@@ -365,8 +363,10 @@ public class Professions extends JavaPlugin implements Setup {
         registerBackup(User.getNoUser());
     }
 
-    public void backup() {
-        new BackupTask().run();
+    public BackupTask.Result backup() {
+        BackupTask task = new BackupTask();
+        task.run();
+        return task.getResult();
     }
 
     private void registerBackup(Backup backup) {
