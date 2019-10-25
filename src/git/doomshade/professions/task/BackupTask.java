@@ -17,11 +17,38 @@ import java.util.zip.ZipOutputStream;
 public class BackupTask extends BukkitRunnable {
 
     private Map<File, List<File>> fileList;
+    private Result result = Result.FAILURE;
 
     @Override
     public void run() {
         fileList = new HashMap<>(getAllFiles(Professions.getInstance().getDataFolder()));
-        writeZipFile(new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+        try {
+            writeZipFile(new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+            result = Result.SUCCESS;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Result getResult() {
+        return result;
+    }
+
+    private void writeZipFile(File outputFile) throws IOException {
+
+        if (!outputFile.exists()) {
+            outputFile.createNewFile();
+        }
+        FileOutputStream fos = new FileOutputStream(outputFile);
+        ZipOutputStream zos = new ZipOutputStream(fos);
+
+        for (Map.Entry<File, List<File>> file : fileList.entrySet()) {
+            for (File filee : file.getValue())
+                addToZip(file.getKey(), filee, zos);
+        }
+
+        zos.close();
+        fos.close();
     }
 
     private Map<File, List<File>> getAllFiles(File dir) {
@@ -48,31 +75,13 @@ public class BackupTask extends BukkitRunnable {
         return currentFiles;
     }
 
-    private void writeZipFile(File outputFile) {
-
-        try {
-            if (!outputFile.exists()) {
-                outputFile.createNewFile();
-            }
-            FileOutputStream fos = new FileOutputStream(outputFile);
-            ZipOutputStream zos = new ZipOutputStream(fos);
-
-            for (Map.Entry<File, List<File>> file : fileList.entrySet()) {
-                for (File filee : file.getValue())
-                    addToZip(file.getKey(), filee, zos);
-            }
-
-            zos.close();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public enum Result {
+        SUCCESS, FAILURE
     }
 
     private void addToZip(File dir, File file, ZipOutputStream zos) throws
             IOException {
         FileInputStream fis = new FileInputStream(file);
-
 
         ZipEntry zipEntry = new ZipEntry(dir + "/" + file.getName());
         zos.putNextEntry(zipEntry);
