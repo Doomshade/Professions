@@ -50,7 +50,7 @@ public class PluginProfessionListener implements Listener {
                 task.setRepeatAmount(amount);
                 task.setRepeat(true);
                 Professions.getManager().openGui(task.getGui());
-                task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItem());
+                task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
                 task.runTask(Professions.getInstance());
             } catch (NumberFormatException e1) {
                 player.sendMessage(Messages.getInstance().MessageBuilder().setMessage(Messages.Message.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());

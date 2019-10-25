@@ -147,7 +147,16 @@ public abstract class CraftableItemType<T> extends ItemType<T> {
             setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
 
         setResult(ItemStack.deserialize(((MemorySection) map.get(Key.RESULT.toString())).getValues(true)));
-        setCraftingTime((double) map.get(Key.CRAFTING_TIME.toString()));
-        System.out.println("Craftable item: " + true);
+        setCraftingTime((double) map.getOrDefault(Key.CRAFTING_TIME.toString(), 5d));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb  = new StringBuilder(super.toString());
+        sb.append("\ncrafting time: " + craftingTime);
+        sb.append("\ncrafting result: " + result);
+        sb.append("\ncrafting reqs: " + craftingRequirements);
+        sb.append("\ninv reqs: " + inventoryRequirements);
+        return sb.toString();
     }
 }

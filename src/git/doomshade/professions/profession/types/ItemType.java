@@ -87,8 +87,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
             Constructor<A> c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
             A instance = c.newInstance();
-
-
             instance.deserialize(map, id);
             return instance;
         } catch (Exception e) {
