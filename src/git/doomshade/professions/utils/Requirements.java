@@ -16,6 +16,10 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         this.items = items;
     }
 
+    public Requirements(){
+        this(new ArrayList<>());
+    }
+
     public static Requirements deserialize(Map<String, Object> map) {
         List<ItemStack> items = new ArrayList<>();
         Iterator<Object> iterator = map.values().iterator();
@@ -43,7 +47,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         items.add(requirement);
     }
 
-    public boolean meetsCraftingRequirements(Player player) {
+    public boolean meetsRequirements(Player player) {
         HashSet<ItemStack> itemz = getMetRequirements(player);
         if (itemz.size() > items.size()) {
             throw new IllegalStateException("This should not happen???");
@@ -74,7 +78,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
 
     public void removeRequiredItems(Player player) {
         PlayerInventory inv = player.getInventory();
-        items.forEach(x -> inv.removeItem(x));
+        items.forEach(inv::removeItem);
     }
 
     @Override

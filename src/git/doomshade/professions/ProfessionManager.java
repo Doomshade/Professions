@@ -117,6 +117,7 @@ public final class ProfessionManager implements Setup, Backup {
             public Ore getObject() {
                 Ore ore = new Ore(Material.OBSIDIAN, 100);
                 ore.setName(ChatColor.GRAY + "Obsidian");
+                //registerObject(ore);
                 return ore;
             }
         });
@@ -125,6 +126,7 @@ public final class ProfessionManager implements Setup, Backup {
             public Prey getObject() {
                 Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
                 prey.setName(ChatColor.YELLOW + "Kostlivec");
+                //registerObject(prey);
                 return prey;
             }
         });
@@ -139,6 +141,7 @@ public final class ProfessionManager implements Setup, Backup {
                 item.setItemMeta(meta);
                 GatherItem gatherItem = new GatherItem(item, 500);
                 gatherItem.setName(ChatColor.DARK_AQUA + "Test gather item");
+                //registerObject(gatherItem);
                 return gatherItem;
             }
         });
@@ -160,6 +163,7 @@ public final class ProfessionManager implements Setup, Backup {
                 craftRequirement.setItemMeta(craftRequirementMeta);
                 eit.addCraftingRequirement(craftRequirement);
                 eit.setName(ChatColor.RED + "Test random attribute enchantment");
+                //registerObject(eit);
                 return eit;
             }
         });
@@ -303,6 +307,7 @@ public final class ProfessionManager implements Setup, Backup {
                 .deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
         prof.setName(fileProf.getName());
         prof.setProfessionType(fileProf.getProfessionType());
+        prof.setIcon(fileProf.getIcon());
         prof.onPostLoad();
     }
 

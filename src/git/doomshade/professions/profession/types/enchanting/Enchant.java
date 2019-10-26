@@ -212,5 +212,7 @@ public abstract class Enchant implements ConfigurationSerializable {
         use(item, DEFAULT_INTENSITY);
     }
 
+
+
     protected abstract void init();
 }

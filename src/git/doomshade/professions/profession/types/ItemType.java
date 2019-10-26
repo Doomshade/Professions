@@ -63,21 +63,28 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         this.setHiddenWhenUnavailable(false);
     }
 
-    void deserialize(Map<String, Object> map, int id) {
+    public void deserialize(Map<String, Object> map) {
         MemorySection mem = (MemorySection) map.get(Key.OBJECT.toString());
         if (mem != null) {
             setObject(deserializeObject(mem.getValues(true)));
         }
-        setId(id);
         setExp((int) map.get(Key.EXP.toString()));
         setLevelReq((int) map.get(Key.LEVEL_REQ.toString()));
         setName((String) map.get(Key.NAME.toString()));
+        setDescription(ItemUtils.getItemTypeLore(this));
         if (!getName().isEmpty()) {
             setName(ChatColor.translateAlternateColorCodes('&', getName()));
         }
-        setDescription(ItemUtils.getItemTypeLore(this));
         setGuiMaterial(Material.getMaterial((String) map.get(Key.MATERIAL.toString())));
         setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
+    }
+
+    public final int getId(){
+        return itemTypeId;
+    }
+
+    public final void setId(int id){
+        this.itemTypeId = id;
     }
 
     @Nullable
@@ -87,7 +94,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
             Constructor<A> c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
             A instance = c.newInstance();
-            instance.deserialize(map, id);
+            instance.setId(id);
+            instance.deserialize(map);
             return instance;
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,7 +119,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return description;
     }
 
-    public void setDescription(List<String> description) {
+    public final void setDescription(List<String> description) {
         this.description = description;
     }
 
@@ -119,7 +127,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         return name;
     }
 
-    public void setName(String name) {
+    public final void setName(String name) {
         this.name = name;
     }
 
@@ -139,15 +147,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
         this.restrictedWorlds = restrictedWorlds;
     }
 
-    public final int getId() {
-        return itemTypeId;
-    }
-
-    final void setId(int id) {
-        this.itemTypeId = id;
-    }
-
-    public SkillupColor getSkillupColor(UserProfessionData upd) {
+    public final SkillupColor getSkillupColor(UserProfessionData upd) {
         return upd.getSkillupColor(this);
     }
 
@@ -161,7 +161,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
     }
 
     @Override
-    public File[] getFiles() {
+    public final File[] getFiles() {
         return new File[]{itemFile};
     }
 
@@ -220,19 +220,24 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Backup, 
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(Key.OBJECT + ": " + getSerializedObject(item).toString() + "\n");
-        sb.append(Key.EXP + ": " + exp + "\n");
-        sb.append(Key.LEVEL_REQ + ": " + levelReq + "\n");
-        sb.append(Key.PROFTYPE + ": " + getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase() + "\n");
-        sb.append(Key.NAME + ": " + name + "\n");
-        sb.append(Key.DESCRIPTION + ": " + description);
+        StringBuilder sb = new StringBuilder()
+                .append(Key.OBJECT + ": " + getSerializedObject(item).toString())
+                .append("\n")
+                .append(Key.EXP + ": " + exp)
+                .append("\n")
+                .append(Key.LEVEL_REQ + ": " + levelReq)
+                .append("\n")
+                .append(Key.PROFTYPE + ": " + getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase())
+                .append("\n")
+                .append(Key.NAME + ": " + name)
+                .append("\n")
+                .append(Key.DESCRIPTION + ": " + description);
         return sb.toString();
     }
 
     @Override
     public int compareTo(ItemType<T> o) {
-        return getLevelReq() > o.getLevelReq() ? 1 : getLevelReq() < o.getLevelReq() ? -1 : 0;
+        return Integer.compare(getLevelReq(), o.getLevelReq());
     }
 
     public boolean isHiddenWhenUnavailable() {

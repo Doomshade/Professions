@@ -9,6 +9,7 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -25,10 +26,13 @@ public class MiningProfession extends Profession<IMining> {
         ItemStack item = new ItemStack(Material.DIAMOND_PICKAXE);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(getColoredName());
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         setIcon(item);
         addItems(Ore.class);
     }
+
+
 
     @Override
     public String getID() {

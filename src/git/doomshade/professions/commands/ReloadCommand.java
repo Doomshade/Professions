@@ -2,6 +2,7 @@ package git.doomshade.professions.commands;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.UnmodifiableIterator;
+import git.doomshade.guiapi.GUIApi;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.profession.types.ItemType;

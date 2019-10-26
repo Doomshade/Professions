@@ -192,8 +192,7 @@ public abstract class Profession<T extends IProfessionType>
      * @param item the event type
      * @return true if event has registered an object of item type
      */
-    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e,
-                                                                             Class<ItemTypeClass> item) {
+    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e, Class<ItemTypeClass> item) {
         ItemType<?> obj = e.getObject();
         for (ItemTypeHolder<?> ith : items) {
             for (ItemType<?> it : ith) {
@@ -217,8 +216,7 @@ public abstract class Profession<T extends IProfessionType>
      * @param e
      * @return
      */
-    protected final <ItemTypeClass extends ItemType<?>> boolean playerMeetsRequirements(
-            ProfessionEvent<ItemTypeClass> e) {
+    protected final <ItemTypeClass extends ItemType<?>> boolean playerMeetsRequirements(ProfessionEvent<ItemTypeClass> e) {
         if (!playerHasProfession(e)) {
             return false;
         }
@@ -229,7 +227,6 @@ public abstract class Profession<T extends IProfessionType>
 
     @Override
     public int compareTo(Profession<?> o) {
-        // TODO Auto-generated method stub
         int compare = getProfessionType().compareTo(o.getProfessionType());
         if (compare == 0) {
             return ChatColor.stripColor(getColoredName()).compareTo(ChatColor.stripColor(o.getColoredName()));

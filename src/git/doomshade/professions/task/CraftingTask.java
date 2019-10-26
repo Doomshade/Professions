@@ -8,7 +8,7 @@ import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.profession.types.Craftable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.enchanting.EnchantManager;
@@ -67,14 +67,23 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     @Override
     public void run() {
+        if (user.getPlayer().getInventory().firstEmpty() == -1) {
+            user.sendMessage(Messages.getInstance().MessageBuilder()
+                    .setMessage(Messages.Message.NO_INVENTORY_SPACE)
+                    .setPlayer(user).setProfession(upd.getProfession())
+                    .setProfessionType(upd.getProfession().getProfessionType())
+                    .build());
+            cancel();
+            return;
+        }
         EventManager em = EventManager.getInstance();
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
-                if (!(item instanceof CraftableItemType)) {
+                if (!(item instanceof Craftable)) {
                     continue;
                 }
-                CraftableItemType<?> craftable = (CraftableItemType<?>) item;
-                if (!craftable.getIcon(upd).isSimilar(currentItem)) {
+                Craftable craftable = (Craftable) item;
+                if (!item.getIcon(upd).isSimilar(currentItem)) {
                     continue;
                 }
                 if (!craftable.meetsCraftingRequirements(user.getPlayer())) {
@@ -85,7 +94,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
                 EnchantedItemType eit = em.getItemType(
                         EnchantManager.getInstance().getEnchant(RandomAttributeEnchant.class), EnchantedItemType.class);
                 ProfessionEvent<EnchantedItemType> pe = em.getEvent(eit, user);
-                if (!craftable.meetsLevelReq(user.getProfessionData(prof).getLevel())) {
+                if (!item.meetsLevelReq(user.getProfessionData(prof).getLevel())) {
                     pe.printErrorMessage(upd);
                     return;
                 }
