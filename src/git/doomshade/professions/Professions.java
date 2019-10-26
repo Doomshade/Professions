@@ -71,12 +71,13 @@ public class Professions extends JavaPlugin implements Setup {
      * @see #registerItemTypeHolder(ItemTypeHolder)
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public static <T extends ItemType<?>> ItemType<T> getItemType(Class<T> clazz, int id) {
-        for (ItemType<?> type : profMan.ITEMS.values()) {
+       /* for (ItemType<?> type : profMan.ITEMS.values()) {
             if (type.getClass().getSimpleName().equals(clazz.getSimpleName()) && type.getId() == id) {
                 return (ItemType<T>) type;
             }
-        }
+        }*/
         throw new RuntimeException(String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder()", clazz.getSimpleName()));
     }
 

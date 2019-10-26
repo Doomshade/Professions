@@ -1,9 +1,11 @@
 package git.doomshade.professions.profession.types;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -58,6 +60,14 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     public final void save() throws IOException {
         File itemFile = object.getFiles()[0];
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
+        try {
+            loader.load(itemFile);
+        } catch (InvalidConfigurationException e) {
+            Professions.getInstance().sendConsoleMessage("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)");
+            //e.printStackTrace();
+            return;
+        }
+
         loader.addDefault(ERROR_MESSAGE, errorMessage);
         loader.addDefault(SORTED_BY, Settings.getInstance().getProfessionSettings().getSortedBy());
         loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
@@ -67,10 +77,13 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         } else {
             itemsSection = loader.createSection(ItemType.KEY);
         }
-        for (int i = 0; i < objects.size(); i++) {
-            Type registeredObject = objects.get(i);
-            itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
-        }
+        itemsSection.addDefault(String.valueOf(0), object.serialize());
+
+        if (!objects.isEmpty())
+            for (int i = 0; i < objects.size(); i++) {
+                Type registeredObject = objects.get(i);
+                itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
+            }
         loader.options().copyDefaults(true);
         loader.save(itemFile);
     }
@@ -107,10 +120,18 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     }
 
     @SuppressWarnings("unchecked")
-    public void load() {
+    public void load() throws IOException {
         // TODO Auto-generated method stub
         File itemFile = object.getFiles()[0];
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
+        try {
+            loader.load(itemFile);
+        } catch (InvalidConfigurationException e) {
+            Professions.getInstance().sendConsoleMessage("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)");
+            //e.printStackTrace();
+            return;
+        }
+
         this.errorMessage = ItemUtils.getDescription(object, loader.getStringList(ERROR_MESSAGE), null);
 
         this.sortTypes.clear();
@@ -161,6 +182,8 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     public void update() throws IOException {
         save();
         load();
+
+
     }
 
     @Override

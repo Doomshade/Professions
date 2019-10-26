@@ -71,7 +71,8 @@ public class Messages implements Setup {
         SUCCESSFULLY_UNPROFESSED("successfully-unprofessed"),
         REQUIREMENTS_NOT_MET("requirements-not-met"),
         INVALID_REPEAT_AMOUNT("invalid-repeat-amount-input"),
-        REPEAT_AMOUNT("repeat-amount-input");
+        REPEAT_AMOUNT("repeat-amount-input"),
+        NO_INVENTORY_SPACE("no-inventory-space");
 
         private final String fileId;
 
