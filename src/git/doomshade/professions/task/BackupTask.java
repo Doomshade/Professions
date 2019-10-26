@@ -7,10 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -22,6 +19,7 @@ public class BackupTask extends BukkitRunnable {
     @Override
     public void run() {
         fileList = new HashMap<>(getAllFiles(Professions.getInstance().getDataFolder()));
+
         try {
             writeZipFile(new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
@@ -59,7 +57,7 @@ public class BackupTask extends BukkitRunnable {
         if (dir == null) {
             return currentFiles;
         }
-        for (File file : dir.listFiles()) {
+        for (File file : Objects.requireNonNull(dir.listFiles())) {
             if (file.getName().contains("backup")) {
                 continue;
             }
