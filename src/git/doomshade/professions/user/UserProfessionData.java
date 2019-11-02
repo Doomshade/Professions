@@ -1,6 +1,7 @@
 package git.doomshade.professions.user;
 
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Message;
@@ -12,6 +13,8 @@ import git.doomshade.professions.event.ProfessionLevelUpEvent;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemType.Key;
+import git.doomshade.professions.profession.types.Trainable;
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -159,6 +162,19 @@ public class UserProfessionData {
 
     private void printNewPossibleItemTypes() {
 
+    }
+
+    public boolean train(Trainable trainable) {
+        EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getCost());
+        if (!response.transactionSuccess()) {
+            return false;
+        }
+        addExtra(trainable.getTrainableId());
+        return true;
+    }
+
+    public boolean hasTrained(Trainable trainable) {
+        return hasExtra(trainable.getTrainableId());
     }
 
     private void loseExp(double exp) {

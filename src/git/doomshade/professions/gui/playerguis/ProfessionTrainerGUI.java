@@ -3,15 +3,14 @@ package git.doomshade.professions.gui.playerguis;
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.professions.Profession;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.Trainable;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -85,7 +84,7 @@ public class ProfessionTrainerGUI extends GUI {
                                 } else {
                                     lore = new ArrayList<>();
                                 }
-                                if (trainable.hasTrained(upd)) {
+                                if (upd.hasTrained(trainable)) {
                                     lore.addAll(settings.getTrainedLore(trainable));
                                 } else {
                                     lore.addAll(settings.getNotTrainedLore(trainable));
@@ -115,35 +114,43 @@ public class ProfessionTrainerGUI extends GUI {
         }
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
-        Economy econ = Professions.getEconomy();
 
         for (Trainable trainable : items) {
-            if (trainable.hasTrained(upd)) {
+            if (!(trainable instanceof ItemType)) {
+                throw new IllegalStateException();
+            }
+
+            if (upd.hasTrained(trainable)) {
                 continue;
             }
-            ItemStack icon = ((ItemType<?>) trainable).getIcon(upd);
-            if (areSimilar(icon, item)) {
-                if (!econ.has(getHolder(), trainable.getCost())) {
-                    user.sendMessage("Nem� cash");
-                    return;
-                }
-                trainable.train(upd);
-                String name;
-                ItemMeta meta;
-                if (!icon.hasItemMeta()) {
-                    name = icon.getType().toString();
-                } else {
-                    meta = icon.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        name = meta.getDisplayName();
-                    } else {
-                        name = icon.getType().toString();
-                    }
-                }
-                upd.getUser().sendMessage("Vytr�noval jsi " + name);
-                getManager().openGui(this);
+            ItemType<?> itemType = (ItemType<?>) trainable;
+            ItemStack icon = itemType.getIcon(upd);
+            if (!areSimilar(icon, item)) {
+                continue;
+            }
+            if (!upd.train(trainable)) {
+                user.sendMessage(Messages.getInstance().MessageBuilder()
+                        .setMessage(Messages.Message.NOT_ENOUGH_MONEY_TO_TRAIN)
+                        .setItemType(itemType)
+                        .setUserProfessionData(upd)
+                        .build());
                 return;
             }
+            String name;
+            if (!icon.hasItemMeta()) {
+                name = icon.getType().toString();
+            } else {
+                ItemMeta meta = icon.getItemMeta();
+                if (meta.hasDisplayName()) {
+                    name = meta.getDisplayName();
+                } else {
+                    name = icon.getType().toString();
+                }
+            }
+            upd.getUser().sendMessage("Vytrenoval jsi " + name);
+            getManager().openGui(this);
+            return;
+
         }
     }
 }

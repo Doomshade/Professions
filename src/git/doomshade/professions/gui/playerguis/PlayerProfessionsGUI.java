@@ -9,9 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.function.Supplier;
 
 public class PlayerProfessionsGUI extends GUI {
     static final String ID_PROFESSION = "name";
@@ -27,14 +24,7 @@ public class PlayerProfessionsGUI extends GUI {
         int i = -1;
         for (UserProfessionData upd : user.getProfessions()) {
             GUIItem item = new GUIItem(upd.getProfession().getIcon().getType(), ++i);
-            item.changeItem(this, new Supplier<ItemMeta>() {
-
-                @Override
-                public ItemMeta get() {
-                    // TODO Auto-generated method stub
-                    return upd.getProfession().getIcon().getItemMeta();
-                }
-            });
+            item.changeItem(this, () -> upd.getProfession().getIcon().getItemMeta());
             builder = builder.withItem(item);
         }
         setInventory(builder.build());
