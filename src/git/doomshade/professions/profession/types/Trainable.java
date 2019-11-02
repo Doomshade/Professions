@@ -1,10 +1,5 @@
 package git.doomshade.professions.profession.types;
 
-import git.doomshade.professions.Professions;
-import git.doomshade.professions.user.UserProfessionData;
-import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.configuration.MemorySection;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,9 +8,9 @@ public interface Trainable {
 
     String VAR_TRAINABLE_COST = "\\{trainable-cost\\}";
 
-    String getTrainableStringId();
+    String getTrainableId();
 
-    void setTrainableStringId(String id);
+    void setTrainableId(String id);
 
     boolean isTrainable();
 
@@ -25,26 +20,12 @@ public interface Trainable {
 
     void setCost(int cost);
 
-    default boolean hasTrained(UserProfessionData upd) {
-        return upd.hasExtra(getTrainableStringId());
-    }
-
-    default boolean train(UserProfessionData upd) {
-
-        EconomyResponse response = Professions.getEconomy().withdrawPlayer(upd.getUser().getPlayer(), getCost());
-        if (!response.transactionSuccess()) {
-            return false;
-        }
-        upd.addExtra(getTrainableStringId());
-        return true;
-    }
-
     default Map<String, Object> serializeTrainable() {
         return new HashMap<String, Object>() {
             {
                 put(TRAINABLE, isTrainable());
                 put(COST, getCost());
-                put(TRAINABLE_ID, getTrainableStringId());
+                put(TRAINABLE_ID, getTrainableId());
             }
         };
     }
@@ -52,6 +33,6 @@ public interface Trainable {
     default void deserializeTrainable(Map<String, Object> map) {
         setTrainable((boolean) map.get(TRAINABLE));
         setCost((int) map.get(COST));
-        setTrainableStringId((String) map.get(TRAINABLE_ID));
+        setTrainableId((String) map.get(TRAINABLE_ID));
     }
 }

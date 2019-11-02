@@ -82,25 +82,30 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
                 if (!(item instanceof Craftable)) {
                     continue;
                 }
-                Craftable craftable = (Craftable) item;
+                final Craftable craftable = (Craftable) item;
                 if (!item.getIcon(upd).isSimilar(currentItem)) {
                     continue;
                 }
                 if (!craftable.meetsCraftingRequirements(user.getPlayer())) {
-                    user.sendMessage(Messages.getInstance().MessageBuilder().setMessage(Messages.Message.REQUIREMENTS_NOT_MET).setPlayer(user).setProfession(prof).build());
+                    user.sendMessage(Messages.getInstance().MessageBuilder()
+                            .setMessage(Messages.Message.REQUIREMENTS_NOT_MET)
+                            .setPlayer(user)
+                            .setProfession(prof)
+                            .build());
                     return;
                 }
 
-                EnchantedItemType eit = em.getItemType(
+                final EnchantedItemType eit = em.getItemType(
                         EnchantManager.getInstance().getEnchant(RandomAttributeEnchant.class), EnchantedItemType.class);
-                ProfessionEvent<EnchantedItemType> pe = em.getEvent(eit, user);
+                final ProfessionEvent<EnchantedItemType> pe = em.getEvent(eit, user);
                 if (!item.meetsLevelReq(user.getProfessionData(prof).getLevel())) {
                     pe.printErrorMessage(upd);
                     return;
                 }
 
-                CraftingItem craftingItem = new CraftingItem(currentItem, slot);
+                final CraftingItem craftingItem = new CraftingItem(currentItem, slot);
 
+                assert eit != null;
                 pe.addExtra(new PreEnchantedItem(eit.getObject(), currentItem));
                 pe.addExtra(EnchantingProfession.ProfessionEventType.CRAFT);
 

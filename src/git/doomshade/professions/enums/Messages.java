@@ -4,7 +4,9 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Setup;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -72,7 +74,9 @@ public class Messages implements Setup {
         REQUIREMENTS_NOT_MET("requirements-not-met"),
         INVALID_REPEAT_AMOUNT("invalid-repeat-amount-input"),
         REPEAT_AMOUNT("repeat-amount-input"),
-        NO_INVENTORY_SPACE("no-inventory-space");
+        NO_INVENTORY_SPACE("no-inventory-space"),
+        SUCCESSFULLY_TRAINED("successfuly-trained"),
+        NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train");
 
         private final String fileId;
 
@@ -86,7 +90,7 @@ public class Messages implements Setup {
     }
 
     private enum Pattern {
-        P_PROFESSION("prof"), P_PLAYER("player"), P_EXP("exp"), P_LEVEL("level"), P_PROFESSION_TYPE("proftype"), P_PROFESSION_NO_COLOR("prof_no_color");
+        P_PROFESSION("prof"), P_PLAYER("player"), P_EXP("exp"), P_LEVEL("level"), P_PROFESSION_TYPE("proftype"), P_PROFESSION_NO_COLOR("prof_no_color"), P_ITEM("item");
 
         private final String pattern;
 
@@ -142,6 +146,16 @@ public class Messages implements Setup {
 
         public MessageBuilder setLevel(int level) {
             return replace(Pattern.P_LEVEL, String.valueOf(level));
+        }
+
+        public MessageBuilder setItemType(ItemType<?> itemType) {
+            return replace(Pattern.P_ITEM, itemType.getName());
+        }
+
+        public MessageBuilder setUserProfessionData(UserProfessionData upd) {
+            setProfession(upd.getProfession());
+            setPlayer(upd.getUser());
+            return this;
         }
 
         public String build() {

@@ -51,7 +51,7 @@ public class ProfessionGUI extends GUI {
                     guiItem.setHidden(false);
                 else
                     guiItem.setHidden(!meetsLevel);
-                guiItem.changeItem(this, () -> icon.getItemMeta());
+                guiItem.changeItem(this, icon::getItemMeta);
 
                 if (!guiItem.isHidden()) {
                     pos++;

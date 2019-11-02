@@ -56,7 +56,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements Trainable, C
     }
 
     @Override
-    public String getTrainableStringId() {
+    public String getTrainableId() {
         if (trainableStringId == null) {
             trainableStringId = getObject().getClass().getSimpleName();
         }
@@ -89,7 +89,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements Trainable, C
     }
 
     @Override
-    public void setTrainableStringId(String trainableStringId) {
+    public void setTrainableId(String trainableStringId) {
         this.trainableStringId = trainableStringId;
     }
 
