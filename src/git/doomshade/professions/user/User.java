@@ -5,7 +5,7 @@ import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.utils.Backup;
+import git.doomshade.professions.utils.IBackup;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-public class User implements Backup {
+public class User implements IBackup {
 
     private static final String KEY_NAME = "name";
     private static final String KEY_PROFESSIONS = "professions";
@@ -207,16 +207,8 @@ public class User implements Backup {
         return true;
     }
 
-    public void sendMessage(String message) {
-        player.sendMessage(message);
-    }
-
-    public void sendMessage(List<String> messages) {
-        messages.forEach(this::sendMessage);
-    }
-
-    public void sendMessage(String[] messages) {
-        sendMessage(Arrays.asList(messages));
+    public void sendMessage(String... message) {
+        Arrays.asList(message).forEach(player::sendMessage);
     }
 
     public Collection<UserProfessionData> getProfessions() {

@@ -1,5 +1,5 @@
 package git.doomshade.professions.utils;
 
-public interface Setup {
+public interface ISetup {
     void setup() throws Exception;
 }

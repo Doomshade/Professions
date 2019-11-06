@@ -1,12 +1,12 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.utils.Setup;
+import git.doomshade.professions.utils.ISetup;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
 
-public class Settings implements Setup {
+public class Settings implements ISetup {
 
     private static MiningSettings miningSettings;
 

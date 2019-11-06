@@ -1,11 +1,7 @@
 package git.doomshade.professions.commands;
 
-import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.UnmodifiableIterator;
-import git.doomshade.guiapi.GUIApi;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.profession.types.ItemType;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,7 +20,6 @@ public class ReloadCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         Settings.getInstance().reload();
         Professions plugin = Professions.getInstance();
         plugin.cleanup();

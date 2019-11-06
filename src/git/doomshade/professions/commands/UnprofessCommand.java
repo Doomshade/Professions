@@ -27,10 +27,9 @@ public class UnprofessCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         Profession<?> prof = Professions.getProfessionManager().fromName(args[1]);
-        Messages.MessageBuilder builder = Messages.getInstance().MessageBuilder().setPlayer(user);
+        Messages.MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
             user.sendMessage(builder.setMessage(Messages.Message.PROFESSION_DOESNT_EXIST).build());
             return true;

@@ -7,7 +7,7 @@ import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.Setup;
+import git.doomshade.professions.utils.ISetup;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Messages implements Setup {
+public class Messages implements ISetup {
 
     private static Messages instance;
     private static FileConfiguration loader;
@@ -36,10 +36,6 @@ public class Messages implements Setup {
 
     public static Messages getInstance() {
         return instance;
-    }
-
-    public MessageBuilder MessageBuilder() {
-        return new MessageBuilder();
     }
 
     @Override
@@ -75,8 +71,9 @@ public class Messages implements Setup {
         INVALID_REPEAT_AMOUNT("invalid-repeat-amount-input"),
         REPEAT_AMOUNT("repeat-amount-input"),
         NO_INVENTORY_SPACE("no-inventory-space"),
-        SUCCESSFULLY_TRAINED("successfuly-trained"),
-        NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train");
+        SUCCESSFULLY_TRAINED("successfully-trained"),
+        NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
+        NEW_ITEM_AVAILABLE("new-item-available");
 
         private final String fileId;
 
@@ -99,12 +96,19 @@ public class Messages implements Setup {
         }
     }
 
-    public class MessageBuilder {
+    public static class MessageBuilder {
         private String message;
+        private Message enumMessage;
         private Map<Pattern, String> replacements;
 
         public MessageBuilder() {
-            message = "";
+            this.message = "";
+            this.replacements = new HashMap<>();
+        }
+
+        public MessageBuilder(Message message) {
+            this.enumMessage = message;
+            this.message = message.getMessage();
             replacements = new HashMap<>();
         }
 
@@ -166,13 +170,6 @@ public class Messages implements Setup {
                 message = message.replaceAll("\\{" + e.getKey().pattern + "\\}", e.getValue());
             }
             return ChatColor.translateAlternateColorCodes('&', message);
-        }
-
-        public MessageBuilder copy() {
-            MessageBuilder b = new MessageBuilder();
-            b.message = message;
-            b.replacements = replacements;
-            return b;
         }
     }
 }

@@ -32,17 +32,18 @@ public class ProfessCommand extends AbstractCommand {
         // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         Profession<?> prof = Professions.getProfessionManager().fromName(args[1]);
-        MessageBuilder builder = Messages.getInstance().MessageBuilder().setPlayer(user).setProfession(prof);
+        MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
-            user.sendMessage(builder.copy().setMessage(Message.PROFESSION_DOESNT_EXIST).build());
+            user.sendMessage(builder.setMessage(Message.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
+        builder = builder.setProfession(prof);
         if (user.profess(prof)) {
-            user.sendMessage(builder.copy().setMessage(Message.SUCCESSFULLY_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Message.SUCCESSFULLY_PROFESSED).build());
         } else if (user.hasProfession(prof)) {
-            user.sendMessage(builder.copy().setMessage(Message.ALREADY_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Message.ALREADY_PROFESSED).build());
         } else {
-            user.sendMessage(builder.copy().setMessage(Message.ALREADY_PROFESSED_TYPE).build());
+            user.sendMessage(builder.setMessage(Message.ALREADY_PROFESSED_TYPE).build());
         }
 
         return true;

@@ -92,7 +92,7 @@ public class ProfessionGUI extends GUI {
                 player.closeInventory();
                 final UUID uniqueId = player.getUniqueId();
                 PluginProfessionListener.PENDING_REPEAT_AMOUNT.put(uniqueId, task);
-                user.sendMessage(Messages.getInstance().MessageBuilder().setMessage(Messages.Message.REPEAT_AMOUNT).setPlayer(user).setProfession(upd.getProfession()).build());
+                user.sendMessage(new Messages.MessageBuilder(Messages.Message.REPEAT_AMOUNT).setPlayer(user).setProfession(upd.getProfession()).build());
 
                 // cancel the task after one minute
                 new BukkitRunnable() {

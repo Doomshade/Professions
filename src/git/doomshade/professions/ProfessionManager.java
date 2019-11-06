@@ -22,8 +22,8 @@ import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
-import git.doomshade.professions.utils.Backup;
-import git.doomshade.professions.utils.Setup;
+import git.doomshade.professions.utils.IBackup;
+import git.doomshade.professions.utils.ISetup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-public final class ProfessionManager implements Setup, Backup {
+public final class ProfessionManager implements ISetup, IBackup {
     private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
     final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
@@ -241,7 +241,7 @@ public final class ProfessionManager implements Setup, Backup {
         return prof;
     }
 
-    public Profession<? extends IProfessionType> getProfession(Class<? extends IProfessionType> profType) {
+    public Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profType) {
         for (Profession<? extends IProfessionType> prof : PROFESSIONS_ID.values()) {
             if (prof.getClass().getSimpleName().equals(profType.getSimpleName())) {
                 return prof;

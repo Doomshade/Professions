@@ -11,9 +11,10 @@ import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
 import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemType.Key;
-import git.doomshade.professions.profession.types.Trainable;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -48,7 +49,7 @@ public class UserProfessionData {
 
         this.user = user;
         this.profession = profession;
-        this.builder = Messages.getInstance().MessageBuilder().setPlayer(user).setProfession(profession);
+        this.builder = new Messages.MessageBuilder().setPlayer(user).setProfession(profession);
     }
 
     void save() {
@@ -83,9 +84,9 @@ public class UserProfessionData {
         }
         this.level = Math.min(level, getLevelCap());
         if (!isMaxLevel()) {
-            user.sendMessage(builder.copy().setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
         } else {
-            user.sendMessage(builder.copy().setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
         }
         printNewPossibleItemTypes();
     }
@@ -119,7 +120,7 @@ public class UserProfessionData {
             expGained = event.getExp();
         }
         this.exp += expGained;
-        user.sendMessage(builder.copy().setMessage(Message.EXP_GAIN).setExp(expGained).setLevel(level).build());
+        user.sendMessage(builder.setMessage(Message.EXP_GAIN).setExp(expGained).setLevel(level).build());
         checkForLevel();
     }
 
@@ -161,10 +162,16 @@ public class UserProfessionData {
     }
 
     private void printNewPossibleItemTypes() {
-
+        for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
+            for (ItemType<?> itemType : itemTypeHolder) {
+                if (itemType.getLevelReq() == getLevel()) {
+                    user.sendMessage(builder.setItemType(itemType).build());
+                }
+            }
+        }
     }
 
-    public boolean train(Trainable trainable) {
+    public boolean train(ITrainable trainable) {
         EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getCost());
         if (!response.transactionSuccess()) {
             return false;
@@ -173,7 +180,7 @@ public class UserProfessionData {
         return true;
     }
 
-    public boolean hasTrained(Trainable trainable) {
+    public boolean hasTrained(ITrainable trainable) {
         return hasExtra(trainable.getTrainableId());
     }
 
@@ -188,7 +195,7 @@ public class UserProfessionData {
             return;
         }
         this.exp -= Math.abs(event.getExp());
-        user.sendMessage(builder.copy().setMessage(Message.EXP_LOSE).setExp(exp).setLevel(level).build());
+        user.sendMessage(builder.setMessage(Message.EXP_LOSE).setExp(exp).setLevel(level).build());
         if (this.exp < 0) {
             this.exp = 0;
         }

@@ -53,7 +53,7 @@ public class PluginProfessionListener implements Listener {
                 task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
                 task.runTask(Professions.getInstance());
             } catch (NumberFormatException e1) {
-                player.sendMessage(Messages.getInstance().MessageBuilder().setMessage(Messages.Message.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
+                player.sendMessage(new Messages.MessageBuilder(Messages.Message.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
             } catch (Exception e2) {
                 player.sendMessage(ChatColor.RED + "Nastala neočekávaná chyba. Kontaktuj prosím admina, napiš mu čas, kdy se stala, a pokus se popsat situaci, která nastala.");
                 e2.printStackTrace();

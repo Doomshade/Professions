@@ -2,7 +2,7 @@ package git.doomshade.professions.data;
 
 import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.enums.SkillupColor;
-import git.doomshade.professions.profession.types.Trainable;
+import git.doomshade.professions.profession.types.ITrainable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -79,16 +79,16 @@ public class ProfessionSettings extends Settings {
         return levelThreshold;
     }
 
-    public List<String> getNotTrainedLore(Trainable trainable) {
+    public List<String> getNotTrainedLore(ITrainable trainable) {
         for (int i = 0; i < notTrainedLore.size(); i++) {
-            notTrainedLore.set(i, notTrainedLore.get(i).replaceAll(Trainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
+            notTrainedLore.set(i, notTrainedLore.get(i).replaceAll(ITrainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
         }
         return notTrainedLore;
     }
 
-    public List<String> getTrainedLore(Trainable trainable) {
+    public List<String> getTrainedLore(ITrainable trainable) {
         for (int i = 0; i < trainedLore.size(); i++) {
-            trainedLore.set(i, trainedLore.get(i).replaceAll(Trainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
+            trainedLore.set(i, trainedLore.get(i).replaceAll(ITrainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
         }
         return trainedLore;
     }

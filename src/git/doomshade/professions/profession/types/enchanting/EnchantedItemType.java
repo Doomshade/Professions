@@ -1,9 +1,9 @@
 package git.doomshade.professions.profession.types.enchanting;
 
-import git.doomshade.professions.profession.types.Craftable;
+import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.Trainable;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.Material;
@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
-public class EnchantedItemType extends ItemType<Enchant> implements Trainable, Craftable {
+public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
     private static String ENCHANT = "enchant";
     private boolean trainable = true;
     private int cost = 0;
@@ -96,16 +96,17 @@ public class EnchantedItemType extends ItemType<Enchant> implements Trainable, C
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = super.serialize();
-        map.putAll(this.serializeTrainable());
-        map.putAll(this.serializeCraftable());
+        map.putAll(ITrainable.serializeTrainable(this));
+        map.putAll(ICraftable.serializeCraftable(this));
         return map;
     }
+
 
     @Override
     public void deserialize(Map<String, Object> map) {
         super.deserialize(map);
-        deserializeTrainable(map);
-        deserializeCraftable(map);
+        ITrainable.deserializeTrainable(map, this);
+        ICraftable.deserializeCraftable(map, this);
     }
 
     @Override

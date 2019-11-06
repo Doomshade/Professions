@@ -1,6 +1,5 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
@@ -35,12 +34,17 @@ public class ProfessionInfoCommand extends AbstractCommand {
         }
 
         // get a  better way of doing this..
-        user.sendMessage(ChatColor.translateAlternateColorCodes('&', messages.get(0)).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
+        final String firstMessage = messages.get(0);
+        if (!firstMessage.isEmpty())
+            user.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
         ArrayList<UserProfessionData> profs = new ArrayList<>(user.getProfessions());
         profs.sort(Comparator.comparing(x -> x.getProfession().getProfessionType()));
         for (UserProfessionData prof : profs) {
             for (int i = 1; i < messages.size(); i++) {
                 String s = messages.get(i);
+                if (i == messages.size() - 1 && s.isEmpty()) {
+                    continue;
+                }
 
                 for (Regex regex : Regex.values()) {
                     if (s.isEmpty()) {

@@ -182,8 +182,6 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     public void update() throws IOException {
         save();
         load();
-
-
     }
 
     @Override
