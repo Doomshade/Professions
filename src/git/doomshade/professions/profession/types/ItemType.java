@@ -4,7 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.Backup;
+import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * @param <T> the item type to look for in events
  */
-public abstract class ItemType<T> implements ConfigurationSerializable, Backup, Comparable<ItemType<T>> {
+public abstract class ItemType<T> implements ConfigurationSerializable, IBackup, Comparable<ItemType<T>> {
 
     public static final String KEY = "items";
     private int exp, levelReq;

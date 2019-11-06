@@ -51,7 +51,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         if (message.isEmpty()) {
             return;
         }
-        upd.getUser().sendMessage(message);
+        upd.getUser().sendMessage(message.toArray(new String[0]));
     }
 
     public void addExtra(Object extra) {

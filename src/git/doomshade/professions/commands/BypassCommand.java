@@ -35,7 +35,7 @@ public class BypassCommand extends AbstractCommand {
         User user = User.getUser(target);
         boolean bypass = Boolean.parseBoolean(args[1]);
         user.setBypass(bypass);
-        String message = "Hr��i " + target.getDisplayName() + " nastaven bypass na " + bypass;
+        String message = "Hraci " + target.getDisplayName() + " nastaven bypass na " + bypass;
         if (args.length >= 4) {
             boolean suppress = Boolean.parseBoolean(args[3]);
             user.setSuppressExpEvent(suppress);

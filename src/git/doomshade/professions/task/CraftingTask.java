@@ -8,7 +8,7 @@ import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
-import git.doomshade.professions.profession.types.Craftable;
+import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.enchanting.EnchantManager;
@@ -68,8 +68,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     @Override
     public void run() {
         if (user.getPlayer().getInventory().firstEmpty() == -1) {
-            user.sendMessage(Messages.getInstance().MessageBuilder()
-                    .setMessage(Messages.Message.NO_INVENTORY_SPACE)
+            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
                     .setPlayer(user).setProfession(upd.getProfession())
                     .setProfessionType(upd.getProfession().getProfessionType())
                     .build());
@@ -79,16 +78,15 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         EventManager em = EventManager.getInstance();
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
-                if (!(item instanceof Craftable)) {
+                if (!(item instanceof ICraftable)) {
                     continue;
                 }
-                final Craftable craftable = (Craftable) item;
+                final ICraftable craftable = (ICraftable) item;
                 if (!item.getIcon(upd).isSimilar(currentItem)) {
                     continue;
                 }
                 if (!craftable.meetsCraftingRequirements(user.getPlayer())) {
-                    user.sendMessage(Messages.getInstance().MessageBuilder()
-                            .setMessage(Messages.Message.REQUIREMENTS_NOT_MET)
+                    user.sendMessage(new Messages.MessageBuilder(Messages.Message.REQUIREMENTS_NOT_MET)
                             .setPlayer(user)
                             .setProfession(prof)
                             .build());

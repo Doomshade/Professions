@@ -6,9 +6,9 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.data.ProfessionSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
+import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.Trainable;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.entity.Player;
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public class ProfessionTrainerGUI extends GUI {
     public static final String KEY_PROFESSION = "profession";
     private Profession<?> prof;
-    private List<Trainable> items;
+    private List<ITrainable> items;
 
     protected ProfessionTrainerGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -69,8 +69,8 @@ public class ProfessionTrainerGUI extends GUI {
 
         for (ItemTypeHolder<?> itemTypes : prof.getItems()) {
             for (ItemType<?> itemType : itemTypes) {
-                if (itemType instanceof Trainable) {
-                    Trainable trainable = (Trainable) itemType;
+                if (itemType instanceof ITrainable) {
+                    ITrainable trainable = (ITrainable) itemType;
                     if (trainable.isTrainable()) {
                         GUIItem item = new GUIItem(itemType.getGuiMaterial(), position++);
                         item.changeItem(this, new Supplier<ItemMeta>() {
@@ -115,7 +115,7 @@ public class ProfessionTrainerGUI extends GUI {
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
 
-        for (Trainable trainable : items) {
+        for (ITrainable trainable : items) {
             if (!(trainable instanceof ItemType)) {
                 throw new IllegalStateException();
             }
@@ -129,8 +129,7 @@ public class ProfessionTrainerGUI extends GUI {
                 continue;
             }
             if (!upd.train(trainable)) {
-                user.sendMessage(Messages.getInstance().MessageBuilder()
-                        .setMessage(Messages.Message.NOT_ENOUGH_MONEY_TO_TRAIN)
+                user.sendMessage(new Messages.MessageBuilder(Messages.Message.NOT_ENOUGH_MONEY_TO_TRAIN)
                         .setItemType(itemType)
                         .setUserProfessionData(upd)
                         .build());

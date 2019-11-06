@@ -29,7 +29,6 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         Profession<? extends IProfessionType> prof = Professions.fromName(args[1]);
         if (prof == null) {
             return true;

@@ -11,7 +11,6 @@ import net.citizensnpcs.api.util.DataKey;
 import org.bukkit.event.EventHandler;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 @TraitName(value = "professiontrainer")
 public class ProfessionTrainerTrait extends Trait {
@@ -29,6 +28,7 @@ public class ProfessionTrainerTrait extends Trait {
         if (e.getNPC() != npc) {
             return;
         }
+
 
         if (profession == null) {
             throw new IllegalStateException("Could not find a profession!");

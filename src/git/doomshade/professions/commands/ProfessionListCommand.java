@@ -25,9 +25,9 @@ public class ProfessionListCommand extends AbstractCommand {
         ProfessionManager profMan = Professions.getProfessionManager();
         Map<ProfessionType, Integer> profTypes = new TreeMap<>();
         List<Profession<?>> profs = new ArrayList<>(profMan.getProfessionsById().values());
-        profs.sort((x, y) -> x.compareTo(y));
+        profs.sort(Comparator.naturalOrder());
         List<ProfessionType> pt = Arrays.asList(ProfessionType.values());
-        pt.sort((x, y) -> x.compareTo(y));
+        pt.sort(Comparator.naturalOrder());
         pt.forEach(x -> profTypes.put(x, 0));
         profMan.getProfessionsById().forEach((y, x) -> {
             if (x.getProfessionType() != null)

@@ -1,8 +1,8 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.utils.Backup;
-import git.doomshade.professions.utils.Setup;
+import git.doomshade.professions.utils.IBackup;
+import git.doomshade.professions.utils.ISetup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
-public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, Setup, Backup {
+public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup, IBackup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     private static final HashMap<Class<? extends AbstractCommandHandler>, List<AbstractCommand>> COMMANDS = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
@@ -127,7 +127,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     }
 
     /**
-     * @see git.doomshade.professions.utils.Setup#setup()
+     * @see ISetup#setup()
      */
     @Override
     public final void setup() throws IOException {

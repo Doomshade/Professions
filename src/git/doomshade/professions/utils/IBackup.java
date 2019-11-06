@@ -2,7 +2,7 @@ package git.doomshade.professions.utils;
 
 import java.io.File;
 
-public interface Backup {
+public interface IBackup {
 
     File[] getFiles();
 }

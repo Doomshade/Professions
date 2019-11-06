@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public interface Craftable {
+public interface ICraftable {
 
     double getCraftingTime();
 
@@ -75,29 +75,29 @@ public interface Craftable {
 
     void setCraftingTime(double craftingTime);
 
-    default Map<String, Object> serializeCraftable() {
+    static Map<String, Object> serializeCraftable(ICraftable craftable) {
         Map<String, Object> map = new HashMap<>();
-        map.put(ItemType.Key.ITEM_REQUIREMENTS.toString(), getCraftingRequirements().serialize());
-        map.put(ItemType.Key.RESULT.toString(), getResult().serialize());
-        map.put(ItemType.Key.INVENTORY_REQUIREMENTS.toString(), getInventoryRequirements().serialize());
-        map.put(ItemType.Key.CRAFTING_TIME.toString(), getCraftingTime());
+        map.put(ItemType.Key.ITEM_REQUIREMENTS.toString(), craftable.getCraftingRequirements().serialize());
+        map.put(ItemType.Key.RESULT.toString(), craftable.getResult().serialize());
+        map.put(ItemType.Key.INVENTORY_REQUIREMENTS.toString(), craftable.getInventoryRequirements().serialize());
+        map.put(ItemType.Key.CRAFTING_TIME.toString(), craftable.getCraftingTime());
         return map;
     }
 
-    default void deserializeCraftable(Map<String, Object> map) {
+    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) {
         MemorySection itemReqSection = (MemorySection) map.get(ItemType.Key.ITEM_REQUIREMENTS.toString());
 
         if (itemReqSection != null)
-            setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
+            craftable.setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
 
         MemorySection invReqSection = (MemorySection) map.get(ItemType.Key.ITEM_REQUIREMENTS.toString());
         if (invReqSection != null)
-            setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+            craftable.setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
 
         MemorySection itemStackSection = (MemorySection) map.get(ItemType.Key.RESULT.toString());
         if (itemStackSection != null)
-            setResult(ItemStack.deserialize(itemStackSection.getValues(false)));
-        setCraftingTime((double) map.get(ItemType.Key.CRAFTING_TIME.toString()));
+            craftable.setResult(ItemStack.deserialize(itemStackSection.getValues(false)));
+        craftable.setCraftingTime((double) map.get(ItemType.Key.CRAFTING_TIME.toString()));
     }
 
     default String toStringFormat() {

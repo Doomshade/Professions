@@ -20,7 +20,6 @@ public class PlayerGuiCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
 //		GUI.getGui((Player) sender, MainGui.class).openGui();
         Professions.getManager().openGui(PlayerProfessionsGUI.class, (Player) sender);
         return true;

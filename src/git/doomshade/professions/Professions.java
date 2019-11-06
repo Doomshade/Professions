@@ -21,8 +21,8 @@ import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
 import git.doomshade.professions.user.User;
-import git.doomshade.professions.utils.Backup;
-import git.doomshade.professions.utils.Setup;
+import git.doomshade.professions.utils.IBackup;
+import git.doomshade.professions.utils.ISetup;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Professions extends JavaPlugin implements Setup {
+public class Professions extends JavaPlugin implements ISetup {
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
@@ -56,8 +56,8 @@ public class Professions extends JavaPlugin implements Setup {
     // 1 hr
     private final int BACKUP_DELAY = 60 * 60;
 
-    private final ArrayList<Setup> SETUPS = new ArrayList<>();
-    private final ArrayList<Backup> BACKUPS = new ArrayList<>();
+    private final ArrayList<ISetup> SETUPS = new ArrayList<>();
+    private final ArrayList<IBackup> BACKUPS = new ArrayList<>();
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
@@ -126,16 +126,13 @@ public class Professions extends JavaPlugin implements Setup {
     }
 
     public static User getUser(Player hrac) {
-        // TODO Auto-generated method stub
         return User.getUser(hrac);
     }
 
     public static User getUser(UUID hrac) {
-        // TODO Auto-generated method stub
         return User.getUser(hrac);
     }
 
-    @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
         return profMan.getItemTypeHolder(clazz);
     }
@@ -145,13 +142,13 @@ public class Professions extends JavaPlugin implements Setup {
      * {@link ProfessionManager#registerItemTypeHolder(ItemTypeHolder)} method.
      *
      * @param itemTypeHolder
-     * @see git.doomshade.professions.ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
+     * @see ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
      */
     public static <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         profMan.registerItemTypeHolder(itemTypeHolder);
     }
 
-    public static Profession<? extends IProfessionType> getProfession(Class<? extends IProfessionType> profType) {
+    public static Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profType) {
         return profMan.getProfession(profType);
     }
 
@@ -289,7 +286,6 @@ public class Professions extends JavaPlugin implements Setup {
 
     @Override
     public void reloadConfig() {
-        // TODO Auto-generated method stub
         configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
     }
 
@@ -331,7 +327,7 @@ public class Professions extends JavaPlugin implements Setup {
 
     @Override
     public void setup() {
-        for (Setup setup : SETUPS) {
+        for (ISetup setup : SETUPS) {
             try {
                 sendConsoleMessage("Setting up " + setup.getClass().getSimpleName());
                 setup.setup();
@@ -344,13 +340,14 @@ public class Professions extends JavaPlugin implements Setup {
     }
 
     public void cleanup() {
+        profMan.REGISTERED_PROFESSIONS.clear();
         profMan.PROFESSION_TYPES.clear();
         profMan.PROFESSIONS_ID.clear();
         profMan.PROFESSIONS_NAME.clear();
         profMan.ITEMS.clear();
     }
 
-    private void registerSetup(Setup setup) {
+    private void registerSetup(ISetup setup) {
         if (!SETUPS.contains(setup))
             SETUPS.add(setup);
     }
@@ -368,7 +365,7 @@ public class Professions extends JavaPlugin implements Setup {
         return task.getResult();
     }
 
-    private void registerBackup(Backup backup) {
+    private void registerBackup(IBackup backup) {
         BACKUPS.add(backup);
     }
 

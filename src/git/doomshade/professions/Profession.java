@@ -2,10 +2,10 @@ package git.doomshade.professions;
 
 import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.profession.types.IProfessionEventable;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.ProfessionEventable;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
@@ -16,7 +16,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Interfaces extending IProfessionType
@@ -33,7 +36,7 @@ import java.util.*;
  *            then register it by calling
  */
 public abstract class Profession<T extends IProfessionType>
-        implements Listener, ConfigurationSerializable, Comparable<Profession<?>>, ProfessionEventable {
+        implements Listener, ConfigurationSerializable, Comparable<Profession<?>>, IProfessionEventable {
 
     private static final String ICON = "icon";
     private static final String TYPE = "type";

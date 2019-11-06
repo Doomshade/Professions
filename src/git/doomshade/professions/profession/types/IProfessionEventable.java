@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.event.ProfessionEvent;
 
-public interface ProfessionEventable {
+public interface IProfessionEventable {
     /**
      * Handles an event
      *
