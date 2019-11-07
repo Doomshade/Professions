@@ -33,7 +33,7 @@ public abstract class AbstractSettings implements ISetup {
     protected final boolean isSection(String section, Object value) {
         boolean isSection = getDefaultSection().isConfigurationSection(section);
         if (!isSection) {
-            printError(section, value);
+            printError(getDefaultSection().getCurrentPath() + "." + section, value);
         }
         return isSection;
     }
