@@ -2,111 +2,60 @@ package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
-public class Settings implements ISetup {
+public final class Settings implements ISetup {
 
-    private static MiningSettings miningSettings;
-
-    public static final ArrayList<Settings> SETTINGS = new ArrayList<>();
+    public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
     protected static FileConfiguration config;
     protected static Professions plugin;
     private static Settings instance;
-    private static ExpSettings expSettings;
-    private static SaveSettings saveSettings;
-    private static ItemSettings itemSettings;
-    private static ProfessionSettings professionSettings;
 
     static {
         plugin = Professions.getInstance();
         instance = new Settings();
-        instance.loadConfig();
-        SETTINGS.add(instance);
-        SETTINGS.add(expSettings = new ExpSettings());
-        SETTINGS.add(saveSettings = new SaveSettings());
-        SETTINGS.add(itemSettings = new ItemSettings());
-        SETTINGS.add(professionSettings = new ProfessionSettings());
-        SETTINGS.add(miningSettings = new MiningSettings());
+        instance.reload();
+
+        registerSettings(new DefaultsSettings());
+        registerSettings(new ExpSettings());
+        registerSettings(new ItemSettings());
+        registerSettings(new ProfessionExpSettings());
+        registerSettings(new SaveSettings());
+        registerSettings(new TrainableSettings());
     }
 
-    Settings() {
+    private Settings() {
     }
 
+    private static void registerSettings(AbstractSettings settings) {
+        SETTINGS.add(settings);
+    }
 
-    public static final Settings getInstance() {
+    public static Settings getInstance() {
         return instance;
     }
 
-    protected final boolean isSection(String section, Object value) {
-        boolean isSection = config.isConfigurationSection(section);
-        if (!isSection) {
-            printError(section, value);
+    @SuppressWarnings("unchecked")
+    public static <T extends AbstractSettings> T getSettings(Class<T> clazz) {
+        try {
+            return (T) Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(clazz.getName()));
+        } catch (Utils.SearchNotFoundException e) {
+            throw new IllegalArgumentException(clazz + " settings is not a registered settings!");
         }
-        return isSection;
+
     }
 
-    protected final boolean isSection(String section) {
-        return isSection(section, null);
-    }
-
-    private final void loadConfig() {
+    public void reload() {
         plugin.reloadConfig();
         config = plugin.getConfig();
     }
 
-    public final void reload() {
-        try {
-            setup();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public final ExpSettings getExpSettings() {
-        return expSettings;
-    }
-
-    public final SaveSettings getSaveSettings() {
-        return saveSettings;
-    }
-
-    public final ItemSettings getItemSettings() {
-        return itemSettings;
-    }
-
-    public final ProfessionSettings getProfessionSettings() {
-        return professionSettings;
-    }
-
-    public final MiningSettings getMiningSettings() {
-        return miningSettings;
-    }
-
-    /*protected final void printError(Object value, String... section){
-        plugin.sendConsoleMessage("Your configuration file is outdated!");
-        plugin.sendConsoleMessage(String.format("Missing \"%s\" section!", Arrays.asList(section).stream().map(x -> x + ".").collect(Collectors.toList())));
-        if (value == null)
-            plugin.sendConsoleMessage("Using default values.");
-        else
-            plugin.sendConsoleMessage(String.format("Using %s as default value.", value.toString()));
-    }*/
-
-    protected final void printError(String section, Object value) {
-        plugin.sendConsoleMessage("Your configuration file is outdated!");
-        plugin.sendConsoleMessage(String.format("Missing \"%s\" section!", section));
-        if (value == null)
-            plugin.sendConsoleMessage("Using default values.");
-        else
-            plugin.sendConsoleMessage(String.format("Using %s as default value.", value.toString()));
-    }
-
     @Override
-    public void setup() throws Exception {
-        // TODO Auto-generated method stub
-        loadConfig();
+    public void setup() {
+        reload();
     }
 
 }

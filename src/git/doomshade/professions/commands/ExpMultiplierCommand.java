@@ -30,7 +30,7 @@ public class ExpMultiplierCommand extends AbstractCommand {
             // TODO Auto-generated catch block
             sender.sendMessage("not afucking number moron");
         }
-        ExpSettings settings = Settings.getInstance().getExpSettings();
+        ExpSettings settings = Settings.getSettings(ExpSettings.class);
         switch (args[2].toLowerCase()) {
             case "skillapi":
                 settings.setSkillapiExpMultiplier(expMultiplier);

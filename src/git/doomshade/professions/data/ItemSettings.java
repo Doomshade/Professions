@@ -5,7 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemSettings extends Settings {
+public class ItemSettings extends AbstractSettings {
     private static final String SECTION = "items", LORE = "default-lore";
     private List<String> defaultLore = new ArrayList<>();
 

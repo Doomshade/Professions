@@ -1,6 +1,8 @@
 package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.ExpSettings;
+import git.doomshade.professions.data.ItemSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.user.UserProfessionData;
@@ -28,7 +30,7 @@ import java.util.Map;
  * <li>If you want to make your own type, make a class extend this and override
  * all constructors!</li>
  * <li> {@link #ItemType()} </li>
- * <li> {@link #ItemType(T, int)} </li>
+ * <li> {@link #ItemType(Object, int)} </li>
  *
  * @param <T> the item type to look for in events
  */
@@ -48,6 +50,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         this(null, 100);
     }
 
+    /**
+     * @param object
+     * @param exp
+     */
     public ItemType(T object, int exp){
         this.itemFile = getFile(getClass());
         if (!itemFile.exists()) {
@@ -60,7 +66,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         this.setLevelReq(1);
         this.setExp(exp);
         this.setObject(object);
-        this.description = new ArrayList<>(Settings.getInstance().getItemSettings().getDefaultLore());
+        this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
         this.setHiddenWhenUnavailable(false);
     }
@@ -214,7 +220,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
     }
 
     public final void setLevelReq(int levelReq) {
-        int cap = Settings.getInstance().getExpSettings().getLevelCap();
+        int cap = Settings.getSettings(ExpSettings.class).getLevelCap();
 
         // nastaví na cap, pokud je levelReq větší než cap
         this.levelReq = Math.min(/* nastaví na 0, pokud je levelReq menší než 0*/Math.max(levelReq, 0), cap);

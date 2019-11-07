@@ -3,6 +3,7 @@ package git.doomshade.professions;
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.commands.CommandHandler;
+import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
@@ -45,10 +46,8 @@ public class Professions extends JavaPlugin implements ISetup {
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
-    private static Settings settings;
     private static GUIManager guiManager;
     private static Economy econ;
-    private static int LOOPS = 0;
 
     // 5 minutes
     private final int SAVE_DELAY = 5 * 60;
@@ -56,8 +55,8 @@ public class Professions extends JavaPlugin implements ISetup {
     // 1 hr
     private final int BACKUP_DELAY = 60 * 60;
 
-    private final ArrayList<ISetup> SETUPS = new ArrayList<>();
-    private final ArrayList<IBackup> BACKUPS = new ArrayList<>();
+    private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
+    private static final ArrayList<IBackup> BACKUPS = new ArrayList<>();
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
@@ -177,7 +176,6 @@ public class Professions extends JavaPlugin implements ISetup {
     }
 
     public static void loadUser(Player player) {
-        // TODO Auto-generated method stub
         User.loadUser(player);
     }
 
@@ -189,9 +187,6 @@ public class Professions extends JavaPlugin implements ISetup {
         setupEconomy();
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
-
-        settings = Settings.getInstance();
-        settings.reload();
 
         // any class with setup() method contains a file
         setupFiles();
@@ -259,10 +254,6 @@ public class Professions extends JavaPlugin implements ISetup {
         saveUsers();
     }
 
-    public Settings getSettings() {
-        return settings;
-    }
-
     private void setupFiles() {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
@@ -316,7 +307,8 @@ public class Professions extends JavaPlugin implements ISetup {
     }
 
     private void registerSetups() {
-        for (Settings s : Settings.SETTINGS) {
+        registerSetup(Settings.getInstance());
+        for (AbstractSettings s : Settings.SETTINGS) {
             registerSetup(s);
         }
         registerSetup(Messages.getInstance());
@@ -332,7 +324,6 @@ public class Professions extends JavaPlugin implements ISetup {
                 sendConsoleMessage("Setting up " + setup.getClass().getSimpleName());
                 setup.setup();
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -340,14 +331,13 @@ public class Professions extends JavaPlugin implements ISetup {
     }
 
     public void cleanup() {
-        profMan.REGISTERED_PROFESSIONS.clear();
         profMan.PROFESSION_TYPES.clear();
         profMan.PROFESSIONS_ID.clear();
         profMan.PROFESSIONS_NAME.clear();
         profMan.ITEMS.clear();
     }
 
-    private void registerSetup(ISetup setup) {
+    public void registerSetup(ISetup setup) {
         if (!SETUPS.contains(setup))
             SETUPS.add(setup);
     }

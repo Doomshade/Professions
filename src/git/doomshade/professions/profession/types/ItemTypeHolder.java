@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.utils.ItemUtils;
@@ -69,7 +70,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         }
 
         loader.addDefault(ERROR_MESSAGE, errorMessage);
-        loader.addDefault(SORTED_BY, Settings.getInstance().getProfessionSettings().getSortedBy());
+        loader.addDefault(SORTED_BY, Settings.getSettings(DefaultsSettings.class).getSortedBy());
         loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
         ConfigurationSection itemsSection;
         if (loader.isConfigurationSection(ItemType.KEY)) {

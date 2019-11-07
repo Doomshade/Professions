@@ -2,6 +2,7 @@ package git.doomshade.professions.user;
 
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Message;
@@ -174,14 +175,14 @@ public class UserProfessionData {
      * @return required exp for next level
      */
     public int getRequiredExp() {
-        return Settings.getInstance().getExpSettings().getExpFormula().calculate(level);
+        return Settings.getSettings(ExpSettings.class).getExpFormula().calculate(level);
     }
 
     /**
      * @return the level cap
      */
     public int getLevelCap() {
-        return Settings.getInstance().getExpSettings().getLevelCap();
+        return Settings.getSettings(ExpSettings.class).getLevelCap();
     }
 
     private void checkForLevel() {

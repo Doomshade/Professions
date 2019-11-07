@@ -5,6 +5,7 @@ import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.profession.types.ItemType;
@@ -28,7 +29,7 @@ public class ProfessionGUI extends GUI {
 
     protected ProfessionGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
-        levelThreshold = Settings.getInstance().getProfessionSettings().getLevelThreshold();
+        levelThreshold = Settings.getSettings(TrainableSettings.class).getLevelThreshold();
     }
 
     @Override
