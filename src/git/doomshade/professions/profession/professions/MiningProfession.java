@@ -5,8 +5,10 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
+import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemFlag;
@@ -29,7 +31,7 @@ public class MiningProfession extends Profession<IMining> {
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         item.setItemMeta(meta);
         setIcon(item);
-        addItems(Ore.class);
+        addItems(OreItemType.class);
     }
 
 
@@ -42,7 +44,7 @@ public class MiningProfession extends Profession<IMining> {
     @Override
     @EventHandler
     public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e) {
-        if (!isValidEvent(e, Ore.class)) {
+        if (!isValidEvent(e, OreItemType.class)) {
             return;
         }
         User hrac = e.getPlayer();
@@ -53,7 +55,12 @@ public class MiningProfession extends Profession<IMining> {
             return;
         }
 
-        addExp(e);
+
+        if (addExp(e)) {
+            Location loc = e.getExtra(Location.class);
+            Ore ore = (Ore) e.getObject().getObject();
+            loc.getWorld().dropItem(loc, ore.getMiningResult());
+        }
     }
 
 }

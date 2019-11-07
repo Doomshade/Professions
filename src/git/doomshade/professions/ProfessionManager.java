@@ -22,6 +22,7 @@ import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
+import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.Bukkit;
@@ -111,11 +112,16 @@ public final class ProfessionManager implements ISetup, IBackup {
     }
 
     private void registerItemTypeHolders() throws IOException {
-        registerItemTypeHolder(new ItemTypeHolder<Ore>() {
+        registerItemTypeHolder(new ItemTypeHolder<OreItemType>() {
 
             @Override
-            public Ore getObject() {
-                Ore ore = new Ore(Material.OBSIDIAN, 100);
+            public OreItemType getObject() {
+                ItemStack item = new ItemStack(Material.GLASS);
+                ItemMeta meta = item.getItemMeta();
+                meta.setDisplayName("Toto vypadne");
+                meta.setLore(Collections.singletonList("S timhle lore"));
+                item.setItemMeta(meta);
+                OreItemType ore = new OreItemType(new Ore(Material.OBSIDIAN, item), 100);
                 ore.setName(ChatColor.GRAY + "Obsidian");
                 //registerObject(ore);
                 return ore;

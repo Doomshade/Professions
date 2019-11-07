@@ -10,6 +10,8 @@ import git.doomshade.professions.profession.types.gathering.GatherItem;
 import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
+import git.doomshade.professions.profession.types.mining.OreItemType;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.HumanEntity;
@@ -24,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -63,10 +66,24 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        ProfessionEvent<Ore> event = callEvent(e.getPlayer(), e.getBlock().getType(), Ore.class);
+
+        OreItemType ott;
+        try {
+            final Material type = e.getBlock().getType();
+            ott = Utils.findInIterable(Professions.getItemTypeHolder(OreItemType.class), x ->
+                    x.getObject().getOreMaterial() == type
+            );
+        } catch (Utils.SearchNotFoundException ex) {
+            return;
+        }
+
+        Ore ore = ott.getObject();
+        ProfessionEvent<OreItemType> event = getEvent(e.getPlayer(), ore, OreItemType.class);
         if (event == null) {
             return;
         }
+        event.addExtra(e.getBlock().getLocation().add(new Vector(0.5, 0, 0.5)));
+        callEvent(event);
         e.setCancelled(event.isCancelled());
     }
 

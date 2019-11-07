@@ -1,40 +1,55 @@
 package git.doomshade.professions.profession.types.mining;
 
-import git.doomshade.professions.profession.types.IProfessionType;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
 import org.bukkit.Material;
+import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Ore extends ItemType<Material> {
-    private static final String KEY_MATERIAL = "material";
+public class Ore implements ConfigurationSerializable {
+    private static final String KEY_MATERIAL = "material", KEY_MINING_RESULT = "mining-result";
 
-    public Ore() {
-        super();
+    private Material oreMaterial;
+    private ItemStack miningResult;
+
+    public Ore(Material oreMaterial, ItemStack miningResult) {
+        this.oreMaterial = oreMaterial;
+        this.miningResult = miningResult;
     }
 
-    public Ore(Material object, int exp) {
-        super(object, exp);
+    public static Ore deserialize(Map<String, Object> map) {
+        MemorySection memorySection = (MemorySection) map.get(KEY_MINING_RESULT);
+        ItemStack item = ItemStack.deserialize(memorySection.getValues(true));
+        Material mat = Material.getMaterial((String) map.get(KEY_MATERIAL));
+        return new Ore(mat, item);
+    }
+
+    public Material getOreMaterial() {
+        return oreMaterial;
+    }
+
+    public void setOreMaterial(Material oreMaterial) {
+        this.oreMaterial = oreMaterial;
+    }
+
+    public ItemStack getMiningResult() {
+        return miningResult;
+    }
+
+    public void setMiningResult(ItemStack miningResult) {
+        this.miningResult = miningResult;
     }
 
     @Override
-    protected Map<String, Object> getSerializedObject(Material object) {
-        Map<String, Object> map = new HashMap<>();
-        map.put(KEY_MATERIAL, object.name());
-        return map;
+    public Map<String, Object> serialize() {
+
+        return new HashMap<String, Object>() {
+            {
+                put(KEY_MATERIAL, oreMaterial.name());
+                put(KEY_MINING_RESULT, miningResult.serialize());
+            }
+        };
     }
-
-    @Override
-    protected Material deserializeObject(Map<String, Object> map) {
-        return Material.getMaterial((String) map.get(KEY_MATERIAL));
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return IMining.class;
-    }
-
-
 }

@@ -167,17 +167,18 @@ public abstract class Profession<T extends IProfessionType>
         this.pt = pt;
     }
 
-    protected final void addExp(double exp, User user, ItemType<?> source) {
+    protected final boolean addExp(double exp, User user, ItemType<?> source) {
         if (!user.isSuppressExpEvent())
-            user.addExp(exp, this, source);
+            return user.addExp(exp, this, source);
+        return false;
     }
 
     protected final UserProfessionData getUserProfessionData(User user) {
         return user.getProfessionData(this);
     }
 
-    protected final void addExp(ProfessionEvent<?> e) {
-        addExp(e.getExp(), e.getPlayer(), e.getObject());
+    protected final boolean addExp(ProfessionEvent<?> e) {
+        return addExp(e.getExp(), e.getPlayer(), e.getObject());
     }
 
     @Override
