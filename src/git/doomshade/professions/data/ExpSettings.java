@@ -23,19 +23,24 @@ public class ExpSettings extends AbstractSettings {
     }
 
     @Override
+    protected void printError(String section, Object value) {
+        super.printError(XP_CURVE + "." + section, value);
+    }
+
+    @Override
     public void setup() {
         if (isSection(XP_CURVE)) {
             ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
 
             if (!expSection.isDouble(MULTIPLIER)) {
                 this.setExpMultiplier(N_DEFAULT_MULTIPLIER);
-                printError(XP_CURVE + "." + MULTIPLIER, N_DEFAULT_MULTIPLIER);
+                printError(MULTIPLIER, N_DEFAULT_MULTIPLIER);
             } else {
                 this.setExpMultiplier(expSection.getDouble(MULTIPLIER));
             }
             if (!expSection.isDouble(SAPI_MULTIPLIER)) {
                 this.setSkillapiExpMultiplier(N_DEFAULT_MULTIPLIER);
-                printError(XP_CURVE + "." + SAPI_MULTIPLIER, N_DEFAULT_MULTIPLIER);
+                printError(SAPI_MULTIPLIER, N_DEFAULT_MULTIPLIER);
             } else {
                 this.setSkillapiExpMultiplier(expSection.getDouble(SAPI_MULTIPLIER));
 
@@ -43,20 +48,21 @@ public class ExpSettings extends AbstractSettings {
 
             if (!expSection.isInt(LEVEL_CAP)) {
                 this.levelCap = N_DEFAULT_LEVEL_CAP;
-                printError(XP_CURVE + "." + LEVEL_CAP, N_DEFAULT_LEVEL_CAP);
+                printError(LEVEL_CAP, N_DEFAULT_LEVEL_CAP);
             } else {
                 this.levelCap = expSection.getInt(LEVEL_CAP);
             }
             ConfigurationSection formulaSection = expSection.getConfigurationSection(FORMULA);
             if (!expSection.isConfigurationSection(FORMULA)) {
-                printError(XP_CURVE + "." + FORMULA, 0);
+                printError(FORMULA, 0);
             }
             int x = formulaSection.getInt(X);
             int y = formulaSection.getInt(Y);
             int z = formulaSection.getInt(Z);
             this.expFormula = new ExpFormula(x, y, z);
+        } else {
+            super.printError(XP_CURVE, null);
         }
-
     }
 
     public ExpFormula getExpFormula() {
