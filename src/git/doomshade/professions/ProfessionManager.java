@@ -47,7 +47,9 @@ import java.util.Map.Entry;
 public final class ProfessionManager implements ISetup, IBackup {
     private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
-    final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
+
+    // never call clear() on this hashset!
+    private final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
     final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
     final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();

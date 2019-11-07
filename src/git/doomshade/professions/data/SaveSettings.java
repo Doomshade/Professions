@@ -1,10 +1,9 @@
 package git.doomshade.professions.data;
 
-public class SaveSettings extends Settings {
+public class SaveSettings extends AbstractSettings {
     private static final String SAVING = "saving";
 
     SaveSettings() {
-        // TODO Auto-generated constructor stub
 
     }
 

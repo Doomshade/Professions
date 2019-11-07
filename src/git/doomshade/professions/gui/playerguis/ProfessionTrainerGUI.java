@@ -3,8 +3,8 @@ package git.doomshade.professions.gui.playerguis;
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.professions.Profession;
-import git.doomshade.professions.data.ProfessionSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
@@ -18,7 +18,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ProfessionTrainerGUI extends GUI {
     public static final String KEY_PROFESSION = "profession";
@@ -65,7 +64,7 @@ public class ProfessionTrainerGUI extends GUI {
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
 
-        ProfessionSettings settings = Settings.getInstance().getProfessionSettings();
+        TrainableSettings settings = Settings.getSettings(TrainableSettings.class);
 
         for (ItemTypeHolder<?> itemTypes : prof.getItems()) {
             for (ItemType<?> itemType : itemTypes) {
@@ -73,26 +72,21 @@ public class ProfessionTrainerGUI extends GUI {
                     ITrainable trainable = (ITrainable) itemType;
                     if (trainable.isTrainable()) {
                         GUIItem item = new GUIItem(itemType.getGuiMaterial(), position++);
-                        item.changeItem(this, new Supplier<ItemMeta>() {
-
-                            @Override
-                            public ItemMeta get() {
-                                ItemMeta meta = itemType.getIcon(upd).getItemMeta();
-                                List<String> lore;
-                                if (meta.hasLore()) {
-                                    lore = meta.getLore();
-                                } else {
-                                    lore = new ArrayList<>();
-                                }
-                                if (upd.hasTrained(trainable)) {
-                                    lore.addAll(settings.getTrainedLore(trainable));
-                                } else {
-                                    lore.addAll(settings.getNotTrainedLore(trainable));
-                                }
-                                meta.setLore(lore);
-                                return meta;
+                        item.changeItem(this, () -> {
+                            ItemMeta meta = itemType.getIcon(upd).getItemMeta();
+                            List<String> lore;
+                            if (meta.hasLore()) {
+                                lore = meta.getLore();
+                            } else {
+                                lore = new ArrayList<>();
                             }
-
+                            if (upd.hasTrained(trainable)) {
+                                lore.addAll(settings.getTrainedLore(trainable));
+                            } else {
+                                lore.addAll(settings.getNotTrainedLore(trainable));
+                            }
+                            meta.setLore(lore);
+                            return meta;
                         });
                         items.add(trainable);
                         builder = builder.withItem(item);

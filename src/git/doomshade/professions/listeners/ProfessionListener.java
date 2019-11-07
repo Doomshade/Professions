@@ -84,7 +84,11 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
         event.addExtra(e.getBlock().getLocation().add(new Vector(0.5, 0, 0.5)));
         callEvent(event);
-        e.setCancelled(event.isCancelled());
+        if (event.isCancelled()) {
+            e.setCancelled(true);
+        } else {
+            e.getBlock().setType(Material.AIR);
+        }
     }
 
     @Override

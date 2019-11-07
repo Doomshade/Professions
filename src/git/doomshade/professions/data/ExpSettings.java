@@ -3,16 +3,16 @@ package git.doomshade.professions.data;
 import git.doomshade.professions.utils.ExpFormula;
 import org.bukkit.configuration.ConfigurationSection;
 
-public class ExpSettings extends Settings {
+public class ExpSettings extends AbstractSettings {
 
-    private static final String MULTIPLIER = "multiplier";
-    private static final String SAPI_MULTIPLIER = "sapi-multiplier";
-    private static final String Z = "z";
-    private static final String Y = "y";
-    private static final String X = "x";
-    private static final String FORMULA = "formula";
-    private static final String LEVEL_CAP = "level-cap";
-    private static final String XP_CURVE = "xp-curve";
+    private static final String MULTIPLIER = "multiplier",
+            SAPI_MULTIPLIER = "sapi-multiplier",
+            Z = "z",
+            Y = "y",
+            X = "x",
+            FORMULA = "formula",
+            LEVEL_CAP = "level-cap",
+            XP_CURVE = "xp-curve";
     private static final int N_DEFAULT_LEVEL_CAP = 40;
     private static final double N_DEFAULT_MULTIPLIER = 1d;
     private ExpFormula expFormula = new ExpFormula(1, 1, 1);
@@ -23,7 +23,7 @@ public class ExpSettings extends Settings {
     }
 
     @Override
-    public void setup() throws Exception {
+    public void setup() {
         if (isSection(XP_CURVE)) {
             ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
 

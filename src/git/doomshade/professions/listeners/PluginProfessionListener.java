@@ -2,6 +2,7 @@ package git.doomshade.professions.listeners;
 
 import com.sucy.skill.api.event.PlayerExperienceGainEvent;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
@@ -23,7 +24,7 @@ public class PluginProfessionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onExpGain(ProfessionExpGainEvent e) {
-        e.setExp(Settings.getInstance().getExpSettings().getExpMultiplier() * e.getExp());
+        e.setExp(Settings.getSettings(ExpSettings.class).getExpMultiplier() * e.getExp());
 
         int rand = random.nextInt(100) + 1;
         final double chance = e.getSkillupColor().getChance();
@@ -36,7 +37,7 @@ public class PluginProfessionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onSapiExpGain(PlayerExperienceGainEvent e) {
-        e.setExp(Settings.getInstance().getExpSettings().getSkillapiExpMultiplier() * e.getExp());
+        e.setExp(Settings.getSettings(ExpSettings.class).getSkillapiExpMultiplier() * e.getExp());
     }
 
     @EventHandler
