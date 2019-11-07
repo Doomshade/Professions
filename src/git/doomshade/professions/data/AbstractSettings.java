@@ -30,7 +30,7 @@ public abstract class AbstractSettings implements ISetup {
             plugin.sendConsoleMessage(String.format("Using %s as default value.", value.toString()));
     }
 
-    protected boolean isSection(String section, Object value) {
+    protected final boolean isSection(String section, Object value) {
         boolean isSection = getDefaultSection().isConfigurationSection(section);
         if (!isSection) {
             printError(section, value);
