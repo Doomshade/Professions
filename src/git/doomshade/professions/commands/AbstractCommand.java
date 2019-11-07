@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Class representing all the commands
  * @author Doomshade
  */
 public abstract class AbstractCommand implements ConfigurationSerializable {
@@ -32,6 +33,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     protected boolean requiresPlayer = false, requiresOp = false;
 
     /**
+     * Partly deserializes a command (overrides all getters but {@code getId()} method)
      * @param map the map
      * @return partly deserialized command
      */
@@ -40,19 +42,16 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
 
             @Override
             public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-                // TODO Auto-generated method stub
                 return false;
             }
 
             @Override
             public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-                // TODO Auto-generated method stub
                 return null;
             }
 
             @Override
             public Map<Boolean, List<String>> getArgs() {
-                // TODO Auto-generated method stub
                 Map<Boolean, List<String>> args = new HashMap<>();
                 final CommandHandler instance = AbstractCommandHandler.getInstance(CommandHandler.class);
                 if (instance != null) {
@@ -64,38 +63,32 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
 
             @Override
             public String getCommand() {
-                // TODO Auto-generated method stub
                 return map.get(COMMAND).toString();
             }
 
             @Override
             public String getDescription() {
-                // TODO Auto-generated method stub
                 return map.get(DESCRIPTION).toString();
             }
 
             @Override
             public boolean requiresPlayer() {
-                // TODO Auto-generated method stub
                 return (boolean) map.get(REQUIRES_PLAYER);
             }
 
             @Override
             public boolean requiresOp() {
-                // TODO Auto-generated method stub
                 return (boolean) map.get(REQUIRES_OP);
             }
 
             @Override
             public String getID() {
-                // TODO Auto-generated method stub
                 return null;
             }
 
             @SuppressWarnings("unchecked")
             @Override
             public List<String> getMessages() {
-                // TODO Auto-generated method stub
                 return (List<String>) map.get(MESSAGE);
             }
 
@@ -103,6 +96,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     }
 
     /**
+     *
      * @param sender
      * @param cmd
      * @param label
@@ -230,6 +224,11 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
         return true;
     }
 
+    /**
+     * @param sender the sender of command
+     * @param perm   the permission
+     * @return {@code true} if the {@code sender} has the {@code perm}
+     */
     public boolean hasPermission(CommandSender sender, CommandPermission perm) {
         switch (perm) {
             case PLAYER_ONLY:
@@ -249,6 +248,9 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     }
 
 
+    /**
+     * Lists of permissions
+     */
     public enum CommandPermission {
         PLAYER_ONLY, BUILDER, ADMIN, OP
     }

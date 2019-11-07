@@ -27,6 +27,8 @@ import java.util.Map;
  * class extending Profession</li>
  * <li>If you want to make your own type, make a class extend this and override
  * all constructors!</li>
+ * <li> {@link #ItemType()} </li>
+ * <li> {@link #ItemType(T, int)} </li>
  *
  * @param <T> the item type to look for in events
  */

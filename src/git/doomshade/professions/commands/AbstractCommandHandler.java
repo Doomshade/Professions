@@ -15,9 +15,13 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
 
+/**
+ * A command handler
+ *
+ * @author Doomshade
+ */
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup, IBackup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
-    private static final HashMap<Class<? extends AbstractCommandHandler>, List<AbstractCommand>> COMMANDS = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
     private final ArrayList<AbstractCommand> INSTANCE_COMMANDS = new ArrayList<>();
     private final File FOLDER = new File(plugin.getDataFolder(), "commands");
@@ -150,7 +154,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         postRegisterCommands();
         setupCommandFile();
         sortCommands();
-        COMMANDS.put(this.getClass(), INSTANCE_COMMANDS);
     }
 
     @Override
@@ -186,7 +189,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         if (args.length == 0) {
             sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" + ChatColor.RED
                     + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
-            String message;
 
             for (AbstractCommand icmd : INSTANCE_COMMANDS) {
                 if (!isValid(sender, icmd)) {

@@ -15,6 +15,7 @@ import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemType.Key;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -23,6 +24,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class responsible for storing and manipulating {@link User}'s {@link Profession} data.
+ */
 public class UserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";
     private User user;
@@ -58,37 +62,68 @@ public class UserProfessionData {
         s.set(KEY_EXTRAS, extras);
     }
 
+    /**
+     * @return the profession
+     */
     public Profession<? extends IProfessionType> getProfession() {
         return profession;
     }
 
+    /**
+     * @return the user
+     */
     public User getUser() {
         return user;
     }
 
+    /**
+     * @return the current exp
+     */
     public double getExp() {
         return exp;
     }
 
+    /**
+     * Sets current exp to the value. Adds a level if {@code exp > } {@link #getRequiredExp()}
+     *
+     * @param exp the exp to set
+     */
     public void setExp(double exp) {
         this.exp = exp;
+        if (exp >= getRequiredExp()) {
+            addLevel(1);
+            this.exp = 0;
+        }
     }
 
+    /**
+     * @return the current level
+     */
     public int getLevel() {
         return level;
     }
 
+    /**
+     * Sets current level to the value. This method also ensures you won't be able to go over the {@link #getLevelCap()}.
+     *
+     * @param level the level to set to
+     */
     public void setLevel(int level) {
-        if (isMaxLevel()) {
-            return;
-        }
         this.level = Math.min(level, getLevelCap());
         if (!isMaxLevel()) {
             user.sendMessage(builder.setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
         } else {
             user.sendMessage(builder.setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
         }
-        printNewPossibleItemTypes();
+
+        // prints new possible items
+        for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
+            try {
+                Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel()).forEach(y -> user.sendMessage(builder.setItemType(y).build()));
+            } catch (Utils.SearchNotFoundException ignored) {
+
+            }
+        }
     }
 
     @Override
@@ -98,36 +133,53 @@ public class UserProfessionData {
                 + "\n" + "Exp: " + (int) exp + "/" + getRequiredExp();
     }
 
-    public void addExp(double exp, ItemType<?> source) {
+    /**
+     * Adds exp to the user's profession
+     *
+     * @param exp    the amount of exp to give
+     * @param source the source of exp ({@code null} for command source)
+     * @return {@code true} if {@code exp > 0} and the event is not cancelled
+     */
+    public boolean addExp(double exp, ItemType<?> source) {
         if (exp == 0) {
-            return;
+            return false;
         }
         if (exp < 0) {
             loseExp(exp);
-            return;
+            return false;
         }
-        if (isMaxLevel()) {
-            return;
-        }
+
         double expGained = exp;
         if (source != null) {
             ProfessionExpGainEvent event = new ProfessionExpGainEvent(this, source, exp);
             Bukkit.getPluginManager().callEvent(event);
 
             if (event.isCancelled()) {
-                return;
+                return false;
             }
             expGained = event.getExp();
+        }
+        if (isMaxLevel()) {
+            return true;
         }
         this.exp += expGained;
         user.sendMessage(builder.setMessage(Message.EXP_GAIN).setExp(expGained).setLevel(level).build());
         checkForLevel();
+        return true;
     }
 
+    /**
+     * This method calculates every time it is called, so be careful.
+     *
+     * @return required exp for next level
+     */
     public int getRequiredExp() {
         return Settings.getInstance().getExpSettings().getExpFormula().calculate(level);
     }
 
+    /**
+     * @return the level cap
+     */
     public int getLevelCap() {
         return Settings.getInstance().getExpSettings().getLevelCap();
     }
@@ -144,42 +196,57 @@ public class UserProfessionData {
         }
     }
 
-    public void addLevel(int level) {
+    /**
+     * Adds levels to the user's profession data
+     *
+     * @param level the level to add
+     * @return {@code true} if the level was added, {@code false} otherwise
+     */
+    public boolean addLevel(int level) {
         if (level == 0 || isMaxLevel()) {
-            return;
+            return false;
         }
         int addedLevel = Math.min((this.level + level), getLevelCap());
         ProfessionLevelUpEvent event = new ProfessionLevelUpEvent(this, this.level, addedLevel);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            return;
+            return false;
         }
         setLevel(addedLevel);
+        return true;
     }
 
+    /**
+     * This method also ensures that, if in any case the level > {@link #getLevelCap()}, the level is set to the level cap.
+     *
+     * @return {@code true} if current level == {@link #getLevelCap()}.
+     */
     public boolean isMaxLevel() {
-        return level >= getLevelCap();
-    }
-
-    private void printNewPossibleItemTypes() {
-        for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
-            for (ItemType<?> itemType : itemTypeHolder) {
-                if (itemType.getLevelReq() == getLevel()) {
-                    user.sendMessage(builder.setItemType(itemType).build());
-                }
-            }
+        if (level > getLevelCap()) {
+            this.level = getLevelCap();
         }
+        return level == getLevelCap();
     }
 
+    /**
+     * Trains a user something new. This is saved as {@code extras} in user data file.
+     *
+     * @param trainable the trainable to train
+     * @return {@code true} if the user has successfully trained an {@link ITrainable} (has enough money and {@link #hasTrained(ITrainable)} returns {@code false}), false otherwise
+     */
     public boolean train(ITrainable trainable) {
         EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getCost());
-        if (!response.transactionSuccess()) {
+        if (!response.transactionSuccess() || hasTrained(trainable)) {
             return false;
         }
         addExtra(trainable.getTrainableId());
         return true;
     }
 
+    /**
+     * @param trainable the trainable to check for
+     * @return {@code true} if the user has already trained this, {@code false} otherwise
+     */
     public boolean hasTrained(ITrainable trainable) {
         return hasExtra(trainable.getTrainableId());
     }
@@ -201,6 +268,10 @@ public class UserProfessionData {
         }
     }
 
+    @Deprecated
+    /**
+     * Not used anymore.
+     */
     public boolean hasMetReq(Number value, Key key) {
         switch (key) {
             case EXP:
@@ -212,16 +283,35 @@ public class UserProfessionData {
         }
     }
 
+    /**
+     * @param itemType the {@link ItemType} to check for
+     * @return the current {@link SkillupColor} of itemType
+     */
     public SkillupColor getSkillupColor(ItemType<?> itemType) {
         return SkillupColor.getSkillupColor(itemType.getLevelReq(), getLevel());
     }
 
+    /**
+     * Adds something extra to the user for later usage. Used in {@link #train(ITrainable)}.
+     *
+     * @param extra the extra to add
+     */
     public void addExtra(String extra) {
         if (!extra.isEmpty() && !hasExtra(extra))
-            extras.add(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', extra).toLowerCase()));
+            extras.add(translatedExtra(extra));
     }
 
+    /**
+     * Used in {@link #hasTrained(ITrainable)}.
+     *
+     * @param extra the extra to look for
+     * @return {@code true} if the user has this extra, {@code false} otherwise
+     */
     public boolean hasExtra(String extra) {
-        return !extra.isEmpty() && extras.contains(ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', extra).toLowerCase()));
+        return !extra.isEmpty() && extras.contains(translatedExtra(extra));
+    }
+
+    private String translatedExtra(String extra) {
+        return ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', extra).toLowerCase());
     }
 }

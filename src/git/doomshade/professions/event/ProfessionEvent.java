@@ -99,19 +99,16 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
 
     @Override
     public HandlerList getHandlers() {
-        // TODO Auto-generated method stub
         return handlerList;
     }
 
     @Override
     public boolean isCancelled() {
-        // TODO Auto-generated method stub
         return cancel;
     }
 
     @Override
     public void setCancelled(boolean arg0) {
-        // TODO Auto-generated method stub
         this.cancel = arg0;
     }
 }
