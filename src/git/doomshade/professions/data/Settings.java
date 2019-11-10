@@ -1,5 +1,6 @@
 package git.doomshade.professions.data;
 
+import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
@@ -25,12 +26,15 @@ public final class Settings implements ISetup {
         registerSettings(new ProfessionExpSettings());
         registerSettings(new SaveSettings());
         registerSettings(new TrainableSettings());
+        /*for (Profession<?> prof : Professions.getProfessionManager().getProfessionsById().values()) {
+            registerSettings(new ProfessionSettings<>(prof));
+        }*/
     }
 
     private Settings() {
     }
 
-    private static void registerSettings(AbstractSettings settings) {
+    static void registerSettings(AbstractSettings settings) {
         SETTINGS.add(settings);
     }
 
@@ -45,7 +49,14 @@ public final class Settings implements ISetup {
         } catch (Utils.SearchNotFoundException e) {
             throw new IllegalArgumentException(clazz + " settings is not a registered settings!");
         }
+    }
 
+    public static <A extends Profession<?>> ProfessionSettings<A> getProfessionSettings(Class<A> clazz) {
+        try {
+            return (ProfessionSettings<A>) Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(clazz.getName()));
+        } catch (Utils.SearchNotFoundException e) {
+            throw new IllegalArgumentException(clazz + " settings is not a registered profession settings!");
+        }
     }
 
     public void reload() {

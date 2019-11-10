@@ -98,7 +98,6 @@ public class Messages implements ISetup {
 
     public static class MessageBuilder {
         private String message;
-        private Message enumMessage;
         private Map<Pattern, String> replacements;
 
         public MessageBuilder() {
@@ -107,7 +106,6 @@ public class Messages implements ISetup {
         }
 
         public MessageBuilder(Message message) {
-            this.enumMessage = message;
             this.message = message.getMessage();
             replacements = new HashMap<>();
         }

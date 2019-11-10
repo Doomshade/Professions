@@ -4,7 +4,7 @@ import git.doomshade.professions.enums.SkillupColor;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
-public class ProfessionExpSettings extends ProfessionSettings {
+public class ProfessionExpSettings extends AbstractProfessionSettings {
 
     private static final String EXP_SETTINGS = "exp-settings",
             COLOR = "color",

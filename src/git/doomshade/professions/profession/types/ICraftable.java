@@ -84,13 +84,22 @@ public interface ICraftable {
         return map;
     }
 
-    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) {
+    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) throws Exception {
+
+        List<String> reqs = Arrays.asList(ItemType.Key.ITEM_REQUIREMENTS.toString(), ItemType.Key.INVENTORY_REQUIREMENTS.toString(), ItemType.Key.RESULT.toString(), ItemType.Key.CRAFTING_TIME.toString());
+
+        for (String s : reqs) {
+            if (!map.containsKey(s)) {
+                throw new Exception("Could not deserialize as " + craftable.getClass().getSimpleName() + " some of the keys are missing! - " + reqs);
+            }
+        }
+
         MemorySection itemReqSection = (MemorySection) map.get(ItemType.Key.ITEM_REQUIREMENTS.toString());
 
         if (itemReqSection != null)
             craftable.setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
 
-        MemorySection invReqSection = (MemorySection) map.get(ItemType.Key.ITEM_REQUIREMENTS.toString());
+        MemorySection invReqSection = (MemorySection) map.get(ItemType.Key.INVENTORY_REQUIREMENTS.toString());
         if (invReqSection != null)
             craftable.setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
 

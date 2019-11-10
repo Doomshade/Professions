@@ -7,7 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrainableSettings extends ProfessionSettings {
+public class TrainableSettings extends AbstractProfessionSettings {
     private static final String LEVEL_THRESHOLD = "level-threshold",
             TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained";
 

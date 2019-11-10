@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
     private int itemTypeId;
     private boolean hiddenWhenUnavailable;
 
-    public ItemType(){
+    public ItemType() {
         this(null, 100);
     }
 
@@ -54,7 +55,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
      * @param object
      * @param exp
      */
-    public ItemType(T object, int exp){
+    public ItemType(T object, int exp) {
         this.itemFile = getFile(getClass());
         if (!itemFile.exists()) {
             try {
@@ -87,14 +88,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
     }
 
-    public final int getId(){
-        return itemTypeId;
-    }
-
-    public final void setId(int id){
-        this.itemTypeId = id;
-    }
-
     @Nullable
     public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) {
         Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
@@ -105,12 +98,23 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
             instance.setId(id);
             instance.deserialize(map);
             return instance;
-        } catch (Exception e) {
+        } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
             Professions.getInstance().sendConsoleMessage("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType() constructor!");
+        } catch (NullPointerException e1) {
+            e1.printStackTrace();
+            Professions.getInstance().sendConsoleMessage("Could not deserialize " + clazz.getSimpleName() + " from file. Make sure you haven't made any mistakes in yaml part. Save this file somewhere and let plugin recreate the file! (Use /prof reload)");
         }
         return null;
+    }
+
+    public final int getId() {
+        return itemTypeId;
+    }
+
+    public final void setId(int id) {
+        this.itemTypeId = id;
     }
 
     private static <A extends ItemType<?>> File getFile(Class<A> clazz) {
@@ -179,7 +183,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
 
     public final void setObject(T item) {
         this.item = item;
-        if (name.isEmpty() && item != null){
+        if (name.isEmpty() && item != null) {
             this.name = item.toString();
         }
     }

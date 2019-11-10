@@ -160,7 +160,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
                     objects.add(deserialized);
                 }
             } else {
-                throw new RuntimeException("Could not deserialize an object! (" + objects.get(i) + ")");
+                throw new RuntimeException("Could not deserialize an object of type (" + clazz.getSimpleName() + ")!");
             }
         }
 
