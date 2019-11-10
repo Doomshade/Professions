@@ -130,8 +130,16 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     @Override
     public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
         super.deserialize(map);
-        ITrainable.deserializeTrainable(map, this);
-        ICraftable.deserializeCraftable(map, this);
+        try {
+            ITrainable.deserializeTrainable(map, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            ICraftable.deserializeCraftable(map, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -293,6 +293,8 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new UserListener(), this);
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
+
+        //Settings.getProfessionSettings(MiningProfession.class);
     }
 
     /**
