@@ -15,5 +15,14 @@
     <orderEntry type="library" name="Vault" level="project" />
     <orderEntry type="library" name="SkillAPI" level="project" />
     <orderEntry type="library" name="PermissionsEx-1.23.3" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

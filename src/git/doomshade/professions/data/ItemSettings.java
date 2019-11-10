@@ -14,8 +14,7 @@ public class ItemSettings extends AbstractSettings {
     }
 
     @Override
-    public void setup() throws Exception {
-        // TODO Auto-generated method stub
+    public void setup() {
         if (!isSection(SECTION)) {
             return;
         }

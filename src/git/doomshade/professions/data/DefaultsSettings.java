@@ -6,7 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultsSettings extends ProfessionSettings {
+public class DefaultsSettings extends AbstractProfessionSettings {
 
     private static final String DEFAULTS = "defaults", SORTED_BY = "sorted-by";
     private List<String> sortedBy;

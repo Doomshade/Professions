@@ -1,22 +1,34 @@
 package git.doomshade.professions.data;
 
+import git.doomshade.professions.Profession;
 import org.bukkit.configuration.ConfigurationSection;
 
-public abstract class ProfessionSettings extends AbstractSettings {
-    private static final String SECTION = "profession";
+/**
+ * Class for custom profession settings
+ *
+ * @param <T> the profession
+ */
+public class ProfessionSettings<T extends Profession<?>> extends AbstractProfessionSettings {
+    private final T profession;
+
+    ProfessionSettings(T profession) {
+        this.profession = profession;
+    }
 
     @Override
     protected ConfigurationSection getDefaultSection() {
-        if (config.isConfigurationSection(SECTION))
-            return config.getConfigurationSection(SECTION);
-        else {
-            printError(SECTION, null);
+        ConfigurationSection section = super.getDefaultSection();
+
+        if (section.isConfigurationSection(profession.getID())) {
+            return section.getConfigurationSection(profession.getID());
+        } else {
+            printError(profession.getID(), null);
             throw new IllegalStateException();
         }
     }
 
     @Override
-    protected void printError(String section, Object value) {
-        super.printError(SECTION + "." + section, value);
+    public void setup() throws Exception {
+
     }
 }
