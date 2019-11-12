@@ -1,6 +1,7 @@
 package git.doomshade.professions;
 
 import com.google.common.reflect.TypeToken;
+import git.doomshade.professions.data.ProfessionSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.IProfessionEventable;
 import git.doomshade.professions.profession.types.IProfessionType;
@@ -50,6 +51,7 @@ public abstract class Profession<T extends IProfessionType>
     private ProfessionType pt = ProfessionType.PRIMARNI;
     private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
     private ItemStack icon = new ItemStack(Material.CHEST);
+    private ProfessionSettings professionSettings = null;
 
     public Profession() {
         INITED_PROFESSIONS.add(getClass());
@@ -85,7 +87,6 @@ public abstract class Profession<T extends IProfessionType>
 
             @Override
             public ItemStack getIcon() {
-                // TODO Auto-generated method stub
                 return ItemStack.deserialize(((MemorySection) map.get(ICON)).getValues(true));
             }
 
@@ -100,15 +101,23 @@ public abstract class Profession<T extends IProfessionType>
             }
 
             @Override
+            public ProfessionSettings getProfessionSettings() {
+                return null;
+            }
+
+
+            // DONUT DELETE
+            @Override
+            public int compareTo(Object o) {
+                return 0;
+            }
+
+            @Override
             public int compareTo(Profession o) {
                 return 0;
             }
 
 
-            @Override
-            public int compareTo(Object o) {
-                return 0;
-            }
         };
     }
 
@@ -165,6 +174,14 @@ public abstract class Profession<T extends IProfessionType>
 
     protected final void setProfessionType(ProfessionType pt) {
         this.pt = pt;
+    }
+
+    public ProfessionSettings getProfessionSettings() {
+        return professionSettings;
+    }
+
+    public void setProfessionSettings(ProfessionSettings professionSettings) {
+        this.professionSettings = professionSettings;
     }
 
     protected final boolean addExp(double exp, User user, ItemType<?> source) {

@@ -26,16 +26,17 @@ public final class Settings implements ISetup {
         registerSettings(new ProfessionExpSettings());
         registerSettings(new SaveSettings());
         registerSettings(new TrainableSettings());
-        /*for (Profession<?> prof : Professions.getProfessionManager().getProfessionsById().values()) {
-            registerSettings(new ProfessionSettings<>(prof));
-        }*/
     }
 
     private Settings() {
     }
 
-    static void registerSettings(AbstractSettings settings) {
+    public static void registerSettings(AbstractSettings settings) {
         SETTINGS.add(settings);
+    }
+
+    public static void unregisterSettings(AbstractSettings settings) {
+        SETTINGS.remove(settings);
     }
 
     public static Settings getInstance() {
@@ -51,11 +52,21 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession<?>> ProfessionSettings<A> getProfessionSettings(Class<A> clazz) {
+    public static <A extends Profession<?>> ProfessionSettings getProfessionSettings(Class<A> clazz) {
+        return getProfessionSettings(Professions.getProfession(clazz));
+    }
+
+    public static <A extends Profession<?>> ProfessionSettings getProfessionSettings(Profession<?> profession) {
         try {
-            return (ProfessionSettings<A>) Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(clazz.getName()));
+            return (ProfessionSettings) Utils.findInIterable(SETTINGS, x -> {
+                if (x instanceof ProfessionSettings) {
+                    ProfessionSettings settings = (ProfessionSettings) x;
+                    return settings.getProfession().equals(profession);
+                }
+                return false;
+            });
         } catch (Utils.SearchNotFoundException e) {
-            throw new IllegalArgumentException(clazz + " settings is not a registered profession settings!");
+            throw new IllegalArgumentException(profession.getColoredName() + " settings is not a registered profession settings!");
         }
     }
 

@@ -2,6 +2,8 @@ package git.doomshade.professions;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import git.doomshade.professions.data.ProfessionSettings;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
 import git.doomshade.professions.profession.professions.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.MiningProfession;
@@ -271,10 +273,8 @@ public final class ProfessionManager implements ISetup, IBackup {
         prof.onLoad();
         PROFESSIONS_ID.forEach((y, x) -> {
             if (x.getID().equalsIgnoreCase(prof.getID())) {
-                Bukkit.getConsoleSender()
-                        .sendMessage(ChatColor.DARK_RED + "ERROR:" + ChatColor.RED + " A profession with name "
-                                + prof.getName() + ChatColor.RESET + " already exists! (" + prof.getID() + ")");
-                return;
+                throw new IllegalArgumentException(ChatColor.DARK_RED + "ERROR:" + ChatColor.RED + " A profession with name "
+                        + prof.getName() + ChatColor.RESET + " already exists! (" + prof.getID() + ")");
             }
         });
         PROFESSIONS_ID.put(prof.getID().toLowerCase(), prof);
@@ -316,6 +316,11 @@ public final class ProfessionManager implements ISetup, IBackup {
         prof.setName(fileProf.getName());
         prof.setProfessionType(fileProf.getProfessionType());
         prof.setIcon(fileProf.getIcon());
+
+        ProfessionSettings settings = new ProfessionSettings(prof);
+        Settings.registerSettings(settings);
+        prof.setProfessionSettings(settings);
+
         prof.onPostLoad();
     }
 

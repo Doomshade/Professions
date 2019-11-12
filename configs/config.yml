@@ -51,5 +51,23 @@ profession:
       color-change-after: 3
     red:
       color: 'c'
-
-
+  mining:
+    drop:
+      '4':
+        increment-by: 0.1
+        increment-since: 10
+  jewelcrafting:
+    drop:
+      '4':
+        increment-by: 0.1
+        increment-since: 10
+  enchanting:
+    drop:
+      '4':
+        increment-by: 0.1
+        increment-since: 10
+  skinning:
+    drop:
+      '4':
+        increment-by: 0.1
+        increment-since: 10

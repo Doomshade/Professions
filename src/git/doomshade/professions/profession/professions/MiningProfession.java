@@ -35,7 +35,6 @@ public class MiningProfession extends Profession<IMining> {
     }
 
 
-
     @Override
     public String getID() {
         return "mining";
@@ -59,8 +58,12 @@ public class MiningProfession extends Profession<IMining> {
         if (addExp(e)) {
             Location loc = e.getExtra(Location.class);
             Ore ore = (Ore) e.getObject().getObject();
-            loc.getWorld().dropItem(loc, ore.getMiningResult());
+            final ItemStack miningResult = ore.getMiningResult();
+
+            miningResult.setAmount(getProfessionSettings().getDropSettings(upd, e.getObject()).getDropAmount());
+            loc.getWorld().dropItem(loc, miningResult);
         }
     }
+
 
 }
