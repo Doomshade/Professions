@@ -6,6 +6,7 @@ import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
+import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.task.CraftingTask;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -26,13 +27,16 @@ public class PluginProfessionListener implements Listener {
     public void onExpGain(ProfessionExpGainEvent e) {
         e.setExp(Settings.getSettings(ExpSettings.class).getExpMultiplier() * e.getExp());
 
+        ItemType<?> source = e.getSource();
+        if (source != null && source.isIgnoreSkillupColor()) {
+            return;
+        } //else {
+
         int rand = random.nextInt(100) + 1;
         final double chance = e.getSkillupColor().getChance();
 
-        System.out.println("Random: " + rand);
-        System.out.println("Skillup: " + e.getSkillupColor());
-        System.out.println("Chance skillup: " + chance);
         e.setCancelled(rand > chance);
+        //}
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

@@ -5,7 +5,6 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.List;
-
 public class DefaultsSettings extends AbstractProfessionSettings {
 
     private static final String DEFAULTS = "defaults", SORTED_BY = "sorted-by";
@@ -18,6 +17,10 @@ public class DefaultsSettings extends AbstractProfessionSettings {
     public void setup() {
         sortedBy = new ArrayList<>();
         ConfigurationSection section = getDefaultSection();
+
+        if (section == null) {
+            return;
+        }
         ConfigurationSection defaultsSection = section.getConfigurationSection(DEFAULTS);
         if (defaultsSection != null) {
             this.sortedBy = defaultsSection.getStringList(SORTED_BY);

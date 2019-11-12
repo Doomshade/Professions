@@ -45,7 +45,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
     private List<String> description, restrictedWorlds;
     private Material guiMaterial = Material.CHEST;
     private int itemTypeId;
-    private boolean hiddenWhenUnavailable;
+    private boolean hiddenWhenUnavailable, ignoreSkillupColor;
 
     public ItemType() {
         this(null, 100);
@@ -70,6 +70,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
         this.setHiddenWhenUnavailable(false);
+        this.setIgnoreSkillupColor(false);
     }
 
     public void deserialize(Map<String, Object> map) {
@@ -86,6 +87,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         }
         setGuiMaterial(Material.getMaterial((String) map.get(Key.MATERIAL.toString())));
         setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
+        setIgnoreSkillupColor((boolean) map.get(Key.IGNORE_SKILLUP_COLOR.toString()));
     }
 
     @Nullable
@@ -163,6 +165,14 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         return upd.getSkillupColor(this);
     }
 
+    public boolean isIgnoreSkillupColor() {
+        return ignoreSkillupColor;
+    }
+
+    public void setIgnoreSkillupColor(boolean ignoreSkillupColor) {
+        this.ignoreSkillupColor = ignoreSkillupColor;
+    }
+
     public ItemStack getIcon(UserProfessionData upd) {
         ItemStack icon = new ItemStack(getGuiMaterial());
         ItemMeta iconMeta = icon.getItemMeta();
@@ -208,6 +218,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         map.put(Key.MATERIAL.toString(), guiMaterial.name());
         map.put(Key.RESTRICTED_WORLDS.toString(), restrictedWorlds);
         map.put(Key.HIDDEN.toString(), hiddenWhenUnavailable);
+        map.put(Key.IGNORE_SKILLUP_COLOR.toString(), ignoreSkillupColor);
         return map;
     }
 
@@ -272,7 +283,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         RESULT("result"), CRAFTING_TIME("crafting-time"),
         INVENTORY_REQUIREMENTS("inventory-requirements"),
         HIDDEN("hidden-when-unavailable"),
-        LEVEL_REQ_COLOR("level-req-color");
+        LEVEL_REQ_COLOR("level-req-color"),
+        IGNORE_SKILLUP_COLOR("ignore-skillup-color");
 
         private String s;
 
