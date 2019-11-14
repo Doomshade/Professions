@@ -37,10 +37,6 @@ public class ProfessionDropSettings extends ProfessionSettings {
     public int getDropAmount() {
 
         for (Drop drop : DROPS) {
-
-            if (drop.incrementSince + item.getLevelReq() > upd.getLevel()) {
-                continue;
-            }
             if (Math.random() < drop.getDropChance(upd.getLevel(), item.getLevelReq())) {
                 return drop.drop;
             }
@@ -99,10 +95,7 @@ public class ProfessionDropSettings extends ProfessionSettings {
 
         // TODO Outputting wrong values
         private double getDropChance(int updLevel, int itemLevelReq) {
-            if (updLevel < incrementSince + itemLevelReq) {
-                throw new IllegalArgumentException();
-            }
-            return (updLevel - incrementSince - itemLevelReq) * incrementBy;
+            return Math.max(0d, (updLevel - incrementSince - itemLevelReq) * incrementBy);
         }
 
         @Override
