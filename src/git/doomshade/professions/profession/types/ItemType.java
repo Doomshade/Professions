@@ -5,9 +5,13 @@ import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
+import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -24,6 +28,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+
+import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
 /**
  * <li>ProfessionEvent<T> class returns ItemType object for you to handle in a
@@ -73,25 +80,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         this.setIgnoreSkillupColor(false);
     }
 
-    public void deserialize(Map<String, Object> map) {
-        MemorySection mem = (MemorySection) map.get(Key.OBJECT.toString());
-        if (mem != null) {
-            setObject(deserializeObject(mem.getValues(true)));
-        }
-        setExp((int) map.get(Key.EXP.toString()));
-        setLevelReq((int) map.get(Key.LEVEL_REQ.toString()));
-        setName((String) map.get(Key.NAME.toString()));
-        setDescription(ItemUtils.getItemTypeLore(this));
-        if (!getName().isEmpty()) {
-            setName(ChatColor.translateAlternateColorCodes('&', getName()));
-        }
-        setGuiMaterial(Material.getMaterial((String) map.get(Key.MATERIAL.toString())));
-        setHiddenWhenUnavailable((boolean) map.get(Key.HIDDEN.toString()));
-        setIgnoreSkillupColor((boolean) map.get(Key.IGNORE_SKILLUP_COLOR.toString()));
-    }
-
     @Nullable
-    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) {
+    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws ProfessionInitializationException {
         Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
         try {
             Constructor<A> c = clazz.getDeclaredConstructor();
@@ -104,11 +94,37 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
             e.printStackTrace();
             Professions.getInstance().sendConsoleMessage("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType() constructor!");
-        } catch (NullPointerException e1) {
-            e1.printStackTrace();
-            Professions.getInstance().sendConsoleMessage("Could not deserialize " + clazz.getSimpleName() + " from file. Make sure you haven't made any mistakes in yaml part. Save this file somewhere and let plugin recreate the file! (Use /prof reload)");
         }
         return null;
+    }
+
+    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
+
+        setExp((int) map.getOrDefault(EXP.s, 0));
+        setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
+        setName((String) map.getOrDefault(NAME.s, "Unknown name"));
+
+        if (!getName().isEmpty()) {
+            setName(ChatColor.translateAlternateColorCodes('&', getName()));
+        }
+        setGuiMaterial(Material.getMaterial((String) map.getOrDefault(MATERIAL.s, "CHEST")));
+        setHiddenWhenUnavailable((boolean) map.getOrDefault(HIDDEN.s, true));
+        setIgnoreSkillupColor((boolean) map.getOrDefault(IGNORE_SKILLUP_COLOR.s, true));
+        setDescription(ItemUtils.getItemTypeLore(this));
+        MemorySection mem = (MemorySection) map.get(OBJECT.s);
+
+        try {
+            setObject(deserializeObject(mem.getValues(true)));
+        } catch (ProfessionObjectInitializationException e) {
+            Professions.printError(e.getMessage(), Level.WARNING);
+        }
+
+        List<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values());
+
+        if (!list.isEmpty()) {
+            throw new ProfessionInitializationException(getClass(), list, getId());
+        }
+
     }
 
     public final int getId() {
@@ -125,7 +141,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
 
     protected abstract Map<String, Object> getSerializedObject(T object);
 
-    protected abstract T deserializeObject(Map<String, Object> map);
+    protected abstract T deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException;
 
     public abstract Class<? extends IProfessionType> getDeclaredProfessionType();
 
@@ -209,16 +225,16 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(Key.OBJECT.toString(), getSerializedObject(item));
-        map.put(Key.EXP.toString(), exp);
-        map.put(Key.LEVEL_REQ.toString(), levelReq);
-        map.put(Key.PROFTYPE.toString(), getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
-        map.put(Key.NAME.toString(), name);
-        map.put(Key.DESCRIPTION.toString(), description);
-        map.put(Key.MATERIAL.toString(), guiMaterial.name());
-        map.put(Key.RESTRICTED_WORLDS.toString(), restrictedWorlds);
-        map.put(Key.HIDDEN.toString(), hiddenWhenUnavailable);
-        map.put(Key.IGNORE_SKILLUP_COLOR.toString(), ignoreSkillupColor);
+        map.put(OBJECT.s, getSerializedObject(item));
+        map.put(EXP.s, exp);
+        map.put(LEVEL_REQ.s, levelReq);
+        map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
+        map.put(NAME.s, name);
+        map.put(DESCRIPTION.s, description);
+        map.put(MATERIAL.s, guiMaterial.name());
+        map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
+        map.put(HIDDEN.s, hiddenWhenUnavailable);
+        map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
         return map;
     }
 
@@ -244,17 +260,17 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder()
-                .append(Key.OBJECT + ": " + getSerializedObject(item).toString())
+                .append(OBJECT + ": " + getSerializedObject(item).toString())
                 .append("\n")
-                .append(Key.EXP + ": " + exp)
+                .append(EXP + ": " + exp)
                 .append("\n")
-                .append(Key.LEVEL_REQ + ": " + levelReq)
+                .append(LEVEL_REQ + ": " + levelReq)
                 .append("\n")
-                .append(Key.PROFTYPE + ": " + getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase())
+                .append(PROFTYPE + ": " + getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase())
                 .append("\n")
-                .append(Key.NAME + ": " + name)
+                .append(NAME + ": " + name)
                 .append("\n")
-                .append(Key.DESCRIPTION + ": " + description);
+                .append(DESCRIPTION + ": " + description);
         return sb.toString();
     }
 
@@ -271,33 +287,5 @@ public abstract class ItemType<T> implements ConfigurationSerializable, IBackup,
         this.hiddenWhenUnavailable = hiddenWhenUnavailable;
     }
 
-    public enum Key {
-        LEVEL_REQ("level-req"),
-        PROFTYPE("type-unchangable"),
-        EXP("exp"), OBJECT("object"),
-        NAME("name"),
-        DESCRIPTION("description"),
-        MATERIAL("gui-material"),
-        RESTRICTED_WORLDS("restricted-worlds"),
-        ITEM_REQUIREMENTS("item-requirements"),
-        RESULT("result"), CRAFTING_TIME("crafting-time"),
-        INVENTORY_REQUIREMENTS("inventory-requirements"),
-        HIDDEN("hidden-when-unavailable"),
-        LEVEL_REQ_COLOR("level-req-color"),
-        IGNORE_SKILLUP_COLOR("ignore-skillup-color");
-
-        private String s;
-
-        Key(String s) {
-            this.s = s;
-
-        }
-
-        @Override
-        public String toString() {
-            // TODO Auto-generated method stub
-            return s;
-        }
-    }
 
 }

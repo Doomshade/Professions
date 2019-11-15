@@ -3,7 +3,6 @@ package git.doomshade.professions.utils;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemType.Key;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,12 +16,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static git.doomshade.professions.utils.Strings.ItemTypeEnum.DESCRIPTION;
+import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COLOR;
+
 public class ItemUtils {
-    private static final List<Key> KEYS = Arrays.asList(Key.EXP, Key.LEVEL_REQ, Key.NAME, Key.ITEM_REQUIREMENTS, Key.LEVEL_REQ_COLOR);
     private static ItemUtils instance;
 
     static {
@@ -36,7 +36,7 @@ public class ItemUtils {
     @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>> List<String> getItemTypeLore(A itemType) {
         Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
-        List<String> desc = (List<String>) map.get(Key.DESCRIPTION.toString());
+        List<String> desc = (List<String>) map.getOrDefault(DESCRIPTION.s, new ArrayList<String>());
         return getDescription(itemType, desc);
     }
 
@@ -47,15 +47,12 @@ public class ItemUtils {
     public static <A extends ItemType<?>> List<String> getDescription(A itemType, List<String> description, UserProfessionData upd) {
         Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
         List<String> desc = new ArrayList<>(description);
-        for (Key key : Key.values()) {
-            if (key == Key.ITEM_REQUIREMENTS) {
-                continue;
-            }
-            String regex = "\\{" + key + "\\}";
-            Object mapObject = map.get(key.toString());
+        for (Strings.ItemTypeEnum itemTypeEnum : Strings.ItemTypeEnum.values()) {
+            String regex = "\\{" + itemTypeEnum + "\\}";
+            Object mapObject = map.get(itemTypeEnum.s);
 
             String replacement = regex;
-            if (key == Key.LEVEL_REQ_COLOR) {
+            if (itemTypeEnum == LEVEL_REQ_COLOR) {
                 if (upd != null)
                     replacement = String.valueOf(SkillupColor.getSkillupColor(itemType.getLevelReq(), upd.getLevel()).getColor());
             } else {
@@ -95,13 +92,13 @@ public class ItemUtils {
         return new ItemStackBuilder(mat);
     }
 
-    public class ItemStackBuilder {
+    public static class ItemStackBuilder {
         private Material mat;
         private int amount;
         private short damage;
         private ItemMeta meta;
 
-        public ItemStackBuilder(Material mat) {
+        ItemStackBuilder(Material mat) {
             this.mat = mat;
             this.amount = 1;
             this.damage = 0;

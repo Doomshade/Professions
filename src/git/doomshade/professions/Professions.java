@@ -41,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class Professions extends JavaPlugin implements ISetup {
     private static Professions instance;
@@ -199,6 +200,10 @@ public class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new PluginProfessionListener(), this);
 
         //Settings.getProfessionSettings(MiningProfession.class);
+    }
+
+    public static void printError(String message, Level level) {
+        getInstance().getLogger().log(level, message);
     }
 
     private void scheduleTasks() {
