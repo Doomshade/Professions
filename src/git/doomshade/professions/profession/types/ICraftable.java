@@ -1,7 +1,10 @@
 package git.doomshade.professions.profession.types;
 
+import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Requirements;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
@@ -14,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
 public interface ICraftable {
 
@@ -49,12 +54,47 @@ public interface ICraftable {
         getInventoryRequirements().addRequirement(item);
     }
 
+    static Map<String, Object> serializeCraftable(ICraftable craftable) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ITEM_REQUIREMENTS.s, craftable.getCraftingRequirements().serialize());
+        map.put(RESULT.s, craftable.getResult().serialize());
+        map.put(INVENTORY_REQUIREMENTS.s, craftable.getInventoryRequirements().serialize());
+        map.put(CRAFTING_TIME.s, craftable.getCraftingTime());
+        return map;
+    }
+
+    void setResult(ItemStack result);
+
+    void setCraftingTime(double craftingTime);
+
+    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) throws ProfessionInitializationException {
+
+
+        craftable.setCraftingTime((double) map.getOrDefault(CRAFTING_TIME.s, 5d));
+
+        List<String> list = Utils.getMissingKeys(map, Strings.ICraftableEnum.values());
+        if (!list.isEmpty()) {
+            throw new ProfessionInitializationException(craftable.getClass(), list);
+        }
+
+        MemorySection itemReqSection = (MemorySection) map.get(ITEM_REQUIREMENTS.s);
+        craftable.setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
+
+        MemorySection invReqSection = (MemorySection) map.get(INVENTORY_REQUIREMENTS.s);
+        craftable.setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+
+        MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
+        craftable.setResult(ItemStack.deserialize(itemStackSection.getValues(false)));
+
+
+    }
+
     default ItemStack getIcon(ItemStack icon, UserProfessionData upd) {
         ItemMeta meta = icon.getItemMeta();
         List<String> lore = meta.getLore();
 
-        for (ItemType.Key key : Arrays.asList(ItemType.Key.ITEM_REQUIREMENTS, ItemType.Key.INVENTORY_REQUIREMENTS)) {
-            Pattern regex = Pattern.compile("\\{" + key + "\\}");
+        for (Strings.ICraftableEnum key : Arrays.asList(ITEM_REQUIREMENTS, INVENTORY_REQUIREMENTS)) {
+            Pattern regex = Pattern.compile("\\{" + key.s + "\\}");
             for (int i = 0; i < lore.size(); i++) {
                 String s = lore.get(i);
                 Matcher m = regex.matcher(s);
@@ -69,44 +109,6 @@ public interface ICraftable {
         meta.setLore(lore);
         icon.setItemMeta(meta);
         return icon;
-    }
-
-    void setResult(ItemStack result);
-
-    void setCraftingTime(double craftingTime);
-
-    static Map<String, Object> serializeCraftable(ICraftable craftable) {
-        Map<String, Object> map = new HashMap<>();
-        map.put(ItemType.Key.ITEM_REQUIREMENTS.toString(), craftable.getCraftingRequirements().serialize());
-        map.put(ItemType.Key.RESULT.toString(), craftable.getResult().serialize());
-        map.put(ItemType.Key.INVENTORY_REQUIREMENTS.toString(), craftable.getInventoryRequirements().serialize());
-        map.put(ItemType.Key.CRAFTING_TIME.toString(), craftable.getCraftingTime());
-        return map;
-    }
-
-    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) throws Exception {
-
-        List<String> reqs = Arrays.asList(ItemType.Key.ITEM_REQUIREMENTS.toString(), ItemType.Key.INVENTORY_REQUIREMENTS.toString(), ItemType.Key.RESULT.toString(), ItemType.Key.CRAFTING_TIME.toString());
-
-        for (String s : reqs) {
-            if (!map.containsKey(s)) {
-                throw new Exception("Could not deserialize as " + craftable.getClass().getSimpleName() + " some of the keys are missing! - " + reqs);
-            }
-        }
-
-        MemorySection itemReqSection = (MemorySection) map.get(ItemType.Key.ITEM_REQUIREMENTS.toString());
-
-        if (itemReqSection != null)
-            craftable.setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
-
-        MemorySection invReqSection = (MemorySection) map.get(ItemType.Key.INVENTORY_REQUIREMENTS.toString());
-        if (invReqSection != null)
-            craftable.setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
-
-        MemorySection itemStackSection = (MemorySection) map.get(ItemType.Key.RESULT.toString());
-        if (itemStackSection != null)
-            craftable.setResult(ItemStack.deserialize(itemStackSection.getValues(false)));
-        craftable.setCraftingTime((double) map.get(ItemType.Key.CRAFTING_TIME.toString()));
     }
 
     default String toStringFormat() {

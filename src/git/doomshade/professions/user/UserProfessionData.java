@@ -14,8 +14,8 @@ import git.doomshade.professions.event.ProfessionLevelUpEvent;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemType.Key;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -273,14 +273,14 @@ public class UserProfessionData {
     /**
      * Not used anymore.
      */
-    public boolean hasMetReq(Number value, Key key) {
-        switch (key) {
+    public boolean hasMetReq(Number value, Strings.ItemTypeEnum itemTypeEnum) {
+        switch (itemTypeEnum) {
             case EXP:
                 return getExp() >= value.doubleValue();
             case LEVEL_REQ:
                 return getLevel() >= value.intValue();
             default:
-                throw new IllegalArgumentException(key.toString() + " is not a number key value!");
+                throw new IllegalArgumentException(itemTypeEnum.s + " is not a number key value!");
         }
     }
 

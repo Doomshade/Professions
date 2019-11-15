@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types.mining;
 
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 
@@ -22,7 +23,7 @@ public class OreItemType extends ItemType<Ore> {
     }
 
     @Override
-    protected Ore deserializeObject(Map<String, Object> map) {
+    protected Ore deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Ore.deserialize(map);
     }
 

@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
+import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
     private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
@@ -152,15 +154,19 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         while (it.hasNext()) {
             i = Integer.parseInt(it.next());
 
-            Type deserialized = (Type) ItemType.deserialize(clazz, i);
+            Type deserialized;
+            try {
+                deserialized = (Type) ItemType.deserialize(clazz, i);
+            } catch (ProfessionInitializationException e) {
+                Professions.printError(e.getMessage(), Level.WARNING);
+                continue;
+            }
             if (deserialized != null) {
                 if (!objects.isEmpty() && objects.size() > i) {
                     objects.set(i, deserialized);
                 } else {
                     objects.add(deserialized);
                 }
-            } else {
-                throw new RuntimeException("Could not deserialize an object of type (" + clazz.getSimpleName() + ")!");
             }
         }
 

@@ -1,13 +1,17 @@
 package git.doomshade.professions.profession.types;
 
 
+import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public interface ITrainable {
-    String TRAINABLE = "trainable", COST = "trainable-cost", TRAINABLE_ID = "trainable-id";
+import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 
-    String VAR_TRAINABLE_COST = "\\{trainable-cost\\}";
+public interface ITrainable {
 
     String getTrainableId();
 
@@ -24,23 +28,23 @@ public interface ITrainable {
     static Map<String, Object> serializeTrainable(final ITrainable trainable) {
         return new HashMap<String, Object>() {
             {
-                put(TRAINABLE, trainable.isTrainable());
-                put(COST, trainable.getCost());
-                put(TRAINABLE_ID, trainable.getTrainableId());
+                put(TRAINABLE.s, trainable.isTrainable());
+                put(COST.s, trainable.getCost());
+                put(TRAINABLE_ID.s, trainable.getTrainableId());
             }
         };
     }
 
-    static void deserializeTrainable(Map<String, Object> map, ITrainable trainable) throws Exception {
+    static void deserializeTrainable(Map<String, Object> map, ITrainable trainable) throws ProfessionInitializationException {
 
-        if (!map.containsKey(TRAINABLE) || !map.containsKey(COST) || !map.containsKey(TRAINABLE_ID)) {
-            trainable.setTrainable(true);
-            trainable.setCost(0);
-            trainable.setTrainableId("NO_ID");
-            throw new Exception(String.format("Could not deserialize %s because some of the keys are missing! - %s (boolean type) %s (int type) %s (String type), using default values (true, 0, \"NO_ID\")", trainable.getClass().getSimpleName(), TRAINABLE, COST, TRAINABLE_ID));
+
+        trainable.setTrainable((boolean) map.getOrDefault(TRAINABLE.s, true));
+        trainable.setCost((int) map.getOrDefault(COST.s, -1));
+        trainable.setTrainableId((String) map.getOrDefault(TRAINABLE_ID.s, "NO_ID"));
+
+        List<String> list = Utils.getMissingKeys(map, Strings.ITrainableEnum.values());
+        if (!list.isEmpty()) {
+            throw new ProfessionInitializationException(trainable.getClass(), list);
         }
-        trainable.setTrainable((boolean) map.get(TRAINABLE));
-        trainable.setCost((int) map.get(COST));
-        trainable.setTrainableId((String) map.get(TRAINABLE_ID));
     }
 }

@@ -7,6 +7,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
+import static git.doomshade.professions.utils.Strings.ITrainableEnum.VAR_TRAINABLE_COST;
+
 public class TrainableSettings extends AbstractProfessionSettings {
     private static final String LEVEL_THRESHOLD = "level-threshold",
             TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained";
@@ -52,14 +54,14 @@ public class TrainableSettings extends AbstractProfessionSettings {
 
     public List<String> getNotTrainedLore(ITrainable trainable) {
         for (int i = 0; i < notTrainedLore.size(); i++) {
-            notTrainedLore.set(i, notTrainedLore.get(i).replaceAll(ITrainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
+            notTrainedLore.set(i, notTrainedLore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
         }
         return notTrainedLore;
     }
 
     public List<String> getTrainedLore(ITrainable trainable) {
         for (int i = 0; i < trainedLore.size(); i++) {
-            trainedLore.set(i, trainedLore.get(i).replaceAll(ITrainable.VAR_TRAINABLE_COST, String.valueOf(trainable.getCost())));
+            trainedLore.set(i, trainedLore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
         }
         return trainedLore;
     }

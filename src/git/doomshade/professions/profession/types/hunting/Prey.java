@@ -1,16 +1,27 @@
 package git.doomshade.professions.profession.types.hunting;
 
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.entity.EntityType;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.CONFIG_NAME;
+import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.ENTITY;
+
 public class Prey extends ItemType<Mob> {
-    private static final String ENTITY = "entity";
-    public static final String CONFIG_NAME = "config-name";
+
+    @Override
+    protected Map<String, Object> getSerializedObject(Mob object) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ENTITY.s, object.type.name());
+        map.put(CONFIG_NAME.s, object.configName);
+        return map;
+    }
 
     public Prey() {
         super();
@@ -21,23 +32,32 @@ public class Prey extends ItemType<Mob> {
     }
 
     @Override
-    protected Map<String, Object> getSerializedObject(Mob object) {
-        Map<String, Object> map = new HashMap<>();
-        map.put(ENTITY, object.type.name());
-        map.put(CONFIG_NAME, object.configName);
-        return map;
-    }
+    protected Mob deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
 
-    @Override
-    protected Mob deserializeObject(Map<String, Object> map) {
-        String entityTypeName = (String) map.get(ENTITY);
-        String configName = (String) map.get(CONFIG_NAME);
+        List<String> list = Utils.getMissingKeys(map, PreyEnum.values());
+
+        if (!list.isEmpty()) {
+            throw new ProfessionObjectInitializationException(getClass(), list, getId());
+        }
+
+        String entityTypeName = (String) map.get(ENTITY.s);
+        String configName = (String) map.get(CONFIG_NAME.s);
         for (EntityType et : EntityType.values()) {
             if (et.name().equals(entityTypeName)) {
                 return new Mob(et, configName);
             }
         }
         throw new IllegalArgumentException(entityTypeName + " is not a valid entity type name!");
+    }
+
+    enum PreyEnum {
+        ENTITY("entity"), CONFIG_NAME("config-name");
+
+        public final String s;
+
+        PreyEnum(String s) {
+            this.s = s;
+        }
     }
 
     @Override

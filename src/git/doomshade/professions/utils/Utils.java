@@ -2,8 +2,7 @@ package git.doomshade.professions.utils;
 
 import com.avaje.ebean.validation.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class Utils {
@@ -29,5 +28,19 @@ public class Utils {
 
     public static class SearchNotFoundException extends Exception {
 
+    }
+
+    @org.jetbrains.annotations.NotNull
+    public static List<String> getMissingKeys(Map<String, Object> map, Enum[] values) {
+        List<String> list = new ArrayList<>();
+
+        for (Enum value : values) {
+            final String key = value.toString();
+            if (!map.containsKey(key)) {
+                list.add(key);
+            }
+        }
+
+        return list;
     }
 }
