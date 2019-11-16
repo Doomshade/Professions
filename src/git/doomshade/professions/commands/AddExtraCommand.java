@@ -27,7 +27,7 @@ public class AddExtraCommand extends AbstractCommand {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         // TODO Auto-generated method stub
         User user = User.getUser(Bukkit.getPlayer(args[1]));
-        Profession<?> prof = Professions.fromName(args[2]);
+        Profession<?> prof = Professions.getProfession(args[2]);
         HashSet<String> extras = new HashSet<>();
         for (int i = 3; i < args.length; i++) {
             extras.add(args[i]);

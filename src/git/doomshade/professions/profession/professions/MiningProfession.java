@@ -20,7 +20,7 @@ public class MiningProfession extends Profession<IMining> {
     @Override
     public void onLoad() {
         setName("&aKopani");
-        setProfessionType(ProfessionType.SEKUNDARNI);
+        setProfessionType(ProfessionType.SECONDARY);
     }
 
     @Override

@@ -35,7 +35,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     }
 
     @Override
-    public boolean isValid(Enchant t) {
+    public boolean equalsObject(Enchant t) {
         return getObject().getItem().isSimilar(t.getItem());
     }
 

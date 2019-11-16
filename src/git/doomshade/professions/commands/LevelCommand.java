@@ -38,7 +38,7 @@ public class LevelCommand extends AbstractCommand {
                 target = (Player) sender;
             }
         }
-        Profession<?> prof = Professions.fromName(args[1]);
+        Profession<?> prof = Professions.getProfession(args[1]);
         User user = User.getUser(target);
         if (!user.hasProfession(prof)) {
             return false;

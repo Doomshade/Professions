@@ -22,7 +22,6 @@ import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
 import git.doomshade.professions.user.User;
-import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ISetup;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
@@ -40,10 +39,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.logging.Level;
 
-public class Professions extends JavaPlugin implements ISetup {
+/**
+ * The Main API class as well as the {@link JavaPlugin} class.
+ * Professions is an API for plugin developers that want to create their own customizable professions. This plugin also includes a set of examples of custom professions that's function can be disabled in config.
+ *
+ * @author Doomshade
+ */
+public final class Professions extends JavaPlugin implements ISetup {
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
@@ -57,7 +63,6 @@ public class Professions extends JavaPlugin implements ISetup {
     private final int BACKUP_DELAY = 60 * 60;
 
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
-    private static final ArrayList<IBackup> BACKUPS = new ArrayList<>();
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
@@ -65,36 +70,33 @@ public class Professions extends JavaPlugin implements ISetup {
 
     private FileConfiguration configLoader;
 
-    /**
-     * @param clazz class extending ItemType class
-     * @return
-     * @see #registerItemTypeHolder(ItemTypeHolder)
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public static <T extends ItemType<?>> ItemType<T> getItemType(Class<T> clazz, int id) {
-       /* for (ItemType<?> type : profMan.ITEMS.values()) {
-            if (type.getClass().getSimpleName().equals(clazz.getSimpleName()) && type.getId() == id) {
-                return (ItemType<T>) type;
-            }
-        }*/
-        throw new RuntimeException(String.format("%s is not a registered item type holder! Consider registering it via Professions.registerItemTypeHolder()", clazz.getSimpleName()));
+    private Professions() {
     }
 
+    /**
+     * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
+     *
+     * @return the {@link Economy} instance
+     */
     public static Economy getEconomy() {
         return econ;
     }
 
+    /**
+     * {@link GUIApi}'s {@link GUIManager} instance
+     *
+     * @return the {@link GUIManager} instance
+     */
     public static GUIManager getManager() {
         return guiManager;
     }
 
-    private static String getPrefix(String pref) {
-        return "[" + pref + "] ";
-    }
-
+    /**
+     * The instance of this plugin
+     *
+     * @return instance of this class
+     */
     public static Professions getInstance() {
-        // TODO Auto-generated method stub
         return instance;
     }
 
@@ -102,84 +104,146 @@ public class Professions extends JavaPlugin implements ISetup {
         Professions.instance = instance;
     }
 
+    /**
+     * Saves user data
+     *
+     * @throws IOException ex
+     * @see User#saveUsers()
+     */
     public static void saveUsers() throws IOException {
         User.saveUsers();
     }
 
+    /**
+     * @return the {@link ProfessionManager} instance
+     */
     public static ProfessionManager getProfessionManager() {
         return profMan;
     }
 
-    public static Profession<?> fromName(String name) {
-        return profMan.fromName(name);
+    /**
+     * @param name the name of Profession to look for
+     * @return the profession
+     * @see ProfessionManager#getProfession(String)
+     */
+    public static Profession<?> getProfession(String name) {
+        return profMan.getProfession(name);
     }
 
-    public static Profession<?> fromName(ItemStack item) {
+    /**
+     * Calls {@link #getProfession(String)} with the {@link ItemStack}'s display name
+     *
+     * @param item the item to look for the profession from
+     * @return the profession
+     * @see #getProfession(String)
+     */
+    public static Profession<?> getProfession(ItemStack item) {
         if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) {
             return null;
         }
-        return fromName(item.getItemMeta().getDisplayName());
+        return getProfession(item.getItemMeta().getDisplayName());
     }
 
+    /**
+     * @return instance of {@link EventManager}
+     */
     public static EventManager getEventManager() {
         return eventMan;
     }
 
-    public static User getUser(Player hrac) {
-        return User.getUser(hrac);
+    /**
+     * @param player the player to get {@link User} instance from
+     * @return the {@link User} instance
+     * @see User#getUser(Player)
+     */
+    public static User getUser(Player player) {
+        return User.getUser(player);
     }
 
-    public static User getUser(UUID hrac) {
-        return User.getUser(hrac);
+    /**
+     * @param uuid the uuid of player
+     * @return the {@link User} instance
+     * @see User#getUser(UUID)
+     */
+    public static User getUser(UUID uuid) {
+        return User.getUser(uuid);
     }
 
+    /**
+     * @param clazz the {@link ItemTypeHolder} class to look for
+     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
+     * @return instance of {@link ItemTypeHolder}
+     * @see ProfessionManager#getItemTypeHolder(Class)
+     */
     public static <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
         return profMan.getItemTypeHolder(clazz);
     }
 
     /**
-     * Registers an item type holder. Calls
-     * {@link ProfessionManager#registerItemTypeHolder(ItemTypeHolder)} method.
-     *
-     * @param itemTypeHolder
+     * @param itemTypeHolder the {@link ItemTypeHolder} to register
      * @see ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
      */
     public static <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         profMan.registerItemTypeHolder(itemTypeHolder);
     }
 
-    public static Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profType) {
-        return profMan.getProfession(profType);
+
+    /**
+     * @param profession the {@link Profession} class
+     * @return instance of {@link Profession}
+     * @see ProfessionManager#getProfession(Class)
+     */
+    public static Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profession) {
+        return profMan.getProfession(profession);
     }
 
     /**
-     * Registers a profession type
-     *
      * @param clazz ProfessionType class
+     * @see ProfessionManager#registerProfessionType(Class)
      */
     public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
         profMan.registerProfessionType(clazz);
     }
 
     /**
-     * Registers a profession
-     *
      * @param profession Profession to register
+     * @see ProfessionManager#registerProfession(Class)
      */
     public static void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
         profMan.registerProfession(profession);
     }
 
 
+    /**
+     * @param user the user to unload
+     * @throws IOException
+     * @see User#unloadUser(User)
+     */
     public static void unloadUser(User user) throws IOException {
-        user.save();
-        user.unload();
+        User.unloadUser(user);
     }
 
+    /**
+     * @param player the player to load
+     * @see User#loadUser(Player)
+     */
     public static void loadUser(Player player) {
         User.loadUser(player);
     }
 
+    /**
+     * Logs an error message to console
+     *
+     * @param message the message to log
+     * @param level   the log level
+     */
+    public static void log(String message, Level level) {
+        getInstance().getLogger().log(level, message);
+    }
+
+    /**
+     * Sets the instance of this plugin, attempts to hook {@link GUIApi}, {@link Citizens}, and {@link net.milkbowl.vault.Vault}, sets up instances of managers, sets up files, schedules tasks, and registers events of listeners.
+     */
     @Override
     public void onEnable() {
         setInstance(this);
@@ -199,66 +263,127 @@ public class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
 
-        //Settings.getProfessionSettings(MiningProfession.class);
     }
 
-    public static void printError(String message, Level level) {
-        getInstance().getLogger().log(level, message);
-    }
-
-    private void scheduleTasks() {
-        new SaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
-        new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
-    }
-
-    private void hookGuiApi() {
-        guiManager = GUIApi.getGuiManager(this);
-        guiManager.registerGui(PlayerProfessionsGUI.class);
-        guiManager.registerGui(ProfessionGUI.class);
-        guiManager.registerGui(TestThreeGui.class);
-        guiManager.registerGui(ProfessionTrainerGUI.class);
-    }
-
-    private void hookCitizens() {
-        if (Bukkit.getPluginManager().isPluginEnabled(Citizens.getPlugin(Citizens.class))) {
-            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
-            sendConsoleMessage("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.");
-        }
-    }
-
-    private boolean setupEconomy() {
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-            return false;
-        }
-        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return false;
-        }
-        econ = rsp.getProvider();
-        return econ != null;
-    }
-
-    private String getPrefix() {
-        return getPrefix(getName());
-    }
-
-    public void sendConsoleMessage(String message) {
-        Bukkit.getConsoleSender().sendMessage(getPrefix() + message);
-    }
-
+    /**
+     * Cancels the tasks and saves user files
+     */
     @Override
     public void onDisable() {
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
+    /**
+     * Saves only user files (currently)
+     *
+     * @throws IOException ex
+     */
     public void saveFiles() throws IOException {
         saveUsers();
+    }
+
+
+    /**
+     * Reloads the config
+     */
+    @Override
+    public void reloadConfig() {
+        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
+    }
+
+    @Override
+    public FileConfiguration getConfig() {
+        return configLoader;
+    }
+
+    /**
+     * @return the backup folder directory
+     */
+    public File getBackupFolder() {
+        if (!BACKUP_FOLDER.isDirectory()) {
+            BACKUP_FOLDER.mkdirs();
+        }
+        return BACKUP_FOLDER;
+    }
+
+    /**
+     * @return the {@link User} folder directory
+     */
+    public File getPlayerFolder() {
+        if (!PLAYER_FOLDER.isDirectory()) {
+            PLAYER_FOLDER.mkdirs();
+        }
+        return PLAYER_FOLDER;
+    }
+
+    /**
+     * @return the {@link ItemType} folder directory
+     */
+    public File getItemsFolder() {
+        if (!ITEM_FOLDER.isDirectory()) {
+            ITEM_FOLDER.mkdirs();
+        }
+        return ITEM_FOLDER;
+    }
+
+
+    @Override
+    public void setup() {
+        for (ISetup setup : SETUPS) {
+            try {
+                log("Setting up " + setup.getClass().getSimpleName(), Level.INFO);
+                setup.setup();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Cleans up {@link Profession}s from {@link ProfessionManager}. Use this method with caution as it will call {@link Collection#clear()} on all {@link Collection}s in {@link ProfessionManager}.
+     */
+    public void cleanup() {
+        profMan.PROFESSION_TYPES.clear();
+        profMan.PROFESSIONS_ID.clear();
+        profMan.PROFESSIONS_NAME.clear();
+        profMan.ITEMS.clear();
+    }
+
+    /**
+     * Registers a setup class. Used only for this plugin's purposes, not the API's!
+     *
+     * @param setup the setup to register
+     */
+    public void registerSetup(ISetup setup) {
+        if (!SETUPS.contains(setup))
+            SETUPS.add(setup);
+    }
+
+    /**
+     * Backs up all data into a zip file.
+     *
+     * @return the result of backup
+     */
+    public BackupTask.Result backup() {
+        BackupTask task = new BackupTask();
+        task.run();
+        return task.getResult();
+    }
+
+    private void registerSetups() {
+        registerSetup(Settings.getInstance());
+        for (AbstractSettings s : Settings.SETTINGS) {
+            registerSetup(s);
+        }
+        registerSetup(Messages.getInstance());
+        registerSetup(CommandHandler.getInstance(CommandHandler.class));
+        registerSetup(CommandHandler.getInstance(MiningCommandHandler.class));
+        registerSetup(ProfessionManager.getInstance());
     }
 
     private void setupFiles() {
@@ -278,92 +403,40 @@ public class Professions extends JavaPlugin implements ISetup {
         reloadConfig();
         registerSetups();
         setup();
-        registerBackups();
 
     }
 
-    @Override
-    public void reloadConfig() {
-        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
+    private void scheduleTasks() {
+        new SaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
+        new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
     }
 
-    @Override
-    public FileConfiguration getConfig() {
-        return configLoader;
+    private void hookGuiApi() {
+        guiManager = GUIApi.getGuiManager(this);
+        guiManager.registerGui(PlayerProfessionsGUI.class);
+        guiManager.registerGui(ProfessionGUI.class);
+        guiManager.registerGui(TestThreeGui.class);
+        guiManager.registerGui(ProfessionTrainerGUI.class);
     }
 
-    public File getBackupFolder() {
-        if (!BACKUP_FOLDER.isDirectory()) {
-            BACKUP_FOLDER.mkdirs();
+    private void hookCitizens() {
+        if (Bukkit.getPluginManager().isPluginEnabled(Citizens.getPlugin(Citizens.class))) {
+            log("Successfully hooked with Citizens plugin", Level.INFO);
+            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
+            log("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.", Level.INFO);
         }
-        return BACKUP_FOLDER;
     }
 
-    public File getPlayerFolder() {
-        if (!PLAYER_FOLDER.isDirectory()) {
-            PLAYER_FOLDER.mkdirs();
+    private void setupEconomy() {
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            return;
         }
-        return PLAYER_FOLDER;
-    }
-
-    public File getItemsFolder() {
-        if (!ITEM_FOLDER.isDirectory()) {
-            ITEM_FOLDER.mkdirs();
+        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return;
         }
-        return ITEM_FOLDER;
-    }
 
-    private void registerSetups() {
-        registerSetup(Settings.getInstance());
-        for (AbstractSettings s : Settings.SETTINGS) {
-            registerSetup(s);
-        }
-        registerSetup(Messages.getInstance());
-        registerSetup(CommandHandler.getInstance(CommandHandler.class));
-        registerSetup(CommandHandler.getInstance(MiningCommandHandler.class));
-        registerSetup(ProfessionManager.getInstance());
+        log("Successfully hooked with Vault plugin", Level.INFO);
+        econ = rsp.getProvider();
     }
-
-    @Override
-    public void setup() {
-        for (ISetup setup : SETUPS) {
-            try {
-                sendConsoleMessage("Setting up " + setup.getClass().getSimpleName());
-                setup.setup();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        sendConsoleMessage("Done!");
-    }
-
-    public void cleanup() {
-        profMan.PROFESSION_TYPES.clear();
-        profMan.PROFESSIONS_ID.clear();
-        profMan.PROFESSIONS_NAME.clear();
-        profMan.ITEMS.clear();
-    }
-
-    public void registerSetup(ISetup setup) {
-        if (!SETUPS.contains(setup))
-            SETUPS.add(setup);
-    }
-
-    private void registerBackups() {
-        registerBackup(CommandHandler.getInstance(CommandHandler.class));
-        registerBackup(CommandHandler.getInstance(MiningCommandHandler.class));
-        registerBackup(ProfessionManager.getInstance());
-        registerBackup(User.getNoUser());
-    }
-
-    public BackupTask.Result backup() {
-        BackupTask task = new BackupTask();
-        task.run();
-        return task.getResult();
-    }
-
-    private void registerBackup(IBackup backup) {
-        BACKUPS.add(backup);
-    }
-
 }

@@ -1,5 +1,6 @@
 package git.doomshade.professions;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.data.ProfessionSettings;
@@ -25,7 +26,6 @@ import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
-import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -40,13 +40,25 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
-public final class ProfessionManager implements ISetup, IBackup {
+/**
+ * A manager regarding registration and queries of a {@link Profession}, {@link IProfessionType}, {@link ItemType} and {@link ItemTypeHolder}.
+ *
+ * @author Doomshade
+ * @see Profession
+ * @see IProfessionType
+ * @see ItemType
+ * @see ItemTypeHolder
+ */
+public final class ProfessionManager implements ISetup {
     private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
 
@@ -63,14 +75,25 @@ public final class ProfessionManager implements ISetup, IBackup {
     private ProfessionManager() {
     }
 
+    /**
+     * @return the instance of this class
+     */
     public static ProfessionManager getInstance() {
         return instance;
     }
 
+    /**
+     * @return all registered {@link ItemTypeHolder}s
+     */
     public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
         return ImmutableSet.copyOf(ITEMS.keySet());
     }
 
+    /**
+     * @param clazz the {@link ItemTypeHolder} class to look for
+     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
+     * @return instance of {@link ItemTypeHolder}
+     */
     public <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
         for (Entry<ItemTypeHolder<?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
             if (entry.getValue().equals(clazz)) {
@@ -80,26 +103,130 @@ public final class ProfessionManager implements ISetup, IBackup {
         throw new RuntimeException(clazz + " is not a registered item type holder!");
     }
 
+    /**
+     * @return all registered {@link IProfessionType}s
+     */
     public ImmutableSet<Class<? extends IProfessionType>> getProfessionTypes() {
         return ImmutableSet.copyOf(PROFESSION_TYPES);
     }
 
+    /**
+     * @return all registered {@link Profession}s
+     */
     @SuppressWarnings("rawtypes")
     public ImmutableSet<Class<? extends Profession>> getRegisteredProfessions() {
         return ImmutableSet.copyOf(REGISTERED_PROFESSIONS);
     }
 
+    /**
+     * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getID()}
+     */
     public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsById() {
         return ImmutableMap.copyOf(PROFESSIONS_ID);
     }
 
+    /**
+     * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getName()}
+     */
     public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsByName() {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
+    /**
+     * Updates all professions and then sorts them
+     *
+     * @see #updateProfession(Profession)
+     * @see #sortProfessions()
+     */
     public void updateProfessions() {
         PROFESSIONS_ID.forEach((y, x) -> updateProfession(x));
         sortProfessions();
+    }
+
+    /**
+     * @param itemTypeHolder the {@link ItemTypeHolder} to register
+     * @param <T>            the {@link ItemTypeHolder}
+     * @throws IOException ex
+     */
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
+        itemTypeHolder.update();
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem().getClass());
+    }
+
+    /**
+     * @param name the {@link Profession#getName()} or {@link Profession#getID()} of {@link Profession}
+     * @return the {@link Profession} if found, {@code null} otherwise
+     */
+    @Nullable
+    public Profession<?> getProfession(String name) {
+        if (name.isEmpty()) {
+            return null;
+        }
+        Profession<?> prof = PROFESSIONS_ID.get(name.toLowerCase());
+        if (prof == null) {
+            return PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+        }
+        return prof;
+    }
+
+    /**
+     * @param profession the {@link Profession} class
+     * @return the {@link Profession} if found, {@code null} otherwise
+     */
+    @Nullable
+    public Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profession) {
+        for (Profession<? extends IProfessionType> prof : PROFESSIONS_ID.values()) {
+            if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
+                return prof;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Registers a {@link Profession}. Call this method in your {@link org.bukkit.plugin.java.JavaPlugin}'s {@link JavaPlugin#onEnable()} method.
+     *
+     * @param profession the {@link Profession} class
+     */
+    public void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
+        try {
+            registerProfession(profession.getDeclaredConstructor().newInstance());
+        } catch (Exception e) {
+            Professions.log("Do not override nor create any new constructors in your profession class!", Level.WARNING);
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * @param clazz the {@link IProfessionType} class
+     * @see IProfessionType for already registered profession types.
+     * Registers a custom {@link IProfessionType}.
+     */
+    public void registerProfessionType(Class<? extends IProfessionType> clazz) {
+        PROFESSION_TYPES.add(clazz);
+    }
+
+    /**
+     * Updates a {@link Profession} from the {@link Profession}'s file. Also calls {@link Profession#onPostLoad()} method at the end.
+     *
+     * @param prof the {@link Profession} to update
+     */
+    public void updateProfession(Profession<? extends IProfessionType> prof) {
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+        if (!loader.getKeys(false).contains(prof.getID())) {
+            return;
+        }
+        Profession<?> fileProf = Profession
+                .deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
+        prof.setName(fileProf.getName());
+        prof.setProfessionType(fileProf.getProfessionType());
+        prof.setIcon(fileProf.getIcon());
+
+        ProfessionSettings settings = new ProfessionSettings(prof);
+        Settings.registerSettings(settings);
+        prof.setProfessionSettings(settings);
+
+        prof.onPostLoad();
     }
 
     @Override
@@ -147,7 +274,7 @@ public final class ProfessionManager implements ISetup, IBackup {
                 ItemStack item = new ItemStack(Material.GLASS);
                 ItemMeta meta = item.getItemMeta();
                 meta.setDisplayName(ChatColor.BLUE + "Test gathered item");
-                meta.setLore(Arrays.asList("Yay"));
+                meta.setLore(ImmutableList.of("Yay"));
                 item.setItemMeta(meta);
                 GatherItem gatherItem = new GatherItem(item, 500);
                 gatherItem.setName(ChatColor.DARK_AQUA + "Test gather item");
@@ -169,7 +296,7 @@ public final class ProfessionManager implements ISetup, IBackup {
                 ItemStack craftRequirement = new ItemStack(Material.GLASS);
                 ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
                 craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
-                craftRequirementMeta.setLore(Arrays.asList("Japato"));
+                craftRequirementMeta.setLore(ImmutableList.of("Japato"));
                 craftRequirement.setItemMeta(craftRequirementMeta);
                 eit.addCraftingRequirement(craftRequirement);
                 eit.setName(ChatColor.RED + "Test random attribute enchantment");
@@ -201,7 +328,7 @@ public final class ProfessionManager implements ISetup, IBackup {
                     }
                     CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
                     for (CustomRecipe customRecipe : getRegisteredItemTypes()) {
-                        if (customRecipe.isValid(bukkitShapedRecipe)) {
+                        if (customRecipe.equalsObject(bukkitShapedRecipe)) {
                             bukkitRecipes.remove();
                         }
                     }
@@ -209,11 +336,6 @@ public final class ProfessionManager implements ISetup, IBackup {
                 return cr;
             }
         });
-    }
-
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
-        itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem().getClass());
     }
 
 
@@ -240,27 +362,6 @@ public final class ProfessionManager implements ISetup, IBackup {
         sortProfessions();
     }
 
-    public Profession<?> fromName(String string) {
-        if (string.isEmpty()) {
-            return null;
-        }
-        Profession<?> prof = PROFESSIONS_ID.get(string.toLowerCase());
-        if (prof == null) {
-            return PROFESSIONS_NAME.get(ChatColor.stripColor(string.toLowerCase()));
-        }
-        return prof;
-    }
-
-    public Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profType) {
-        for (Profession<? extends IProfessionType> prof : PROFESSIONS_ID.values()) {
-            if (prof.getClass().getSimpleName().equals(profType.getSimpleName())) {
-                return prof;
-            }
-        }
-        throw new IllegalStateException(profType.getSimpleName()
-                + " is not a registered profession somehow. Contact any of the following authors: "
-                + Professions.getInstance().getDescription().getAuthors());
-    }
 
     private void registerProfession(Profession<? extends IProfessionType> prof) {
         if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
@@ -285,44 +386,13 @@ public final class ProfessionManager implements ISetup, IBackup {
         }
         try {
             updateProfession(prof);
-            Professions.getInstance()
-                    .sendConsoleMessage("Registered " + prof.getColoredName() + ChatColor.RESET + " profession");
+            Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
         } catch (IllegalArgumentException e) {
-            Professions.getInstance().sendConsoleMessage("Could not update " + prof.getID() + " profession. Reason:");
+            Professions.log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
             e.printStackTrace();
         }
     }
 
-    public void registerProfession(Class<Profession<? extends IProfessionType>> prof) {
-        try {
-            registerProfession(prof.getDeclaredConstructor().newInstance());
-        } catch (Exception e) {
-            Professions.getInstance().sendConsoleMessage("Do not override nor create any new constructors in your profession class!");
-            e.printStackTrace();
-        }
-    }
-
-    public void registerProfessionType(Class<? extends IProfessionType> clazz) {
-        PROFESSION_TYPES.add(clazz);
-    }
-
-    public void updateProfession(Profession<? extends IProfessionType> prof) throws IllegalArgumentException {
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        if (!loader.getKeys(false).contains(prof.getID())) {
-            return;
-        }
-        Profession<?> fileProf = Profession
-                .deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
-        prof.setName(fileProf.getName());
-        prof.setProfessionType(fileProf.getProfessionType());
-        prof.setIcon(fileProf.getIcon());
-
-        ProfessionSettings settings = new ProfessionSettings(prof);
-        Settings.registerSettings(settings);
-        prof.setProfessionSettings(settings);
-
-        prof.onPostLoad();
-    }
 
     private void setupProfessionsFile() throws IOException {
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
@@ -336,8 +406,7 @@ public final class ProfessionManager implements ISetup, IBackup {
     }
 
     private void sortProfessions() {
-        Map<String, Profession<? extends IProfessionType>> MAP_COPY = new HashMap<String, Profession<? extends IProfessionType>>(
-                PROFESSIONS_ID);
+        Map<String, Profession<? extends IProfessionType>> MAP_COPY = new HashMap<>(PROFESSIONS_ID);
         PROFESSIONS_ID = sortByValue(MAP_COPY);
         MAP_COPY = new HashMap<>(PROFESSIONS_NAME);
         PROFESSIONS_NAME = sortByValue(MAP_COPY);
@@ -356,11 +425,6 @@ public final class ProfessionManager implements ISetup, IBackup {
         }
 
         return sortedMap;
-    }
-
-    @Override
-    public File[] getFiles() {
-        return new File[]{file};
     }
 
 }

@@ -1,7 +1,6 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,7 +19,7 @@ import java.util.*;
  *
  * @author Doomshade
  */
-public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup, IBackup {
+public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
     private final ArrayList<AbstractCommand> INSTANCE_COMMANDS = new ArrayList<>();
@@ -216,11 +215,5 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
         // TODO Auto-generated method stub
         return false;
-    }
-
-    @Override
-    public final File[] getFiles() {
-        // TODO Auto-generated method stub
-        return new File[]{file};
     }
 }

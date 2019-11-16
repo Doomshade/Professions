@@ -8,8 +8,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.KEY_MATERIAL;
 import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.KEY_MINING_RESULT;
@@ -17,9 +17,9 @@ import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.KEY_
 public class Ore implements ConfigurationSerializable {
 
     public static Ore deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        List<String> list = Utils.getMissingKeys(map, OreEnum.values());
+        Set<String> list = Utils.getMissingKeys(map, OreEnum.values());
         if (!list.isEmpty()) {
-            throw new ProfessionObjectInitializationException(OreItemType.class, list, -1);
+            throw new ProfessionObjectInitializationException(OreItemType.class, list);
         }
 
         Material mat = Material.getMaterial((String) map.get(KEY_MATERIAL.s));

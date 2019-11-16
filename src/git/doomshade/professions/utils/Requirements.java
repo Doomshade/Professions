@@ -9,17 +9,36 @@ import org.bukkit.inventory.PlayerInventory;
 
 import java.util.*;
 
+/**
+ * A class managing requirements of a player.
+ *
+ * @author Doomshade
+ * @see git.doomshade.professions.profession.types.ICraftable
+ */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
     private final List<ItemStack> items;
 
+    /**
+     * @param items the requirements
+     */
     public Requirements(List<ItemStack> items) {
         this.items = items;
     }
 
-    public Requirements(){
+    /**
+     * Calls {@link Requirements#Requirements(List)} with an empty {@link List}.
+     */
+    public Requirements() {
         this(new ArrayList<>());
     }
 
+    /**
+     * Deserialization method
+     *
+     * @param map the {@link ConfigurationSerializable#serialize()}
+     * @return deserialized class
+     * @see ConfigurationSerializable
+     */
     public static Requirements deserialize(Map<String, Object> map) {
         List<ItemStack> items = new ArrayList<>();
         Iterator<Object> iterator = map.values().iterator();
@@ -39,14 +58,26 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         return map;
     }
 
+    /**
+     * @return a copy of the list of requirements
+     */
     public List<ItemStack> getRequirements() {
         return new ArrayList<>(items);
     }
 
+    /**
+     * Adds an {@link ItemStack} requirement
+     *
+     * @param requirement the requirement to add
+     */
     public void addRequirement(ItemStack requirement) {
         items.add(requirement);
     }
 
+    /**
+     * @param player the player to check the requirements for
+     * @return {@code true} if player meets requirements, {@code false} otherwise
+     */
     public boolean meetsRequirements(Player player) {
         HashSet<ItemStack> itemz = getMetRequirements(player);
         if (itemz.size() > items.size()) {
@@ -70,12 +101,21 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         return itemz;
     }
 
+    /**
+     * @param player the player to check the requirements for
+     * @return the missing requirements of player
+     */
     public HashSet<ItemStack> getMissingRequirements(Player player) {
         HashSet<ItemStack> items = new HashSet<>(this.items);
         items.removeAll(getMetRequirements(player));
         return items;
     }
 
+    /**
+     * Removes requirements from players inventory
+     *
+     * @param player the player to remove the requirements from
+     */
     public void removeRequiredItems(Player player) {
         PlayerInventory inv = player.getInventory();
         items.forEach(inv::removeItem);
@@ -86,11 +126,22 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         return items.iterator();
     }
 
+    /**
+     * Calls {@link #toString(Player, ChatColor, ChatColor)} with all null arguments.
+     *
+     * @return the {@link String} representation of this class
+     */
     @Override
     public String toString() {
         return toString(null, null, null);
     }
 
+    /**
+     * @param player            the player to base this {@link String} representation about
+     * @param requirementMet    the custom met requirement color
+     * @param requirementNotMet the custom not met requirement color
+     * @return the {@link String} representation of this class
+     */
     public String toString(Player player, ChatColor requirementMet, ChatColor requirementNotMet) {
         StringBuilder sb = new StringBuilder();
         Iterator<ItemStack> iterator = iterator();

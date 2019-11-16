@@ -15,7 +15,7 @@ public class SkinningProfession extends Profession<IHunting> {
     @Override
     public void onLoad() {
         setName("&6Skinning");
-        setProfessionType(ProfessionType.SEKUNDARNI);
+        setProfessionType(ProfessionType.SECONDARY);
     }
 
     @Override

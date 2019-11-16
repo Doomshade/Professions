@@ -6,25 +6,29 @@ import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 
+/**
+ * Interface for trainable {@link ItemType}s. Implement this in a class extending {@link ItemType},
+ * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeTrainable(Map, ITrainable)}
+ * with the map argument and {@code this} argument inside the method.
+ * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.} {@link ItemType#serialize()} variable with an argument
+ * of {@link #serializeTrainable(ITrainable)} with {@code this} as an argument inside the method and return the map.
+ *
+ * @author Doomshade
+ * @see git.doomshade.professions.profession.types.enchanting.EnchantedItemType on GitHub for an example
+ */
 public interface ITrainable {
 
-    String getTrainableId();
-
-    void setTrainableId(String id);
-
-    boolean isTrainable();
-
-    void setTrainable(boolean trainable);
-
-    int getCost();
-
-    void setCost(int cost);
-
+    /**
+     * Make sure to override the {@link ItemType#serialize()} method and call and call {@link Map#putAll(Map)} of this map.
+     *
+     * @param trainable the trainable item
+     * @return the serialized form of this class
+     */
     static Map<String, Object> serializeTrainable(final ITrainable trainable) {
         return new HashMap<String, Object>() {
             {
@@ -35,6 +39,13 @@ public interface ITrainable {
         };
     }
 
+    /**
+     * Make sure to override the {@link ItemType#deserialize(Map)} method and call this method.
+     *
+     * @param map       the serialized version of this class
+     * @param trainable the trainable item
+     * @throws ProfessionInitializationException if the deserialization was unsuccessful
+     */
     static void deserializeTrainable(Map<String, Object> map, ITrainable trainable) throws ProfessionInitializationException {
 
 
@@ -42,9 +53,47 @@ public interface ITrainable {
         trainable.setCost((int) map.getOrDefault(COST.s, -1));
         trainable.setTrainableId((String) map.getOrDefault(TRAINABLE_ID.s, "NO_ID"));
 
-        List<String> list = Utils.getMissingKeys(map, Strings.ITrainableEnum.values());
+        Set<String> list = Utils.getMissingKeys(map, Strings.ITrainableEnum.values());
         if (!list.isEmpty()) {
-            throw new ProfessionInitializationException(trainable.getClass(), list);
+            throw new ProfessionInitializationException((Class<? extends ItemType>) trainable.getClass(), list);
         }
     }
+
+    /**
+     * @return the trainable id of this item type
+     */
+    String getTrainableId();
+
+    /**
+     * Sets the trainable id of this item type
+     *
+     * @param id the id to set
+     */
+    void setTrainableId(String id);
+
+    /**
+     * Set this to be {@code true} as default.
+     *
+     * @return {@code true} if it is trainable (for temporal purposes)
+     */
+    boolean isTrainable();
+
+    /**
+     * Sets the item type to be or not to be trainable.
+     *
+     * @param trainable whether or not it should be trainable
+     */
+    void setTrainable(boolean trainable);
+
+    /**
+     * @return the cost of training this item type
+     */
+    int getCost();
+
+    /**
+     * Sets the training cost of this item type
+     *
+     * @param cost the cost to set
+     */
+    void setCost(int cost);
 }

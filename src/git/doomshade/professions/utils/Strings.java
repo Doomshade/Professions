@@ -1,7 +1,15 @@
 package git.doomshade.professions.utils;
 
+/**
+ * A class of {@code public static final} {@link String}s divided into enums for queries.
+ *
+ * @author Doomshade
+ */
 public final class Strings {
 
+    /**
+     * The enum for {@link git.doomshade.professions.profession.types.ITrainable}.
+     */
     public enum ITrainableEnum {
         TRAINABLE("trainable"), COST("trainable-cost"), TRAINABLE_ID("trainable-id"), VAR_TRAINABLE_COST("\\{trainable-cost\\}");
 
@@ -12,6 +20,9 @@ public final class Strings {
         }
     }
 
+    /**
+     * The enum for {@link git.doomshade.professions.profession.types.ICraftable}
+     */
     public enum ICraftableEnum {
         ITEM_REQUIREMENTS("item-requirements"),
         RESULT("result"),
@@ -25,6 +36,9 @@ public final class Strings {
         }
     }
 
+    /**
+     * The enum for {@link git.doomshade.professions.profession.types.ItemType}
+     */
     public enum ItemTypeEnum {
         LEVEL_REQ("level-req"),
         PROFTYPE("type-unchangable"),

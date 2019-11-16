@@ -6,7 +6,6 @@ import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.utils.IBackup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,19 +13,21 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
- * Class representing a User
+ * Class representing a user
  *
  * @author Doomshade
  */
-public class User implements IBackup {
+public final class User {
 
     private static final String KEY_NAME = "name";
     private static final String KEY_PROFESSIONS = "professions";
@@ -67,12 +68,24 @@ public class User implements IBackup {
     }
 
     /**
-     * Unloads user
+     * Saves and unloads user
      *
-     * @param user the player
+     * @param player the player
+     * @throws IOException ex
      */
-    public static void unload(Player user) {
-        getUser(user).unload();
+    public static void unloadUser(Player player) throws IOException {
+        unloadUser(getUser(player));
+    }
+
+    /**
+     * Saves and unloads user
+     *
+     * @param user the user to unload
+     * @throws IOException ex
+     */
+    public static void unloadUser(User user) throws IOException {
+        user.save();
+        user.unloadUser();
     }
 
     /**
@@ -82,12 +95,7 @@ public class User implements IBackup {
      */
     public static User getNoUser() {
         if (noUser == null) {
-            noUser = new User() {
-                @Override
-                public File[] getFiles() {
-                    return new File[]{Professions.getInstance().getPlayerFolder()};
-                }
-            };
+            noUser = new User();
         }
         return noUser;
     }
@@ -95,15 +103,15 @@ public class User implements IBackup {
     /**
      * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded and then returned from memory.
      *
-     * @param hrac the player
+     * @param player the player
      * @return an instance of {@code User}
      */
-    public static User getUser(Player hrac) {
-        if (hrac == null) {
+    public static User getUser(Player player) {
+        if (player == null) {
             return null;
         }
-        loadUser(hrac);
-        return USERS.get(hrac.getUniqueId());
+        loadUser(player);
+        return USERS.get(player.getUniqueId());
     }
 
     /**
@@ -136,22 +144,26 @@ public class User implements IBackup {
     /**
      * Used to load user when logging in.
      *
-     * @param hrac the player
+     * @param player the player
      */
-    public static void loadUser(Player hrac) {
-        if (!isLoaded(hrac)) {
-            USERS.put(hrac.getUniqueId(), new User(hrac));
+    public static void loadUser(Player player) {
+        if (!isLoaded(player)) {
+            USERS.put(player.getUniqueId(), new User(player));
         }
     }
 
-    private static boolean isLoaded(Player hrac) {
-        return USERS.containsKey(hrac.getUniqueId());
+    /**
+     * @param player the player
+     * @return {@code true} if the player is loaded, {@code false} otherwise
+     */
+    public static boolean isLoaded(Player player) {
+        return USERS.containsKey(player.getUniqueId());
     }
 
     /**
      * Saves all loaded users
      *
-     * @throws IOException
+     * @throws IOException ex
      */
     public static void saveUsers() throws IOException {
         for (User user : USERS.values()) {
@@ -159,48 +171,11 @@ public class User implements IBackup {
         }
     }
 
-    ConfigurationSection getProfessionsSection() {
-        return profSection;
-    }
-
-    ConfigurationSection getProfessionSection(Profession<? extends IProfessionType> prof) {
-        if (!profSection.isConfigurationSection(prof.getID())) {
-            return null;
-        }
-        return profSection.getConfigurationSection(prof.getID());
-    }
-
-    private void loadProfessions() {
-        this.professions = new HashMap<>();
-        profSection.getKeys(false).forEach(x -> {
-            Profession<? extends IProfessionType> prof = Professions.getProfessionManager().fromName(x);
-            if (prof != null)
-                professions.put(prof.getClass(), new UserProfessionData(this, prof));
-        });
-        usedProfessionTypes = new HashMap<>();
-        for (ProfessionType type : ProfessionType.values()) {
-            usedProfessionTypes.put(type, false);
-        }
-
-        for (UserProfessionData upd : professions.values()) {
-            usedProfessionTypes.put(upd.getProfession().getProfessionType(), true);
-        }
-
-        if (professions.size() > 2) {
-            Professions.getInstance()
-                    .sendConsoleMessage(player.getName() + " has more than 2 professions! This should not happen!");
-        }
-    }
-
-    @Override
-    public File[] getFiles() {
-        return new File[]{file};
-    }
 
     /**
      * Unloads the player (used when player is logging off)
      */
-    public void unload() {
+    public void unloadUser() {
         USERS.remove(player.getUniqueId());
     }
 
@@ -268,6 +243,7 @@ public class User implements IBackup {
 
     /**
      * Sends the user a message
+     *
      * @param message the message to send
      */
     public void sendMessage(String... message) {
@@ -275,7 +251,6 @@ public class User implements IBackup {
     }
 
     /**
-     *
      * @return set of users profession data
      */
     public ImmutableSet<UserProfessionData> getProfessions() {
@@ -283,7 +258,6 @@ public class User implements IBackup {
     }
 
     /**
-     *
      * @return the player
      */
     public final Player getPlayer() {
@@ -306,9 +280,8 @@ public class User implements IBackup {
     }
 
     /**
-     *
      * @param level the level to add
-     * @param prof the profession to add the level to
+     * @param prof  the profession to add the level to
      * @return {@link UserProfessionData#addLevel(int)}
      */
     public boolean addLevel(int level, Profession<? extends IProfessionType> prof) {
@@ -318,26 +291,55 @@ public class User implements IBackup {
         return false;
     }
 
+    /**
+     * Sets the exp of a profession
+     *
+     * @param exp  the exp to set
+     * @param prof the profession to set the exp for
+     * @see UserProfessionData#setExp(double)
+     */
     public void setExp(double exp, Profession<? extends IProfessionType> prof) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             upd.setExp(exp);
     }
 
+    /**
+     * Sets the level of a profession
+     *
+     * @param level the level to set
+     * @param prof  the profession to set the level for
+     * @see UserProfessionData#setLevel(int)
+     */
     public void setLevel(int level, Profession<? extends IProfessionType> prof) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             upd.setLevel(level);
     }
 
+    /**
+     * @param prof the profession
+     * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
+     */
+    @Nullable
     public UserProfessionData getProfessionData(Profession<? extends IProfessionType> prof) {
         return professions.get(prof.getClass());
     }
 
+    /**
+     * @param profClass the profession's class
+     * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
+     */
+    @Nullable
     public UserProfessionData getProfessionData(Class<? extends Profession<? extends IProfessionType>> profClass) {
         return professions.get(profClass);
     }
 
+    /**
+     * Saves the user's data
+     *
+     * @throws IOException ex
+     */
     public void save() throws IOException {
         for (UserProfessionData upd : professions.values()) {
             upd.save();
@@ -345,10 +347,18 @@ public class User implements IBackup {
         loader.save(file);
     }
 
+    /**
+     * @return {@code true} if the user bypasses level requirement, {@code false} otherwise
+     */
     public boolean isBypass() {
         return bypass;
     }
 
+    /**
+     * Sets whether or not this user should bypass level requirement. Usable for admins. Sets {@link #setSuppressExpEvent(boolean)} to {@code false} if {@code bypass} is {@code false}
+     *
+     * @param bypass the bypass
+     */
     public void setBypass(boolean bypass) {
         this.bypass = bypass;
         if (!bypass) {
@@ -356,11 +366,51 @@ public class User implements IBackup {
         }
     }
 
+    /**
+     * @return {@code true} if the user is being suppressed from receiving exp, {@code false} otherwise
+     */
     public boolean isSuppressExpEvent() {
         return suppressExpEvent;
     }
 
+    /**
+     * Sets the player to suppress the player from receiving exp
+     *
+     * @param suppressExpEvent the suppressExpEvent
+     */
     public void setSuppressExpEvent(boolean suppressExpEvent) {
         this.suppressExpEvent = suppressExpEvent;
+    }
+
+    ConfigurationSection getProfessionsSection() {
+        return profSection;
+    }
+
+    ConfigurationSection getProfessionSection(Profession<? extends IProfessionType> prof) {
+        if (!profSection.isConfigurationSection(prof.getID())) {
+            return null;
+        }
+        return profSection.getConfigurationSection(prof.getID());
+    }
+
+    private void loadProfessions() {
+        this.professions = new HashMap<>();
+        profSection.getKeys(false).forEach(x -> {
+            Profession<? extends IProfessionType> prof = Professions.getProfessionManager().getProfession(x);
+            if (prof != null)
+                professions.put(prof.getClass(), new UserProfessionData(this, prof));
+        });
+        usedProfessionTypes = new HashMap<>();
+        for (ProfessionType type : ProfessionType.values()) {
+            usedProfessionTypes.put(type, false);
+        }
+
+        for (UserProfessionData upd : professions.values()) {
+            usedProfessionTypes.put(upd.getProfession().getProfessionType(), true);
+        }
+
+        if (professions.size() > 2) {
+            Professions.log(player.getName() + " has more than 2 professions! This should not happen!", Level.SEVERE);
+        }
     }
 }
