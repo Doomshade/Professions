@@ -15,7 +15,6 @@ import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -27,6 +26,8 @@ import java.util.List;
 
 /**
  * Class responsible for storing and manipulating {@link User}'s {@link Profession} data.
+ *
+ * @author Doomshade
  */
 public class UserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";
@@ -139,7 +140,7 @@ public class UserProfessionData {
      *
      * @param exp    the amount of exp to give
      * @param source the source of exp ({@code null} for command source)
-     * @return {@code true} if {@code exp > 0} and the event is not cancelled
+     * @return {@code true} if {@code exp > 0} and the {@link ProfessionExpGainEvent#isCancelled()} returns {@code false}.
      */
     public boolean addExp(double exp, ItemType<?> source) {
         if (exp == 0) {
@@ -185,17 +186,6 @@ public class UserProfessionData {
         return Settings.getSettings(ExpSettings.class).getLevelCap();
     }
 
-    private void checkForLevel() {
-        int reqExp;
-        while (exp >= (reqExp = getRequiredExp())) {
-            if (isMaxLevel()) {
-                this.exp = 0d;
-                break;
-            }
-            exp -= reqExp;
-            addLevel(1);
-        }
-    }
 
     /**
      * Adds levels to the user's profession data
@@ -234,6 +224,7 @@ public class UserProfessionData {
      *
      * @param trainable the trainable to train
      * @return {@code true} if the user has successfully trained an {@link ITrainable} (has enough money and {@link #hasTrained(ITrainable)} returns {@code false}), false otherwise
+     * @see #addExtra(String)
      */
     public boolean train(ITrainable trainable) {
         EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getCost());
@@ -247,41 +238,10 @@ public class UserProfessionData {
     /**
      * @param trainable the trainable to check for
      * @return {@code true} if the user has already trained this, {@code false} otherwise
+     * @see #hasExtra(String)
      */
     public boolean hasTrained(ITrainable trainable) {
         return hasExtra(trainable.getTrainableId());
-    }
-
-    private void loseExp(double exp) {
-        if (exp > 0) {
-            throw new IllegalArgumentException("dankšejd někde udělal chybu");
-        }
-
-        ProfessionExpLoseEvent event = new ProfessionExpLoseEvent(this, Math.abs(exp));
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return;
-        }
-        this.exp -= Math.abs(event.getExp());
-        user.sendMessage(builder.setMessage(Message.EXP_LOSE).setExp(exp).setLevel(level).build());
-        if (this.exp < 0) {
-            this.exp = 0;
-        }
-    }
-
-    @Deprecated
-    /**
-     * Not used anymore.
-     */
-    public boolean hasMetReq(Number value, Strings.ItemTypeEnum itemTypeEnum) {
-        switch (itemTypeEnum) {
-            case EXP:
-                return getExp() >= value.doubleValue();
-            case LEVEL_REQ:
-                return getLevel() >= value.intValue();
-            default:
-                throw new IllegalArgumentException(itemTypeEnum.s + " is not a number key value!");
-        }
     }
 
     /**
@@ -314,5 +274,34 @@ public class UserProfessionData {
 
     private String translatedExtra(String extra) {
         return ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', extra).toLowerCase());
+    }
+
+    private void checkForLevel() {
+        int reqExp;
+        while (exp >= (reqExp = getRequiredExp())) {
+            if (isMaxLevel()) {
+                this.exp = 0d;
+                break;
+            }
+            exp -= reqExp;
+            addLevel(1);
+        }
+    }
+
+    private void loseExp(double exp) {
+        if (exp > 0) {
+            throw new IllegalArgumentException("dankšejd někde udělal chybu");
+        }
+
+        ProfessionExpLoseEvent event = new ProfessionExpLoseEvent(this, Math.abs(exp));
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+        this.exp -= Math.abs(event.getExp());
+        user.sendMessage(builder.setMessage(Message.EXP_LOSE).setExp(exp).setLevel(level).build());
+        if (this.exp < 0) {
+            this.exp = 0;
+        }
     }
 }

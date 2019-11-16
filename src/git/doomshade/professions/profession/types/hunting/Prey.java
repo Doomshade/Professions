@@ -7,8 +7,8 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.entity.EntityType;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.CONFIG_NAME;
 import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.ENTITY;
@@ -34,7 +34,7 @@ public class Prey extends ItemType<Mob> {
     @Override
     protected Mob deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
 
-        List<String> list = Utils.getMissingKeys(map, PreyEnum.values());
+        Set<String> list = Utils.getMissingKeys(map, PreyEnum.values());
 
         if (!list.isEmpty()) {
             throw new ProfessionObjectInitializationException(getClass(), list, getId());

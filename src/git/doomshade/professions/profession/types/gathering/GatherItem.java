@@ -2,8 +2,6 @@ package git.doomshade.professions.profession.types.gathering;
 
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
-import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
@@ -19,7 +17,7 @@ public class GatherItem extends ItemType<ItemStack> {
     }
 
     @Override
-    public boolean isValid(ItemStack t) {
+    public boolean equals(ItemStack t) {
         return getObject().isSimilar(t);
     }
 

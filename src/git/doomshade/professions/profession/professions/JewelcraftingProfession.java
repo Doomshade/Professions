@@ -16,7 +16,7 @@ public final class JewelcraftingProfession extends Profession<ICrafting> {
     @Override
     public void onLoad() {
         setName("&bJewelcrafting");
-        setProfessionType(ProfessionType.PRIMARNI);
+        setProfessionType(ProfessionType.PRIMARY);
     }
 
     @Override

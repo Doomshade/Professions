@@ -12,6 +12,11 @@ import org.bukkit.event.EventHandler;
 
 import java.util.Optional;
 
+/**
+ * Trait for custom profession trainers.
+ *
+ * @author Doomshade
+ */
 @TraitName(value = "professiontrainer")
 public class ProfessionTrainerTrait extends Trait {
     private static final String KEY_PROFESSION = "profession";
@@ -49,7 +54,7 @@ public class ProfessionTrainerTrait extends Trait {
 
     @Override
     public void load(DataKey key) {
-        this.profession = Professions.fromName(key.getString(KEY_PROFESSION));
+        this.profession = Professions.getProfession(key.getString(KEY_PROFESSION));
 
     }
 
@@ -61,6 +66,6 @@ public class ProfessionTrainerTrait extends Trait {
 
     @Override
     public void onAttach() {
-        this.profession = Professions.fromName("enchanting");
+        this.profession = Professions.getProfession("enchanting");
     }
 }

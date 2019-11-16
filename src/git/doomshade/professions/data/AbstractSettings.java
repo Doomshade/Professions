@@ -5,6 +5,8 @@ import git.doomshade.professions.utils.ISetup;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.logging.Level;
+
 public abstract class AbstractSettings implements ISetup {
     protected static FileConfiguration config;
     private static Professions plugin = Professions.getInstance();
@@ -22,12 +24,12 @@ public abstract class AbstractSettings implements ISetup {
     }
 
     protected void printError(String section, Object value) {
-        plugin.sendConsoleMessage("Your configuration file is outdated!");
-        plugin.sendConsoleMessage(String.format("Missing \"%s\" section!", section));
+        Professions.log("Your configuration file is outdated!", Level.CONFIG);
+        Professions.log(String.format("Missing \"%s\" section!", section), Level.CONFIG);
         if (value == null)
-            plugin.sendConsoleMessage("Using default values.");
+            Professions.log("Using default values.", Level.CONFIG);
         else
-            plugin.sendConsoleMessage(String.format("Using %s as default value.", value.toString()));
+            Professions.log(String.format("Using %s as default value.", value.toString()), Level.CONFIG);
     }
 
     protected final boolean isSection(String section, Object value) {

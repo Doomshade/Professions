@@ -18,7 +18,7 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
     @Override
     public void onLoad() {
         setName("&aEnchanting");
-        setProfessionType(ProfessionType.PRIMARNI);
+        setProfessionType(ProfessionType.PRIMARY);
     }
 
     @Override

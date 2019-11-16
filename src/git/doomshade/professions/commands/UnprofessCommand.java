@@ -28,7 +28,7 @@ public class UnprofessCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         User user = User.getUser((Player) sender);
-        Profession<?> prof = Professions.getProfessionManager().fromName(args[1]);
+        Profession<?> prof = Professions.getProfessionManager().getProfession(args[1]);
         Messages.MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
             user.sendMessage(builder.setMessage(Messages.Message.PROFESSION_DOESNT_EXIST).build());

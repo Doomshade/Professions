@@ -20,6 +20,11 @@ import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+/**
+ * Task for crafting items.
+ *
+ * @author Doomshade
+ */
 public class CraftingTask extends BukkitRunnable implements Cloneable {
     private static final int UPDATE_INTERVAL = 1;
     private final UserProfessionData upd;

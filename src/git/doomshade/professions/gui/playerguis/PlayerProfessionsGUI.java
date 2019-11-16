@@ -40,7 +40,7 @@ public class PlayerProfessionsGUI extends GUI {
             return;
         }
         GUI gui = getNextGui();
-        gui.getContext().addContext(ID_PROFESSION, Professions.fromName(currentItem));
+        gui.getContext().addContext(ID_PROFESSION, Professions.getProfession(currentItem));
         Professions.getManager().openGui(gui);
     }
 

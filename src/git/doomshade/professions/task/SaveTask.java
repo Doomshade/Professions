@@ -6,6 +6,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
 
+/**
+ * User saving task.
+ *
+ * @author Doomshade
+ */
 public class SaveTask extends BukkitRunnable {
     @Override
     public void run() {

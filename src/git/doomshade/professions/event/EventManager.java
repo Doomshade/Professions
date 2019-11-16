@@ -46,7 +46,7 @@ public final class EventManager {
                 if (itemReturnObject == null) {
                     continue;
                 }
-                if (itemReturnObject.equals(object) || itemReturn.isValid(object)) {
+                if (itemReturnObject.equals(object) || itemReturn.equalsObject(object)) {
                     return itemReturn;
                 }
             }

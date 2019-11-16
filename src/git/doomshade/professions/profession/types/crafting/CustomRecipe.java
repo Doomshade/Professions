@@ -2,7 +2,6 @@ package git.doomshade.professions.profession.types.crafting;
 
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
@@ -24,7 +23,7 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     }
 
     @Override
-    public boolean isValid(CraftShapedRecipe t) {
+    public boolean equalsObject(CraftShapedRecipe t) {
 
         CraftShapedRecipe current = getObject();
         Collection<ItemStack> ingredients = current.getIngredientMap().values();

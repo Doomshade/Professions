@@ -11,6 +11,11 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Backup task.
+ *
+ * @author Doomshade
+ */
 public class BackupTask extends BukkitRunnable {
 
     private Map<File, List<File>> fileList;

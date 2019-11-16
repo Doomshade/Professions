@@ -29,7 +29,7 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Profession<? extends IProfessionType> prof = Professions.fromName(args[1]);
+        Profession<? extends IProfessionType> prof = Professions.getProfession(args[1]);
         if (prof == null) {
             return true;
         }

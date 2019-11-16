@@ -22,17 +22,32 @@ import java.util.Map;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.DESCRIPTION;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COLOR;
 
-public class ItemUtils {
+/**
+ * Utilities for {@link ItemStack}
+ *
+ * @author Doomshade
+ */
+public final class ItemUtils {
     private static ItemUtils instance;
 
     static {
         instance = new ItemUtils();
     }
 
+    /**
+     * @return the instance of this class
+     */
     public static ItemUtils getInstance() {
         return instance;
     }
 
+    /**
+     * Calls {@link #getDescription(ItemType, List)} with {@link ItemType}'s description from file.
+     *
+     * @param itemType the {@link ItemType}
+     * @param <A>      the {@link ItemType}
+     * @return description of {@link ItemType}
+     */
     @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>> List<String> getItemTypeLore(A itemType) {
         Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
@@ -40,10 +55,25 @@ public class ItemUtils {
         return getDescription(itemType, desc);
     }
 
+    /**
+     * Calls {@link #getDescription(ItemType, List, UserProfessionData)} with null {@link UserProfessionData} argument.
+     *
+     * @param itemType    the {@link ItemType}
+     * @param description the description to modify
+     * @param <A>         the {@link ItemType}
+     * @return a description of {@link ItemType}
+     */
     public static <A extends ItemType<?>> List<String> getDescription(A itemType, List<String> description) {
         return getDescription(itemType, description, null);
     }
 
+    /**
+     * @param itemType    the {@link ItemType}
+     * @param description the description to modify
+     * @param upd         the {@link UserProfessionData} to base the variables around
+     * @param <A>         the {@link ItemType}
+     * @return a description of {@link ItemType}
+     */
     public static <A extends ItemType<?>> List<String> getDescription(A itemType, List<String> description, UserProfessionData upd) {
         Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
         List<String> desc = new ArrayList<>(description);
@@ -69,6 +99,12 @@ public class ItemUtils {
         return desc;
     }
 
+    /**
+     * @param clazz the {@link ItemType} class
+     * @param id    the {@link ItemType#getId()}
+     * @param <A>   the {@link ItemType}
+     * @return the serialization of {@link ItemType}
+     */
     public static <A extends ItemType<?>> Map<String, Object> getItemTypeMap(Class<A> clazz, int id) {
         File file = getFile(clazz);
         if (!file.exists()) {
@@ -84,20 +120,36 @@ public class ItemUtils {
         return ((MemorySection) itemsSection.get(itemId)).getValues(true);
     }
 
-    public static <A extends ItemType<?>> File getFile(Class<?> clazz) {
+    /**
+     * @param clazz the {@link ItemType} class
+     * @return the file of {@link ItemType}
+     */
+    public static File getFile(Class<?> clazz) {
         return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase() + ".yml");
     }
 
+    /**
+     * Calls the {@link ItemStackBuilder#ItemStackBuilder(Material)} constructor
+     *
+     * @param mat the material
+     * @return an {@link ItemStackBuilder} object
+     */
     public ItemStackBuilder itemStackBuilder(Material mat) {
         return new ItemStackBuilder(mat);
     }
 
+    /**
+     * Builder for {@link ItemStack}
+     */
     public static class ItemStackBuilder {
         private Material mat;
         private int amount;
         private short damage;
         private ItemMeta meta;
 
+        /**
+         * @param mat the material
+         */
         ItemStackBuilder(Material mat) {
             this.mat = mat;
             this.amount = 1;
@@ -105,26 +157,45 @@ public class ItemUtils {
             this.meta = Bukkit.getItemFactory().getItemMeta(mat);
         }
 
+        /**
+         * @param lore the lore to set
+         * @return {@code this}
+         */
         public ItemStackBuilder withLore(List<String> lore) {
             meta.setLore(lore);
             return this;
         }
 
+        /**
+         * @param displayName the display name to set
+         * @return {@code this}
+         */
         public ItemStackBuilder withDisplayName(String displayName) {
             meta.setDisplayName(displayName.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', displayName));
             return this;
         }
 
+        /**
+         * @param amount the amount to set
+         * @return {@code this}
+         */
         public ItemStackBuilder setAmount(int amount) {
             this.amount = amount;
             return this;
         }
 
+        /**
+         * @param damage the damage to set
+         * @return {@code this}
+         */
         public ItemStackBuilder setDamage(short damage) {
             this.damage = damage;
             return this;
         }
 
+        /**
+         * @return the {@link ItemStack}
+         */
         public ItemStack build() {
             ItemStack item = new ItemStack(mat, amount, damage);
             item.setItemMeta(meta);

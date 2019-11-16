@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types;
 
+import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
@@ -19,6 +20,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+/**
+ * Holder for {@link ItemType}. To register this holder call {@link git.doomshade.professions.ProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
+ *
+ * @param <Type>
+ * @author Doomshade
+ * @see ProfessionManager and its regsiterItemTypeHolders() method on GitHub to see an example on how to register this holder properly.
+ */
 public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
     private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
     // must be list for ordering in file
@@ -61,13 +69,12 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
      * @throws IOException
      */
     public final void save() throws IOException {
-        File itemFile = object.getFiles()[0];
+        File itemFile = object.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
-            Professions.getInstance().sendConsoleMessage("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)");
-            //e.printStackTrace();
+            Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
             return;
         }
 
@@ -124,14 +131,12 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
 
     @SuppressWarnings("unchecked")
     public void load() throws IOException {
-        // TODO Auto-generated method stub
-        File itemFile = object.getFiles()[0];
+        File itemFile = object.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
-            Professions.getInstance().sendConsoleMessage("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)");
-            //e.printStackTrace();
+            Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
             return;
         }
 
@@ -158,7 +163,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
             try {
                 deserialized = (Type) ItemType.deserialize(clazz, i);
             } catch (ProfessionInitializationException e) {
-                Professions.printError(e.getMessage(), Level.WARNING);
+                Professions.log(e.getMessage(), Level.WARNING);
                 continue;
             }
             if (deserialized != null) {
