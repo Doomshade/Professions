@@ -6,13 +6,27 @@ import git.doomshade.professions.profession.types.ItemType;
 
 import java.util.Map;
 
+/**
+ * An {@link Ore} item type example for {@link git.doomshade.professions.profession.professions.MiningProfession}.
+ *
+ * @author Doomshade
+ */
 public class OreItemType extends ItemType<Ore> {
 
 
+    /**
+     * Required constructor
+     */
     public OreItemType() {
         super();
     }
 
+    /**
+     * Required constructor
+     *
+     * @param object
+     * @param exp
+     */
     public OreItemType(Ore object, int exp) {
         super(object, exp);
     }

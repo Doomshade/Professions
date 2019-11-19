@@ -134,7 +134,7 @@ public final class ItemUtils {
      * @param mat the material
      * @return an {@link ItemStackBuilder} object
      */
-    public ItemStackBuilder itemStackBuilder(Material mat) {
+    public static ItemStackBuilder itemStackBuilder(Material mat) {
         return new ItemStackBuilder(mat);
     }
 

@@ -6,8 +6,16 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * Command for editing mining areas
+ *
+ * @author Doomshade
+ */
 public class EditCommand extends AbstractCommand {
 
+    /**
+     * Setup defaults for command
+     */
     public EditCommand() {
         setCommand("edit");
         setRequiresPlayer(true);

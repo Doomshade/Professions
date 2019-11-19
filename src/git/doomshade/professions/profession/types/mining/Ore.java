@@ -14,8 +14,36 @@ import java.util.Set;
 import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.KEY_MATERIAL;
 import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.KEY_MINING_RESULT;
 
+/**
+ * Custom class for {@link git.doomshade.professions.profession.types.ItemType}.
+ * Here I wanted to have a custom mining result, I'd have otherwise only passed {@link Material} as a generic argument to {@link OreItemType}.
+ *
+ * @author Doomshade
+ */
 public class Ore implements ConfigurationSerializable {
 
+
+    private Material oreMaterial;
+    private ItemStack miningResult;
+
+    /**
+     * Custom constructor
+     *
+     * @param oreMaterial
+     * @param miningResult
+     */
+    public Ore(Material oreMaterial, ItemStack miningResult) {
+        this.oreMaterial = oreMaterial;
+        this.miningResult = miningResult;
+    }
+
+    /**
+     * Required deserialize method of {@link ConfigurationSerializable}
+     *
+     * @param map serialized Ore
+     * @return deserialized Ore
+     * @throws ProfessionObjectInitializationException when Ore is not initialized correctly
+     */
     public static Ore deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
         Set<String> list = Utils.getMissingKeys(map, OreEnum.values());
         if (!list.isEmpty()) {
@@ -26,14 +54,6 @@ public class Ore implements ConfigurationSerializable {
         MemorySection memorySection = (MemorySection) map.get(KEY_MINING_RESULT.s);
         ItemStack item = ItemStack.deserialize(memorySection.getValues(true));
         return new Ore(mat, item);
-    }
-
-    private Material oreMaterial;
-    private ItemStack miningResult;
-
-    public Ore(Material oreMaterial, ItemStack miningResult) {
-        this.oreMaterial = oreMaterial;
-        this.miningResult = miningResult;
     }
 
     @Override
@@ -47,22 +67,41 @@ public class Ore implements ConfigurationSerializable {
         };
     }
 
+    /**
+     * @return the ore material
+     */
     public Material getOreMaterial() {
         return oreMaterial;
     }
 
+    /**
+     * Sets the ore material
+     *
+     * @param oreMaterial the material
+     */
     public void setOreMaterial(Material oreMaterial) {
         this.oreMaterial = oreMaterial;
     }
 
+    /**
+     * @return the mining result
+     */
     public ItemStack getMiningResult() {
         return miningResult;
     }
 
+    /**
+     * Sets the mining result
+     *
+     * @param miningResult the ItemStack
+     */
     public void setMiningResult(ItemStack miningResult) {
         this.miningResult = miningResult;
     }
 
+    /**
+     * Enum for keys in file
+     */
     enum OreEnum {
         KEY_MATERIAL("material"), KEY_MINING_RESULT("mining-result");
 

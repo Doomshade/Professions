@@ -13,6 +13,11 @@ import java.util.Set;
 import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.CONFIG_NAME;
 import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.ENTITY;
 
+/**
+ * A prey (mob hunting) example for {@link git.doomshade.professions.profession.professions.SkinningProfession}
+ *
+ * @author Doomshade
+ */
 public class Prey extends ItemType<Mob> {
 
     @Override
@@ -23,10 +28,19 @@ public class Prey extends ItemType<Mob> {
         return map;
     }
 
+    /**
+     * Required constructor
+     */
     public Prey() {
         super();
     }
 
+    /**
+     * Required constructor
+     *
+     * @param object
+     * @param exp
+     */
     public Prey(Mob object, int exp) {
         super(object, exp);
     }

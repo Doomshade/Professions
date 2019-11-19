@@ -10,10 +10,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
+/**
+ * The generic type of EnchantedItemType. Used for modifying (enchanting) items.
+ */
 public abstract class Enchant implements ConfigurationSerializable {
     protected final Random random;
 
@@ -65,7 +66,7 @@ public abstract class Enchant implements ConfigurationSerializable {
     }
 
     protected static boolean isEnchantable(ItemStack item, boolean hasDisplay, boolean hasLore,
-                                                 boolean hasAttributes) {
+                                           boolean hasAttributes) {
         if (item == null || !item.hasItemMeta()) {
             return false;
         }
@@ -200,18 +201,17 @@ public abstract class Enchant implements ConfigurationSerializable {
         this.craftExpYield = craftExpYield;
     }
 
-    public void setEnchantFunction(BiConsumer<ItemStack, Integer> func){
+    public void setEnchantFunction(BiConsumer<ItemStack, Integer> func) {
         this.function = func;
     }
 
-    public final void use(ItemStack item, int intensity){
-         function.accept(item, intensity);
+    public final void use(ItemStack item, int intensity) {
+        function.accept(item, intensity);
     }
 
-    public final void use(ItemStack item){
+    public final void use(ItemStack item) {
         use(item, DEFAULT_INTENSITY);
     }
-
 
 
     protected abstract void init();

@@ -41,16 +41,12 @@ public final class User {
     private Map<ProfessionType, Boolean> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
 
-    private User(Player player) {
+    private User(Player player) throws IOException {
         this.player = player;
         this.file = new File(Professions.getInstance().getPlayerFolder(), player.getUniqueId().toString() + ".yml");
         this.loader = YamlConfiguration.loadConfiguration(file);
         if (!file.exists()) {
-            try {
-                this.file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            this.file.createNewFile();
             this.profSection = loader.createSection(KEY_PROFESSIONS);
             this.loader.set(KEY_NAME, player.getName());
         } else {
@@ -110,7 +106,11 @@ public final class User {
         if (player == null) {
             return null;
         }
-        loadUser(player);
+        try {
+            loadUser(player);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return USERS.get(player.getUniqueId());
     }
 
@@ -145,8 +145,9 @@ public final class User {
      * Used to load user when logging in.
      *
      * @param player the player
+     * @throws IOException ex
      */
-    public static void loadUser(Player player) {
+    public static void loadUser(Player player) throws IOException {
         if (!isLoaded(player)) {
             USERS.put(player.getUniqueId(), new User(player));
         }

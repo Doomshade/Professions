@@ -287,7 +287,7 @@ public final class ProfessionManager implements ISetup {
             public EnchantedItemType getObject() {
                 EnchantManager enchm = EnchantManager.getInstance();
                 try {
-                    enchm.registerEnchant(RandomAttributeEnchant.class, new ItemStack(Material.GLASS));
+                    enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

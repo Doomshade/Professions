@@ -2,9 +2,21 @@ package git.doomshade.professions.profession.types.enchanting;
 
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * Class for storing an {@link Enchant} and {@link ItemStack} before enchanting
+ *
+ * @author Doomshade
+ */
 public class PreEnchantedItem {
 
+    /**
+     * The enchant
+     */
     public final Enchant enchant;
+
+    /**
+     * The pre-enchanted item
+     */
     public final ItemStack preEnchantedItemStack;
 
     public PreEnchantedItem(Enchant enchant, ItemStack preEnchantedItemStack) {
@@ -12,6 +24,11 @@ public class PreEnchantedItem {
         this.preEnchantedItemStack = preEnchantedItemStack;
     }
 
+    /**
+     * Enchants the item
+     *
+     * @see Enchant#use(ItemStack)
+     */
     public void enchant() {
         enchant.use(preEnchantedItemStack);
     }

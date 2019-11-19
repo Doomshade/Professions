@@ -353,7 +353,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * You may override this method for more complex logic.
      *
      * @param object the object
-     * @return true if the object equals to this class' object
+     * @return {@code true} if the object equals to this class' object
      */
     public boolean equalsObject(T object) {
         return item.equals(object);
