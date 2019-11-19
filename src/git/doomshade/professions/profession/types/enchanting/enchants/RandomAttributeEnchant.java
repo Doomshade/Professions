@@ -20,7 +20,7 @@ public class RandomAttributeEnchant extends Enchant {
         }
     };
 
-    protected RandomAttributeEnchant(ItemStack item) {
+    public RandomAttributeEnchant(ItemStack item) {
         super(item);
     }
 

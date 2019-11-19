@@ -6,18 +6,32 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 
+/**
+ * A gather item type example for {@link git.doomshade.professions.profession.professions.HerbalismProfession}
+ *
+ * @author Doomshade
+ */
 public class GatherItem extends ItemType<ItemStack> {
 
+    /**
+     * Required constructor
+     */
     public GatherItem() {
         super();
     }
 
+    /**
+     * Required constructor
+     *
+     * @param object
+     * @param exp
+     */
     public GatherItem(ItemStack object, int exp) {
         super(object, exp);
     }
 
     @Override
-    public boolean equals(ItemStack t) {
+    public boolean equalsObject(ItemStack t) {
         return getObject().isSimilar(t);
     }
 
@@ -33,7 +47,6 @@ public class GatherItem extends ItemType<ItemStack> {
 
     @Override
     public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        // TODO Auto-generated method stub
         return IGathering.class;
     }
 

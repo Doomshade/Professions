@@ -227,7 +227,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @param player the player to load
      * @see User#loadUser(Player)
      */
-    public static void loadUser(Player player) {
+    public static void loadUser(Player player) throws IOException {
         User.loadUser(player);
     }
 

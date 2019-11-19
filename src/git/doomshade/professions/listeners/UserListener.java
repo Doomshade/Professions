@@ -1,7 +1,6 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -17,11 +16,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static git.doomshade.professions.utils.ItemUtils.itemStackBuilder;
+
 public class UserListener implements Listener {
-    private static ItemUtils utils = ItemUtils.getInstance();
-    public static final ItemStack ZPET_BUTTON = utils.itemStackBuilder(Material.BOOK).withDisplayName(ChatColor.RED + "Zpet").withLore(new ArrayList<String>()).build();
-    public static final ItemStack PREVIOUS_PAGE = utils.itemStackBuilder(Material.BOOK).withDisplayName("Predesla stranka").withLore(new ArrayList<String>()).build();
-    public static final ItemStack NEXT_PAGE = utils.itemStackBuilder(Material.BOOK).withDisplayName("Dalsi stranka").withLore(new ArrayList<String>()).build();
+    private static final ItemStack ZPET_BUTTON = itemStackBuilder(Material.BOOK).withDisplayName(ChatColor.RED + "Zpet").withLore(new ArrayList<>()).build();
+    private static final ItemStack PREVIOUS_PAGE = itemStackBuilder(Material.BOOK).withDisplayName("Predesla stranka").withLore(new ArrayList<>()).build();
+    private static final ItemStack NEXT_PAGE = itemStackBuilder(Material.BOOK).withDisplayName("Dalsi stranka").withLore(new ArrayList<>()).build();
 
     public static LinkedHashMap<Integer, Inventory> getGuiWithPages(List<ItemStack> invContents, String invName) {
         return getGuiWithPages(invContents, invName, true);
@@ -58,7 +58,7 @@ public class UserListener implements Listener {
                 }
                 overLapping.add(itemStack);
             }
-            invContents = new ArrayList<ItemStack>(overLapping);
+            invContents = new ArrayList<>(overLapping);
             inventoriez.put(i, inventory);
         }
         return inventoriez;
@@ -69,13 +69,16 @@ public class UserListener implements Listener {
         try {
             Professions.unloadUser(Professions.getUser(e.getPlayer()));
         } catch (IOException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        Professions.loadUser(e.getPlayer());
+        try {
+            Professions.loadUser(e.getPlayer());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }

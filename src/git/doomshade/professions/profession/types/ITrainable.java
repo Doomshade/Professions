@@ -14,9 +14,9 @@ import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 /**
  * Interface for trainable {@link ItemType}s. Implement this in a class extending {@link ItemType},
  * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeTrainable(Map, ITrainable)}
- * with the map argument and {@code this} argument inside the method.
- * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.} {@link ItemType#serialize()} variable with an argument
- * of {@link #serializeTrainable(ITrainable)} with {@code this} as an argument inside the method and return the map.
+ * with the map and {@code this} argument inside the {@link ItemType#deserialize(Map)} method.
+ * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.}{@link ItemType#serialize()} {@link Map} variable with an argument
+ * of {@link #serializeTrainable(ITrainable)} and return the map.
  *
  * @author Doomshade
  * @see git.doomshade.professions.profession.types.enchanting.EnchantedItemType on GitHub for an example

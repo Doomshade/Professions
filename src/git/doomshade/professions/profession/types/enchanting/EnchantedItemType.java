@@ -14,6 +14,11 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * An enchant item type example for {@link git.doomshade.professions.profession.professions.EnchantingProfession}
+ *
+ * @author Doomshade
+ */
 public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
     private static String ENCHANT = "enchant";
     private boolean trainable = true;
@@ -26,10 +31,19 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     private Requirements inventoryRequirements = new Requirements();
     private Requirements craftingRequirements = new Requirements();
 
+    /**
+     * Required constructor
+     */
     public EnchantedItemType() {
         super();
     }
 
+    /**
+     * Required constructor
+     *
+     * @param object
+     * @param exp
+     */
     public EnchantedItemType(Enchant object, int exp) {
         super(object, exp);
     }
