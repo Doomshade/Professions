@@ -2,8 +2,7 @@
 
 A very customizable profession API for bukkit servers. This API includes some examples of professions.
 
-Creating a customizable profession is fairly easy for an experienced programmer, the intention was to make it as easy as possible.
-
+Creating a customizable profession is fairly easy for an experienced programmer, the intention was to make it as easy as possible. Basic OOP and Serialization knowledge is required.
 
 To create a custom profession, you will need to know about these classes:
 - [Profession](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/Profession.java) - the main profession class
