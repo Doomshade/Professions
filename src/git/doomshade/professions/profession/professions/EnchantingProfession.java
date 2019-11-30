@@ -8,27 +8,14 @@ import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.user.User;
-import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public final class EnchantingProfession extends Profession<IEnchanting> implements ICrafting {
 
     @Override
     public void onLoad() {
-        setName("&aEnchanting");
-        setProfessionType(ProfessionType.PRIMARY);
-    }
-
-    @Override
-    public void onPostLoad() {
-        ItemStack item = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(getColoredName());
-        item.setItemMeta(meta);
-        setIcon(item);
         addItems(EnchantedItemType.class);
+
     }
 
     @Override
@@ -44,7 +31,7 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
             return;
         }
         User user = e.getPlayer();
-        if (!playerMeetsRequirements(e)) {
+        if (!playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(getUserProfessionData(user));
             return;

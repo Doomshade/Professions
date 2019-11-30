@@ -166,10 +166,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * This is basically a {@link ConfigurationSerializable#serialize()} with an argument.
      *
-     * @param object the object to serialize
      * @return the map of serialization of the object
      */
-    protected abstract Map<String, Object> getSerializedObject(T object);
+    public abstract Map<String, Object> getSerializedObject();
 
     /**
      * @param map the map of serialized object
@@ -337,7 +336,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(OBJECT.s, getSerializedObject(item));
+        map.put(OBJECT.s, getSerializedObject());
         map.put(EXP.s, exp);
         map.put(LEVEL_REQ.s, levelReq);
         map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
@@ -390,7 +389,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder()
-                .append(OBJECT + ": " + getSerializedObject(item).toString())
+                .append(OBJECT + ": " + getSerializedObject().toString())
                 .append("\n")
                 .append(EXP + ": " + exp)
                 .append("\n")

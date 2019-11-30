@@ -54,9 +54,9 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     }
 
     @Override
-    protected Map<String, Object> getSerializedObject(Enchant object) {
+    public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(ENCHANT, object.serialize());
+        map.put(ENCHANT, getObject().serialize());
         return map;
     }
 

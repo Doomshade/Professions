@@ -100,7 +100,6 @@ public abstract class AbstractProfessionListener implements Listener {
      * @param player    the player that calls this event
      * @param item      the generic object of {@link ItemType}
      * @param itemClass the custom ItemType class
-     * @param profType  the profession type to call this event for
      * @param extras
      * @return
      */

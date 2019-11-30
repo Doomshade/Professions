@@ -1,6 +1,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,27 +10,36 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.Serializable;
 
 /**
- * Profession specific settings manager.
+ * Profession specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
  *
  * @author Doomshade
  */
-public abstract class AbstractProfessionSpecificSettings extends AbstractSettings implements Serializable {
+public abstract class AbstractProfessionSpecificSettings extends AbstractSettings {
 
-    private final Profession<?> profession;
-    private final FileConfiguration file;
+    private transient final Profession<?> profession;
+    private transient final FileConfiguration loader;
 
-    public AbstractProfessionSpecificSettings(Profession<?> profession) {
+    /**
+     * The default constructor of settings
+     *
+     * @param profession the profession
+     */
+    AbstractProfessionSpecificSettings(Profession<?> profession) {
         this.profession = profession;
-        this.file = YamlConfiguration.loadConfiguration(profession.getFile());
+        this.loader = YamlConfiguration.loadConfiguration(profession.getFile());
     }
 
     @Override
     protected ConfigurationSection getDefaultSection() {
-        return file;
+        return loader;
     }
 
     public final Profession<?> getProfession() {
         return profession;
+    }
+
+    final void register(ProfessionSettingsManager manager) throws ConfigurationException {
+        manager.register(this);
     }
 
     @Override

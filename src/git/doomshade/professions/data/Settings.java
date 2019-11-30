@@ -26,6 +26,7 @@ public final class Settings implements ISetup {
         registerSettings(new ProfessionExpSettings());
         registerSettings(new SaveSettings());
         registerSettings(new TrainableSettings());
+        registerSettings(new GUISettings());
     }
 
     private Settings() {

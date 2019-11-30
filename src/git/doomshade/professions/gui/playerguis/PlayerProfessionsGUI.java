@@ -3,6 +3,8 @@ package git.doomshade.professions.gui.playerguis;
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.GUISettings;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Material;
@@ -19,7 +21,7 @@ public class PlayerProfessionsGUI extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
-        Builder builder = getInventoryBuilder().size(9).title("PERFECTO TITLOS");
+        Builder builder = getInventoryBuilder().size(9).title(Settings.getSettings(GUISettings.class).getProfessionsGuiName());
         User user = User.getUser(getHolder());
         int i = -1;
         for (UserProfessionData upd : user.getProfessions()) {

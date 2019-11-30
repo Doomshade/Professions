@@ -101,7 +101,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
                 final EnchantedItemType eit = em.getItemType(
                         EnchantManager.getInstance().getEnchant(RandomAttributeEnchant.class), EnchantedItemType.class);
                 final ProfessionEvent<EnchantedItemType> pe = em.getEvent(eit, user);
-                if (!item.meetsLevelReq(user.getProfessionData(prof).getLevel())) {
+                if (!item.meetsLevelReq(upd.getLevel())) {
                     pe.printErrorMessage(upd);
                     return;
                 }

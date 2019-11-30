@@ -2,7 +2,9 @@ package git.doomshade.professions;
 
 import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.data.ProfessionSettingsManager;
+import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.types.IProfessionEventable;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -11,18 +13,13 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,23 +33,19 @@ import java.util.Set;
  * @see git.doomshade.professions.profession.professions.MiningProfession
  * @see git.doomshade.professions.profession.professions.SkinningProfession
  */
-public abstract class Profession<T extends IProfessionType>
-        implements Listener, ConfigurationSerializable, Comparable<Profession<?>>, IProfessionEventable {
+public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>>, IProfessionEventable {
 
-    private static final String ICON = "icon";
-    private static final String TYPE = "type";
-    private static final String NAME = "name";
     static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     @SuppressWarnings("serial")
     private final TypeToken<T> typeToken = new TypeToken<T>(getClass()) {
     };
     private final Type type = typeToken.getType();
-    private String name = "";
-    private ProfessionType pt = ProfessionType.PRIMARY;
+    private final String name;
+    private final ProfessionType pt;
     private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
-    private ItemStack icon = new ItemStack(Material.CHEST);
+    private final ItemStack icon;
     private final File file;
-    private ProfessionSettingsManager professionSettings = null;
+    private final ProfessionSettingsManager professionSettings;
 
     public Profession() {
         this(false);
@@ -60,6 +53,7 @@ public abstract class Profession<T extends IProfessionType>
 
     Profession(boolean ignoreInitializationError) {
         ensureNotInitialized(ignoreInitializationError);
+
         String fileName = getClass().getSimpleName().toLowerCase();
         this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
         if (!file.exists() && !fileName.isEmpty()) {
@@ -69,79 +63,25 @@ public abstract class Profession<T extends IProfessionType>
                 e.printStackTrace();
             }
         }
+
+        // initialize settings AFTER initializing file as settings require the profession file!
+        ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
+        try {
+            settings.setup();
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        }
+        this.professionSettings = settings;
+
+        ProfessionSpecificDefaultsSettings defaults = settings.getSettings(ProfessionSpecificDefaultsSettings.class);
+        this.name = defaults.getName();
+        this.icon = defaults.getIcon();
+        this.pt = defaults.getProfessionType();
+
+
     }
 
-    /**
-     * Partly deserializes the profession.
-     *
-     * @param map the serialized form of profession
-     * @return the deserialized professions
-     */
-    @SuppressWarnings("rawtypes")
-    public static Profession<?> deserialize(Map<String, Object> map) {
-        return new Profession(true) {
-
-            @Override
-            public String getID() {
-                return null;
-            }
-
-            @Override
-            public String getName() {
-                return map.containsKey(NAME) ? (String) map.get(NAME) : "";
-            }
-
-            @Override
-            public ProfessionType getProfessionType() {
-                if (!map.containsKey(TYPE)) {
-                    return null;
-                }
-                Object o = map.get(TYPE);
-                if (o instanceof String) {
-                    return ProfessionType.fromString((String) o);
-                } else if (o instanceof Number) {
-                    return ProfessionType.fromId((int) o);
-                }
-                throw new IllegalStateException("Type of " + getName() + " is not a string nor a number!");
-            }
-
-            @Override
-            public ItemStack getIcon() {
-                return ItemStack.deserialize(((MemorySection) map.get(ICON)).getValues(true));
-            }
-
-            @Override
-            public void onEvent(ProfessionEvent e) {
-
-            }
-
-            @Override
-            public Type getType() {
-                return null;
-            }
-
-            @Override
-            public ProfessionSettingsManager getProfessionSettings() {
-                return null;
-            }
-
-
-            // DONUT DELETE
-            @Override
-            public int compareTo(Object o) {
-                return 0;
-            }
-
-            @Override
-            public int compareTo(Profession o) {
-                return 0;
-            }
-
-
-        };
-    }
-
-    void ensureNotInitialized(boolean ignoreError) {
+    private void ensureNotInitialized(boolean ignoreError) {
         if (!INITED_PROFESSIONS.add(getClass())) {
             if (!ignoreError)
                 try {
@@ -195,29 +135,12 @@ public abstract class Profession<T extends IProfessionType>
         return this.name;
     }
 
-    /**
-     * Sets the name of this profession
-     *
-     * @param name the name to set
-     */
-    protected final void setName(String name) {
-        this.name = name;
-    }
 
     /**
      * @return the icon of this profession (for GUI purposes)
      */
     public ItemStack getIcon() {
         return icon;
-    }
-
-    /**
-     * Sets the icon of this profession
-     *
-     * @param icon the icon to set to
-     */
-    protected final void setIcon(ItemStack icon) {
-        this.icon = icon;
     }
 
     /**
@@ -236,18 +159,6 @@ public abstract class Profession<T extends IProfessionType>
         return items;
     }
 
-    /**
-     * @return serialized form of this class
-     */
-    @Override
-    public final Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(NAME, getName());
-        map.put(TYPE, getProfessionType() == null ? ProfessionType.PRIMARY.name.toLowerCase()
-                : getProfessionType().name.toLowerCase());
-        map.put(ICON, icon.serialize());
-        return map;
-    }
 
     /**
      * @return the profession type (don't mistake it for {@link IProfessionType})
@@ -257,28 +168,10 @@ public abstract class Profession<T extends IProfessionType>
     }
 
     /**
-     * Sets the profession type of this profession (don't mistake it for {@link IProfessionType})
-     *
-     * @param pt the profession type to set
-     */
-    protected final void setProfessionType(ProfessionType pt) {
-        this.pt = pt;
-    }
-
-    /**
      * @return the profession settings
      */
     public ProfessionSettingsManager getProfessionSettings() {
         return professionSettings;
-    }
-
-    /**
-     * Sets the profession settings.
-     *
-     * @param professionSettings the settings to set
-     */
-    void setProfessionSettings(ProfessionSettingsManager professionSettings) {
-        this.professionSettings = professionSettings;
     }
 
     /**
@@ -355,7 +248,7 @@ public abstract class Profession<T extends IProfessionType>
      * @param e the event to check the player's requirements in
      * @return {@code true} if the player meets all requirements, {@code false} otherwise
      */
-    protected final <ItemTypeClass extends ItemType<?>> boolean playerMeetsRequirements(ProfessionEvent<ItemTypeClass> e) {
+    protected final <ItemTypeClass extends ItemType<?>> boolean playerMeetsLevelRequirements(ProfessionEvent<ItemTypeClass> e) {
         if (!playerHasProfession(e)) {
             return false;
         }
@@ -380,16 +273,9 @@ public abstract class Profession<T extends IProfessionType>
     }
 
     /**
-     * Called before loaded from a file
-     */
-    @Deprecated
-    public void onLoad() {
-    }
-
-    /**
      * Called after being loaded from a file
      */
-    public void onPostLoad() {
+    public void onLoad() {
     }
 
     /**

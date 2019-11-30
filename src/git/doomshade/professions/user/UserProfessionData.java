@@ -35,7 +35,7 @@ public class UserProfessionData {
     private Profession<? extends IProfessionType> profession;
     private double exp;
     private int level;
-    private List<String> extras;
+    private final List<String> extras;
     private ConfigurationSection s;
     private MessageBuilder builder;
 
@@ -55,6 +55,7 @@ public class UserProfessionData {
 
         this.user = user;
         this.profession = profession;
+
         this.builder = new Messages.MessageBuilder().setPlayer(user).setProfession(profession);
     }
 
