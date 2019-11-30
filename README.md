@@ -9,7 +9,6 @@ To create a custom profession, you will need to know about these classes:
 - [IProfessionType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/IProfessionType.java) - the profession type (serves as a generic argument to Profession), used to distinguish different profession types
 - [ItemType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/ItemType.java) - class that manages items
 - [ItemTypeHolder](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/ItemTypeHolder.java) - class that manages ItemType (saves and loads data from files)
-- [User](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/user/User.java) - an extension of Player in which some data is stored
 - [UserProfessionData](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/user/UserProfessionData.java) - here is all the user's profession data stored, accessed via User methods
 - [ProfessionManager](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/ProfessionManager.java) - a manager that manages profession registrations and queries and also stores professions in memory
 - [AbstractProfessionListener](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/listeners/AbstractProfessionListener.java) - the listener in which you will further call events to handle in a profession (this is optional)
