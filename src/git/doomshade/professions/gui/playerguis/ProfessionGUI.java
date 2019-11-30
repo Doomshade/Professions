@@ -40,6 +40,9 @@ public class ProfessionGUI extends GUI {
         int pos = 0;
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
+        if (upd == null) {
+            throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
+        }
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 ItemStack icon = item.getIcon(upd);
@@ -73,10 +76,15 @@ public class ProfessionGUI extends GUI {
         ItemStack currentItem = event.getCurrentItem();
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
-        if (currentItem == null || currentItem.getType() == Material.AIR
-                || !(prof.getType() instanceof ICrafting || prof instanceof ICrafting)) {
+        if (upd == null) {
+            getHolder().closeInventory();
+            throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
+        }
+        if (currentItem == null || currentItem.getType() == Material.AIR || !(prof.getType() instanceof ICrafting || prof instanceof ICrafting)) {
             return;
         }
+
+        // the task handles the ICraftable's
         final CraftingTask task = new CraftingTask(upd, currentItem, slot, this);
         final Professions plugin = Professions.getInstance();
         switch (event.getClick()) {

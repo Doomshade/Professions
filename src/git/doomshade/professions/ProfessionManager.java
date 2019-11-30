@@ -3,7 +3,6 @@ package git.doomshade.professions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
 import git.doomshade.professions.profession.professions.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.MiningProfession;
@@ -26,12 +25,11 @@ import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -42,7 +40,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -63,13 +60,12 @@ public final class ProfessionManager implements ISetup {
 
     // never call clear() on this hashset! this hashset makes sure that professions gets their events registered ONLY ONCE
     private final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
-    final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
-    final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
+    private final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
+    private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
-    Map<String, Profession<? extends IProfessionType>> PROFESSIONS_ID = new HashMap<>();
-    Map<String, Profession<? extends IProfessionType>> PROFESSIONS_NAME = new HashMap<>();
-    private File file;
+    private Map<String, Profession<? extends IProfessionType>> PROFESSIONS_ID = new HashMap<>();
+    private Map<String, Profession<? extends IProfessionType>> PROFESSIONS_NAME = new HashMap<>();
 
     private ProfessionManager() {
     }
@@ -132,17 +128,6 @@ public final class ProfessionManager implements ISetup {
     }
 
     /**
-     * Updates all professions and then sorts them
-     *
-     * @see #updateProfession(Profession)
-     * @see #sortProfessions()
-     */
-    public void updateProfessions() {
-        PROFESSIONS_ID.forEach((y, x) -> updateProfession(x));
-        sortProfessions();
-    }
-
-    /**
      * @param itemTypeHolder the {@link ItemTypeHolder} to register
      * @param <T>            the {@link ItemTypeHolder}
      * @throws IOException ex
@@ -163,7 +148,15 @@ public final class ProfessionManager implements ISetup {
         }
         Profession<?> prof = PROFESSIONS_ID.get(name.toLowerCase());
         if (prof == null) {
-            return PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+            prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+        }
+
+        if (prof == null) {
+            try {
+                prof = Utils.findInIterable(PROFESSIONS_ID.values(), x -> ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
+            } catch (Utils.SearchNotFoundException e) {
+                //e.printStackTrace();
+            }
         }
         return prof;
     }
@@ -208,34 +201,10 @@ public final class ProfessionManager implements ISetup {
         PROFESSION_TYPES.add(clazz);
     }
 
-    /**
-     * Updates a {@link Profession} from the {@link Profession}'s file. Also calls {@link Profession#onPostLoad()} method at the end.
-     *
-     * @param prof the {@link Profession} to update
-     */
-    public void updateProfession(Profession<? extends IProfessionType> prof) {
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        if (!loader.getKeys(false).contains(prof.getID())) {
-            return;
-        }
-        Profession<?> fileProf = Profession.deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
-        prof.setName(fileProf.getName());
-        prof.setProfessionType(fileProf.getProfessionType());
-        prof.setIcon(fileProf.getIcon());
-
-        ProfessionSettingsManager settings = new ProfessionSettingsManager(prof);
-        settings.setup();
-        prof.setProfessionSettings(settings);
-
-        prof.onPostLoad();
-    }
-
     @Override
     public void setup() throws IOException {
         register();
-        createProfessionsFile();
         registerProfessions();
-        setupProfessionsFile();
     }
 
     @Override
@@ -357,13 +326,6 @@ public final class ProfessionManager implements ISetup {
         registerProfessionType(ICrafting.class);
     }
 
-    private void createProfessionsFile() throws IOException {
-        file = new File(Professions.getInstance().getDataFolder(), "professions.yml");
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-    }
-
     private void registerProfessions() {
         registerProfession(new MiningProfession(), false);
         registerProfession(new JewelcraftingProfession(), false);
@@ -380,7 +342,6 @@ public final class ProfessionManager implements ISetup {
                 e.printStackTrace();
             }
         }
-        prof.onLoad();
         PROFESSIONS_ID.forEach((y, x) -> {
             if (x.getID().equalsIgnoreCase(prof.getID())) {
                 throw new IllegalArgumentException(ChatColor.DARK_RED + "ERROR:" + ChatColor.RED + " A profession with name "
@@ -393,30 +354,17 @@ public final class ProfessionManager implements ISetup {
             pm.registerEvents(prof, plugin);
             REGISTERED_PROFESSIONS.add(prof.getClass());
         }
-        try {
-            updateProfession(prof);
-            if (sayMessage)
-                Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
-        } catch (Exception e) {
-            Professions.log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
-            e.printStackTrace();
-        }
+
+        /*Professions.log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
+        e.printStackTrace();
+        */
+        prof.onLoad();
+        if (sayMessage)
+            Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
     }
 
     private void registerProfession(Profession<? extends IProfessionType> prof) {
         registerProfession(prof, true);
-    }
-
-
-    private void setupProfessionsFile() throws IOException {
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        Map<String, Object> defaults = new HashMap<>();
-        for (Entry<String, Profession<?>> prof : PROFESSIONS_ID.entrySet()) {
-            defaults.put(prof.getValue().getID(), prof.getValue().serialize());
-        }
-        loader.options().copyDefaults(true);
-        loader.addDefaults(defaults);
-        loader.save(file);
     }
 
     private void sortProfessions() {

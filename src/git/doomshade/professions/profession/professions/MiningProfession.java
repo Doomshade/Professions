@@ -10,28 +10,13 @@ import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 public final class MiningProfession extends Profession<IMining> {
 
     @Override
     public void onLoad() {
-        setName("&aKopani");
-        setProfessionType(ProfessionType.SECONDARY);
-    }
-
-    @Override
-    public void onPostLoad() {
-        ItemStack item = new ItemStack(Material.DIAMOND_PICKAXE);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(getColoredName());
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        item.setItemMeta(meta);
-        setIcon(item);
         addItems(OreItemType.class);
     }
 
@@ -50,7 +35,7 @@ public final class MiningProfession extends Profession<IMining> {
         ProfessionEvent<OreItemType> e = getEvent(ev, OreItemType.class);
         User hrac = e.getPlayer();
         UserProfessionData upd = hrac.getProfessionData(getClass());
-        if (!playerMeetsRequirements(e)) {
+        if (!playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(upd);
             return;

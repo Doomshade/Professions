@@ -22,10 +22,10 @@ import static git.doomshade.professions.profession.types.hunting.Prey.PreyEnum.E
 public class Prey extends ItemType<Mob> {
 
     @Override
-    protected Map<String, Object> getSerializedObject(Mob object) {
+    public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(ENTITY.s, object.type.name());
-        map.put(CONFIG_NAME.s, object.configName);
+        map.put(ENTITY.s, getObject().type.name());
+        map.put(CONFIG_NAME.s, getObject().configName);
         return map;
     }
 

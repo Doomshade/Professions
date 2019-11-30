@@ -19,11 +19,9 @@ public class ReloadCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
         try {
             Professions plugin = Professions.getInstance();
             plugin.reload();
-            Professions.saveUsers();
             sender.sendMessage(ChatColor.GREEN + "Plugin reloaded.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -33,13 +31,11 @@ public class ReloadCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "reload";
     }
 

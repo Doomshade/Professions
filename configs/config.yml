@@ -1,10 +1,13 @@
-## default XP curve, use "lvl" for a level variable
+## default XP curve
 xp-curve:
+  ## the formula is x*lvl^2 + y*lvl + z
   formula:
     x: 3
     y: 2
     z: 8
   level-cap: 40
+
+  ## the exp multiplier (can be used for double xp weekends for example)
   multiplier: 1.0
 
   ## custom SkillAPI exp multiplier
@@ -19,27 +22,38 @@ saving:
 ## item options
 items:
   default-lore:
-    - '&aJméno: &b{name}'
-    - '{level-req-color}&lPožadovaný level: {level-req}'
+    - '{level-req-color}&lLevel requirement level: {level-req}'
+
+## default profession options
 profession:
   defaults:
+    ## the sorting order of items in GUI
+    ## you may use: level-req, exp, name
     sorted-by:
       - level-req
       - exp
       - name
+
+  ## options for trainable items
+  ## you may use any item variable + trainable variables (see any file in itemtypes folder)
+  ## you may not use object's variables and craftable variables
   trainable:
     trained:
-      - '&aJiz nauceno'
+      - '&aYou already know {name}'
     not-trained:
-      - '&aLze naucit'
-      - '&aCena: &6{trainable-cost}'
+      - '&aCan be trained'
+      - '&aPrice: &6{trainable-cost}'
     level-threshold: 3
 
-    ## 4 types of colors - red, yellow, green and gray (still optional for colors)
-    ## chance = chance to gain a skillup with that color
-    ## color-change-after = after how many levels should the color change
-    ## for example: an item type is made for level 10, if everything has color-change-after: 3, then the color
-    ## will change as for user has: red 0-9 level, yellow 10-13 level, green 14-17 level, gray 18+ levels
+  ## 4 types of colors - red, yellow, green and gray (still optional for colors)
+  ##
+  ## color = the color of skillup
+  ## chance = chance to gain a skillup with that color
+  ## color-change-after = after how many levels should the color change
+  ##
+  ## For example: an item has level 10 requirement, everything has color-change-after: 3
+  ##
+  ## The color will change as for user's profession has: red 0-9 level, yellow 10-13 level, green 14-17 level, gray 18+ level
   exp-settings:
     gray:
       chance: 0
@@ -58,11 +72,20 @@ profession:
   ## Example settings for professions in professions/<profession_name>.yml
   mining:
     ## Drop settings
+    ## The formula is Math.min(1, Math.max(0, (profession level - (increment-since + itemLevelReq)) * increment-by/100))
+    ## Basically (profession level - increment-since - itemLevelReq) * increment-by/100, where the output value is in interval <0,1> (0 to 100%)
+    ## For example: User's profession level = 20, the drop amount = 2, increment-by = 3, increment-since = 5, the item level requirement = 10
+    ##
+    ## (20 - 5 - 10) * 0.03 = 0.15 = 15% chance for item to drop 2 times
+    ##
+    ## the drop priority is in sorted descending order (5, 4, 3..)
     drop:
       ## The drop amount
       '4':
         ## Increment chance by X% (increment-by: 10 = increment by 10%)
         increment-by: 0.1
 
-        ## Increment since - what level to start incrementing the chance from
+        ## Increment since - what level PLUS level req of item to start incrementing the chance from
         increment-since: 10
+gui:
+  professions-gui-name: '&aProfessions'

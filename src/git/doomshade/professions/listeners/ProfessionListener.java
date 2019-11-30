@@ -212,9 +212,8 @@ public class ProfessionListener extends AbstractProfessionListener {
     @Override
     @EventHandler
     public void onKill(EntityDeathEvent e) {
-        // TODO Auto-generated method stub
         LivingEntity entity = e.getEntity();
-        if (entity == null || !(entity.getKiller() instanceof Player)) {
+        if (entity == null || entity.getKiller() == null) {
             return;
         }
         callEvent(entity.getKiller(), new Mob(entity.getType()), Prey.class);

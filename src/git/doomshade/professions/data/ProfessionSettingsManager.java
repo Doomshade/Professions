@@ -10,12 +10,13 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.logging.Level;
 
 public final class ProfessionSettingsManager extends AbstractSettings {
-    private static final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
+    private final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
     private final Profession<?> profession;
 
     public ProfessionSettingsManager(Profession<?> profession) {
@@ -26,7 +27,14 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
         T theSettings = null;
         try {
-            theSettings = (T) SerializationUtils.clone(Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName())));
+            AbstractProfessionSpecificSettings settings = Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName()));
+            if (settings instanceof Serializable) {
+                theSettings = (T) SerializationUtils.clone((Serializable) settings);
+            } else if (settings instanceof Cloneable) {
+                theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
+            } else {
+                throw new IllegalStateException(settings.getSetupName() + " does not implement Serializable nor Cloneable!");
+            }
         } catch (Utils.SearchNotFoundException e) {
             try {
                 theSettings = settingsClass.getDeclaredConstructor(Profession.class).newInstance(profession);
@@ -39,15 +47,22 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 Professions.log("Could not load " + settingsClass.getSimpleName() + " settings!", Level.WARNING);
                 ex.printStackTrace();
             }
-
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
         }
 
         return theSettings;
     }
 
+    void register(AbstractProfessionSpecificSettings settings) throws ConfigurationException {
+        settings.setup();
+        SETTINGS.add(settings);
+    }
+
     @Override
-    public void setup() {
-        SETTINGS.add(new ProfessionSpecificDropSettings(profession));
+    public void setup() throws ConfigurationException {
+        new ProfessionSpecificDropSettings(profession).register(this);
+        new ProfessionSpecificDefaultsSettings(profession).register(this);
 
         try {
             save();
@@ -55,6 +70,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
             e.printStackTrace();
         }
     }
+
 
     public void save() throws IOException {
         if (SETTINGS.isEmpty()) {

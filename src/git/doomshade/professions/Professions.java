@@ -363,30 +363,46 @@ public final class Professions extends JavaPlugin implements ISetup {
 
 
     @Override
-    public void setup() throws ConfigurationException {
+    public void setup() {
         for (ISetup setup : SETUPS) {
             try {
                 setup.setup();
             } catch (Exception e) {
-                throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
+                try {
+                    throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
+                } catch (ConfigurationException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
 
     @Override
-    public void cleanup() throws ConfigurationException {
+    public void cleanup() {
         for (ISetup setup : SETUPS) {
             try {
                 setup.cleanup();
             } catch (Exception e) {
-                throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
+                try {
+                    throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
+                } catch (ConfigurationException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
     }
 
-    public void reload() throws ConfigurationException {
+    public void reload() throws IOException {
         cleanup();
+        User.saveUsers();
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            User.unloadUser(p);
+        }
         setup();
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            User.loadUser(p);
+        }
     }
 
     /**

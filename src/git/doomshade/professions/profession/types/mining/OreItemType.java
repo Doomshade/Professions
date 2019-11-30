@@ -32,8 +32,8 @@ public class OreItemType extends ItemType<Ore> {
     }
 
     @Override
-    protected Map<String, Object> getSerializedObject(Ore object) {
-        return object.serialize();
+    public Map<String, Object> getSerializedObject() {
+        return getObject().serialize();
     }
 
     @Override

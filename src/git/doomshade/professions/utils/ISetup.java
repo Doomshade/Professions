@@ -22,6 +22,11 @@ public interface ISetup {
 
     }
 
+    /**
+     * The default name of the class (similar to {@link #toString()}). Used in logging.
+     *
+     * @return the default class name
+     */
     default String getSetupName() {
         return getClass().getSimpleName();
     }

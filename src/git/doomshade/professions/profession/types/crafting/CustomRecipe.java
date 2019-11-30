@@ -50,11 +50,11 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     }
 
     @Override
-    protected Map<String, Object> getSerializedObject(CraftShapedRecipe object) {
+    public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(RESULT, object.getResult().serialize());
-        map.put(SHAPE, object.getShape());
-        map.put(INGREDIENTS, serializeIngredients(object.getIngredientMap()));
+        map.put(RESULT, getObject().getResult().serialize());
+        map.put(SHAPE, getObject().getShape());
+        map.put(INGREDIENTS, serializeIngredients(getObject().getIngredientMap()));
         return map;
     }
 

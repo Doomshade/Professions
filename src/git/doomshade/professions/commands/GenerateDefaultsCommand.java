@@ -15,19 +15,29 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
- * This command will generate all but the object's {@link git.doomshade.professions.profession.types.ItemType} defaults
+ * This command will generate all {@link ItemType} defaults
  *
  * @author Doomshade
  */
 public class GenerateDefaultsCommand extends AbstractCommand {
+    private static final String OBJECT = String.valueOf(Strings.ItemTypeEnum.OBJECT.s);
+
+    public GenerateDefaultsCommand() {
+        setCommand("generate-defaults");
+        setDescription("Generates the defaults of item types (does not override existing data).");
+        setRequiresOp(true);
+        setRequiresPlayer(false);
+    }
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+
 
         for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfessionManager().getItemTypeHolders()) {
             ItemType<?> itemType = itemTypeHolder.getItemTypeItem();
@@ -39,14 +49,33 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             File file = itemTypeHolder.getFile();
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
 
+            // "items:"
             ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
-            Iterator<String> it = itemsSection.getKeys(false).iterator();
-            while (it.hasNext()) {
-                ConfigurationSection itemSection = itemsSection.getConfigurationSection(it.next());
+
+            // iterating through IDS
+            for (String s : itemsSection.getKeys(false)) {
+                // "items: '1':"
+                ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
                 for (FileEnum en : missingKeys) {
                     for (Map.Entry<Enum, Object> entry : en.getDefaultValues().entrySet()) {
+                        if (!itemSection.isSet(entry.getKey().toString())) {
+                            Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
+                        }
                         itemSection.addDefault(entry.getKey().toString(), entry.getValue());
+
                     }
+                }
+
+
+                // "items: '1': object:"
+                ConfigurationSection objectSection = itemSection.isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
+
+                for (Map.Entry<String, Object> entry : itemType.getSerializedObject().entrySet()) {
+                    if (!objectSection.isSet(entry.getKey())) {
+                        Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
+                    }
+                    objectSection.addDefault(entry.getKey(), entry.getValue());
+
                 }
             }
             loader.options().copyDefaults(true);
@@ -54,11 +83,13 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 loader.save(file);
             } catch (IOException e) {
                 e.printStackTrace();
+                return false;
             }
 
-
         }
-        return false;
+
+        sender.sendMessage("Defaults generated successfully");
+        return true;
     }
 
     @Override
