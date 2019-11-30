@@ -206,3 +206,149 @@ public class YourPlugin extends JavaPlugin {
   }
 }
 ```
+
+So the full integration would look like this:
+
+```
+public class YourPlugin extends JavaPlugin {
+  
+  @Override
+  public void onEnable() {
+    Bukkit.getPluginManager().registerEvents(new ProfessionListener(), this);
+    ProfessionManager profMan = ProfessionManager.getInstance();
+    profMan.registerItemTypeHolder(new ItemTypeHolder<Prey>() {
+            @Override
+            public Prey getItemType() {
+                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
+                prey.setName(ChatColor.YELLOW + "Skeleton");
+                return prey;
+            }
+        });
+    }
+    profMan.registerProfession(new SkinningProfession());
+  }
+}
+
+public class Mob {
+    final String configName;
+    final EntityType type;
+
+    Mob(EntityType type, String configName) {
+        this.type = type;
+        this.configName = configName;
+    }
+
+    public Mob(EntityType type) {
+        this(type, "");
+    }
+
+    boolean isMythicMob() {
+        return !configName.isEmpty();
+    }
+
+}
+
+public class Prey extends ItemType<Mob> {
+    
+
+    /**
+     * Required constructor
+     */
+    public Prey() {
+        super();
+    }
+
+    /**
+     * Required constructor
+     *
+     * @param object
+     * @param exp
+     */
+    public Prey(Mob object, int exp) {
+        super(object, exp);
+    }
+    
+    @Override
+    protected Map<String, Object> getSerializedObject(Mob object) {
+        Map<String, Object> map = new HashMap<>();
+        map.put(ENTITY.s, object.type.name());
+        map.put(CONFIG_NAME.s, object.configName);
+        return map;
+    }
+
+    @Override
+    protected Mob deserializeObject(Map<String, Object> map) {
+    
+        String entityTypeName = (String) map.get(ENTITY.s);
+        String configName = (String) map.get(CONFIG_NAME.s);
+        
+        for (EntityType et : EntityType.values()) {
+            if (et.name().equals(entityTypeName)) {
+                return new Mob(et, configName);
+            }
+        }
+        throw new IllegalArgumentException(entityTypeName + " is not a valid entity type name!");
+    }
+
+    enum PreyEnum {
+        ENTITY("entity"), CONFIG_NAME("config-name");
+
+        public final String s;
+
+        PreyEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+    }
+
+    @Override
+    public Class<? extends IProfessionType> getDeclaredProfessionType() {
+        return IHunting.class;
+    }
+}
+public class ProfessionListener extends AbstractProfessionListener {
+
+    @Override
+    @EventHandler
+    public void onKill(EntityDeathEvent e) {
+        LivingEntity entity = e.getEntity();
+        if (entity == null || !(entity.getKiller() instanceof Player)) {
+            return;
+        }
+        callEvent(entity.getKiller(), new Mob(entity.getType()), Prey.class);
+    }
+    
+}
+
+public final class SkinningProfession extends Profession<IHunting> {
+
+    @Override
+    public void onLoad() {
+      addItems(Prey.class);
+    }
+
+    @Override
+    public String getID() {
+        return "skinning";
+    }
+
+    @Override
+    @EventHandler
+    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e) {
+        ProfessionEvent<Prey> event = getEvent(e, Prey.class);
+        if (!isValidEvent(event, Prey.class) || !playerMeetsLevelRequirements(event)) {
+            return;
+        }
+        
+        addExp(event);
+    }
+
+}
+
+```
+
+And that's it! You can make so much more, such as creating your own [CommandHandler](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommandHandler.java) and [Commands](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommand.java) (see [example](https://github.com/Doomshade/Professions/tree/master/src/git/doomshade/professions/profession/types/mining/commands))
