@@ -7,36 +7,18 @@ import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.LinkedList;
 
-/**
- * Class for {@link Profession} drop settings.
- *
- * @author Doomshade
- */
 public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings {
-    private transient static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE = "increment-since";
+    private static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE = "increment-since";
     private final LinkedList<Drop> DROPS = new LinkedList<>();
 
-    /**
-     * The default constructor of settings
-     *
-     * @param profession the profession
-     */
+
     ProfessionSpecificDropSettings(Profession<?> profession) {
         super(profession);
     }
 
-    /**
-     * Gets the random drop amount from profession settings.
-     *
-     * @param upd  the user's profession data
-     * @param item the item to base the formula around
-     * @return the drop amount
-     * @see Drop#getDropChance(int, int)
-     */
     public int getDropAmount(UserProfessionData upd, ItemType<?> item) {
 
         for (Drop drop : DROPS) {
@@ -81,13 +63,11 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
 
         ConfigurationSection section = getDefaultSection();
 
-        // add all drops to the list
         for (String s : section.getKeys(false)) {
             ConfigurationSection dropSection = section.getConfigurationSection(s);
             DROPS.add(new Drop(Integer.parseInt(s), dropSection.getInt(INCREMENT_SINCE), dropSection.getDouble(INCREMENT_BY)));
         }
 
-        // sort the list in descending order
         DROPS.sort(Comparator.naturalOrder());
     }
 
@@ -101,23 +81,8 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
         return getProfession().getColoredName() + ChatColor.RESET + " drop settings";
     }
 
-    /**
-     * Just a class to store 3 variables and a single compute method
-     */
-    private static class Drop implements Comparable<Drop>, Serializable {
-        /**
-         * The drop amount
-         */
-        private final int drop;
-
-        /**
-         * The level + updLevel to increment since
-         */
-        private final int incrementSince;
-
-        /**
-         * The % to increment by
-         */
+    private static class Drop implements Comparable<Drop> {
+        private final int drop, incrementSince;
         private final double incrementBy;
 
         private Drop(int drop, int incrementSince, double incrementBy) {
@@ -126,17 +91,9 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
             this.incrementSince = incrementSince;
         }
 
-        /**
-         * Returns the drop chance based on user's profession level, item's level requirement and the drop settings.
-         * <br>The formula is:
-         * <br>{@code Math.min(1d, Math.max(0d, (}{@link UserProfessionData#getLevel()} {@code -} ({@link Drop#incrementSince} {@code +} {@link ItemType#getLevelReq()}{@code ))} {@code *} {@link Drop#incrementBy}{@code ))}.
-         *
-         * @param updLevel     the user's profession level
-         * @param itemLevelReq the item's level requirement
-         * @return the drop chance
-         */
+        // TODO Outputting wrong values
         private double getDropChance(int updLevel, int itemLevelReq) {
-            return Math.min(1d, Math.max(0d, (updLevel - (incrementSince + itemLevelReq)) * incrementBy));
+            return Math.max(0d, (updLevel - incrementSince - itemLevelReq) * incrementBy);
         }
 
         @Override
