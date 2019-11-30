@@ -372,3 +372,5 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
 ```
 
 Plugin will then handle in the profession GUI the onClick() events and check whether or not the clicked ItemType is instanceof ICraftable. For ITrainable, this is used in [ProfessionTrainerTrait](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/trait/ProfessionTrainerTrait.java) (hook with Citizens) where you add a trait to an NPC, modifying what trainer the NPC should be, and then, after right clicking the NPC, a GUI will open with all the ITrainables.
+
+You may basically use ANY method in the whole API. What I would discourage from using are the setup() and cleanup() methods, those are made for better plugin functionality and are used in very specific context.
