@@ -351,4 +351,27 @@ public final class SkinningProfession extends Profession<IHunting> {
 
 ```
 
-And that's it! You can make so much more, such as creating your own [CommandHandler](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommandHandler.java) and [Commands](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommand.java) (see [example](https://github.com/Doomshade/Professions/tree/master/src/git/doomshade/professions/profession/types/mining/commands))
+And that's it! You can make so much more, such as creating your own [CommandHandler](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommandHandler.java) and [Commands](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/commands/AbstractCommand.java) (see [example](https://github.com/Doomshade/Professions/tree/master/src/git/doomshade/professions/profession/types/mining/commands)).
+
+There's also an option to make some items craftable or trainable. The best example would be [EnchantedItemType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/enchanting/EnchantedItemType.java). Focus on the serialize() and deserialize methods:
+
+```
+public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map = super.serialize();
+        map.putAll(ITrainable.serializeTrainable(this));
+        map.putAll(ICraftable.serializeCraftable(this));
+        return map;
+    }
+    
+    @Override
+    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
+        super.deserialize(map);
+        ITrainable.deserializeTrainable(map, this);
+        ICraftable.deserializeCraftable(map, this);
+    }
+}
+```
+
+Plugin will then handle in the profession GUI the onClick() events and check whether or not the clicked ItemType is instanceof ICraftable. For ITrainable, this is used in [ProfessionTrainerTrait](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/trait/ProfessionTrainerTrait.java) (hook with Citizens) where you add a trait to an NPC, modifying what trainer the NPC should be, and then, after right clicking the NPC, a GUI will open with all the ITrainables.
