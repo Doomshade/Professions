@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
@@ -124,18 +125,18 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         setHiddenWhenUnavailable((boolean) map.getOrDefault(HIDDEN.s, true));
         setIgnoreSkillupColor((boolean) map.getOrDefault(IGNORE_SKILLUP_COLOR.s, true));
         setDescription(ItemUtils.getItemTypeLore(this));
+
+        Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s)).collect(Collectors.toSet());
+
+        if (!list.isEmpty()) {
+            throw new ProfessionInitializationException(getClass(), list, getId());
+        }
         MemorySection mem = (MemorySection) map.get(OBJECT.s);
 
         try {
             setObject(deserializeObject(mem.getValues(true)));
-        } catch (ProfessionObjectInitializationException e) {
+        } catch (NullPointerException | ProfessionObjectInitializationException e) {
             Professions.log(e.getMessage(), Level.WARNING);
-        }
-
-        Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values());
-
-        if (!list.isEmpty()) {
-            throw new ProfessionInitializationException(getClass(), list, getId());
         }
 
     }

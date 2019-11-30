@@ -125,7 +125,7 @@ public final class ItemUtils {
      * @return the file of {@link ItemType}
      */
     public static File getFile(Class<?> clazz) {
-        return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase() + ".yml");
+        return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase().concat(Utils.YML_EXTENSION));
     }
 
     /**

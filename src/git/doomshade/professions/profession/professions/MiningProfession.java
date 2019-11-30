@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.professions;
 
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.mining.IMining;
@@ -15,7 +16,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class MiningProfession extends Profession<IMining> {
+public final class MiningProfession extends Profession<IMining> {
 
     @Override
     public void onLoad() {
@@ -42,10 +43,11 @@ public class MiningProfession extends Profession<IMining> {
 
     @Override
     @EventHandler
-    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e) {
-        if (!isValidEvent(e, OreItemType.class)) {
+    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> ev) {
+        if (!isValidEvent(ev, OreItemType.class)) {
             return;
         }
+        ProfessionEvent<OreItemType> e = getEvent(ev, OreItemType.class);
         User hrac = e.getPlayer();
         UserProfessionData upd = hrac.getProfessionData(getClass());
         if (!playerMeetsRequirements(e)) {
@@ -57,11 +59,13 @@ public class MiningProfession extends Profession<IMining> {
 
         if (addExp(e)) {
             Location loc = e.getExtra(Location.class);
-            Ore ore = (Ore) e.getObject().getObject();
+            Ore ore = e.getItemType().getObject();
             final ItemStack miningResult = ore.getMiningResult();
 
-            miningResult.setAmount(getProfessionSettings().getDropSettings(upd, e.getObject()).getDropAmount());
+            miningResult.setAmount(getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, e.getItemType()));
             loc.getWorld().dropItem(loc, miningResult);
+
+
         }
     }
 

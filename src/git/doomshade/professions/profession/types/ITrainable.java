@@ -8,6 +8,7 @@ import git.doomshade.professions.utils.Utils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 
@@ -53,7 +54,7 @@ public interface ITrainable {
         trainable.setCost((int) map.getOrDefault(COST.s, -1));
         trainable.setTrainableId((String) map.getOrDefault(TRAINABLE_ID.s, "NO_ID"));
 
-        Set<String> list = Utils.getMissingKeys(map, Strings.ITrainableEnum.values());
+        Set<String> list = Utils.getMissingKeys(map, Strings.ITrainableEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(VAR_TRAINABLE_COST.s)).collect(Collectors.toSet());
         if (!list.isEmpty()) {
             throw new ProfessionInitializationException((Class<? extends ItemType>) trainable.getClass(), list);
         }

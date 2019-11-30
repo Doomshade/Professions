@@ -1,12 +1,14 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.enums.SkillupColor;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class ProfessionExpSettings extends AbstractProfessionSettings {
 
-    private static final String EXP_SETTINGS = "exp-settings",
+    private static final String
+            EXP_SETTINGS = "exp-settings",
             COLOR = "color",
             CHANCE = "chance",
             COLOR_CHANGE_AFTER = "color-change-after";
@@ -15,7 +17,8 @@ public class ProfessionExpSettings extends AbstractProfessionSettings {
     }
 
     @Override
-    public void setup() {
+    public void setup() throws ConfigurationException {
+        super.setup();
         ConfigurationSection section = getDefaultSection();
         ConfigurationSection expSection = section.getConfigurationSection(EXP_SETTINGS);
         if (expSection != null) {

@@ -5,7 +5,8 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public class ExpSettings extends AbstractSettings {
 
-    private static final String MULTIPLIER = "multiplier",
+    private static final String
+            MULTIPLIER = "multiplier",
             SAPI_MULTIPLIER = "sapi-multiplier",
             Z = "z",
             Y = "y",
@@ -91,5 +92,10 @@ public class ExpSettings extends AbstractSettings {
         this.skillapiExpMultiplier = skillapiExpMultiplier;
         ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
         expSection.set(SAPI_MULTIPLIER, expMultiplier);
+    }
+
+    @Override
+    public String getSetupName() {
+        return "exp " + super.getSetupName();
     }
 }

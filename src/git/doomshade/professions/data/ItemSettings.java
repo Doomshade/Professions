@@ -27,4 +27,9 @@ public class ItemSettings extends AbstractSettings {
     public List<String> getDefaultLore() {
         return defaultLore;
     }
+
+    @Override
+    public String getSetupName() {
+        return "item " + super.getSetupName();
+    }
 }

@@ -1,7 +1,7 @@
 package git.doomshade.professions;
 
 import com.google.common.reflect.TypeToken;
-import git.doomshade.professions.data.ProfessionSettings;
+import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.IProfessionEventable;
 import git.doomshade.professions.profession.types.IProfessionType;
@@ -9,6 +9,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -16,6 +17,8 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,13 +51,24 @@ public abstract class Profession<T extends IProfessionType>
     private ProfessionType pt = ProfessionType.PRIMARY;
     private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
     private ItemStack icon = new ItemStack(Material.CHEST);
-    private ProfessionSettings professionSettings = null;
+    private final File file;
+    private ProfessionSettingsManager professionSettings = null;
 
-    /**
-     * Calling this constructor marks this class as initialized.
-     */
     public Profession() {
-        INITED_PROFESSIONS.add(getClass());
+        this(false);
+    }
+
+    Profession(boolean ignoreInitializationError) {
+        ensureNotInitialized(ignoreInitializationError);
+        String fileName = getClass().getSimpleName().toLowerCase();
+        this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
+        if (!file.exists() && !fileName.isEmpty()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -65,7 +79,7 @@ public abstract class Profession<T extends IProfessionType>
      */
     @SuppressWarnings("rawtypes")
     public static Profession<?> deserialize(Map<String, Object> map) {
-        return new Profession() {
+        return new Profession(true) {
 
             @Override
             public String getID() {
@@ -107,7 +121,7 @@ public abstract class Profession<T extends IProfessionType>
             }
 
             @Override
-            public ProfessionSettings getProfessionSettings() {
+            public ProfessionSettingsManager getProfessionSettings() {
                 return null;
             }
 
@@ -125,6 +139,27 @@ public abstract class Profession<T extends IProfessionType>
 
 
         };
+    }
+
+    void ensureNotInitialized(boolean ignoreError) {
+        if (!INITED_PROFESSIONS.add(getClass())) {
+            if (!ignoreError)
+                try {
+                    throw new IllegalAccessException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead!");
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+        }
+
+    }
+
+    /**
+     * Gets the settings file for profession
+     *
+     * @return the settings file for profession
+     */
+    public final File getFile() {
+        return file;
     }
 
     /**
@@ -188,9 +223,8 @@ public abstract class Profession<T extends IProfessionType>
     /**
      * Adds {@link ItemType}s to this profession to handle in {@link #onEvent(ProfessionEvent)}
      *
-     * @param items
+     * @param items the items
      */
-    @SuppressWarnings("unchecked")
     protected final void addItems(Class<? extends ItemType<?>> items) {
         this.items.add(Professions.getItemTypeHolder(items));
     }
@@ -234,7 +268,7 @@ public abstract class Profession<T extends IProfessionType>
     /**
      * @return the profession settings
      */
-    public ProfessionSettings getProfessionSettings() {
+    public ProfessionSettingsManager getProfessionSettings() {
         return professionSettings;
     }
 
@@ -243,7 +277,7 @@ public abstract class Profession<T extends IProfessionType>
      *
      * @param professionSettings the settings to set
      */
-    void setProfessionSettings(ProfessionSettings professionSettings) {
+    void setProfessionSettings(ProfessionSettingsManager professionSettings) {
         this.professionSettings = professionSettings;
     }
 
@@ -278,7 +312,7 @@ public abstract class Profession<T extends IProfessionType>
      * @return {@code true} if the exp was given, {@code false} otherwise
      */
     protected final boolean addExp(ProfessionEvent<?> e) {
-        return addExp(e.getExp(), e.getPlayer(), e.getObject());
+        return addExp(e.getExp(), e.getPlayer(), e.getItemType());
     }
 
     @Override
@@ -302,7 +336,7 @@ public abstract class Profession<T extends IProfessionType>
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
     protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e, Class<ItemTypeClass> item) {
-        ItemType<?> obj = e.getObject();
+        ItemType<?> obj = e.getItemType();
         for (ItemTypeHolder<?> ith : items) {
             for (ItemType<?> it : ith) {
                 if (it.getClass().equals(obj.getClass())) {
@@ -325,7 +359,7 @@ public abstract class Profession<T extends IProfessionType>
         if (!playerHasProfession(e)) {
             return false;
         }
-        ItemTypeClass obj = e.getObject();
+        ItemTypeClass obj = e.getItemType();
         UserProfessionData upd = getUserProfessionData(e.getPlayer());
         return upd != null && (obj.meetsLevelReq(upd.getLevel()) || upd.getUser().isBypass());
     }

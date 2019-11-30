@@ -18,7 +18,7 @@ public final class Settings implements ISetup {
     static {
         plugin = Professions.getInstance();
         instance = new Settings();
-        instance.reload();
+        instance.setup();
 
         registerSettings(new DefaultsSettings());
         registerSettings(new ExpSettings());
@@ -52,15 +52,15 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession<?>> ProfessionSettings getProfessionSettings(Class<A> clazz) {
+    public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
         return getProfessionSettings(Professions.getProfession(clazz));
     }
 
-    public static <A extends Profession<?>> ProfessionSettings getProfessionSettings(Profession<?> profession) {
+    public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Profession<?> profession) {
         try {
-            return (ProfessionSettings) Utils.findInIterable(SETTINGS, x -> {
-                if (x instanceof ProfessionSettings) {
-                    ProfessionSettings settings = (ProfessionSettings) x;
+            return (AbstractProfessionSpecificSettings) Utils.findInIterable(SETTINGS, x -> {
+                if (x instanceof AbstractProfessionSpecificSettings) {
+                    AbstractProfessionSpecificSettings settings = (AbstractProfessionSpecificSettings) x;
                     return settings.getProfession().equals(profession);
                 }
                 return false;
@@ -70,14 +70,10 @@ public final class Settings implements ISetup {
         }
     }
 
-    public void reload() {
-        plugin.reloadConfig();
-        config = plugin.getConfig();
-    }
-
     @Override
     public void setup() {
-        reload();
+        plugin.reloadConfig();
+        config = plugin.getConfig();
     }
 
 }

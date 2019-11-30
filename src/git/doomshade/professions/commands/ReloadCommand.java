@@ -1,7 +1,6 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.data.Settings;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,11 +19,10 @@ public class ReloadCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Settings.getInstance().reload();
-        Professions plugin = Professions.getInstance();
-        plugin.cleanup();
-        plugin.setup();
+
         try {
+            Professions plugin = Professions.getInstance();
+            plugin.reload();
             Professions.saveUsers();
             sender.sendMessage(ChatColor.GREEN + "Plugin reloaded.");
         } catch (IOException e) {

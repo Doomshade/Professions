@@ -89,8 +89,12 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         return collectionExtras.iterator().next();
     }
 
-    public T getObject() {
+    public T getItemType() {
         return t;
+    }
+
+    public void setItemType(T t) {
+        this.t = t;
     }
 
     public User getPlayer() {

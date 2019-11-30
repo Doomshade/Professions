@@ -1,40 +1,25 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Comparator;
 import java.util.LinkedList;
 
-public class ProfessionDropSettings extends ProfessionSettings {
+public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings {
     private static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE = "increment-since";
     private final LinkedList<Drop> DROPS = new LinkedList<>();
-    private UserProfessionData upd = null;
-    private ItemType<?> item = null;
 
-    ProfessionDropSettings(Profession<?> profession) {
+
+    ProfessionSpecificDropSettings(Profession<?> profession) {
         super(profession);
     }
 
-    public UserProfessionData getUpd() {
-        return upd;
-    }
-
-    public void setUpd(UserProfessionData upd) {
-        this.upd = upd;
-    }
-
-    public ItemType<?> getItem() {
-        return item;
-    }
-
-    public void setItem(ItemType<?> item) {
-        this.item = item;
-    }
-
-    public int getDropAmount() {
+    public int getDropAmount(UserProfessionData upd, ItemType<?> item) {
 
         for (Drop drop : DROPS) {
             if (Math.random() < drop.getDropChance(upd.getLevel(), item.getLevelReq())) {
@@ -61,19 +46,22 @@ public class ProfessionDropSettings extends ProfessionSettings {
         if (section.isConfigurationSection(SECTION)) {
             return section.getConfigurationSection(SECTION);
         } else {
-            printError(SECTION, null);
-            return null;
+            ConfigurationSection sec = section.createSection(SECTION);
+            for (int i = 2; i < 4; i++) {
+                ConfigurationSection specificDropSec = sec.createSection(i + "");
+                specificDropSec.set(INCREMENT_SINCE, 15);
+                specificDropSec.set(INCREMENT_BY, 0.1);
+            }
+
+            return sec;
         }
     }
 
     @Override
-    public void setup() {
-        DROPS.clear();
+    public void setup() throws ConfigurationException {
+        super.setup();
 
         ConfigurationSection section = getDefaultSection();
-        if (section == null) {
-            return;
-        }
 
         for (String s : section.getKeys(false)) {
             ConfigurationSection dropSection = section.getConfigurationSection(s);
@@ -81,6 +69,16 @@ public class ProfessionDropSettings extends ProfessionSettings {
         }
 
         DROPS.sort(Comparator.naturalOrder());
+    }
+
+    @Override
+    public void cleanup() {
+        DROPS.clear();
+    }
+
+    @Override
+    public String getSetupName() {
+        return getProfession().getColoredName() + ChatColor.RESET + " drop settings";
     }
 
     private static class Drop implements Comparable<Drop> {
@@ -108,4 +106,6 @@ public class ProfessionDropSettings extends ProfessionSettings {
             return String.format("Drop[drop=%d,incrementSince=%d,incrementBy=%f]", drop, incrementSince, incrementBy);
         }
     }
+
+
 }

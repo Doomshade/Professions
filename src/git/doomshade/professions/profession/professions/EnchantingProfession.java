@@ -60,7 +60,7 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
 
         switch (profEventType) {
             case CRAFT:
-                addExp(preEnchantedItem.enchant.getCraftExpYield(), user, e.getObject());
+                addExp(preEnchantedItem.enchant.getCraftExpYield(), user, e.getItemType());
                 break;
             case ENCHANT:
                 preEnchantedItem.enchant();

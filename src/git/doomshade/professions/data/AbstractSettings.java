@@ -1,6 +1,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,7 +19,7 @@ public abstract class AbstractSettings implements ISetup {
     AbstractSettings() {
     }
 
-    static void loadConfig() {
+    private static void loadConfig() {
         plugin.reloadConfig();
         config = plugin.getConfig();
     }
@@ -40,6 +41,22 @@ public abstract class AbstractSettings implements ISetup {
         return isSection;
     }
 
+    private final void assertSectionExists() throws ConfigurationException {
+        if (getDefaultSection() == null) {
+            throw new ConfigurationException();
+        }
+    }
+
+    @Override
+    public void setup() throws ConfigurationException {
+        assertSectionExists();
+    }
+
+    @Override
+    public String getSetupName() {
+        return "settings";
+    }
+
     protected ConfigurationSection getDefaultSection() {
         return config;
     }
@@ -48,4 +65,6 @@ public abstract class AbstractSettings implements ISetup {
     protected final boolean isSection(String section) {
         return isSection(section, null);
     }
+
+
 }

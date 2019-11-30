@@ -1,5 +1,6 @@
 package git.doomshade.professions;
 
+
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.commands.CommandHandler;
@@ -7,12 +8,14 @@ import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
 import git.doomshade.professions.gui.playerguis.TestThreeGui;
 import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.listeners.ProfessionListener;
+import git.doomshade.professions.listeners.SkillAPIListener;
 import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -35,11 +38,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.fusesource.jansi.Ansi;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -50,6 +55,7 @@ import java.util.logging.Level;
  * @author Doomshade
  */
 public final class Professions extends JavaPlugin implements ISetup {
+
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
@@ -67,11 +73,10 @@ public final class Professions extends JavaPlugin implements ISetup {
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
+    private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
 
     private FileConfiguration configLoader;
 
-    private Professions() {
-    }
 
     /**
      * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
@@ -238,7 +243,21 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @param level   the log level
      */
     public static void log(String message, Level level) {
-        getInstance().getLogger().log(level, message);
+        Ansi.Color color = Ansi.Color.WHITE;
+
+        final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
+        final List<Integer> GREEN = Arrays.asList(Level.CONFIG.intValue(), Level.FINE.intValue(), Level.FINEST.intValue());
+
+        if (RED.contains(level.intValue())) {
+            color = Ansi.Color.RED;
+        }
+
+        if (GREEN.contains(level.intValue())) {
+            color = Ansi.Color.GREEN;
+        }
+        Ansi ansi = Ansi.ansi().boldOff();
+
+        getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
     }
 
     /**
@@ -249,12 +268,17 @@ public final class Professions extends JavaPlugin implements ISetup {
         setInstance(this);
         hookGuiApi();
         hookCitizens();
+        hookSkillAPI();
         setupEconomy();
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
 
         // any class with setup() method contains a file
-        setupFiles();
+        try {
+            setupFiles();
+        } catch (ConfigurationException e) {
+            e.printStackTrace();
+        }
 
         scheduleTasks();
 
@@ -262,7 +286,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new UserListener(), this);
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
-
     }
 
     /**
@@ -331,27 +354,39 @@ public final class Professions extends JavaPlugin implements ISetup {
         return ITEM_FOLDER;
     }
 
+    public File getProfessionFolder() {
+        if (!PROFESSION_FOLDER.isDirectory()) {
+            PROFESSION_FOLDER.mkdirs();
+        }
+        return PROFESSION_FOLDER;
+    }
+
 
     @Override
-    public void setup() {
+    public void setup() throws ConfigurationException {
         for (ISetup setup : SETUPS) {
             try {
-                log("Setting up " + setup.getClass().getSimpleName(), Level.INFO);
                 setup.setup();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
             }
         }
     }
 
-    /**
-     * Cleans up {@link Profession}s from {@link ProfessionManager}. Use this method with caution as it will call {@link Collection#clear()} on all {@link Collection}s in {@link ProfessionManager}.
-     */
-    public void cleanup() {
-        profMan.PROFESSION_TYPES.clear();
-        profMan.PROFESSIONS_ID.clear();
-        profMan.PROFESSIONS_NAME.clear();
-        profMan.ITEMS.clear();
+    @Override
+    public void cleanup() throws ConfigurationException {
+        for (ISetup setup : SETUPS) {
+            try {
+                setup.cleanup();
+            } catch (Exception e) {
+                throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
+            }
+        }
+    }
+
+    public void reload() throws ConfigurationException {
+        cleanup();
+        setup();
     }
 
     /**
@@ -386,19 +421,17 @@ public final class Professions extends JavaPlugin implements ISetup {
         registerSetup(ProfessionManager.getInstance());
     }
 
-    private void setupFiles() {
+    private void setupFiles() throws ConfigurationException {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
-        if (!BACKUP_FOLDER.isDirectory()) {
-            BACKUP_FOLDER.mkdirs();
-        }
-        if (!PLAYER_FOLDER.isDirectory()) {
-            PLAYER_FOLDER.mkdirs();
-        }
-        if (!ITEM_FOLDER.isDirectory()) {
-            ITEM_FOLDER.mkdirs();
-        }
+
+        // getters create folders if the dir doesn't exist (this prevents random null/FileNotFound exceptions)
+        getBackupFolder();
+        getPlayerFolder();
+        getItemsFolder();
+        getProfessionFolder();
+
         saveDefaultConfig();
         reloadConfig();
         registerSetups();
@@ -420,11 +453,13 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     private void hookCitizens() {
-        if (Bukkit.getPluginManager().isPluginEnabled(Citizens.getPlugin(Citizens.class))) {
-            log("Successfully hooked with Citizens plugin", Level.INFO);
-            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
-            log("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.", Level.INFO);
+        if (Bukkit.getPluginManager().getPlugin("Citizens") == null) {
+            return;
         }
+        log("Successfully hooked with Citizens plugin", Level.INFO);
+        CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
+        log("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.", Level.INFO);
+
     }
 
     private void setupEconomy() {
@@ -438,5 +473,13 @@ public final class Professions extends JavaPlugin implements ISetup {
 
         log("Successfully hooked with Vault plugin", Level.INFO);
         econ = rsp.getProvider();
+    }
+
+    private void hookSkillAPI() {
+        PluginManager pm = Bukkit.getPluginManager();
+        if (pm.getPlugin("SkillAPI") == null) {
+            return;
+        }
+        pm.registerEvents(new SkillAPIListener(), this);
     }
 }
