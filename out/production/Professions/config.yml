@@ -1,0 +1,68 @@
+## default XP curve, use "lvl" for a level variable
+xp-curve:
+  formula:
+    x: 3
+    y: 2
+    z: 8
+  level-cap: 40
+  multiplier: 1.0
+
+  ## custom SkillAPI exp multiplier
+  sapi-multiplier: 1.0
+
+## saving options
+saving:
+  enabled: true
+  ## delay in minutes
+  delay: 5
+
+## item options
+items:
+  default-lore:
+    - '&aJméno: &b{name}'
+    - '{level-req-color}&lPožadovaný level: {level-req}'
+profession:
+  defaults:
+    sorted-by:
+      - level-req
+      - exp
+      - name
+  trainable:
+    trained:
+      - '&aJiz nauceno'
+    not-trained:
+      - '&aLze naucit'
+      - '&aCena: &6{trainable-cost}'
+    level-threshold: 3
+
+    ## 4 types of colors - red, yellow, green and gray (still optional for colors)
+    ## chance = chance to gain a skillup with that color
+    ## color-change-after = after how many levels should the color change
+    ## for example: an item type is made for level 10, if everything has color-change-after: 3, then the color
+    ## will change as for user has: red 0-9 level, yellow 10-13 level, green 14-17 level, gray 18+ levels
+  exp-settings:
+    gray:
+      chance: 0
+      color: '7'
+    green:
+      chance: 50
+      color: 'a'
+      color-change-after: 3
+    yellow:
+      chance: 100
+      color: 'e'
+      color-change-after: 3
+    red:
+      color: 'c'
+
+  ## Example settings for professions in professions/<profession_name>.yml
+  mining:
+    ## Drop settings
+    drop:
+      ## The drop amount
+      '4':
+        ## Increment chance by X% (increment-by: 10 = increment by 10%)
+        increment-by: 0.1
+
+        ## Increment since - what level to start incrementing the chance from
+        increment-since: 10
