@@ -3,8 +3,7 @@ package git.doomshade.professions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import git.doomshade.professions.data.ProfessionSettings;
-import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.profession.professions.EnchantingProfession;
 import git.doomshade.professions.profession.professions.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.MiningProfession;
@@ -62,7 +61,7 @@ public final class ProfessionManager implements ISetup {
     private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
 
-    // never call clear() on this hashset!
+    // never call clear() on this hashset! this hashset makes sure that professions gets their events registered ONLY ONCE
     private final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
     final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
     final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
@@ -150,7 +149,7 @@ public final class ProfessionManager implements ISetup {
      */
     public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getObjectItem().getClass());
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemTypeItem().getClass());
     }
 
     /**
@@ -190,6 +189,9 @@ public final class ProfessionManager implements ISetup {
      */
     public void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
         try {
+            if (Profession.INITED_PROFESSIONS.contains(profession)) {
+                throw new IllegalStateException(profession.getSimpleName() + " is already registered!");
+            }
             registerProfession(profession.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             Professions.log("Do not override nor create any new constructors in your profession class!", Level.WARNING);
@@ -216,14 +218,13 @@ public final class ProfessionManager implements ISetup {
         if (!loader.getKeys(false).contains(prof.getID())) {
             return;
         }
-        Profession<?> fileProf = Profession
-                .deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
+        Profession<?> fileProf = Profession.deserialize(loader.getConfigurationSection(prof.getID()).getValues(false));
         prof.setName(fileProf.getName());
         prof.setProfessionType(fileProf.getProfessionType());
         prof.setIcon(fileProf.getIcon());
 
-        ProfessionSettings settings = new ProfessionSettings(prof);
-        Settings.registerSettings(settings);
+        ProfessionSettingsManager settings = new ProfessionSettingsManager(prof);
+        settings.setup();
         prof.setProfessionSettings(settings);
 
         prof.onPostLoad();
@@ -237,6 +238,15 @@ public final class ProfessionManager implements ISetup {
         setupProfessionsFile();
     }
 
+    @Override
+    public void cleanup() {
+        PROFESSION_TYPES.clear();
+        PROFESSIONS_ID.clear();
+        PROFESSIONS_NAME.clear();
+        ITEMS.clear();
+        Profession.INITED_PROFESSIONS.clear();
+    }
+
     private void register() throws IOException {
         registerProfessionTypes();
         registerItemTypeHolders();
@@ -246,7 +256,7 @@ public final class ProfessionManager implements ISetup {
         registerItemTypeHolder(new ItemTypeHolder<OreItemType>() {
 
             @Override
-            public OreItemType getObject() {
+            public OreItemType getItemType() {
                 ItemStack item = new ItemStack(Material.GLASS);
                 ItemMeta meta = item.getItemMeta();
                 meta.setDisplayName("Toto vypadne");
@@ -260,7 +270,7 @@ public final class ProfessionManager implements ISetup {
         });
         registerItemTypeHolder(new ItemTypeHolder<Prey>() {
             @Override
-            public Prey getObject() {
+            public Prey getItemType() {
                 Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
                 prey.setName(ChatColor.YELLOW + "Kostlivec");
                 //registerObject(prey);
@@ -270,7 +280,7 @@ public final class ProfessionManager implements ISetup {
 
         registerItemTypeHolder(new ItemTypeHolder<GatherItem>() {
             @Override
-            public GatherItem getObject() {
+            public GatherItem getItemType() {
                 ItemStack item = new ItemStack(Material.GLASS);
                 ItemMeta meta = item.getItemMeta();
                 meta.setDisplayName(ChatColor.BLUE + "Test gathered item");
@@ -284,7 +294,7 @@ public final class ProfessionManager implements ISetup {
         });
         registerItemTypeHolder(new ItemTypeHolder<EnchantedItemType>() {
             @Override
-            public EnchantedItemType getObject() {
+            public EnchantedItemType getItemType() {
                 EnchantManager enchm = EnchantManager.getInstance();
                 try {
                     enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
@@ -307,7 +317,7 @@ public final class ProfessionManager implements ISetup {
 
         registerItemTypeHolder(new ItemTypeHolder<CustomRecipe>() {
             @Override
-            public CustomRecipe getObject() {
+            public CustomRecipe getItemType() {
                 ItemStack result = new ItemStack(Material.STONE);
                 ItemMeta meta = result.getItemMeta();
                 meta.setDisplayName(ChatColor.GREEN + "Test");
@@ -355,18 +365,17 @@ public final class ProfessionManager implements ISetup {
     }
 
     private void registerProfessions() {
-        registerProfession(new MiningProfession());
-        registerProfession(new JewelcraftingProfession());
-        registerProfession(new EnchantingProfession());
-        registerProfession(new SkinningProfession());
+        registerProfession(new MiningProfession(), false);
+        registerProfession(new JewelcraftingProfession(), false);
+        registerProfession(new EnchantingProfession(), false);
+        registerProfession(new SkinningProfession(), false);
         sortProfessions();
     }
 
-
-    private void registerProfession(Profession<? extends IProfessionType> prof) {
+    private void registerProfession(Profession<? extends IProfessionType> prof, boolean sayMessage) {
         if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
             try {
-                throw new IllegalAccessException("Do not override nor create any new constructors in your profession class!");
+                throw new IllegalAccessException("If you want to override constructors, make sure to call super() !");
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -386,11 +395,16 @@ public final class ProfessionManager implements ISetup {
         }
         try {
             updateProfession(prof);
-            Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
-        } catch (IllegalArgumentException e) {
+            if (sayMessage)
+                Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
+        } catch (Exception e) {
             Professions.log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
             e.printStackTrace();
         }
+    }
+
+    private void registerProfession(Profession<? extends IProfessionType> prof) {
+        registerProfession(prof, true);
     }
 
 

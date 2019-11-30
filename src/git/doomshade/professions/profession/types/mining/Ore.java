@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.types.mining;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -102,13 +103,28 @@ public class Ore implements ConfigurationSerializable {
     /**
      * Enum for keys in file
      */
-    enum OreEnum {
+    enum OreEnum implements FileEnum {
         KEY_MATERIAL("material"), KEY_MINING_RESULT("mining-result");
 
         final String s;
 
         OreEnum(String s) {
             this.s = s;
+        }
+
+        @Override
+        public Map<Enum, Object> getDefaultValues() {
+            return new HashMap<Enum, Object>() {
+                {
+                    put(KEY_MATERIAL, Material.GLASS);
+                    put(KEY_MINING_RESULT, new ItemStack(Material.BED).serialize());
+                }
+            };
+        }
+
+        @Override
+        public String toString() {
+            return s;
         }
     }
 }

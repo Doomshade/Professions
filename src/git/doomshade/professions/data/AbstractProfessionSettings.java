@@ -1,21 +1,26 @@
 package git.doomshade.professions.data;
 
+import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
-
-import javax.annotation.Nullable;
 
 public abstract class AbstractProfessionSettings extends AbstractSettings {
     private static final String SECTION = "profession";
+    private static ConfigurationSection section = config.getConfigurationSection(SECTION);
 
     @Override
-    @Nullable
     protected ConfigurationSection getDefaultSection() {
-        if (config.isConfigurationSection(SECTION))
-            return config.getConfigurationSection(SECTION);
-        else {
-            printError(SECTION, null);
-            return null;
-        }
+        return section;
+    }
+
+    /**
+     * Try to set the section first, then check if it exists
+     *
+     * @throws ConfigurationException if the section doesn't exist
+     */
+    @Override
+    public void setup() throws ConfigurationException {
+        section = config.getConfigurationSection(SECTION);
+        super.setup();
     }
 
     @Override

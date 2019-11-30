@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.types.hunting;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.entity.EntityType;
 
@@ -64,13 +65,28 @@ public class Prey extends ItemType<Mob> {
         throw new IllegalArgumentException(entityTypeName + " is not a valid entity type name!");
     }
 
-    enum PreyEnum {
+    enum PreyEnum implements FileEnum {
         ENTITY("entity"), CONFIG_NAME("config-name");
 
         public final String s;
 
         PreyEnum(String s) {
             this.s = s;
+        }
+
+        @Override
+        public Map<Enum, Object> getDefaultValues() {
+            return new HashMap<Enum, Object>() {
+                {
+                    put(ENTITY, EntityType.SKELETON.name());
+                    put(CONFIG_NAME, "cfg-name");
+                }
+            };
+        }
+
+        @Override
+        public String toString() {
+            return s;
         }
     }
 

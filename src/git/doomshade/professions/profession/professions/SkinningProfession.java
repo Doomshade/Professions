@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class SkinningProfession extends Profession<IHunting> {
+public final class SkinningProfession extends Profession<IHunting> {
 
     @Override
     public void onLoad() {

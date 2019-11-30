@@ -1,5 +1,6 @@
 package git.doomshade.professions.data;
 
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.types.ITrainable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,20 +15,22 @@ public class TrainableSettings extends AbstractProfessionSettings {
             TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained";
 
     private int levelThreshold = 3;
-    private List<String> trainedLore, notTrainedLore;
+    private final ArrayList<String> trainedLore, notTrainedLore;
 
     TrainableSettings() {
+        trainedLore = new ArrayList<>();
+        notTrainedLore = new ArrayList<>();
     }
 
     @Override
-    public void setup() {
-        trainedLore = notTrainedLore = new ArrayList<>();
+    public void setup() throws ConfigurationException {
+        super.setup();
         ConfigurationSection section = getDefaultSection();
         ConfigurationSection trainableSection = section.getConfigurationSection(TRAINABLE_SECTION);
         if (trainableSection != null) {
             levelThreshold = trainableSection.getInt(LEVEL_THRESHOLD);
             if (trainableSection.isList(TRAINED)) {
-                trainedLore = trainableSection.getStringList(TRAINED);
+                trainedLore.addAll(trainableSection.getStringList(TRAINED));
                 for (int i = 0; i < trainedLore.size(); i++) {
                     trainedLore.set(i, ChatColor.translateAlternateColorCodes('&', trainedLore.get(i)));
                 }
@@ -35,7 +38,7 @@ public class TrainableSettings extends AbstractProfessionSettings {
                 printError(TRAINABLE_SECTION + "." + TRAINED, null);
             }
             if (trainableSection.isList(NOT_TRAINED)) {
-                notTrainedLore = trainableSection.getStringList(NOT_TRAINED);
+                notTrainedLore.addAll(trainableSection.getStringList(NOT_TRAINED));
                 for (int i = 0; i < notTrainedLore.size(); i++) {
                     notTrainedLore.set(i, ChatColor.translateAlternateColorCodes('&', notTrainedLore.get(i)));
                 }
@@ -45,7 +48,12 @@ public class TrainableSettings extends AbstractProfessionSettings {
         } else {
             printError(TRAINABLE_SECTION, null);
         }
+    }
 
+    @Override
+    public void cleanup() {
+        trainedLore.clear();
+        notTrainedLore.clear();
     }
 
     public int getLevelThreshold() {

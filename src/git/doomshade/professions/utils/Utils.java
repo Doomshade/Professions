@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A set of method utilities
@@ -15,6 +16,8 @@ import java.util.function.Predicate;
  * @author Doomshade
  */
 public final class Utils {
+
+    public static final String YML_EXTENSION = ".yml";
 
     /**
      * @param iterable  the iterable (e.g. {@link Collection})
@@ -56,13 +59,17 @@ public final class Utils {
      * @return a {@link Set} of {@link String}s
      */
     @NotNull
-    public static Set<String> getMissingKeys(Map<String, Object> map, Enum[] values) {
-        Set<String> list = new HashSet<>();
+    public static Set<String> getMissingKeys(Map<String, Object> map, FileEnum[] values) {
+        return getMissingKeysEnum(map, values).stream().map(Object::toString).collect(Collectors.toSet());
+    }
 
-        for (Enum value : values) {
+    public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values) {
+        Set<FileEnum> list = new HashSet<>();
+
+        for (FileEnum value : values) {
             final String key = value.toString();
             if (!map.containsKey(key)) {
-                list.add(key);
+                list.add(value);
             }
         }
 

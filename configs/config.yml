@@ -6,6 +6,8 @@ xp-curve:
     z: 8
   level-cap: 40
   multiplier: 1.0
+
+  ## custom SkillAPI exp multiplier
   sapi-multiplier: 1.0
 
 ## saving options
@@ -14,6 +16,7 @@ saving:
   ## delay in minutes
   delay: 5
 
+## item options
 items:
   default-lore:
     - '&aJméno: &b{name}'
@@ -51,23 +54,15 @@ profession:
       color-change-after: 3
     red:
       color: 'c'
+
+  ## Example settings for professions in professions/<profession_name>.yml
   mining:
+    ## Drop settings
     drop:
+      ## The drop amount
       '4':
+        ## Increment chance by X% (increment-by: 10 = increment by 10%)
         increment-by: 0.1
-        increment-since: 10
-  jewelcrafting:
-    drop:
-      '4':
-        increment-by: 0.1
-        increment-since: 10
-  enchanting:
-    drop:
-      '4':
-        increment-by: 0.1
-        increment-since: 10
-  skinning:
-    drop:
-      '4':
-        increment-by: 0.1
+
+        ## Increment since - what level to start incrementing the chance from
         increment-since: 10

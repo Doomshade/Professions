@@ -30,7 +30,7 @@ import java.util.logging.Level;
 public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
     private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
     // must be list for ordering in file
-    private List<Type> objects = new ArrayList<>();
+    private List<Type> itemTypes = new ArrayList<>();
 
     private final List<SortType> sortTypes = new ArrayList<>();
     private List<String> errorMessage = new ArrayList<>();
@@ -44,23 +44,23 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         return newItemsMessage;
     }
 
-    private Type object;
-
-    public final void registerObject(Type item) {
-        if (!objects.contains(item)) {
-            objects.add(item);
-        }
-    }
+    private Type itemType;
 
     public ItemTypeHolder() {
-        this.object = getObject();
+        this.itemType = getItemType();
+    }
+
+    public final void registerObject(Type item) {
+        if (!itemTypes.contains(item)) {
+            itemTypes.add(item);
+        }
     }
 
     /**
      * @return all registered item types
      */
     public final List<Type> getRegisteredItemTypes() {
-        return objects;
+        return itemTypes;
     }
 
     /**
@@ -69,7 +69,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
      * @throws IOException
      */
     public final void save() throws IOException {
-        File itemFile = object.getFile();
+        File itemFile = itemType.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
@@ -87,21 +87,21 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         } else {
             itemsSection = loader.createSection(ItemType.KEY);
         }
-        itemsSection.addDefault(String.valueOf(0), object.serialize());
+        itemsSection.addDefault(String.valueOf(0), itemType.serialize());
 
-        if (!objects.isEmpty())
-            for (int i = 0; i < objects.size(); i++) {
-                Type registeredObject = objects.get(i);
+        if (!itemTypes.isEmpty())
+            for (int i = 0; i < itemTypes.size(); i++) {
+                Type registeredObject = itemTypes.get(i);
                 itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
             }
         loader.options().copyDefaults(true);
         loader.save(itemFile);
     }
 
-    protected abstract Type getObject();
+    protected abstract Type getItemType();
 
-    public final Type getObjectItem() {
-        return object;
+    public final Type getItemTypeItem() {
+        return itemType;
     }
     /*
     public final Type getObject(){
@@ -119,19 +119,12 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     }*/
 
     public final File getFile() {
-        String[] split = getClass().getGenericSuperclass().getTypeName().split("[.]");
-        final String s = split[split.length - 1];
-        try {
-            return ItemUtils.getFile(Class.forName(s.substring(0, s.length() - 1)));
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return itemType.getFile();
     }
 
     @SuppressWarnings("unchecked")
     public void load() throws IOException {
-        File itemFile = object.getFile();
+        File itemFile = itemType.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
@@ -140,7 +133,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
             return;
         }
 
-        this.errorMessage = ItemUtils.getDescription(object, loader.getStringList(ERROR_MESSAGE), null);
+        this.errorMessage = ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
 
         this.sortTypes.clear();
         for (String st : loader.getStringList(SORTED_BY)) {
@@ -150,12 +143,12 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
             }
         }
 
-        this.newItemsMessage = ItemUtils.getDescription(object, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
+        this.newItemsMessage = ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
         Iterator<String> it = itemsSection.getKeys(false).iterator();
         int i;
-        final Class<? extends ItemType> clazz = object.getClass();
+        final Class<? extends ItemType> clazz = itemType.getClass();
         while (it.hasNext()) {
             i = Integer.parseInt(it.next());
 
@@ -167,10 +160,10 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
                 continue;
             }
             if (deserialized != null) {
-                if (!objects.isEmpty() && objects.size() > i) {
-                    objects.set(i, deserialized);
+                if (!itemTypes.isEmpty() && itemTypes.size() > i) {
+                    itemTypes.set(i, deserialized);
                 } else {
-                    objects.add(deserialized);
+                    itemTypes.add(deserialized);
                 }
             }
         }
@@ -178,13 +171,13 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         for (int j = sortTypes.size() - 1; j >= 0; j--) {
             switch (sortTypes.get(j)) {
                 case NAME:
-                    objects.sort(Comparator.comparing(o -> o.getName()));
+                    itemTypes.sort(Comparator.comparing(o -> o.getName()));
                     break;
                 case EXPERIENCE:
-                    objects.sort(Comparator.comparing(o -> -o.getExp()));
+                    itemTypes.sort(Comparator.comparing(o -> -o.getExp()));
                     break;
                 case LEVEL_REQ:
-                    objects.sort(Comparator.comparing(o -> o.getLevelReq()));
+                    itemTypes.sort(Comparator.comparing(o -> o.getLevelReq()));
                     break;
             }
         }
@@ -198,6 +191,6 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
 
     @Override
     public Iterator<Type> iterator() {
-        return objects.iterator();
+        return itemTypes.iterator();
     }
 }

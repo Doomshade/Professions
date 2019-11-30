@@ -14,4 +14,15 @@ public interface ISetup {
      * @throws Exception
      */
     void setup() throws Exception;
+
+    /**
+     * A method in which the implementing class should clean up all the data. Called in {@link git.doomshade.professions.commands.ReloadCommand}
+     */
+    default void cleanup() throws Exception {
+
+    }
+
+    default String getSetupName() {
+        return getClass().getSimpleName();
+    }
 }

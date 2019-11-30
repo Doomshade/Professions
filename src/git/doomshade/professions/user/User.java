@@ -216,6 +216,8 @@ public final class User {
     }
 
     /**
+     * Professes the player
+     *
      * @param prof profession to profess
      * @return true if professed successfully, false otherwise
      */
@@ -229,6 +231,8 @@ public final class User {
     }
 
     /**
+     * Unprofesses the player
+     *
      * @param prof profession to profess
      * @return true if unprofessed successfully, false otherwise
      */
@@ -252,6 +256,8 @@ public final class User {
     }
 
     /**
+     * Returns all user's professions
+     *
      * @return set of users profession data
      */
     public ImmutableSet<UserProfessionData> getProfessions() {
@@ -266,7 +272,7 @@ public final class User {
     }
 
     /**
-     * Calls {@link UserProfessionData#addExp(double, ItemType)}
+     * Adds exp to the player.
      *
      * @param exp    the amount of exp to give
      * @param prof   the profession of this user
@@ -281,6 +287,8 @@ public final class User {
     }
 
     /**
+     * Adds levels to the player.
+     *
      * @param level the level to add
      * @param prof  the profession to add the level to
      * @return {@link UserProfessionData#addLevel(int)}
@@ -319,6 +327,8 @@ public final class User {
     }
 
     /**
+     * Gets the profession data
+     *
      * @param prof the profession
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
      */
@@ -328,6 +338,8 @@ public final class User {
     }
 
     /**
+     * Gets the profession data
+     *
      * @param profClass the profession's class
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
      */
@@ -349,6 +361,8 @@ public final class User {
     }
 
     /**
+     * Used for bypassing level requirements
+     *
      * @return {@code true} if the user bypasses level requirement, {@code false} otherwise
      */
     public boolean isBypass() {
@@ -368,6 +382,8 @@ public final class User {
     }
 
     /**
+     * Used for suppressing the user from receiving experience
+     *
      * @return {@code true} if the user is being suppressed from receiving exp, {@code false} otherwise
      */
     public boolean isSuppressExpEvent() {

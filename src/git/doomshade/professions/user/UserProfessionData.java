@@ -208,7 +208,7 @@ public class UserProfessionData {
     }
 
     /**
-     * This method also ensures that, if in any case the level > {@link #getLevelCap()}, the level is set to the level cap.
+     * This method also ensures that, if in any case the {@link #getLevel()} > {@link #getLevelCap()}, the level is set to the level cap.
      *
      * @return {@code true} if current level == {@link #getLevelCap()}.
      */
