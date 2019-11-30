@@ -6,7 +6,7 @@ Creating a customizable profession is fairly easy for an experienced programmer,
 
 To create a custom profession, you will need to know about these classes:
 - [Profession](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/Profession.java) - the main profession class
-- [IProfessionType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/IProfessionType.java) - the profession type (serves as a generic argument to Profession), used to distinguish different profession types
+- [IProfessionType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/IProfessionType.java) - the profession type (serves as a generic argument to Profession), used to differentiate professions
 - [ItemType](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/ItemType.java) - class that manages items
 - [ItemTypeHolder](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/profession/types/ItemTypeHolder.java) - class that manages ItemType (saves and loads data from files)
 - [ProfessionManager](https://github.com/Doomshade/Professions/blob/master/src/git/doomshade/professions/ProfessionManager.java) - a manager that manages profession registrations and queries and also stores professions in memory
