@@ -9,6 +9,8 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.gui.adminguis.AdminProfessionGUI;
+import git.doomshade.professions.gui.adminguis.AdminProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
@@ -118,6 +120,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     public static void saveUsers() throws IOException {
         User.saveUsers();
     }
+
 
     /**
      * @return the {@link ProfessionManager} instance
@@ -246,16 +249,19 @@ public final class Professions extends JavaPlugin implements ISetup {
         Ansi.Color color = Ansi.Color.WHITE;
 
         final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
-        final List<Integer> GREEN = Arrays.asList(Level.CONFIG.intValue(), Level.FINE.intValue(), Level.FINEST.intValue());
+        final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.CONFIG.intValue(), Level.FINER.intValue());
 
         if (RED.contains(level.intValue())) {
             color = Ansi.Color.RED;
         }
 
+
         if (GREEN.contains(level.intValue())) {
             color = Ansi.Color.GREEN;
         }
+
         Ansi ansi = Ansi.ansi().boldOff();
+
 
         getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
     }
@@ -270,6 +276,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         hookCitizens();
         hookSkillAPI();
         setupEconomy();
+
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
 
@@ -466,6 +473,8 @@ public final class Professions extends JavaPlugin implements ISetup {
         guiManager.registerGui(ProfessionGUI.class);
         guiManager.registerGui(TestThreeGui.class);
         guiManager.registerGui(ProfessionTrainerGUI.class);
+        guiManager.registerGui(AdminProfessionsGUI.class);
+        guiManager.registerGui(AdminProfessionGUI.class);
     }
 
     private void hookCitizens() {
