@@ -16,7 +16,7 @@ import java.util.LinkedList;
  *
  * @author Doomshade
  */
-public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings implements Serializable {
+public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings {
     private transient static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE = "increment-since";
     private final LinkedList<Drop> DROPS = new LinkedList<>();
 
@@ -33,7 +33,7 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
      * Gets the random drop amount from profession settings.
      *
      * @param upd  the user's profession data
-     * @param item the item to baser the formula around
+     * @param item the item to base the formula around
      * @return the drop amount
      * @see Drop#getDropChance(int, int)
      */

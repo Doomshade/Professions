@@ -4,8 +4,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
 public abstract class AbstractProfessionSettings extends AbstractSettings {
-    private static final String SECTION = "profession";
-    private static ConfigurationSection section = config.getConfigurationSection(SECTION);
+    private transient static final String SECTION = "profession";
+    private transient static ConfigurationSection section = config.getConfigurationSection(SECTION);
 
     @Override
     protected ConfigurationSection getDefaultSection() {

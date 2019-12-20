@@ -135,8 +135,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
         try {
             setObject(deserializeObject(mem.getValues(true)));
-        } catch (NullPointerException | ProfessionObjectInitializationException e) {
+        } catch (ProfessionObjectInitializationException e) {
             Professions.log(e.getMessage(), Level.WARNING);
+        } catch (NullPointerException e1) {
+            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId(), Level.WARNING);
         }
 
     }

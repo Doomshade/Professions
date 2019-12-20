@@ -16,6 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,19 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  * @author Doomshade
  */
 public final class ItemUtils {
+
+    public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
+            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of requirement"))
+            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
+            .build();
+
+    public static final ItemStack EXAMPLE_RESULT = new ItemStackBuilder(Material.GLASS)
+            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of result"))
+            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
+            .build();
+
+
+
     private static ItemUtils instance;
 
     static {

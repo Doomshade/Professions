@@ -3,10 +3,8 @@ package git.doomshade.professions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import git.doomshade.professions.profession.professions.EnchantingProfession;
-import git.doomshade.professions.profession.professions.JewelcraftingProfession;
-import git.doomshade.professions.profession.professions.MiningProfession;
-import git.doomshade.professions.profession.professions.SkinningProfession;
+import com.google.common.collect.Maps;
+import git.doomshade.professions.profession.professions.*;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -24,7 +22,9 @@ import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.IMining;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
+import git.doomshade.professions.profession.types.mining.smelting.BarItemType;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -226,14 +226,8 @@ public final class ProfessionManager implements ISetup {
 
             @Override
             public OreItemType getItemType() {
-                ItemStack item = new ItemStack(Material.GLASS);
-                ItemMeta meta = item.getItemMeta();
-                meta.setDisplayName("Toto vypadne");
-                meta.setLore(Collections.singletonList("S timhle lore"));
-                item.setItemMeta(meta);
-                OreItemType ore = new OreItemType(new Ore(Material.OBSIDIAN, item), 100);
+                OreItemType ore = new OreItemType(new Ore(Material.OBSIDIAN, Maps.newTreeMap()), 100);
                 ore.setName(ChatColor.GRAY + "Obsidian");
-                //registerObject(ore);
                 return ore;
             }
         });
@@ -242,7 +236,6 @@ public final class ProfessionManager implements ISetup {
             public Prey getItemType() {
                 Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
                 prey.setName(ChatColor.YELLOW + "Kostlivec");
-                //registerObject(prey);
                 return prey;
             }
         });
@@ -250,14 +243,8 @@ public final class ProfessionManager implements ISetup {
         registerItemTypeHolder(new ItemTypeHolder<GatherItem>() {
             @Override
             public GatherItem getItemType() {
-                ItemStack item = new ItemStack(Material.GLASS);
-                ItemMeta meta = item.getItemMeta();
-                meta.setDisplayName(ChatColor.BLUE + "Test gathered item");
-                meta.setLore(ImmutableList.of("Yay"));
-                item.setItemMeta(meta);
-                GatherItem gatherItem = new GatherItem(item, 500);
+                GatherItem gatherItem = new GatherItem(ItemUtils.EXAMPLE_RESULT, 500);
                 gatherItem.setName(ChatColor.DARK_AQUA + "Test gather item");
-                //registerObject(gatherItem);
                 return gatherItem;
             }
         });
@@ -279,7 +266,6 @@ public final class ProfessionManager implements ISetup {
                 craftRequirement.setItemMeta(craftRequirementMeta);
                 eit.addCraftingRequirement(craftRequirement);
                 eit.setName(ChatColor.RED + "Test random attribute enchantment");
-                //registerObject(eit);
                 return eit;
             }
         });
@@ -287,12 +273,7 @@ public final class ProfessionManager implements ISetup {
         registerItemTypeHolder(new ItemTypeHolder<CustomRecipe>() {
             @Override
             public CustomRecipe getItemType() {
-                ItemStack result = new ItemStack(Material.STONE);
-                ItemMeta meta = result.getItemMeta();
-                meta.setDisplayName(ChatColor.GREEN + "Test");
-                meta.setLore(Arrays.asList("This", "is", "a fokin", "test"));
-                result.setItemMeta(meta);
-                ShapedRecipe recipe = new ShapedRecipe(result).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
+                ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
                 CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
                 cr.setName(ChatColor.DARK_GREEN + "Test recipe");
                 registerObject(cr);
@@ -315,6 +296,22 @@ public final class ProfessionManager implements ISetup {
                 return cr;
             }
         });
+
+        registerItemTypeHolder(new ItemTypeHolder<BarItemType>() {
+
+            @Override
+            protected BarItemType getItemType() {
+                BarItemType eit = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
+                ItemStack craftRequirement = new ItemStack(Material.GLASS);
+                ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
+                craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
+                craftRequirementMeta.setLore(ImmutableList.of("Japato"));
+                craftRequirement.setItemMeta(craftRequirementMeta);
+                eit.addCraftingRequirement(craftRequirement);
+                eit.setName(ChatColor.RED + "Test random enchantment");
+                return eit;
+            }
+        });
     }
 
 
@@ -331,6 +328,7 @@ public final class ProfessionManager implements ISetup {
         registerProfession(new JewelcraftingProfession(), false);
         registerProfession(new EnchantingProfession(), false);
         registerProfession(new SkinningProfession(), false);
+        registerProfession(new SmeltingProfession(), false);
         sortProfessions();
     }
 

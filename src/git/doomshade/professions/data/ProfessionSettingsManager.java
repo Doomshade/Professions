@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.logging.Level;
 
 public final class ProfessionSettingsManager extends AbstractSettings {
-    private final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
-    private final Profession<?> profession;
+    private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
+    private transient final Profession<?> profession;
 
     public ProfessionSettingsManager(Profession<?> profession) {
         this.profession = profession;
@@ -28,12 +28,10 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         T theSettings = null;
         try {
             AbstractProfessionSpecificSettings settings = Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName()));
-            if (settings instanceof Serializable) {
-                theSettings = (T) SerializationUtils.clone((Serializable) settings);
-            } else if (settings instanceof Cloneable) {
+            if (settings instanceof Cloneable) {
                 theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
             } else {
-                throw new IllegalStateException(settings.getSetupName() + " does not implement Serializable nor Cloneable!");
+                theSettings = (T) SerializationUtils.clone((Serializable) settings);
             }
         } catch (Utils.SearchNotFoundException e) {
             try {

@@ -6,12 +6,13 @@ import git.doomshade.professions.utils.ISetup;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.Serializable;
 import java.util.logging.Level;
 
-public abstract class AbstractSettings implements ISetup {
-    private static final Level LEVEL = Level.WARNING;
-    protected static FileConfiguration config;
-    private static Professions plugin = Professions.getInstance();
+public abstract class AbstractSettings implements ISetup, Serializable {
+    private transient static final Level LEVEL = Level.WARNING;
+    protected transient static FileConfiguration config;
+    private transient static Professions plugin = Professions.getInstance();
 
     static {
         loadConfig();

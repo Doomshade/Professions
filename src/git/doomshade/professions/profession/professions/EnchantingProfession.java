@@ -25,17 +25,21 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
 
     @Override
     @EventHandler
-    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e) {
+    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> event) {
 
-        if (!isValidEvent(e, EnchantedItemType.class)) {
+        if (!isValidEvent(event, EnchantedItemType.class)) {
             return;
         }
+
+        ProfessionEvent<EnchantedItemType> e = getEvent(event, EnchantedItemType.class);
+
         User user = e.getPlayer();
         if (!playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(getUserProfessionData(user));
             return;
         }
+
         PreEnchantedItem preEnchantedItem = e.getExtra(PreEnchantedItem.class);
         if (preEnchantedItem == null) {
             return;
@@ -56,7 +60,6 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
         }
 
     }
-
 
 
     public enum ProfessionEventType {

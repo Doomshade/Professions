@@ -72,4 +72,13 @@ public class AdminProfessionGUI extends GUI {
             }
         }
     }
+
+    @Override
+    public void onCustomEvent(Object obj) {
+        if (!(obj instanceof String)) {
+            return;
+        }
+
+        String input = (String) obj;
+    }
 }

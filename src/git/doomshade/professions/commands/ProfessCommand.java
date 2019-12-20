@@ -29,7 +29,6 @@ public class ProfessCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         User user = User.getUser((Player) sender);
         Profession<?> prof = Professions.getProfessionManager().getProfession(args[1]);
         MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);

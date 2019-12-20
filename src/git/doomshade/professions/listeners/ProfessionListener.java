@@ -177,7 +177,6 @@ public class ProfessionListener extends AbstractProfessionListener {
     @Override
     @EventHandler
     public void onEnchant(PlayerInteractEvent e) {
-        // TODO Auto-generated method stub
         if (e.isCancelled()) {
             return;
         }
