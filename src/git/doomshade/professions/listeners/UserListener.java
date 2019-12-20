@@ -1,25 +1,20 @@
 package git.doomshade.professions.listeners;
 
+import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import static git.doomshade.professions.utils.ItemUtils.itemStackBuilder;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class UserListener implements Listener {
-    private static final ItemStack ZPET_BUTTON = itemStackBuilder(Material.BOOK).withDisplayName(ChatColor.RED + "Zpet").withLore(new ArrayList<>()).build();
+    /*private static final ItemStack ZPET_BUTTON = itemStackBuilder(Material.BOOK).withDisplayName(ChatColor.RED + "Zpet").withLore(new ArrayList<>()).build();
     private static final ItemStack PREVIOUS_PAGE = itemStackBuilder(Material.BOOK).withDisplayName("Predesla stranka").withLore(new ArrayList<>()).build();
     private static final ItemStack NEXT_PAGE = itemStackBuilder(Material.BOOK).withDisplayName("Dalsi stranka").withLore(new ArrayList<>()).build();
 
@@ -62,7 +57,7 @@ public class UserListener implements Listener {
             inventoriez.put(i, inventory);
         }
         return inventoriez;
-    }
+    }*/
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
@@ -80,5 +75,30 @@ public class UserListener implements Listener {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static final HashMap<UUID, HashMap<ValidInputType, GUI>> PLAYER_INPUT = new HashMap<>();
+
+    public static void askUser(Player user, String message, ValidInputType type, GUI gui) {
+        user.closeInventory();
+        PLAYER_INPUT.put(user.getUniqueId(), new HashMap<ValidInputType, GUI>() {
+            {
+                put(type, gui);
+            }
+        });
+        user.sendMessage(message);
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent e) {
+        HashMap<ValidInputType, GUI> onIn;
+        if ((onIn = PLAYER_INPUT.remove(e.getPlayer().getUniqueId())) != null) {
+            GUI gui = onIn.values().iterator().next();
+            gui.onCustomEvent(e.getMessage());
+        }
+    }
+
+    public enum ValidInputType {
+        STRING, INTEGER, DOUBLE, ITEMSTACK, BOOLEAN, MATERIAL, LIST
     }
 }

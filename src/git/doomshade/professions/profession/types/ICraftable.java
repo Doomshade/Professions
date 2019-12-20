@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -119,6 +120,10 @@ public interface ICraftable {
      * @param craftingRequirements the crafting requirements to set
      */
     void setCraftingRequirements(Requirements craftingRequirements);
+
+    default Function<ItemStack, ?> getExtra() {
+        return null;
+    }
 
     /**
      * Determines whether or not the player meets inventory requirements

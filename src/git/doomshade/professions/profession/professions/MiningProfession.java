@@ -42,15 +42,21 @@ public final class MiningProfession extends Profession<IMining> {
         }
 
 
+        // if the event passes, drop ore
         if (addExp(e)) {
             Location loc = e.getExtra(Location.class);
-            Ore ore = e.getItemType().getObject();
-            final ItemStack miningResult = ore.getMiningResult();
+            final OreItemType itemType = e.getItemType();
+            int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, itemType);
+            Ore ore = itemType.getObject();
 
-            miningResult.setAmount(getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, e.getItemType()));
-            loc.getWorld().dropItem(loc, miningResult);
+            // randomize drop for each drop amount
+            for (int i = 0; i < amount; i++) {
+                final ItemStack miningResult = ore.getMiningResult();
 
-
+                if (miningResult != null) {
+                    loc.getWorld().dropItem(loc, miningResult);
+                }
+            }
         }
     }
 

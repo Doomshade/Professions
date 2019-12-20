@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * An enchant item type example for {@link git.doomshade.professions.profession.professions.EnchantingProfession}
@@ -167,5 +168,10 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     @Override
     public String toString() {
         return super.toString() + toStringFormat();
+    }
+
+    @Override
+    public Function<ItemStack, PreEnchantedItem> getExtra() {
+        return x -> new PreEnchantedItem(getObject(), x);
     }
 }

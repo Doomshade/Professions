@@ -10,7 +10,6 @@ import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.crafting.ICrafting;
 import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -80,12 +79,15 @@ public class ProfessionGUI extends GUI {
             getHolder().closeInventory();
             throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
         }
-        if (currentItem == null || currentItem.getType() == Material.AIR || !(prof.getType() instanceof ICrafting || prof instanceof ICrafting)) {
+        if (currentItem == null || currentItem.getType() == Material.AIR) {
             return;
         }
 
         // the task handles the ICraftable's
         final CraftingTask task = new CraftingTask(upd, currentItem, slot, this);
+        if (task.getCraftable() == null) {
+            return;
+        }
         final Professions plugin = Professions.getInstance();
         switch (event.getClick()) {
             case LEFT:
