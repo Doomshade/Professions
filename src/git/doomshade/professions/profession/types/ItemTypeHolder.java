@@ -11,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,8 +29,15 @@ import java.util.logging.Level;
  * @see ProfessionManager and its regsiterItemTypeHolders() method on GitHub to see an example on how to register this holder properly.
  */
 public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
+
+    /**
+     * Keys in item type file
+     */
     private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
-    // must be list for ordering in file
+
+    /**
+     * List required for the ordering of item types
+     */
     private List<Type> itemTypes = new ArrayList<>();
 
     private final List<SortType> sortTypes = new ArrayList<>();
@@ -189,6 +197,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         load();
     }
 
+    @NotNull
     @Override
     public Iterator<Type> iterator() {
         return itemTypes.iterator();

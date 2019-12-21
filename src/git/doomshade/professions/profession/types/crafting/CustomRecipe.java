@@ -26,6 +26,9 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     public boolean equalsObject(CraftShapedRecipe t) {
 
         CraftShapedRecipe current = getObject();
+        if (current == null) {
+            return false;
+        }
         Collection<ItemStack> ingredients = current.getIngredientMap().values();
         Collection<ItemStack> otherIngredients = t.getIngredientMap().values();
 
@@ -52,9 +55,13 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     @Override
     public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(RESULT, getObject().getResult().serialize());
-        map.put(SHAPE, getObject().getShape());
-        map.put(INGREDIENTS, serializeIngredients(getObject().getIngredientMap()));
+        CraftShapedRecipe recipe = getObject();
+        if (recipe == null) {
+            return map;
+        }
+        map.put(RESULT, recipe.getResult().serialize());
+        map.put(SHAPE, recipe.getShape());
+        map.put(INGREDIENTS, serializeIngredients(recipe.getIngredientMap()));
         return map;
     }
 

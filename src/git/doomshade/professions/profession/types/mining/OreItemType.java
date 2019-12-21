@@ -4,6 +4,7 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -33,7 +34,11 @@ public class OreItemType extends ItemType<Ore> {
 
     @Override
     public Map<String, Object> getSerializedObject() {
-        return getObject().serialize();
+        final Ore ore = getObject();
+        if (ore == null) {
+            return new HashMap<>();
+        }
+        return ore.serialize();
     }
 
     @Override

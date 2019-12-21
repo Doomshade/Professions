@@ -440,7 +440,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
         registerSetup(Messages.getInstance());
         registerSetup(CommandHandler.getInstance(CommandHandler.class));
-        registerSetup(CommandHandler.getInstance(MiningCommandHandler.class));
+        registerSetup(MiningCommandHandler.getInstance(MiningCommandHandler.class));
         registerSetup(ProfessionManager.getInstance());
     }
 

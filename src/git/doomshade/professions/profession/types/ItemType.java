@@ -298,6 +298,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * @return the object (or objective) of this item type
      */
+    @Nullable
     public final T getObject() {
         return item;
     }
