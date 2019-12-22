@@ -43,16 +43,12 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
 
     @Override
     public Map<String, Object> getSerializedObject() {
-        final ItemStack item = getObject();
-        if (item == null) {
-            return new HashMap<>();
-        }
-        return item.serialize();
+        return new HashMap<>();
     }
 
     @Override
     protected ItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return ItemStack.deserialize(map);
+        return null;
     }
 
     @Override

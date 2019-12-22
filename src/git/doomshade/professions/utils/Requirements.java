@@ -93,7 +93,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
                 continue;
             }
             for (ItemStack item : items) {
-                if (item.isSimilar(itemContent)) {
+                if (item.isSimilar(itemContent) && itemContent.getAmount() >= item.getAmount()) {
                     itemz.add(item);
                 }
             }

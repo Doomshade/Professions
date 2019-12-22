@@ -4,7 +4,6 @@ import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.types.IProfessionEventable;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -68,7 +67,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
         try {
             settings.setup();
-        } catch (ConfigurationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         this.professionSettings = settings;

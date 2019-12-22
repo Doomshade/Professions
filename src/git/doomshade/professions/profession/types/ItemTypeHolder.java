@@ -11,7 +11,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -197,7 +196,6 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         load();
     }
 
-    @NotNull
     @Override
     public Iterator<Type> iterator() {
         return itemTypes.iterator();

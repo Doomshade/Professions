@@ -86,6 +86,18 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         return null;
     }
 
+    private boolean hasInventorySpace() {
+        if (user.getPlayer().getInventory().firstEmpty() == -1) {
+            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
+                    .setPlayer(user).setProfession(upd.getProfession())
+                    .setProfessionType(upd.getProfession().getProfessionType())
+                    .build());
+            cancel();
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void run() {
         final ICraftable craftable = getCraftable();
@@ -93,12 +105,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             return;
         }
 
-        if (user.getPlayer().getInventory().firstEmpty() == -1) {
-            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
-                    .setPlayer(user).setProfession(upd.getProfession())
-                    .setProfessionType(upd.getProfession().getProfessionType())
-                    .build());
-            cancel();
+        if (!hasInventorySpace()) {
             return;
         }
         EventManager em = EventManager.getInstance();
@@ -129,10 +136,14 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             pe.addExtra(func.apply(currentItem));
         pe.addExtra(EnchantingProfession.ProfessionEventType.CRAFT);
 
-        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, arg0 -> {
+        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, (CraftingItem.Progress x) -> {
+            if (!hasInventorySpace()) {
+                return;
+            }
             craftable.removeCraftingRequirements(user.getPlayer());
             user.getPlayer().getInventory().addItem(craftable.getResult());
             em.callEvent(pe);
+
 
             // TODO fix repeat amount
             if (repeat && repeatAmount != 0) {

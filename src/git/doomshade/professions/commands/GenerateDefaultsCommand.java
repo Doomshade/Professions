@@ -1,6 +1,8 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.types.ICraftable;
+import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.utils.FileEnum;
@@ -45,6 +47,14 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), itemType.getId());
 
             Set<FileEnum> missingKeys = Utils.getMissingKeysEnum(map, Strings.ItemTypeEnum.values());
+
+            if (itemType instanceof ICraftable) {
+                missingKeys.addAll(Utils.getMissingKeysEnum(map, Strings.ICraftableEnum.values()));
+            }
+
+            if (itemType instanceof ITrainable) {
+                missingKeys.addAll(Utils.getMissingKeysEnum(map, Strings.ITrainableEnum.values()));
+            }
 
             File file = itemTypeHolder.getFile();
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);

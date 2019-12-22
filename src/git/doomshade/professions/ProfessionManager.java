@@ -301,15 +301,10 @@ public final class ProfessionManager implements ISetup {
 
             @Override
             protected BarItemType getItemType() {
-                BarItemType eit = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
-                ItemStack craftRequirement = new ItemStack(Material.GLASS);
-                ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
-                craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
-                craftRequirementMeta.setLore(ImmutableList.of("Japato"));
-                craftRequirement.setItemMeta(craftRequirementMeta);
-                eit.addCraftingRequirement(craftRequirement);
-                eit.setName(ChatColor.RED + "Test random enchantment");
-                return eit;
+                BarItemType barItemType = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
+                barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                barItemType.setName(ChatColor.BLUE + "Test bar");
+                return barItemType;
             }
         });
     }

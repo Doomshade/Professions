@@ -1,7 +1,6 @@
 package git.doomshade.professions.utils;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,10 +63,10 @@ public final class Strings {
         public Map<Enum, Object> getDefaultValues() {
             return new HashMap<Enum, Object>() {
                 {
-                    put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(new ItemStack(Material.GLASS))).serialize());
-                    put(RESULT, new ItemStack(Material.GLASS).serialize());
+                    put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(CRAFTING_TIME, 5d);
-                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(new ItemStack(Material.GLASS))).serialize());
+                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                 }
             };
         }
