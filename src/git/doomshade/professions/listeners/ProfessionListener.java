@@ -70,8 +70,12 @@ public class ProfessionListener extends AbstractProfessionListener {
         OreItemType ott;
         try {
             final Material type = e.getBlock().getType();
-            ott = Utils.findInIterable(Professions.getItemTypeHolder(OreItemType.class), x ->
-                    x.getObject().getOreMaterial() == type
+            ott = Utils.findInIterable(Professions.getItemTypeHolder(OreItemType.class), x -> {
+                        if (x.getObject() != null) {
+                            return x.getObject().getOreMaterial() == type;
+                        }
+                        return false;
+                    }
             );
         } catch (Utils.SearchNotFoundException ex) {
             return;
@@ -201,7 +205,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         for (EnchantedItemType enchItemType : Professions.getItemTypeHolder(EnchantedItemType.class)
                 .getRegisteredItemTypes()) {
             Enchant eit = enchItemType.getObject();
-            if (areSimilar(eit.getItem(), mh)) {
+            if (eit != null && areSimilar(eit.getItem(), mh)) {
                 ENCHANTS.put(hrac.getUniqueId(), eit);
                 break;
             }

@@ -4,6 +4,7 @@ import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,11 +33,17 @@ public class GatherItem extends ItemType<ItemStack> {
 
     @Override
     public boolean equalsObject(ItemStack t) {
+        if (getObject() == null || t == null) {
+            return false;
+        }
         return getObject().isSimilar(t);
     }
 
     @Override
     public Map<String, Object> getSerializedObject() {
+        if (getObject() == null) {
+            return new HashMap<>();
+        }
         return getObject().serialize();
     }
 

@@ -157,7 +157,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
     @Override
     public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         List<String> tab = new ArrayList<>();
         if (args.length == 0) {
             INSTANCE_COMMANDS.forEach(x -> {

@@ -24,8 +24,12 @@ public class Prey extends ItemType<Mob> {
     @Override
     public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(ENTITY.s, getObject().type.name());
-        map.put(CONFIG_NAME.s, getObject().configName);
+        final Mob mob = getObject();
+        if (mob == null) {
+            return map;
+        }
+        map.put(ENTITY.s, mob.type.name());
+        map.put(CONFIG_NAME.s, mob.configName);
         return map;
     }
 

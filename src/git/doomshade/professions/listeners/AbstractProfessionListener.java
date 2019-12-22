@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,14 +33,13 @@ public abstract class AbstractProfessionListener implements Listener {
     private static final EventManager em = Professions.getEventManager();
 
     /**
-     * Null-able
-     *
      * @param type
      * @param player
      * @param extras
      * @return
      */
-    private static final <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, Object... extras) {
+    @Nullable
+    private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, Object... extras) {
         if (type != null) {
             return em.callEvent(type, User.getUser(player), extras);
         }
@@ -95,14 +95,13 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     /**
-     * Null-able
-     *
      * @param player    the player that calls this event
      * @param item      the generic object of {@link ItemType}
      * @param itemClass the custom ItemType class
      * @param extras
      * @return
      */
+    @Nullable
     public final <Obj, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(Player player, Obj item,
                                                                              Class<T> itemClass, Object... extras) {
 
@@ -123,13 +122,13 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     /**
-     * Null-able
-     *
-     * @param type
+     * @param item
+     * @param itemClass
      * @param player
      * @param extras
      * @return
      */
+    @Nullable
     protected final <Obj, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(Player player, Obj item,
                                                                                Class<T> itemClass, Object... extras) {
         if (player == null || item == null) {

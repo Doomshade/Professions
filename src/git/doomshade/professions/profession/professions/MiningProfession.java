@@ -51,7 +51,10 @@ public final class MiningProfession extends Profession<IMining> {
 
             // randomize drop for each drop amount
             for (int i = 0; i < amount; i++) {
-                final ItemStack miningResult = ore.getMiningResult();
+                ItemStack miningResult = null;
+                if (ore != null) {
+                    miningResult = ore.getMiningResult();
+                }
 
                 if (miningResult != null) {
                     loc.getWorld().dropItem(loc, miningResult);

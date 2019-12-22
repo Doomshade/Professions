@@ -51,13 +51,19 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
 
     @Override
     public boolean equalsObject(Enchant t) {
-        return getObject().getItem().isSimilar(t.getItem());
+        Enchant ench = getObject();
+        if (ench == null || t == null) {
+            return false;
+        }
+        return ench.getItem().isSimilar(t.getItem());
     }
 
     @Override
     public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        map.put(ENCHANT, getObject().serialize());
+        Enchant ench = getObject();
+        if (ench != null)
+            map.put(ENCHANT, ench.serialize());
         return map;
     }
 
@@ -74,6 +80,9 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     @Override
     public String getTrainableId() {
         if (trainableStringId == null) {
+            if (getObject() == null) {
+                throw new IllegalStateException("Both trainable id and object for " + this + " is null, cannot get a trainable id!");
+            }
             trainableStringId = getObject().getClass().getSimpleName();
         }
         return trainableStringId;

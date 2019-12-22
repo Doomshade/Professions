@@ -10,6 +10,7 @@ import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -42,7 +43,11 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
 
     @Override
     public Map<String, Object> getSerializedObject() {
-        return getObject().serialize();
+        final ItemStack item = getObject();
+        if (item == null) {
+            return new HashMap<>();
+        }
+        return item.serialize();
     }
 
     @Override
