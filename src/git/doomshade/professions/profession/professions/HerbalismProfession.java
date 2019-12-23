@@ -28,10 +28,15 @@ public class HerbalismProfession extends Profession<IGathering> {
         }
 
         ProfessionEvent<HerbItemType> event = getEvent(e, HerbItemType.class);
-        if (addExp(e) && event.hasExtra(Location.class)) {
+
+        addExp(e);
+        if (e.hasExtra(Location.class)) {
+            final Location location = e.getExtra(Location.class);
             final Herb herb = event.getItemType().getObject();
-            if (herb != null) {
-                herb.despawn(event.getExtra(Location.class));
+            if (herb != null && location != null) {
+                herb.despawn(location);
+                herb.scheduleSpawn(location);
+                e.getPlayer().getPlayer().getInventory().addItem(herb.getGatherItem());
             }
         }
     }

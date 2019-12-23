@@ -19,6 +19,7 @@ public class HerbItemType extends ItemType<Herb> {
         super(object, exp);
     }
 
+
     @Override
     public Map<String, Object> getSerializedObject() {
         if (getObject() != null) {

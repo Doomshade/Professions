@@ -110,20 +110,6 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     public final Type getItemTypeItem() {
         return itemType;
     }
-    /*
-    public final Type getObject(){
-        String[] split = getClass().getGenericSuperclass().getTypeName().split("[.]");
-        final String s = split[split.length - 1];
-        try {
-            final Class<? extends ItemType<?>> clazz = (Class<? extends ItemType<?>>) Class.forName(s.substring(0, s.length() - 1));
-            final Constructor<? extends ItemType<?>> declaredConstructor = clazz.getDeclaredConstructor();
-            declaredConstructor.setAccessible(true);
-            return (Type) declaredConstructor.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }*/
 
     public final File getFile() {
         return itemType.getFile();

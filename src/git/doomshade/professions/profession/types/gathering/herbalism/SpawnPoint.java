@@ -13,14 +13,19 @@ import java.util.*;
 import static git.doomshade.professions.profession.types.gathering.herbalism.SpawnPoint.SpawnPointEnum.*;
 
 public class SpawnPoint implements ConfigurationSerializable {
-    static final HashSet<SpawnPoint> SPAWN_POINTS = new HashSet<>();
-    final Location location;
-    final int respawnTime;
+    public static final HashSet<SpawnPoint> SPAWN_POINTS = new HashSet<>();
+    public final Location location;
+    public final int respawnTime;
 
     SpawnPoint(Location location, int respawnTime) {
         this.location = location;
         this.respawnTime = respawnTime;
-        SPAWN_POINTS.add(this);
+        if (respawnTime != -1)
+            SPAWN_POINTS.add(this);
+    }
+
+    public SpawnPoint(Location location) {
+        this(location, -1);
     }
 
     static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {

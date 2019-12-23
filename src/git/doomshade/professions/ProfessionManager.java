@@ -244,7 +244,7 @@ public final class ProfessionManager implements ISetup {
         registerItemTypeHolder(new ItemTypeHolder<HerbItemType>() {
             @Override
             public HerbItemType getItemType() {
-                HerbItemType herb = new HerbItemType(new Herb(ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER), 500);
+                HerbItemType herb = new HerbItemType(Herb.EXAMPLE_HERB, 500);
                 herb.setName(ChatColor.DARK_AQUA + "Test gather item");
                 return herb;
             }
@@ -325,6 +325,7 @@ public final class ProfessionManager implements ISetup {
         registerProfession(new EnchantingProfession(), false);
         registerProfession(new SkinningProfession(), false);
         registerProfession(new SmeltingProfession(), false);
+        registerProfession(new HerbalismProfession(), false);
         sortProfessions();
     }
 

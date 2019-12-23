@@ -176,18 +176,20 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        Herb herb = new Herb(e.getItem());
-        if (!Herb.isHerb(herb)) {
+        Herb herb;
+        try {
+            herb = Herb.getHerb(e.getClickedBlock().getType(), e.getClickedBlock().getLocation());
+        } catch (Utils.SearchNotFoundException ex) {
             return;
         }
+        //if (!e.getPlayer().isOp())
+        //e.setCancelled(true);
         ProfessionEvent<HerbItemType> event = getEvent(e.getPlayer(), herb, HerbItemType.class);
         if (event == null) {
             return;
         }
         event.addExtra(e.getClickedBlock().getLocation());
-        if (!event.isCancelled()) {
-            e.getClickedBlock().setType(Material.AIR);
-        }
+        callEvent(event);
     }
 
     @EventHandler

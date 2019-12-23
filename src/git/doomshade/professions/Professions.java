@@ -23,6 +23,7 @@ import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
+import git.doomshade.professions.profession.types.gathering.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
@@ -448,6 +449,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         registerSetup(Messages.getInstance());
         registerSetup(CommandHandler.getInstance(CommandHandler.class));
         registerSetup(MiningCommandHandler.getInstance(MiningCommandHandler.class));
+        registerSetup(HerbalismCommandHandler.getInstance(HerbalismCommandHandler.class));
         registerSetup(ProfessionManager.getInstance());
     }
 

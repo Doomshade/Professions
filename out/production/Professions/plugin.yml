@@ -11,3 +11,5 @@ commands:
     description: default cmd
   prof-mining:
     description: mining cmd
+  prof-herbalism:
+    description: herbalism cmd
