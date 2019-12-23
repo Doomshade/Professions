@@ -4,8 +4,6 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.gathering.GatherItem;
-import git.doomshade.professions.profession.types.gathering.IGathering;
 import git.doomshade.professions.user.User;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -18,7 +16,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -83,7 +80,8 @@ public abstract class AbstractProfessionListener implements Listener {
         }
         Player hrac = e.getPlayer();
         Item item = e.getItem();
-        if (callEvent(hrac, item.getItemStack(), GatherItem.class, IGathering.class) == null) {
+        /*
+        if (callEvent(hrac, new Herb(item.getItemStack(), null), HerbItemType.class, IGathering.class) == null) {
             return;
         }
 
@@ -91,6 +89,7 @@ public abstract class AbstractProfessionListener implements Listener {
         uuids.add(item.getUniqueId());
 
         PICKUPS.put(hrac.getUniqueId(), uuids);
+         */
 
     }
 

@@ -9,6 +9,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -62,6 +63,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         return extras;
     }
 
+
     public void setExtras(Collection<Object> extras) {
         this.extras.clear();
         this.extras.addAll(extras);
@@ -81,12 +83,17 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         return coll;
     }
 
+    @Nullable
     public <A> A getExtra(Class<A> clazz) {
         Collection<A> collectionExtras = getExtras(clazz);
         if (collectionExtras.isEmpty()) {
             return null;
         }
         return collectionExtras.iterator().next();
+    }
+
+    public boolean hasExtra(Class<?> clazz) {
+        return getExtra(clazz) != null;
     }
 
     public T getItemType() {

@@ -6,6 +6,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
@@ -41,6 +42,7 @@ public final class ItemUtils {
             .withDisplayName(ChatColor.DARK_AQUA + "Display name")
             .setAmount(5)
             .build();
+    public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
 
 
 

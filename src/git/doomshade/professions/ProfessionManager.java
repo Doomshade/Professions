@@ -14,8 +14,9 @@ import git.doomshade.professions.profession.types.enchanting.EnchantManager;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
 import git.doomshade.professions.profession.types.enchanting.enchants.RandomAttributeEnchant;
-import git.doomshade.professions.profession.types.gathering.GatherItem;
 import git.doomshade.professions.profession.types.gathering.IGathering;
+import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
+import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
 import git.doomshade.professions.profession.types.hunting.IHunting;
 import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
@@ -240,12 +241,12 @@ public final class ProfessionManager implements ISetup {
             }
         });
 
-        registerItemTypeHolder(new ItemTypeHolder<GatherItem>() {
+        registerItemTypeHolder(new ItemTypeHolder<HerbItemType>() {
             @Override
-            public GatherItem getItemType() {
-                GatherItem gatherItem = new GatherItem(ItemUtils.EXAMPLE_RESULT, 500);
-                gatherItem.setName(ChatColor.DARK_AQUA + "Test gather item");
-                return gatherItem;
+            public HerbItemType getItemType() {
+                HerbItemType herb = new HerbItemType(new Herb(ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER), 500);
+                herb.setName(ChatColor.DARK_AQUA + "Test gather item");
+                return herb;
             }
         });
         registerItemTypeHolder(new ItemTypeHolder<EnchantedItemType>() {

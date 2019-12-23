@@ -6,7 +6,8 @@ import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.enchanting.Enchant;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
-import git.doomshade.professions.profession.types.gathering.GatherItem;
+import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
+import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
 import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
@@ -23,6 +24,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -170,12 +172,27 @@ public class ProfessionListener extends AbstractProfessionListener {
     @Override
     @EventHandler
     public void onGather(PlayerInteractEvent e) {
-        // TODO Auto-generated method stub
         if (e.isCancelled() || e.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        callEvent(e.getPlayer(), e.getItem(), GatherItem.class);
+        Herb herb = new Herb(e.getItem());
+        if (!Herb.isHerb(herb)) {
+            return;
+        }
+        ProfessionEvent<HerbItemType> event = getEvent(e.getPlayer(), herb, HerbItemType.class);
+        if (event == null) {
+            return;
+        }
+        event.addExtra(e.getClickedBlock().getLocation());
+        if (!event.isCancelled()) {
+            e.getClickedBlock().setType(Material.AIR);
+        }
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent e) {
+        Herb.spawnHerbs(e.getWorld());
     }
 
     @Override
