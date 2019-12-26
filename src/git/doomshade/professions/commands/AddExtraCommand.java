@@ -25,7 +25,6 @@ public class AddExtraCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         User user = User.getUser(Bukkit.getPlayer(args[1]));
         Profession<?> prof = Professions.getProfession(args[2]);
         HashSet<String> extras = new HashSet<>();
@@ -39,7 +38,6 @@ public class AddExtraCommand extends AbstractCommand {
         try {
             user.save();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return true;
@@ -47,13 +45,11 @@ public class AddExtraCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "addextra";
     }
 

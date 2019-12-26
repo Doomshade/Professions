@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.professions;
 
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
@@ -9,9 +10,12 @@ import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.logging.Level;
 
 public final class MiningProfession extends Profession<IMining> {
 
@@ -42,12 +46,14 @@ public final class MiningProfession extends Profession<IMining> {
         }
 
 
-        // if the event passes, drop ore
-        if (addExp(e)) {
+        // if the event passes, drop ore regardless of XP
+        if (e.hasExtra(Location.class)) {
             Location loc = e.getExtra(Location.class);
             final OreItemType itemType = e.getItemType();
             int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, itemType);
             Ore ore = itemType.getObject();
+
+            String message = "";
 
             // randomize drop for each drop amount
             for (int i = 0; i < amount; i++) {
@@ -57,9 +63,15 @@ public final class MiningProfession extends Profession<IMining> {
                 }
 
                 if (miningResult != null) {
-                    loc.getWorld().dropItem(loc, miningResult);
+                    if (loc != null) {
+                        loc.getWorld().dropItem(loc, miningResult);
+                    }
                 }
             }
+            if (addExp(e)) {
+                message = message.concat(Utils.getReceiveXp(e.getExp()));
+            }
+            Professions.log(message, Level.CONFIG);
         }
     }
 

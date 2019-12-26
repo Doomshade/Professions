@@ -66,7 +66,6 @@ public final class EventManager {
     }
 
     public <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
-        // TODO Auto-generated method stub
         pm.callEvent(event);
         return event;
     }

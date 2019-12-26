@@ -19,10 +19,8 @@ import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.listeners.ProfessionListener;
 import git.doomshade.professions.listeners.SkillAPIListener;
 import git.doomshade.professions.listeners.UserListener;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
 import git.doomshade.professions.profession.types.gathering.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
@@ -35,7 +33,7 @@ import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.World;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -46,11 +44,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.io.PrintStream;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -75,8 +76,12 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
+    private static PrintStream fos;
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
+    private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
+    private final File LOGS_FOLDER = new File(getDataFolder(), "logs");
+    private final File LOG_FILE = new File(getLogsFolder(), String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy H_m"))));
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
 
@@ -181,51 +186,6 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * @param clazz the {@link ItemTypeHolder} class to look for
-     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
-     * @return instance of {@link ItemTypeHolder}
-     * @see ProfessionManager#getItemTypeHolder(Class)
-     */
-    public static <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
-        return profMan.getItemTypeHolder(clazz);
-    }
-
-    /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @see ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
-     */
-    public static <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
-        profMan.registerItemTypeHolder(itemTypeHolder);
-    }
-
-
-    /**
-     * @param profession the {@link Profession} class
-     * @return instance of {@link Profession}
-     * @see ProfessionManager#getProfession(Class)
-     */
-    public static Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profession) {
-        return profMan.getProfession(profession);
-    }
-
-    /**
-     * @param clazz ProfessionType class
-     * @see ProfessionManager#registerProfessionType(Class)
-     */
-    public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
-        profMan.registerProfessionType(clazz);
-    }
-
-    /**
-     * @param profession Profession to register
-     * @see ProfessionManager#registerProfession(Class)
-     */
-    public static void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
-        profMan.registerProfession(profession);
-    }
-
-
-    /**
      * @param user the user to unload
      * @throws IOException
      * @see User#unloadUser(User)
@@ -249,24 +209,42 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @param level   the log level
      */
     public static void log(String message, Level level) {
-        Ansi.Color color = Ansi.Color.WHITE;
+        if (message.isEmpty()) {
+            return;
+        }
+        if (level == Level.CONFIG) {
+            String time = String.format("[%s] ", LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.GERMAN)));
 
-        final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
-        final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.CONFIG.intValue(), Level.FINER.intValue());
+            if (fos == null) {
+                try {
+                    fos = new PrintStream(getInstance().LOG_FILE);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            fos.println(time.concat(ChatColor.stripColor(message)));
 
-        if (RED.contains(level.intValue())) {
-            color = Ansi.Color.RED;
+            // TODO delete on plugin release!
+            fos.flush();
+        } else {
+            Ansi.Color color = Ansi.Color.WHITE;
+
+            final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
+            final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.FINER.intValue());
+
+            if (RED.contains(level.intValue())) {
+                color = Ansi.Color.RED;
+            }
+            if (GREEN.contains(level.intValue())) {
+                color = Ansi.Color.GREEN;
+            }
+
+            Ansi ansi = Ansi.ansi().boldOff();
+
+            getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
         }
 
-
-        if (GREEN.contains(level.intValue())) {
-            color = Ansi.Color.GREEN;
-        }
-
-        Ansi ansi = Ansi.ansi().boldOff();
-
-
-        getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
     }
 
     /**
@@ -278,18 +256,12 @@ public final class Professions extends JavaPlugin implements ISetup {
         hookGuiApi();
         hookCitizens();
         hookSkillAPI();
-        setupEconomy();
+        hookVault();
 
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
 
-        // any class with setup() method contains a file
-        try {
-            setupFiles();
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
-        }
-
+        setupFiles();
         scheduleTasks();
 
         PluginManager pm = Bukkit.getPluginManager();
@@ -297,6 +269,11 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
 
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onLoad();
+            }
+        }
         //Settings.getProfessionSettings(MiningProfession.class);
     }
 
@@ -305,12 +282,15 @@ public final class Professions extends JavaPlugin implements ISetup {
      */
     @Override
     public void onDisable() {
-        for (World world : Bukkit.getWorlds()) {
-            Herb.despawnHerbs(world);
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onDisable();
+            }
         }
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
+            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -323,6 +303,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      */
     public void saveFiles() throws IOException {
         saveUsers();
+        fos.flush();
     }
 
 
@@ -376,6 +357,23 @@ public final class Professions extends JavaPlugin implements ISetup {
         return PROFESSION_FOLDER;
     }
 
+    public File getCacheFolder() {
+        if (!CACHE_FOLDER.isDirectory()) {
+            CACHE_FOLDER.mkdirs();
+        }
+        return CACHE_FOLDER;
+    }
+
+    public File getLogsFolder() {
+        if (!LOGS_FOLDER.isDirectory()) {
+            LOGS_FOLDER.mkdirs();
+        }
+        return LOGS_FOLDER;
+    }
+
+    public File getLogFile() {
+        return LOG_FILE;
+    }
 
     @Override
     public void setup() {
@@ -408,13 +406,36 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     public void reload() throws IOException {
+
+        // Calls on pre reload on all item types
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onPreReload();
+            }
+        }
+
+        // Calls cleanup methods on all classes implementing ISetup
         cleanup();
+
+        // Saves and unloads users
         User.saveUsers();
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             User.unloadUser(p);
         }
+
+
+        // Sets up all classes again
         setup();
+
+        // Calls on reload on all item types
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onReload();
+            }
+        }
+
+        // Finally loads users again
         for (Player p : Bukkit.getOnlinePlayers()) {
             User.loadUser(p);
         }
@@ -453,7 +474,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         registerSetup(ProfessionManager.getInstance());
     }
 
-    private void setupFiles() throws ConfigurationException {
+    private void setupFiles() {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
@@ -463,6 +484,16 @@ public final class Professions extends JavaPlugin implements ISetup {
         getPlayerFolder();
         getItemsFolder();
         getProfessionFolder();
+        getCacheFolder();
+        // getLogsFolder();
+        if (!LOG_FILE.exists()) {
+            try {
+                LOG_FILE.createNewFile();
+                fos = new PrintStream(LOG_FILE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         saveDefaultConfig();
         reloadConfig();
@@ -484,19 +515,18 @@ public final class Professions extends JavaPlugin implements ISetup {
         guiManager.registerGui(ProfessionTrainerGUI.class);
         guiManager.registerGui(AdminProfessionsGUI.class);
         guiManager.registerGui(AdminProfessionGUI.class);
+        hookMessage("GUIApi");
     }
 
     private void hookCitizens() {
         if (Bukkit.getPluginManager().getPlugin("Citizens") == null) {
             return;
         }
-        log("Successfully hooked with Citizens plugin", Level.INFO);
         CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
-        log("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.", Level.INFO);
-
+        hookMessage("Citizens");
     }
 
-    private void setupEconomy() {
+    private void hookVault() {
         if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
             return;
         }
@@ -505,15 +535,22 @@ public final class Professions extends JavaPlugin implements ISetup {
             return;
         }
 
-        log("Successfully hooked with Vault plugin", Level.INFO);
+        hookMessage("Vault");
         econ = rsp.getProvider();
     }
 
+    /**
+     * Hooks SkillAPI
+     */
     private void hookSkillAPI() {
         PluginManager pm = Bukkit.getPluginManager();
         if (pm.getPlugin("SkillAPI") == null) {
             return;
         }
         pm.registerEvents(new SkillAPIListener(), this);
+    }
+
+    private void hookMessage(String plugin) {
+        log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
     }
 }

@@ -21,7 +21,6 @@ public class SaveTask extends BukkitRunnable {
             Professions.getInstance().saveFiles();
 
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

@@ -39,6 +39,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     private final TypeToken<T> typeToken = new TypeToken<T>(getClass()) {
     };
     private final Type type = typeToken.getType();
+    private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
     private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
@@ -148,7 +149,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      * @param items the items
      */
     protected final void addItems(Class<? extends ItemType<?>> items) {
-        this.items.add(Professions.getItemTypeHolder(items));
+        this.items.add(Professions.getProfessionManager().getItemTypeHolder(items));
     }
 
     /**
@@ -277,6 +278,14 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     public void onLoad() {
     }
 
+    public final Set<String> getRequiredPlugins() {
+        return requiredPlugins;
+    }
+
+    protected void addRequiredPlugin(String plugin) {
+        requiredPlugins.add(plugin);
+    }
+
     /**
      * The profession types. Translated to czech
      */
@@ -330,6 +339,5 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         public String toString() {
             return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
-
     }
 }

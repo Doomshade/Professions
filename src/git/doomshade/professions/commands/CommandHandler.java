@@ -29,5 +29,6 @@ public class CommandHandler extends AbstractCommandHandler {
         registerCommand(new LevelCommand());
         registerCommand(new CommandsCommand());
         registerCommand(new GenerateDefaultsCommand());
+        registerCommand(new LogFilterCommand());
     }
 }

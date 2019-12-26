@@ -12,7 +12,6 @@ import java.util.List;
 public class BypassCommand extends AbstractCommand {
 
     public BypassCommand() {
-        // TODO Auto-generated constructor stub
         setArg(false, Arrays.asList("player", "suppress exp event (true/false)"));
         setArg(true, Arrays.asList("true/false"));
         setCommand("bypass");
@@ -23,7 +22,6 @@ public class BypassCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         Player target;
         if (args.length >= 3) {
             target = Bukkit.getPlayer(args[2]);
@@ -47,13 +45,11 @@ public class BypassCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "bypass";
     }
 

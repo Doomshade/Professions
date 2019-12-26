@@ -19,13 +19,11 @@ public class SaveCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         try {
             sender.sendMessage("Saving files...");
             Professions.getInstance().saveFiles();
             sender.sendMessage(ChatColor.GREEN + "Files saved successfully");
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             sender.sendMessage("Error! Check console for error stack trace.");
         }
@@ -34,13 +32,11 @@ public class SaveCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "save";
     }
 

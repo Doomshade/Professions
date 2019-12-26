@@ -145,7 +145,6 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             em.callEvent(pe);
 
 
-            // TODO fix repeat amount
             if (repeat && repeatAmount != 0) {
                 CraftingTask clone = clone();
                 clone.setRepeatAmount(repeatAmount - 1);

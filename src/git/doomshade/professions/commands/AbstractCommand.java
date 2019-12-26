@@ -203,7 +203,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        // TODO Auto-generated method stub
         Map<String, Object> map = new HashMap<>();
         map.put(COMMAND, getCommand());
         map.put(DESCRIPTION, getDescription());

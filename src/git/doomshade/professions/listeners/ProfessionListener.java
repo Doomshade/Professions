@@ -3,17 +3,23 @@ package git.doomshade.professions.listeners;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
+import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
 import git.doomshade.professions.profession.types.enchanting.Enchant;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
 import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
+import git.doomshade.professions.profession.types.gathering.herbalism.HerbLocationOptions;
+import git.doomshade.professions.profession.types.gathering.herbalism.SpawnPoint;
 import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
@@ -24,23 +30,42 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
+/**
+ * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link git.doomshade.professions.Profession#onEvent(ProfessionEvent)}.
+ *
+ * @author Doomshade
+ */
 public class ProfessionListener extends AbstractProfessionListener {
     private static final HashMap<UUID, Enchant> ENCHANTS = new HashMap<>();
 
+    /**
+     * Determines whether the two items are similar based on display name and lore
+     *
+     * @param one
+     * @param two
+     * @return
+     */
     private static boolean areSimilar(ItemStack one, ItemStack two) {
+
+        // either one of them null -> don't compare
         if (one == null || two == null) {
             return false;
         }
 
+        // both no metas -> return the base ItemStack #isSimilar method
         if (!one.hasItemMeta() && !two.hasItemMeta()) {
             return one.isSimilar(two);
         }
@@ -64,19 +89,18 @@ public class ProfessionListener extends AbstractProfessionListener {
     @Override
     @EventHandler
     public void onMine(BlockBreakEvent e) {
+
+        // don't even check for event if the event is cancelled
         if (e.isCancelled()) {
             return;
         }
 
-
         OreItemType ott;
         try {
             final Material type = e.getBlock().getType();
-            ott = Utils.findInIterable(Professions.getItemTypeHolder(OreItemType.class), x -> {
-                        if (x.getObject() != null) {
-                            return x.getObject().getOreMaterial() == type;
-                        }
-                        return false;
+            ott = Utils.findInIterable(Professions.getProfessionManager().getItemTypeHolder(OreItemType.class), x -> {
+                        final Ore ore = x.getObject();
+                        return ore != null && ore.getOreMaterial() == type;
                     }
             );
         } catch (Utils.SearchNotFoundException ex) {
@@ -90,6 +114,9 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
         event.addExtra(e.getBlock().getLocation().add(new Vector(0.5, 0, 0.5)));
         callEvent(event);
+
+        // event is cancelled when the player does not meet requirements
+        // destroy the block if the requirements are met
         if (event.isCancelled()) {
             e.setCancelled(true);
         } else {
@@ -109,6 +136,7 @@ public class ProfessionListener extends AbstractProfessionListener {
 
         Recipe recipe = e.getRecipe();
 
+        // some fuckery, basically makes sure the crafting goes well
         if (cursor.getType() != Material.AIR && !recipe.getResult().isSimilar(cursor) && !e.isShiftClick()) {
             return;
         }
@@ -142,6 +170,14 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
+    /**
+     * Gets the maximum amount of items that can be crafted
+     *
+     * @param result the result to check for
+     * @param hrac   the player to check the inventory for
+     * @param e      the event to check in
+     * @return ItemStack amount * Math#min(possible craftings, possible creations)
+     */
     private int getAmountOfItems(ItemStack result, Player hrac, CraftItemEvent e) {
         int possibleCraftings = 1;
         int possibleCreations = 0;
@@ -172,18 +208,22 @@ public class ProfessionListener extends AbstractProfessionListener {
     @Override
     @EventHandler
     public void onGather(PlayerInteractEvent e) {
+
+        // Gathering blocks by right clicking it
         if (e.isCancelled() || e.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
         Herb herb;
         try {
+
+            // Checks whether or not the right clicked block is a herb
             herb = Herb.getHerb(e.getClickedBlock().getType(), e.getClickedBlock().getLocation());
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
-        //if (!e.getPlayer().isOp())
-        //e.setCancelled(true);
+
+        // The block is a herb -> call event with the location
         ProfessionEvent<HerbItemType> event = getEvent(e.getPlayer(), herb, HerbItemType.class);
         if (event == null) {
             return;
@@ -193,7 +233,41 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @EventHandler
-    public void onWorldLoad(WorldLoadEvent e) {
+    public void onHerbDestroy(BlockBreakEvent e) {
+        // For admins due to possible breaking of the herb - need to remove particles from the location
+
+        if (e.isCancelled()) {
+            return;
+        }
+        try {
+            final Block block = e.getBlock();
+            final Location location = block.getLocation();
+            Herb herb = Herb.getHerb(block.getType(), location);
+
+            final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
+            if (herbLocationOptions.isSpawned()) {
+                return;
+            }
+            herbLocationOptions.removeParticles();
+            final ArrayList<SpawnPoint> spawnPoints = herb.getSpawnPoints();
+            String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
+            final Player player = e.getPlayer();
+            for (int i = 0; i < spawnPoints.size(); i++) {
+                if (spawnPoints.get(i).location.equals(location)) {
+                    player.sendMessage(message.concat(String.format(" Spawn location ID: %d.", i)));
+                    return;
+                }
+            }
+            player.sendMessage(message);
+        } catch (Utils.SearchNotFoundException ignored) {
+        }
+
+    }
+
+    @EventHandler
+    public void onWorldLoad(WorldInitEvent e) {
+
+        // does not work
         Herb.spawnHerbs(e.getWorld());
     }
 
@@ -215,13 +289,13 @@ public class ProfessionListener extends AbstractProfessionListener {
             Enchant enchant = ENCHANTS.remove(hrac.getUniqueId());
             ProfessionEvent<EnchantedItemType> event = callEvent(hrac, enchant, EnchantedItemType.class,
                     new PreEnchantedItem(enchant, mh));
-            if (!event.isCancelled()) {
+            if (event != null && !event.isCancelled()) {
                 // don't delete the item!
             }
             return;
         }
 
-        for (EnchantedItemType enchItemType : Professions.getItemTypeHolder(EnchantedItemType.class)
+        for (EnchantedItemType enchItemType : Professions.getProfessionManager().getItemTypeHolder(EnchantedItemType.class)
                 .getRegisteredItemTypes()) {
             Enchant eit = enchItemType.getObject();
             if (eit != null && areSimilar(eit.getItem(), mh)) {
@@ -229,6 +303,26 @@ public class ProfessionListener extends AbstractProfessionListener {
                 break;
             }
         }
+    }
+
+    @EventHandler
+    public void onPotionDrink(PlayerItemConsumeEvent e) {
+        Potion potion = Potion.getPotion(e.getItem());
+        if (potion != null) {
+            potion.apply(e.getPlayer());
+            e.getPlayer().getInventory().remove(potion.getPotion());
+        }
+    }
+
+    @EventHandler
+    public void onLeave(PlayerQuitEvent e) {
+        Potion.cache(e.getPlayer());
+
+    }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Potion.loadFromCache(e.getPlayer());
     }
 
     @Override

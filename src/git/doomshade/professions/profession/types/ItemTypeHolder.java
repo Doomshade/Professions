@@ -11,6 +11,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -145,18 +146,18 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         while (it.hasNext()) {
             i = Integer.parseInt(it.next());
 
-            Type deserialized;
+            Type deserializedItemType;
             try {
-                deserialized = (Type) ItemType.deserialize(clazz, i);
+                deserializedItemType = (Type) ItemType.deserialize(clazz, i);
             } catch (ProfessionInitializationException e) {
                 Professions.log(e.getMessage(), Level.WARNING);
                 continue;
             }
-            if (deserialized != null) {
+            if (deserializedItemType != null) {
                 if (!itemTypes.isEmpty() && itemTypes.size() > i) {
-                    itemTypes.set(i, deserialized);
+                    itemTypes.set(i, deserializedItemType);
                 } else {
-                    itemTypes.add(deserialized);
+                    itemTypes.add(deserializedItemType);
                 }
             }
         }
@@ -182,6 +183,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         load();
     }
 
+    @NotNull
     @Override
     public Iterator<Type> iterator() {
         return itemTypes.iterator();

@@ -37,4 +37,25 @@ public class HerbItemType extends ItemType<Herb> {
     public Class<? extends IProfessionType> getDeclaredProfessionType() {
         return IGathering.class;
     }
+
+    @Override
+    public void onLoad() {
+        for (Herb herb : Herb.HERBS.values()) {
+            for (SpawnPoint sp : herb.getSpawnPoints()) {
+                HerbLocationOptions locationOptions = herb.getHerbLocationOptions(sp.location);
+                locationOptions.scheduleSpawn();
+            }
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        for (Herb herb : Herb.HERBS.values()) {
+            for (HerbLocationOptions sp : herb.LOCATION_OPTIONS.values()) {
+                sp.despawn();
+            }
+        }
+        Herb.HERBS.clear();
+        SpawnPoint.SPAWN_POINTS.clear();
+    }
 }

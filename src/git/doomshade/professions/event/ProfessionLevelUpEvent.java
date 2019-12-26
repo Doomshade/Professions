@@ -8,12 +8,10 @@ public class ProfessionLevelUpEvent extends AbstractProfessionEvent {
     private int before, after;
 
     protected ProfessionLevelUpEvent(UserProfessionData data) {
-        // TODO Auto-generated constructor stub
         super(data);
     }
 
     public ProfessionLevelUpEvent(UserProfessionData data, int before, int after) {
-        // TODO Auto-generated constructor stub
         super(data);
         this.before = before;
         this.after = after;
@@ -25,7 +23,6 @@ public class ProfessionLevelUpEvent extends AbstractProfessionEvent {
 
     @Override
     public HandlerList getHandlers() {
-        // TODO Auto-generated method stub
         return handlerList;
     }
 

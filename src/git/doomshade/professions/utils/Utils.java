@@ -20,6 +20,11 @@ public final class Utils {
 
     public static final String YML_EXTENSION = ".yml";
 
+    public static String getReceiveXp(int xp) {
+        return String.format(" and received %d XP", xp);
+    }
+
+
     /**
      * @param iterable  the iterable (e.g. {@link Collection})
      * @param condition the condition based on which the method should query

@@ -91,13 +91,11 @@ public class ProfessionInfoCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "professioninfo";
     }
 

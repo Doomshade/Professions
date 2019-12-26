@@ -21,7 +21,6 @@ public class ProfessionListCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         ProfessionManager profMan = Professions.getProfessionManager();
         Map<ProfessionType, Integer> profTypes = new TreeMap<>();
         List<Profession<?>> profs = new ArrayList<>(profMan.getProfessionsById().values());
@@ -40,13 +39,11 @@ public class ProfessionListCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "professionslist";
     }
 

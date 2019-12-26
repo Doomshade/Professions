@@ -11,7 +11,6 @@ import java.util.List;
 public class PlayerGuiCommand extends AbstractCommand {
 
     public PlayerGuiCommand() {
-        // TODO Auto-generated constructor stub
         setCommand("gui");
         setDescription("Opens the professions GUI");
         setRequiresOp(false);
@@ -27,13 +26,11 @@ public class PlayerGuiCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "playergui";
     }
 

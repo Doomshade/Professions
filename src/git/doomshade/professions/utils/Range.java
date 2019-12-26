@@ -1,6 +1,9 @@
 package git.doomshade.professions.utils;
 
+import javax.annotation.Nullable;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A utility class containing of two {@link Integer}s.
@@ -8,6 +11,7 @@ import java.util.Random;
  * @author Doomshade
  */
 public class Range {
+    private static final Pattern RANGE_PATTERN = Pattern.compile("([0-9]+)-([0-9]+)");
     private final int min, max;
     private final Random random = new Random();
 
@@ -50,5 +54,24 @@ public class Range {
      */
     public int getMax() {
         return max;
+    }
+
+    @Nullable
+    public static Range fromString(String s) {
+        Matcher m = RANGE_PATTERN.matcher(s);
+        if (m.find()) {
+            return new Range(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+        } else {
+            try {
+                return new Range(Integer.parseInt(s.trim()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%d-%d", min, max);
     }
 }

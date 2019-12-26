@@ -11,7 +11,6 @@ public class GUIClickEvent extends Event {
     private Player hrac;
 
     public GUIClickEvent(InventoryClickEvent e, Player hrac) {
-        // TODO Auto-generated constructor stub
         this.e = e;
         this.hrac = hrac;
     }
@@ -22,7 +21,6 @@ public class GUIClickEvent extends Event {
 
     @Override
     public HandlerList getHandlers() {
-        // TODO Auto-generated method stub
         return handlerList;
     }
 

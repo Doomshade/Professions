@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types.gathering.herbalism.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
+import git.doomshade.professions.profession.types.gathering.herbalism.HerbLocationOptions;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -45,10 +46,11 @@ public class SpawnCommand extends AbstractCommand {
             return true;
         }
 
+        HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(loc);
         if (args.length >= 4 && Boolean.parseBoolean(args[3])) {
-            herb.forceSpawn(loc);
+            herbLocationOptions.forceSpawn();
         } else {
-            herb.spawn(loc);
+            herbLocationOptions.spawn();
         }
         return true;
     }
@@ -56,13 +58,36 @@ public class SpawnCommand extends AbstractCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         List<String> list = new ArrayList<>();
-        List<String> herbs = Herb.HERBS.values().stream().map(Herb::getId).collect(Collectors.toList());
         switch (args.length) {
             case 2:
-                list.addAll(herbs);
+                list.addAll(Herb.HERBS.values().stream().filter(x -> x.getId().startsWith(args[1])).map(Herb::getId).collect(Collectors.toList()));
                 break;
             case 3:
-                list.addAll(Herb.HERBS.values().stream().filter(x -> x.getId().startsWith(args[2])).map(Herb::getId).collect(Collectors.toList()));
+                Herb herb = Herb.getHerb(args[1].trim());
+                if (herb == null) {
+                    sender.sendMessage(args[1] + " is an invalid herb id.");
+                    break;
+                }
+                for (int i = 0; i < herb.getSpawnPoints().size(); i++) {
+                    String id = String.valueOf(i);
+                    if (args[2].startsWith(id)) {
+                        list.add(id);
+                    } else if (args[2].isEmpty()) {
+                        list.add(id);
+                    }
+                }
+                break;
+            case 4:
+                final List<String> booleans = Arrays.asList("true", "false");
+                if (args[3].isEmpty()) {
+                    list.addAll(booleans);
+                } else {
+                    booleans.forEach(x -> {
+                        if (x.startsWith(args[3])) {
+                            list.add(x);
+                        }
+                    });
+                }
                 break;
         }
         return list.isEmpty() ? null : list;

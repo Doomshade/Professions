@@ -9,11 +9,9 @@ public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
 
     protected ProfessionExpLoseEvent(UserProfessionData data) {
         super(data);
-        // TODO Auto-generated constructor stub
     }
 
     public ProfessionExpLoseEvent(UserProfessionData data, double exp) {
-        // TODO Auto-generated constructor stub
         this(data);
         this.exp = exp;
     }
@@ -32,7 +30,6 @@ public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
 
     @Override
     public HandlerList getHandlers() {
-        // TODO Auto-generated method stub
         return handlerList;
     }
 

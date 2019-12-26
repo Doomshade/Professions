@@ -34,13 +34,11 @@ abstract class AbstractProfessionEvent extends Event implements Cancellable {
 
     @Override
     public final boolean isCancelled() {
-        // TODO Auto-generated method stub
         return cancelled;
     }
 
     @Override
     public final void setCancelled(boolean cancel) {
-        // TODO Auto-generated method stub
         this.cancelled = cancel;
     }
 }

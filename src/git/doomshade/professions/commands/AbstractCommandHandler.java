@@ -212,7 +212,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                 return acmd.onCommand(sender, cmd, label, args);
             }
         }
-        // TODO Auto-generated method stub
         return false;
     }
 }

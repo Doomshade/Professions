@@ -10,6 +10,8 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
+import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
+import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
 import git.doomshade.professions.profession.types.enchanting.EnchantManager;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
@@ -308,6 +310,14 @@ public final class ProfessionManager implements ISetup {
                 return barItemType;
             }
         });
+
+        registerItemTypeHolder(new ItemTypeHolder<PotionItemType>() {
+
+            @Override
+            protected PotionItemType getItemType() {
+                return new PotionItemType(Potion.EXAMPLE_POTION, 60);
+            }
+        });
     }
 
 
@@ -326,10 +336,21 @@ public final class ProfessionManager implements ISetup {
         registerProfession(new SkinningProfession(), false);
         registerProfession(new SmeltingProfession(), false);
         registerProfession(new HerbalismProfession(), false);
+        registerProfession(new AlchemyProfession(), false);
         sortProfessions();
     }
 
     private void registerProfession(Profession<? extends IProfessionType> prof, boolean sayMessage) {
+        Set<String> requiredPlugins = new HashSet<>();
+        for (String plugin : prof.getRequiredPlugins()) {
+            if (!Bukkit.getPluginManager().isPluginEnabled(plugin)) {
+                requiredPlugins.add(plugin);
+            }
+        }
+        if (!requiredPlugins.isEmpty()) {
+            throw new IllegalStateException(String.format("Could not load %s as some plugins are missing!%s\nRequired plugins: %s\nPlugins missing: %s",
+                    prof.getColoredName(), ChatColor.RESET, String.join("", prof.getRequiredPlugins()), String.join("", requiredPlugins)));
+        }
         if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
             try {
                 throw new IllegalAccessException("If you want to override constructors, make sure to call super() !");

@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.types.gathering.herbalism;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.configuration.MemorySection;
@@ -15,17 +16,17 @@ import static git.doomshade.professions.profession.types.gathering.herbalism.Spa
 public class SpawnPoint implements ConfigurationSerializable {
     public static final HashSet<SpawnPoint> SPAWN_POINTS = new HashSet<>();
     public final Location location;
-    public final int respawnTime;
+    public final Range respawnTime;
 
-    SpawnPoint(Location location, int respawnTime) {
+    SpawnPoint(Location location, Range respawnTime) {
         this.location = location;
         this.respawnTime = respawnTime;
-        if (respawnTime != -1)
+        if (respawnTime.getMin() != -1)
             SPAWN_POINTS.add(this);
     }
 
     public SpawnPoint(Location location) {
-        this(location, -1);
+        this(location, new Range(-1));
     }
 
     static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
@@ -35,7 +36,17 @@ public class SpawnPoint implements ConfigurationSerializable {
         }
         MemorySection mem = (MemorySection) map.get(LOCATION.s);
         Location loc = Location.deserialize(mem.getValues(false));
-        return new SpawnPoint(loc, (int) map.get(RESPAWN_TIME.s));
+        Range range;
+        Object obj = map.get(RESPAWN_TIME.s);
+        if (obj instanceof String) {
+            range = Range.fromString((String) obj);
+        } else {
+            range = new Range((int) obj);
+        }
+        if (range == null) {
+            throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeysEnum, "Invalid range format");
+        }
+        return new SpawnPoint(loc, range);
     }
 
     @Override

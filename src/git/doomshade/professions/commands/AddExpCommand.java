@@ -16,7 +16,6 @@ import java.util.List;
 public class AddExpCommand extends AbstractCommand {
 
     public AddExpCommand() {
-        // TODO Auto-generated constructor stub
         args = new HashMap<>();
         args.put(true, Arrays.asList("profession", "add/set", "exp"));
         args.put(false, Arrays.asList("player"));
@@ -60,13 +59,11 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "addexp";
     }
 

@@ -54,7 +54,7 @@ public final class Settings implements ISetup {
     }
 
     public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
-        return getProfessionSettings(Professions.getProfession(clazz));
+        return getProfessionSettings(Professions.getProfessionManager().getProfession(clazz));
     }
 
     public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Profession<?> profession) {

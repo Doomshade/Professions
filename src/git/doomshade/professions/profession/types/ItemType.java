@@ -433,5 +433,32 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.hiddenWhenUnavailable = hiddenWhenUnavailable;
     }
 
+    /**
+     * Called after plugin is reloaded. Useful for cleanups and reassigning objects to memory. Calls {@link #onLoad()} by default.
+     */
+    public void onReload() {
+        onLoad();
+    }
 
+
+    /**
+     * Called before plugin is reloaded. Useful for cleanups and reassigning objects to memory. Calls {@link #onDisable()} by default.
+     */
+    public void onPreReload() {
+        onDisable();
+    }
+
+    /**
+     * Called once plugin is fully loaded
+     */
+    public void onLoad() {
+
+    }
+
+    /**
+     * Called when plugin is being disabled.
+     */
+    public void onDisable() {
+
+    }
 }

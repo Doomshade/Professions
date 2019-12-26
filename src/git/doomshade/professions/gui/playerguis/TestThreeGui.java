@@ -10,12 +10,10 @@ public class TestThreeGui extends GUI {
 
     protected TestThreeGui(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
     public void init() throws GUIInitializationException {
-        // TODO Auto-generated method stub
         Integer pos = (Integer) getContext().getContext(ProfessionGUI.POSITION_GUI);
         ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
         meta.setDisplayName((String) getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION));
@@ -26,7 +24,6 @@ public class TestThreeGui extends GUI {
 
     @Override
     public void onGuiClick(GUIClickEvent e) {
-        // TODO Auto-generated method stub
         e.getEvent().setCancelled(true);
     }
 }
