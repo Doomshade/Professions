@@ -6,7 +6,6 @@ import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
-import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,13 +13,15 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public class PotionItemType extends ItemType<Potion> implements ICraftable {
     private double craftingTime = 0d;
-    private ItemStack result = ItemUtils.EXAMPLE_RESULT;
+    private ItemStack result = Potion.EXAMPLE_POTION.getItem();
     private Requirements inventoryRequirements = new Requirements();
     private Requirements craftingRequirements = new Requirements();
+    private Map<Sound, String> sounds = new HashMap<>();
 
 
     public PotionItemType() {
@@ -41,7 +42,10 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
 
     @Override
     protected Potion deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return Potion.deserialize(map);
+        Potion potion = Potion.deserialize(map);
+        final Optional<ItemStack> potionItem = potion.getPotionItem(potion.getItem());
+        potionItem.ifPresent(this::setResult);
+        return potion;
     }
 
     @Override
@@ -104,7 +108,17 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
 
     @Override
     public Function<ItemStack, ItemStack> getExtra() {
-        return itemStack -> getObject() != null ? getObject().getPotion() : null;
+        return itemStack -> itemStack;
+    }
+
+    @Override
+    public Map<Sound, String> getSounds() {
+        return sounds;
+    }
+
+    @Override
+    public void setSounds(Map<Sound, String> sounds) {
+        this.sounds = sounds;
     }
 
     @Override

@@ -31,6 +31,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
 
     private Requirements inventoryRequirements = new Requirements();
     private Requirements craftingRequirements = new Requirements();
+    private Map<Sound, String> sounds = new HashMap<>();
 
     /**
      * Required constructor
@@ -172,6 +173,16 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     @Override
     public void setCraftingRequirements(Requirements craftingRequirements) {
         this.craftingRequirements = craftingRequirements;
+    }
+
+    @Override
+    public Map<Sound, String> getSounds() {
+        return sounds;
+    }
+
+    @Override
+    public void setSounds(Map<Sound, String> sounds) {
+        this.sounds = sounds;
     }
 
     @Override

@@ -305,12 +305,12 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPotionDrink(PlayerItemConsumeEvent e) {
-        Potion potion = Potion.getPotion(e.getItem());
+        Potion potion = Potion.getItem(e.getItem());
         if (potion != null) {
             potion.apply(e.getPlayer());
-            e.getPlayer().getInventory().remove(potion.getPotion());
+            e.getPlayer().getInventory().remove(e.getItem());
         }
     }
 

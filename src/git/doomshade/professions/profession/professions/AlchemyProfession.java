@@ -4,10 +4,13 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
+import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
 import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
+
+import java.util.Optional;
 
 public class AlchemyProfession extends Profession<ICrafting> {
 
@@ -29,18 +32,25 @@ public class AlchemyProfession extends Profession<ICrafting> {
             return;
         }
         ProfessionEvent<PotionItemType> event = getEvent(e, PotionItemType.class);
-        if (!event.hasExtra(ItemStack.class)) {
-            throw new IllegalStateException("No itemstack in alchemy given!");
+        final PotionItemType itemType = event.getItemType();
+
+        final ItemStack craftedItem = itemType.getResult();
+        final Potion potionObject = itemType.getObject();
+
+        if (potionObject != null) {
+            Optional<ItemStack> optionalPotion = potionObject.getPotionItem(craftedItem);
+            if (!optionalPotion.isPresent()) {
+                return;
+            }
+
+            e.setCancelled(true);
+            ItemStack potion = optionalPotion.get();
+            final Player player = e.getPlayer().getPlayer();
+
+            itemType.removeCraftingRequirements(player);
+            player.getInventory().addItem(potion);
         }
 
-        ItemStack potion = event.getExtra(ItemStack.class);
-        if (potion == null) {
-            throw new IllegalStateException("No itemstack in alchemy given!");
-        }
-
-        final PlayerInventory inventory = e.getPlayer().getPlayer().getInventory();
-        inventory.remove(event.getItemType().getResult());
-        inventory.addItem(potion);
 
     }
 }

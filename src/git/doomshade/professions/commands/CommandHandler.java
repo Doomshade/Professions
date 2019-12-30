@@ -30,5 +30,7 @@ public class CommandHandler extends AbstractCommandHandler {
         registerCommand(new CommandsCommand());
         registerCommand(new GenerateDefaultsCommand());
         registerCommand(new LogFilterCommand());
+        registerCommand(new EditItemTypeCommand());
+        registerCommand(new UndoEditCommand());
     }
 }

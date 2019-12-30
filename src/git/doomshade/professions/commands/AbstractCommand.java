@@ -5,19 +5,17 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Class representing all the commands
  * @author Doomshade
  */
-public abstract class AbstractCommand implements ConfigurationSerializable {
+public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
 
     private static final String COMMAND = "command";
     private static final String DESCRIPTION = "description";
@@ -39,6 +37,11 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
         return new AbstractCommand() {
+
+            @Override
+            public int compareTo(@NotNull AbstractCommand o) {
+                return getCommand().compareTo(o.getCommand());
+            }
 
             @Override
             public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -93,6 +96,29 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
             }
 
         };
+    }
+
+    @Override
+    public int compareTo(@NotNull AbstractCommand o) {
+        return getCommand().compareTo(o.getCommand());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractCommand that = (AbstractCommand) o;
+        return requiresPlayer == that.requiresPlayer &&
+                requiresOp == that.requiresOp &&
+                command.equals(that.command) &&
+                description.equals(that.description) &&
+                messages.equals(that.messages) &&
+                args.equals(that.args);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(command, description, messages, args, requiresPlayer, requiresOp);
     }
 
     /**

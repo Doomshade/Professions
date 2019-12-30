@@ -13,6 +13,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -114,7 +115,8 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         if (!item.getIcon(upd).isSimilar(currentItem)) {
             return;
         }
-        if (!craftable.meetsCraftingRequirements(user.getPlayer())) {
+        final Player player = user.getPlayer();
+        if (!craftable.meetsCraftingRequirements(player)) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Message.REQUIREMENTS_NOT_MET)
                     .setPlayer(user)
                     .setProfession(prof)
@@ -140,10 +142,12 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             if (!hasInventorySpace()) {
                 return;
             }
-            craftable.removeCraftingRequirements(user.getPlayer());
-            user.getPlayer().getInventory().addItem(craftable.getResult());
-            em.callEvent(pe);
-
+            final ProfessionEvent<ItemType<?>> event = em.callEvent(pe);
+            if (!event.isCancelled()) {
+                craftable.removeCraftingRequirements(player);
+                player.getInventory().addItem(craftable.getResult());
+            }
+            player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
             if (repeat && repeatAmount != 0) {
                 CraftingTask clone = clone();
@@ -153,6 +157,9 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         });
         craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
                 craftable.getCraftingTime(), gui, UPDATE_INTERVAL));
+
+        player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
+
     }
 
     @Override

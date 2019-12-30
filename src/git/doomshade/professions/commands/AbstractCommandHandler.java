@@ -1,7 +1,9 @@
 package git.doomshade.professions.commands;
 
+import com.google.common.collect.ImmutableSortedSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.SortedList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -22,7 +24,7 @@ import java.util.*;
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
-    private final ArrayList<AbstractCommand> INSTANCE_COMMANDS = new ArrayList<>();
+    private final SortedList<AbstractCommand> INSTANCE_COMMANDS = new SortedList<>(Comparator.comparing(AbstractCommand::getCommand));
     private final File FOLDER = new File(plugin.getDataFolder(), "commands");
     private PluginCommand cmd = null;
     private File file;
@@ -31,6 +33,10 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         if (!FOLDER.isDirectory()) {
             FOLDER.mkdirs();
         }
+    }
+
+    public ImmutableSortedSet<AbstractCommand> getCommands() {
+        return ImmutableSortedSet.copyOf(INSTANCE_COMMANDS);
     }
 
     public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass) {
@@ -60,11 +66,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
     private void postRegisterCommands() {
         updateCommands();
-        sortCommands();
-    }
-
-    private void sortCommands() {
-        INSTANCE_COMMANDS.sort(Comparator.comparing(AbstractCommand::getCommand));
     }
 
     protected final void registerCommand(AbstractCommand cmd) {
@@ -102,7 +103,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         loader.save(file);
     }
 
-    private String infoMessage(AbstractCommand acmd) {
+    public String infoMessage(AbstractCommand acmd) {
         StringBuilder args = new StringBuilder();
         final Map<Boolean, List<String>> args1 = acmd.getArgs();
         if (args1 != null) {
@@ -152,7 +153,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         registerCommands();
         postRegisterCommands();
         setupCommandFile();
-        sortCommands();
     }
 
     @Override
@@ -188,12 +188,20 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" + ChatColor.RED
                     + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
 
-            for (AbstractCommand icmd : INSTANCE_COMMANDS) {
-                if (!isValid(sender, icmd)) {
+            //int amnt = 0;
+
+            // TODO add pages
+            for (AbstractCommand acmd : INSTANCE_COMMANDS) {
+                if (!isValid(sender, acmd)) {
                     continue;
                 }
-                sender.sendMessage(infoMessage(icmd));
-
+                sender.sendMessage(infoMessage(acmd));
+                /*amnt++;
+                if (amnt % 6 == 0) {
+                    int page = amnt / 6;
+                    break;
+                }
+                 */
             }
             return true;
         }

@@ -33,6 +33,7 @@ public final class Strings {
                     put(TRAINABLE, true);
                     put(COST, 0);
                     put(TRAINABLE_ID, "some_id");
+
                 }
             };
         }
@@ -50,7 +51,9 @@ public final class Strings {
         ITEM_REQUIREMENTS("item-requirements"),
         RESULT("result"),
         CRAFTING_TIME("crafting-time"),
-        INVENTORY_REQUIREMENTS("inventory-requirements");
+        INVENTORY_REQUIREMENTS("inventory-requirements"),
+        SOUND_CRAFTING("crafting-sound"),
+        SOUND_CRAFTED("crafted-sound");
 
         public final String s;
 
@@ -67,6 +70,8 @@ public final class Strings {
                     put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(CRAFTING_TIME, 5d);
                     put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(SOUND_CRAFTING, "block.fire.ambient");
+                    put(SOUND_CRAFTED, "block.fire.extinguish");
                 }
             };
         }

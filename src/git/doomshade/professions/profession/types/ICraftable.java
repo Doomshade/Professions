@@ -42,6 +42,8 @@ public interface ICraftable {
         map.put(RESULT.s, craftable.getResult().serialize());
         map.put(INVENTORY_REQUIREMENTS.s, craftable.getInventoryRequirements().serialize());
         map.put(CRAFTING_TIME.s, craftable.getCraftingTime());
+        map.put(SOUND_CRAFTED.s, craftable.getSounds().get(Sound.ON_CRAFT));
+        map.put(SOUND_CRAFTING.s, craftable.getSounds().get(Sound.CRAFTING));
         return map;
     }
 
@@ -55,6 +57,13 @@ public interface ICraftable {
     static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) throws ProfessionInitializationException {
 
         craftable.setCraftingTime((double) map.getOrDefault(CRAFTING_TIME.s, 5d));
+
+        craftable.setSounds(new HashMap<Sound, String>() {
+            {
+                put(Sound.CRAFTING, (String) map.getOrDefault(SOUND_CRAFTING.s, "block.fire.extinguish"));
+                put(Sound.ON_CRAFT, (String) map.getOrDefault(SOUND_CRAFTED.s, "block.fire.ambient"));
+            }
+        });
 
         Set<String> list = Utils.getMissingKeys(map, Strings.ICraftableEnum.values());
         if (!list.isEmpty()) {
@@ -120,6 +129,14 @@ public interface ICraftable {
      * @param craftingRequirements the crafting requirements to set
      */
     void setCraftingRequirements(Requirements craftingRequirements);
+
+    Map<Sound, String> getSounds();
+
+    void setSounds(Map<Sound, String> sounds);
+
+    enum Sound {
+        CRAFTING, ON_CRAFT
+    }
 
     default Function<ItemStack, ?> getExtra() {
         return null;

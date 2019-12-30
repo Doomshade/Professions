@@ -19,6 +19,7 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
     private double craftingTime = 5d;
     private ItemStack result = ItemUtils.EXAMPLE_RESULT;
     private Requirements inventoryRequirements = new Requirements(), craftingRequirements = new Requirements();
+    private Map<Sound, String> sounds = new HashMap<>();
 
     public BarItemType() {
         super();
@@ -93,6 +94,16 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
     @Override
     public void setCraftingRequirements(Requirements craftingRequirements) {
         this.craftingRequirements = craftingRequirements;
+    }
+
+    @Override
+    public Map<Sound, String> getSounds() {
+        return sounds;
+    }
+
+    @Override
+    public void setSounds(Map<Sound, String> sounds) {
+        this.sounds = sounds;
     }
 
     @Override

@@ -35,9 +35,10 @@ public class Potion implements ConfigurationSerializable {
             TEST_POTION_ID,
             PotionType.FIRE_RESISTANCE,
             ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
-    static final HashSet<Potion> POTIONS = new HashSet<>();
-    static final HashMap<UUID, HashSet<PotionTask>> ACTIVE_POTIONS = new HashMap<>();
+
     private static final String NBT_KEY = "profession_potion";
+    static final HashMap<UUID, HashSet<PotionTask>> ACTIVE_POTIONS = new HashMap<>();
+    private static final HashSet<Potion> POTIONS = new HashSet<>();
     private static final String SPLIT_CHAR = ":";
 
     private final ArrayList<String> potionEffects = new ArrayList<>();
@@ -51,16 +52,8 @@ public class Potion implements ConfigurationSerializable {
         this.potionId = potionId;
         this.potionType = potionType;
         this.potionEffects.addAll(potionEffects);
+        this.potion = potion;
 
-
-        PotionMeta meta = (PotionMeta) potion.getItemMeta();
-        meta.setBasePotionData(new PotionData(potionType));
-        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(potion);
-        NBTTagCompound nbt = nms.hasTag() ? nms.getTag() : new NBTTagCompound();
-        nbt.set(NBT_KEY, new NBTTagString(potionId));
-        nms.setTag(nbt);
-
-        this.potion = CraftItemStack.asBukkitCopy(nms);
         if (!potionId.equals(TEST_POTION_ID))
             POTIONS.add(this);
     }
@@ -106,46 +99,6 @@ public class Potion implements ConfigurationSerializable {
         } finally {
             ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
         }
-    }
-
-    @Nullable
-    public static Potion getPotion(ItemStack potion) {
-        if (potion == null) {
-            return null;
-        }
-        if (potion.getType() != Material.POTION) {
-            return null;
-        }
-        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(potion);
-        if (!nms.hasTag()) {
-            return null;
-        }
-        NBTTagCompound nbt = nms.getTag();
-        if (!nbt.hasKey(NBT_KEY)) {
-            return null;
-        }
-        String potionId = nbt.getString(NBT_KEY);
-        try {
-            return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
-        } catch (Utils.SearchNotFoundException e) {
-            throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
-        }
-    }
-
-    @SuppressWarnings("all")
-    static Potion deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        Set<String> missingKeys = Utils.getMissingKeys(map, PotionEnum.values());
-        if (!missingKeys.isEmpty()) {
-            throw new ProfessionObjectInitializationException(PotionItemType.class, missingKeys);
-        }
-
-        ArrayList<String> potionEffects = (ArrayList<String>) map.get(POTION_EFFECTS.s);
-        int duration = (int) map.get(POTION_DURATION.s);
-        String potionId = (String) map.get(POTION_FLAG.s);
-        PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
-        MemorySection mem = (MemorySection) map.get(POTION.s);
-        ItemStack potion = ItemStack.deserialize(mem.getValues(false));
-        return new Potion(potionEffects, duration, potionId, potionType, potion);
     }
 
     private void addAttributes(Player player, boolean negate) {
@@ -194,26 +147,70 @@ public class Potion implements ConfigurationSerializable {
         }
     }
 
+    @Nullable
+    public static Potion getItem(ItemStack potion) {
+        if (potion == null) {
+            return null;
+        }
+        if (potion.getType() != Material.POTION) {
+            return null;
+        }
+        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(potion);
+        if (!nms.hasTag()) {
+            return null;
+        }
+        NBTTagCompound nbt = nms.getTag();
+        if (!nbt.hasKey(NBT_KEY)) {
+            return null;
+        }
+        String potionId = nbt.getString(NBT_KEY);
+        try {
+            return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
+        } catch (Utils.SearchNotFoundException e) {
+            System.out.println(POTIONS);
+            throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
+        }
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    @SuppressWarnings("all")
+    static Potion deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
+        Set<String> missingKeys = Utils.getMissingKeys(map, PotionEnum.values());
+        if (!missingKeys.isEmpty()) {
+            throw new ProfessionObjectInitializationException(PotionItemType.class, missingKeys);
+        }
+
+        ArrayList<String> potionEffects = (ArrayList<String>) map.get(POTION_EFFECTS.s);
+        int duration = (int) map.get(POTION_DURATION.s);
+        String potionId = (String) map.get(POTION_FLAG.s);
+        PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
+        MemorySection mem = (MemorySection) map.get(POTION.s);
+        ItemStack potion = ItemStack.deserialize(mem.getValues(false));
+        return new Potion(potionEffects, duration, potionId, potionType, potion);
+    }
+
     public void apply(Player player) {
         try {
             addAttributes(player, false);
             HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.getOrDefault(player.getUniqueId(), new HashSet<>());
             PotionTask potionTask = new PotionTask(this, player);
-            potionTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
-            potionTasks.add(potionTask);
-            ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
+
+            // makes sure the task is not already running
+            if (potionTasks.add(potionTask)) {
+                potionTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
+                ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public ItemStack getPotion() {
+    ItemStack getItem() {
         return potion;
-    }
-
-    public int getDuration() {
-        return duration;
     }
 
     @Override
@@ -240,6 +237,21 @@ public class Potion implements ConfigurationSerializable {
                 put(POTION.s, potion.serialize());
             }
         };
+    }
+
+    public Optional<ItemStack> getPotionItem(ItemStack item) {
+        if (item.getType() != Material.POTION || !item.hasItemMeta()) {
+            return Optional.empty();
+        }
+        final ItemStack clone = item.clone();
+        PotionMeta meta = (PotionMeta) clone.getItemMeta();
+        meta.setBasePotionData(new PotionData(potionType));
+        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(clone);
+        NBTTagCompound nbt = nms.hasTag() ? nms.getTag() : new NBTTagCompound();
+        nbt.set(NBT_KEY, new NBTTagString(potionId));
+        nms.setTag(nbt);
+        clone.setItemMeta(meta);
+        return Optional.of(clone);
     }
 
     enum PotionEnum implements FileEnum {

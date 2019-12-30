@@ -8,16 +8,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class LogFilterCommand extends AbstractCommand {
 
     public LogFilterCommand() {
-        setArg(true, Collections.singletonList("regex"));
         setArg(false, Collections.singletonList("log file name"));
+        setArg(true, Collections.singletonList("\"regex\""));
         setCommand("log");
         setDescription("Creates a log file in log directory with the searched term");
         setRequiresOp(true);
@@ -26,17 +29,42 @@ public class LogFilterCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         File logFile;
+        final int[] i = {1};
 
+
+        String thePattern = Arrays.asList(args).subList(i[0], args.length).stream().map(new Function<String, String>() {
+            boolean found = false;
+
+            @Override
+            public String apply(String s) {
+                if (found) {
+                    return "";
+                }
+                i[0]++;
+                if (s.endsWith("\"") || s.endsWith("'")) {
+                    found = true;
+                }
+                return s;
+            }
+        }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
+
+        final Pattern pattern = Pattern.compile(thePattern);
         if (args.length >= 3) {
-            logFile = new File(args[2]);
+            String logFileName = String.join(" ", Arrays.asList(args).subList(i[0], args.length));
+            logFile = new File(Professions.getInstance().getLogsFolder(), logFileName);
         } else {
             logFile = Professions.getInstance().getLogFile();
+            i[0]++;
         }
-
-        final Pattern pattern = Pattern.compile(args[1]);
+        if (!logFile.exists()) {
+            sender.sendMessage(logFile.getName() + " file does not exist!");
+            return true;
+        }
+        sender.sendMessage("Iterating through " + logFile.getName() + " with pattern: " + pattern.pattern());
 
         try (Scanner sc = new Scanner(logFile)) {
-            File customLog = new File(Professions.getInstance().getLogsFolder(), args[1].concat("-log-".concat(System.currentTimeMillis() + ".txt")));
+            final File filteredLogsFolder = Professions.getInstance().getFilteredLogsFolder();
+            File customLog = new File(filteredLogsFolder, pattern.pattern().concat("-log-".concat(System.currentTimeMillis() + ".txt")));
             if (!customLog.exists()) {
                 customLog.createNewFile();
             }
@@ -47,6 +75,7 @@ public class LogFilterCommand extends AbstractCommand {
                         os.println(s);
                 }
             }
+            sender.sendMessage("Successfully created " + customLog.getName() + " in folder " + filteredLogsFolder.getName());
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
             sender.sendMessage("Soubor neexistuje.");

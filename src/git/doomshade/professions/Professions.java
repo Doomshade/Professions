@@ -82,6 +82,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
     private final File LOGS_FOLDER = new File(getDataFolder(), "logs");
     private final File LOG_FILE = new File(getLogsFolder(), String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy H_m"))));
+    private final File FILTERED_LOGS_FOLDER = new File(getDataFolder(), "filtered logs");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
 
@@ -274,6 +275,8 @@ public final class Professions extends JavaPlugin implements ISetup {
                 itemType.onLoad();
             }
         }
+
+        test();
         //Settings.getProfessionSettings(MiningProfession.class);
     }
 
@@ -369,6 +372,13 @@ public final class Professions extends JavaPlugin implements ISetup {
             LOGS_FOLDER.mkdirs();
         }
         return LOGS_FOLDER;
+    }
+
+    public File getFilteredLogsFolder() {
+        if (!FILTERED_LOGS_FOLDER.isDirectory()) {
+            FILTERED_LOGS_FOLDER.mkdirs();
+        }
+        return FILTERED_LOGS_FOLDER;
     }
 
     public File getLogFile() {
@@ -485,6 +495,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         getItemsFolder();
         getProfessionFolder();
         getCacheFolder();
+        getFilteredLogsFolder();
         // getLogsFolder();
         if (!LOG_FILE.exists()) {
             try {
@@ -552,5 +563,19 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     private void hookMessage(String plugin) {
         log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
+    }
+
+    private void test() {
+        //ProtocolManager pm = ProtocolLibrary.getProtocolManager();
+        /*.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.RESOURCE_PACK_SEND) {
+
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                if (event.getPacketType() == PacketType.Play.Server.RESOURCE_PACK_SEND) {
+                }
+            }
+        });
+         */
+        //IDynamicTexture texture;
     }
 }
