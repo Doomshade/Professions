@@ -20,7 +20,7 @@ import java.util.function.Function;
  *
  * @author Doomshade
  */
-public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
+public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
     private static String ENCHANT = "enchant";
     private boolean trainable = true;
     private int cost = 0;
@@ -36,7 +36,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
     /**
      * Required constructor
      */
-    public EnchantedItemType() {
+    public EnchantedItemItemType() {
         super();
     }
 
@@ -46,7 +46,7 @@ public class EnchantedItemType extends ItemType<Enchant> implements ITrainable, 
      * @param object
      * @param exp
      */
-    public EnchantedItemType(Enchant object, int exp) {
+    public EnchantedItemItemType(Enchant object, int exp) {
         super(object, exp);
     }
 

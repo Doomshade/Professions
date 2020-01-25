@@ -124,7 +124,7 @@ public final class ItemUtils {
      * @return the serialization of {@link ItemType}
      */
     public static <A extends ItemType<?>> Map<String, Object> getItemTypeMap(Class<A> clazz, int id) {
-        File file = getFile(clazz);
+        File file = getItemTypeFile(clazz);
         if (!file.exists()) {
             throw new IllegalStateException("Object not yet serialized!");
         }
@@ -142,8 +142,8 @@ public final class ItemUtils {
      * @param clazz the {@link ItemType} class
      * @return the file of {@link ItemType}
      */
-    public static File getFile(Class<?> clazz) {
-        return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase().concat(Utils.YML_EXTENSION));
+    public static File getItemTypeFile(Class<?> clazz) {
+        return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase().replace("itemtype", "").concat(Utils.YML_EXTENSION));
     }
 
     /**

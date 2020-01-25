@@ -13,6 +13,7 @@ import java.util.*;
 
 /**
  * Class representing all the commands
+ *
  * @author Doomshade
  */
 public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
@@ -31,7 +32,8 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     protected boolean requiresPlayer = false, requiresOp = false;
 
     /**
-     * Partly deserializes a command (overrides all getters but {@code getId()} method)
+     * Partly deserializes a command (overrides all but {@code getId()} getter methods)
+     *
      * @param map the map
      * @return partly deserialized command
      */
@@ -98,6 +100,12 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         };
     }
 
+    /**
+     * Compares commands to each other based on their command name
+     *
+     * @param o the other command to compare to
+     * @return
+     */
     @Override
     public int compareTo(@NotNull AbstractCommand o) {
         return getCommand().compareTo(o.getCommand());
@@ -122,7 +130,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     /**
-     *
      * @param sender
      * @param cmd
      * @param label

@@ -52,7 +52,7 @@ public class Ore implements ConfigurationSerializable {
     public static Ore deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
         Set<String> list = Utils.getMissingKeys(map,
                 Arrays.stream(OreEnum.values())
-                        .filter(x -> x != KEY_ITEMSTACK && x != KEY_CHANCE)
+                        .filter(x -> x != KEY_ITEMSTACK && x != KEY_CHANCE && x != KEY_MINING_RESULT)
                         .toArray(OreEnum[]::new));
         if (!list.isEmpty()) {
             throw new ProfessionObjectInitializationException(OreItemType.class, list);

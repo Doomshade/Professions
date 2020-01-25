@@ -10,13 +10,16 @@ import org.bukkit.command.CommandSender;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DespawnCommand extends AbstractCommand {
+/**
+ * TODO: Make a /prof-herbalism herb subcommand and add an arguemnt of spawn/despawn/schedule
+ */
+public class ScheduleSpawnCommand extends AbstractCommand {
 
-    DespawnCommand() {
+    public ScheduleSpawnCommand() {
         setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
-        setArg(false, Collections.singletonList("disable further spawn"));
-        setCommand("despawn");
-        setDescription("Despawns a herb");
+        setArg(false, Collections.singletonList("forcespawn (bypass respawn timer and configuration in itemtype, default: false)"));
+        setCommand("schedulespawn");
+        setDescription("Schedules a spawn of a herb");
         setRequiresOp(true);
         setRequiresPlayer(false);
     }
@@ -32,32 +35,20 @@ public class DespawnCommand extends AbstractCommand {
         try {
             spId = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            if (!args[2].equalsIgnoreCase("all")) {
+            if (args[2].equalsIgnoreCase("all")) {
+                spId = "";
+            } else {
                 sender.sendMessage("Invalid number format.");
                 return true;
-            } else {
-                spId = "";
             }
         }
-
         Location loc = null;
         try {
-            if (spId instanceof Integer) {
+            if (spId instanceof Integer)
                 loc = herb.getSpawnPoints().get((Integer) spId).location;
-            }
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
             return true;
-        }
-
-        boolean disableSpawn = false;
-
-        if (args.length >= 4) {
-            try {
-                disableSpawn = Boolean.parseBoolean(args[3]);
-            } catch (Exception e) {
-                sender.sendMessage("Invalid boolean type provided, using false as default.");
-            }
         }
 
         if (loc == null) {
@@ -66,13 +57,10 @@ public class DespawnCommand extends AbstractCommand {
                 Location hloLoc = hlo.location;
                 String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
                 try {
-                    hlo.despawn();
-                    sender.sendMessage("Successfully despawned herb at " + locName + ".");
-                    if (!disableSpawn) {
-                        hlo.scheduleSpawn();
-                    }
+                    hlo.scheduleSpawn();
+                    sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
                 } catch (Exception e) {
-                    sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
+                    sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
                     e.printStackTrace();
                 }
             }
@@ -80,13 +68,10 @@ public class DespawnCommand extends AbstractCommand {
             String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             try {
                 final HerbLocationOptions hlo = herb.getHerbLocationOptions(loc);
-                hlo.despawn();
-                if (!disableSpawn) {
-                    hlo.scheduleSpawn();
-                }
-                sender.sendMessage("Successfully despawned herb at " + locName + ".");
+                hlo.scheduleSpawn();
+                sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
             } catch (Exception e) {
-                sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
+                sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
                 e.printStackTrace();
             }
         }
@@ -133,6 +118,6 @@ public class DespawnCommand extends AbstractCommand {
 
     @Override
     public String getID() {
-        return "despawn";
+        return "schedulespawn";
     }
 }

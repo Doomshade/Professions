@@ -5,20 +5,30 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 
 public final class Settings implements ISetup {
 
     public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
+    private static final String DEFAULT_PROPERTIES = "lang_en.yml";
     protected static FileConfiguration config;
     protected static Professions plugin;
     private static Settings instance;
+    private static FileConfiguration lang;
+    private static File langFile;
 
     static {
         plugin = Professions.getInstance();
         instance = new Settings();
-        instance.setup();
+        try {
+            instance.setup();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         registerSettings(new DefaultsSettings());
         registerSettings(new ExpSettings());
@@ -71,10 +81,35 @@ public final class Settings implements ISetup {
         }
     }
 
-    @Override
-    public void setup() {
-        plugin.reloadConfig();
-        config = plugin.getConfig();
+    public static FileConfiguration getLang() {
+        return lang;
     }
 
+    public static File getLangFile() {
+        return langFile;
+    }
+
+    @Override
+    public void setup() throws IOException {
+        plugin.reloadConfig();
+
+        config = plugin.getConfig();
+        final File langFolder = plugin.getLangFolder();
+        final String langString = config.getString("lang", DEFAULT_PROPERTIES);
+        final File[] langs = langFolder.listFiles((dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null && name.startsWith(langString));
+        if (langs != null && langs.length > 0) {
+            langFile = langs[0];
+        } else {
+            Professions.createResource(Professions.LANG_PATH + DEFAULT_PROPERTIES, false);
+            Professions.log("No language starting with '" + langString + "' exists. Using default language (" + DEFAULT_PROPERTIES + ")");
+            langFile = new File(plugin.getLangFolder(), DEFAULT_PROPERTIES);
+        }
+        lang = new YamlConfiguration();
+        try {
+            lang = YamlConfiguration.loadConfiguration(langFile);
+        } catch (Exception e) {
+            throw new IOException("Could not load language settings!", e);
+
+        }
+    }
 }

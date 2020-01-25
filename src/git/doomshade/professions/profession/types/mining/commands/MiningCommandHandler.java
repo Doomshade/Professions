@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.types.mining.commands;
 
 import git.doomshade.professions.commands.AbstractCommandHandler;
+import git.doomshade.professions.commands.CommandHandler;
 
 /**
  * Custom command handler for mining
@@ -11,7 +12,7 @@ public class MiningCommandHandler extends AbstractCommandHandler {
 
     @Override
     protected String getCommandName() {
-        return "prof-mining";
+        return CommandHandler.EXTENDED_COMMAND.concat("mining");
     }
 
     @Override

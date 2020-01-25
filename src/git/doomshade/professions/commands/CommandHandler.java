@@ -5,10 +5,13 @@ package git.doomshade.professions.commands;
  */
 public class CommandHandler extends AbstractCommandHandler {
 
+    public static final String COMMAND = "prof";
+    public static final String EXTENDED_COMMAND = COMMAND.concat("-");
+
 
     @Override
     protected String getCommandName() {
-        return "prof";
+        return COMMAND;
     }
 
     @Override

@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types;
 
 
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 
@@ -20,7 +21,7 @@ import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
  * of {@link #serializeTrainable(ITrainable)} and return the map.
  *
  * @author Doomshade
- * @see git.doomshade.professions.profession.types.enchanting.EnchantedItemType on GitHub for an example
+ * @see EnchantedItemItemType on GitHub for an example
  */
 public interface ITrainable {
 

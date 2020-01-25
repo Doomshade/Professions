@@ -4,7 +4,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 class SpawnTask extends BukkitRunnable {
     public final HerbLocationOptions herb;
-    public int respawnTime;
+    private transient int respawnTime;
 
     SpawnTask(HerbLocationOptions herb) throws IllegalArgumentException {
         this.herb = herb;

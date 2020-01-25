@@ -49,8 +49,7 @@ public class AlchemyProfession extends Profession<ICrafting> {
 
             itemType.removeCraftingRequirements(player);
             player.getInventory().addItem(potion);
+            addExp(e);
         }
-
-
     }
 }

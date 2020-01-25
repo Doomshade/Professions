@@ -3,6 +3,7 @@ package git.doomshade.professions;
 
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
+import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
@@ -21,6 +22,7 @@ import git.doomshade.professions.listeners.SkillAPIListener;
 import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.types.crafting.alchemy.commands.AlchemyCommandHandler;
 import git.doomshade.professions.profession.types.gathering.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
@@ -43,10 +45,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -85,8 +85,10 @@ public final class Professions extends JavaPlugin implements ISetup {
     private final File FILTERED_LOGS_FOLDER = new File(getDataFolder(), "filtered logs");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
+    public static final String LANG_PATH = "lang/";
 
     private FileConfiguration configLoader;
+    private final File LANG_FOLDER = new File(getDataFolder(), "lang");
 
 
     /**
@@ -204,9 +206,37 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * Logs an error message to console
+     * Logs an object using {@link Object#toString()} method. Use {@link Level#CONFIG} to log into log file.
      *
-     * @param message the message to log
+     * @param object the object to log
+     * @param level  the level
+     */
+    public static void log(Object object, Level level) {
+        log(object == null ? "null" : object.toString(), level);
+    }
+
+    /**
+     * Logs an object using {@link Object#toString()} method to console with {@link Level#INFO} level.
+     *
+     * @param object the object to log
+     */
+    public static void log(Object object) {
+        log(object == null ? "null" : object.toString());
+    }
+
+    /**
+     * Logs a message to console with {@link Level#INFO} level.
+     *
+     * @param message the message to display
+     */
+    public static void log(String message) {
+        log(message, Level.INFO);
+    }
+
+    /**
+     * Logs a message. Use {@link Level#CONFIG} to log into log file.
+     *
+     * @param message the message to display
      * @param level   the log level
      */
     public static void log(String message, Level level) {
@@ -248,36 +278,8 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     }
 
-    /**
-     * Sets the instance of this plugin, attempts to hook {@link GUIApi}, {@link Citizens}, and {@link net.milkbowl.vault.Vault}, sets up instances of managers, sets up files, schedules tasks, and registers events of listeners.
-     */
-    @Override
-    public void onEnable() {
-        setInstance(this);
-        hookGuiApi();
-        hookCitizens();
-        hookSkillAPI();
-        hookVault();
-
-        profMan = ProfessionManager.getInstance();
-        eventMan = EventManager.getInstance();
-
-        setupFiles();
-        scheduleTasks();
-
-        PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(new UserListener(), this);
-        pm.registerEvents(new ProfessionListener(), this);
-        pm.registerEvents(new PluginProfessionListener(), this);
-
-        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                itemType.onLoad();
-            }
-        }
-
-        test();
-        //Settings.getProfessionSettings(MiningProfession.class);
+    public static void createResource(String resource, boolean replace) {
+        instance.saveResource(resource, replace);
     }
 
     /**
@@ -324,61 +326,80 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
+     * Sets the instance of this plugin, attempts to hook {@link GUIApi}, {@link Citizens}, and {@link net.milkbowl.vault.Vault}, sets up instances of managers, sets up files, schedules tasks, and registers events of listeners.
+     */
+    @Override
+    public void onEnable() {
+        setInstance(this);
+        hookGuiApi();
+        hookCitizens();
+        hookSkillAPI();
+        hookVault();
+
+        profMan = ProfessionManager.getInstance();
+        eventMan = EventManager.getInstance();
+
+        try {
+            setupFiles();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        scheduleTasks();
+
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(new UserListener(), this);
+        pm.registerEvents(new ProfessionListener(), this);
+        pm.registerEvents(new PluginProfessionListener(), this);
+
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onLoad();
+            }
+        }
+
+        test();
+        //Settings.getProfessionSettings(MiningProfession.class);
+    }
+
+    /**
      * @return the backup folder directory
      */
     public File getBackupFolder() {
-        if (!BACKUP_FOLDER.isDirectory()) {
-            BACKUP_FOLDER.mkdirs();
-        }
-        return BACKUP_FOLDER;
+        return getFolder(BACKUP_FOLDER);
     }
 
     /**
      * @return the {@link User} folder directory
      */
     public File getPlayerFolder() {
-        if (!PLAYER_FOLDER.isDirectory()) {
-            PLAYER_FOLDER.mkdirs();
-        }
-        return PLAYER_FOLDER;
+        return getFolder(PLAYER_FOLDER);
     }
 
     /**
      * @return the {@link ItemType} folder directory
      */
     public File getItemsFolder() {
-        if (!ITEM_FOLDER.isDirectory()) {
-            ITEM_FOLDER.mkdirs();
-        }
-        return ITEM_FOLDER;
+        return getFolder(ITEM_FOLDER);
     }
 
     public File getProfessionFolder() {
-        if (!PROFESSION_FOLDER.isDirectory()) {
-            PROFESSION_FOLDER.mkdirs();
-        }
-        return PROFESSION_FOLDER;
+        return getFolder(PROFESSION_FOLDER);
     }
 
     public File getCacheFolder() {
-        if (!CACHE_FOLDER.isDirectory()) {
-            CACHE_FOLDER.mkdirs();
-        }
-        return CACHE_FOLDER;
+        return getFolder(CACHE_FOLDER);
     }
 
     public File getLogsFolder() {
-        if (!LOGS_FOLDER.isDirectory()) {
-            LOGS_FOLDER.mkdirs();
-        }
-        return LOGS_FOLDER;
+        return getFolder(LOGS_FOLDER);
     }
 
     public File getFilteredLogsFolder() {
-        if (!FILTERED_LOGS_FOLDER.isDirectory()) {
-            FILTERED_LOGS_FOLDER.mkdirs();
-        }
-        return FILTERED_LOGS_FOLDER;
+        return getFolder(FILTERED_LOGS_FOLDER);
+    }
+
+    public File getLangFolder() {
+        return getFolder(LANG_FOLDER);
     }
 
     public File getLogFile() {
@@ -428,7 +449,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         cleanup();
 
         // Saves and unloads users
-        User.saveUsers();
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             User.unloadUser(p);
@@ -472,19 +492,44 @@ public final class Professions extends JavaPlugin implements ISetup {
         return task.getResult();
     }
 
-    private void registerSetups() {
-        registerSetup(Settings.getInstance());
-        for (AbstractSettings s : Settings.SETTINGS) {
-            registerSetup(s);
+    private File getFolder(File file) {
+        if (!file.isDirectory()) {
+            file.mkdirs();
         }
-        registerSetup(Messages.getInstance());
-        registerSetup(CommandHandler.getInstance(CommandHandler.class));
-        registerSetup(MiningCommandHandler.getInstance(MiningCommandHandler.class));
-        registerSetup(HerbalismCommandHandler.getInstance(HerbalismCommandHandler.class));
+        return file;
+    }
+
+    private void registerSetups() {
+        try {
+            registerSetup(Settings.getInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (AbstractSettings s : Settings.SETTINGS) {
+            try {
+                registerSetup(s);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            registerSetup(Messages.getInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        registerCommandHandler(CommandHandler.class);
+        registerCommandHandler(MiningCommandHandler.class);
+        registerCommandHandler(HerbalismCommandHandler.class);
+        registerCommandHandler(AlchemyCommandHandler.class);
+
         registerSetup(ProfessionManager.getInstance());
     }
 
-    private void setupFiles() {
+    private void registerCommandHandler(Class<? extends AbstractCommandHandler> commandHandler) {
+        registerSetup(CommandHandler.getInstance(commandHandler));
+    }
+
+    private void setupFiles() throws IllegalArgumentException {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
@@ -505,6 +550,12 @@ public final class Professions extends JavaPlugin implements ISetup {
                 e.printStackTrace();
             }
         }
+
+        saveResource(LANG_PATH.concat("patterns.properties"), true);
+
+        saveResource(LANG_PATH.concat("lang_cs.yml"), false);
+        saveResource(LANG_PATH.concat("lang_cs_D.yml"), false);
+        saveResource(LANG_PATH.concat("lang_en.yml"), false);
 
         saveDefaultConfig();
         reloadConfig();
@@ -577,5 +628,53 @@ public final class Professions extends JavaPlugin implements ISetup {
         });
          */
         //IDynamicTexture texture;
+    }
+
+    /**
+     * Overriden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-16 formatting.
+     *
+     * @param resourcePath
+     * @param replace
+     */
+    @Override
+    public void saveResource(String resourcePath, boolean replace) {
+        if (resourcePath != null && !resourcePath.equals("")) {
+            resourcePath = resourcePath.replace('\\', '/');
+            Reader in = this.getTextResource(resourcePath);
+            if (in == null) {
+                throw new IllegalArgumentException("The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
+            } else {
+                File outFile = new File(this.getDataFolder(), resourcePath);
+                int lastIndex = resourcePath.lastIndexOf(47);
+                File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
+                if (!outDir.exists()) {
+                    outDir.mkdirs();
+                }
+
+                try {
+                    if (!outFile.exists() || replace) {
+
+                        // NOPES: UTF-16, ISO, UTF-16BE
+                        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_16);
+                        char[] buf = new char[1024];
+
+                        int len;
+
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+
+                        out.close();
+                        in.close();
+                    }
+                } catch (IOException var10) {
+                    var10.printStackTrace();
+                    log("Could not save " + outFile.getName() + " to " + outFile);
+                }
+
+            }
+        } else {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
     }
 }

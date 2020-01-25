@@ -1,11 +1,13 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
+import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
 import git.doomshade.professions.profession.types.enchanting.Enchant;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
 import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
@@ -15,6 +17,7 @@ import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -245,9 +248,6 @@ public class ProfessionListener extends AbstractProfessionListener {
             Herb herb = Herb.getHerb(block.getType(), location);
 
             final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
-            if (herbLocationOptions.isSpawned()) {
-                return;
-            }
             herbLocationOptions.removeParticles();
             final ArrayList<SpawnPoint> spawnPoints = herb.getSpawnPoints();
             String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
@@ -287,7 +287,7 @@ public class ProfessionListener extends AbstractProfessionListener {
 
         if (ENCHANTS.containsKey(hrac.getUniqueId())) {
             Enchant enchant = ENCHANTS.remove(hrac.getUniqueId());
-            ProfessionEvent<EnchantedItemType> event = callEvent(hrac, enchant, EnchantedItemType.class,
+            ProfessionEvent<EnchantedItemItemType> event = callEvent(hrac, enchant, EnchantedItemItemType.class,
                     new PreEnchantedItem(enchant, mh));
             if (event != null && !event.isCancelled()) {
                 // don't delete the item!
@@ -295,7 +295,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        for (EnchantedItemType enchItemType : Professions.getProfessionManager().getItemTypeHolder(EnchantedItemType.class)
+        for (EnchantedItemItemType enchItemType : Professions.getProfessionManager().getItemTypeHolder(EnchantedItemItemType.class)
                 .getRegisteredItemTypes()) {
             Enchant eit = enchItemType.getObject();
             if (eit != null && areSimilar(eit.getItem(), mh)) {
@@ -305,24 +305,30 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onPotionDrink(PlayerItemConsumeEvent e) {
         Potion potion = Potion.getItem(e.getItem());
         if (potion != null) {
-            potion.apply(e.getPlayer());
-            e.getPlayer().getInventory().remove(e.getItem());
+
+            final User user = User.getUser(e.getPlayer());
+            if (!user.isActivePotion(potion)) {
+                user.applyPotion(potion);
+            } else {
+                user.sendMessage(new Messages.MessageBuilder(Messages.Message.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(new PotionItemType(potion, 50)).build());
+                e.setCancelled(true);
+            }
         }
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
-        Potion.cache(e.getPlayer());
+        //Potion.cache(e.getPlayer());
 
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        Potion.loadFromCache(e.getPlayer());
+        //Potion.loadFromCache(e.getPlayer());
     }
 
     @Override

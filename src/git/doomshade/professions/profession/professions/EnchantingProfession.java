@@ -4,7 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
 import git.doomshade.professions.user.User;
@@ -14,7 +14,7 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
 
     @Override
     public void onLoad() {
-        addItems(EnchantedItemType.class);
+        addItems(EnchantedItemItemType.class);
 
     }
 
@@ -27,11 +27,11 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
     @EventHandler
     public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> event) {
 
-        if (!isValidEvent(event, EnchantedItemType.class)) {
+        if (!isValidEvent(event, EnchantedItemItemType.class)) {
             return;
         }
 
-        ProfessionEvent<EnchantedItemType> e = getEvent(event, EnchantedItemType.class);
+        ProfessionEvent<EnchantedItemItemType> e = getEvent(event, EnchantedItemItemType.class);
 
         User user = e.getPlayer();
         if (!playerMeetsLevelRequirements(e)) {

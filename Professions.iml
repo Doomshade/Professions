@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="minecraft" name="Minecraft">
+      <configuration>
+        <autoDetectTypes>
+          <platformType>SPIGOT</platformType>
+        </autoDetectTypes>
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/configs" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/lang" type="java-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="spigot-1.9.2" level="application" />
-    <orderEntry type="library" name="GUIApi" level="project" />
-    <orderEntry type="library" name="citizens-2.0.17-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="ProtocolLib" level="project" />
-    <orderEntry type="library" name="Vault" level="project" />
-    <orderEntry type="library" name="SkillAPI" level="project" />
-    <orderEntry type="library" name="PermissionsEx-1.23.3" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -24,6 +28,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Sinister_LoreAttributes" level="project" />
+    <orderEntry type="library" name="Project Libraries" level="project" />
   </component>
 </module>

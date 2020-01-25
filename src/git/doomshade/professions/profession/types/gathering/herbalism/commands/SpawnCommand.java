@@ -7,16 +7,13 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpawnCommand extends AbstractCommand {
 
     public SpawnCommand() {
-        setArg(true, Arrays.asList("herb", "spawnpoint id"));
+        setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
         setArg(false, Collections.singletonList("forcespawn (bypass respawn timer and configuration in itemtype, default: false)"));
         setCommand("spawn");
         setDescription("Spawns a herb");
@@ -31,26 +28,49 @@ public class SpawnCommand extends AbstractCommand {
             sender.sendMessage("Herb with ID " + args[1] + " does not exist.");
             return true;
         }
-        Location loc;
-        int spId;
+        Object spId;
         try {
             spId = Integer.parseInt(args[2]);
         } catch (NumberFormatException e) {
-            sender.sendMessage("Invalid number format.");
-            return true;
+            if (args[2].equalsIgnoreCase("all")) {
+                spId = "";
+            } else {
+                sender.sendMessage("Invalid number format.");
+                return true;
+            }
         }
+        Location loc = null;
         try {
-            loc = herb.getSpawnPoints().get(spId).location;
+            if (spId instanceof Integer)
+                loc = herb.getSpawnPoints().get((Integer) spId).location;
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
             return true;
         }
 
-        HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(loc);
-        if (args.length >= 4 && Boolean.parseBoolean(args[3])) {
-            herbLocationOptions.forceSpawn();
+        if (loc == null) {
+            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getHerbLocationOptions().entrySet()) {
+                final HerbLocationOptions hlo = entry.getValue();
+                Location hloLoc = hlo.location;
+                String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
+                try {
+                    hlo.spawn();
+                    sender.sendMessage("Successfully spawned herb at " + locName + ".");
+                } catch (Exception e) {
+                    sender.sendMessage("Could not spawn herb at " + locName + ". Check console for error stacktrace.");
+                    e.printStackTrace();
+                }
+            }
         } else {
-            herbLocationOptions.spawn();
+            String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+            try {
+                final HerbLocationOptions hlo = herb.getHerbLocationOptions(loc);
+                hlo.spawn();
+                sender.sendMessage("Successfully spawned herb at " + locName + ".");
+            } catch (Exception e) {
+                sender.sendMessage("Could not spawn herb at " + locName + ". Check console for error stacktrace.");
+                e.printStackTrace();
+            }
         }
         return true;
     }

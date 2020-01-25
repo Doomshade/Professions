@@ -1,7 +1,7 @@
 name: Professions
 main: git.doomshade.professions.Professions
 author: Doomshade
-version: 1.0
+version: 1.1
 description: Best plugin EU
 depend: [GUIApi, ProtocolLib]
 softdepend: [Citizens, Vault, PermissionsEx, SkillAPI, Sinister_LoreAttributes]
@@ -13,3 +13,5 @@ commands:
     description: mining cmd
   prof-herbalism:
     description: herbalism cmd
+  prof-alchemy:
+    description: alchemy cmd

@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types.gathering.herbalism;
 
+import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
@@ -34,7 +35,7 @@ public class Herb implements ConfigurationSerializable {
     private final ItemStack gatherItem;
     private final Material herbMaterial;
     private final String id;
-    final HashMap<Location, HerbLocationOptions> LOCATION_OPTIONS = new HashMap<>();
+    private final HashMap<Location, HerbLocationOptions> LOCATION_OPTIONS = new HashMap<>();
     private final ArrayList<SpawnPoint> spawnPoints;
     private final boolean enableSpawn;
     private final ParticleData particleData;
@@ -167,6 +168,10 @@ public class Herb implements ConfigurationSerializable {
             LOCATION_OPTIONS.put(location, new HerbLocationOptions(location, this));
         }
         return LOCATION_OPTIONS.get(location);
+    }
+
+    public ImmutableMap<Location, HerbLocationOptions> getHerbLocationOptions() {
+        return ImmutableMap.copyOf(LOCATION_OPTIONS);
     }
 
     public ItemStack getGatherItem() {

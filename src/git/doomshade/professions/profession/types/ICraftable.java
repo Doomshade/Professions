@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
@@ -26,7 +27,7 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
  * of {@link #serializeCraftable(ICraftable)} and return the map.
  *
  * @author Doomshade
- * @see git.doomshade.professions.profession.types.enchanting.EnchantedItemType on GitHub for an example
+ * @see EnchantedItemItemType on GitHub for an example
  */
 public interface ICraftable {
 

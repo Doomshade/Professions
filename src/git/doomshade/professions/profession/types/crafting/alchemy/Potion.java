@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types.crafting.alchemy;
 
+import com.google.common.collect.ImmutableSet;
 import com.sucy.skill.SkillAPI;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
@@ -14,13 +15,12 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -28,7 +28,7 @@ import static git.doomshade.professions.profession.types.crafting.alchemy.Potion
 
 public class Potion implements ConfigurationSerializable {
 
-    public static final String TEST_POTION_ID = "test_potion";
+    private static final String TEST_POTION_ID = "test_potion";
     public static final Potion EXAMPLE_POTION = new Potion(
             Arrays.asList("vyhybani", "poskozeni"),
             5,
@@ -37,7 +37,6 @@ public class Potion implements ConfigurationSerializable {
             ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
 
     private static final String NBT_KEY = "profession_potion";
-    static final HashMap<UUID, HashSet<PotionTask>> ACTIVE_POTIONS = new HashMap<>();
     private static final HashSet<Potion> POTIONS = new HashSet<>();
     private static final String SPLIT_CHAR = ":";
 
@@ -62,8 +61,9 @@ public class Potion implements ConfigurationSerializable {
         return new File(Professions.getInstance().getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
     }
 
+    @Deprecated
     public static void cache(Player player) {
-        HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.get(player.getUniqueId());
+        /*HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.get(player.getUniqueId());
         if (potionTasks == null || potionTasks.isEmpty()) {
             return;
         }
@@ -77,14 +77,14 @@ public class Potion implements ConfigurationSerializable {
             for (PotionTask task : potionTasks) {
                 oos.writeObject(task);
             }
-            oos.flush();
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
+    @Deprecated
     public static void loadFromCache(Player player) {
-        File file = getFile(player);
+        /*File file = getFile(player);
         if (!file.exists()) {
             return;
         }
@@ -98,61 +98,22 @@ public class Potion implements ConfigurationSerializable {
             e.printStackTrace();
         } finally {
             ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
-        }
+        }*/
     }
 
-    private void addAttributes(Player player, boolean negate) {
-        final ItemMeta itemMeta = potion.getItemMeta();
-        if (itemMeta instanceof PotionMeta) {
-            ((PotionMeta) itemMeta).getCustomEffects().forEach(x -> x.apply(player));
-            for (String s : potionEffects) {
-                try {
-                    String[] split = s.split(SPLIT_CHAR);
-                    String attribute = split[0];
-                    int amount = Integer.parseInt(split[1]);
-                    if (negate) {
-                        amount = -amount;
-                    }
-
-                    git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
-
-                    if (laAttribute != null) {
-                        git.doomshade.loreattributes.user.User.getUser(player).addAttribute(laAttribute, amount);
-                        return;
-                    }
-
-                    com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);
-                    if (sapiAttribute != null) {
-                        SkillAPI.getPlayerData(player).addBonusAttributes(attribute, amount);
-                    }
-
-                } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
-                    Professions.log(String.format("Incorrect format of potion effect for potion id %s. Found %s, expected %s", potionId, s, "attribute" + SPLIT_CHAR + "amount"), Level.WARNING);
-                }
-            }
-        }
+    public static ImmutableSet<Potion> getPotions() {
+        return ImmutableSet.copyOf(POTIONS);
     }
 
-    public void unApply(Player player) {
-        try {
-            addAttributes(player, true);
-            HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.getOrDefault(player.getUniqueId(), new HashSet<>());
-
-            // it's ok to make a new task as it has the same hash code
-            PotionTask potionTask = new PotionTask(this, player);
-            potionTasks.remove(potionTask);
-            ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Retrieves an instance from memory of the potion if it exists.
+     *
+     * @param potion the item stack to check for
+     * @return a potion if the item is valid, {@code null} otherwise
+     */
     @Nullable
     public static Potion getItem(ItemStack potion) {
-        if (potion == null) {
-            return null;
-        }
-        if (potion.getType() != Material.POTION) {
+        if (potion == null || potion.getType() != Material.POTION) {
             return null;
         }
         net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(potion);
@@ -167,9 +128,39 @@ public class Potion implements ConfigurationSerializable {
         try {
             return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
         } catch (Utils.SearchNotFoundException e) {
-            System.out.println(POTIONS);
+            Professions.log(POTIONS);
             throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
         }
+    }
+
+    void addAttributes(Player player, boolean negate) {
+        final PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
+        itemMeta.getCustomEffects().forEach(x -> x.getType().createEffect(duration, 0).apply(player));
+        for (String s : potionEffects) {
+            try {
+                String[] split = s.split(SPLIT_CHAR);
+                String attribute = split[0];
+                int amount = Integer.parseInt(split[1]);
+                if (negate) {
+                    amount = -amount;
+                }
+
+                git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
+
+                if (laAttribute != null) {
+                    git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
+                } else {
+                    com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);
+                    if (sapiAttribute != null) {
+                        SkillAPI.getPlayerData(player).addBonusAttributes(attribute, amount);
+                    }
+                }
+
+            } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                Professions.log(String.format("Incorrect format of potion effect for potion id %s. Found %s, expected %s", potionId, s, "attribute" + SPLIT_CHAR + "amount"), Level.WARNING);
+            }
+        }
+
     }
 
     public int getDuration() {
@@ -190,23 +181,6 @@ public class Potion implements ConfigurationSerializable {
         MemorySection mem = (MemorySection) map.get(POTION.s);
         ItemStack potion = ItemStack.deserialize(mem.getValues(false));
         return new Potion(potionEffects, duration, potionId, potionType, potion);
-    }
-
-    public void apply(Player player) {
-        try {
-            addAttributes(player, false);
-            HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.getOrDefault(player.getUniqueId(), new HashSet<>());
-            PotionTask potionTask = new PotionTask(this, player);
-
-            // makes sure the task is not already running
-            if (potionTasks.add(potionTask)) {
-                potionTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
-                ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     ItemStack getItem() {
@@ -243,15 +217,30 @@ public class Potion implements ConfigurationSerializable {
         if (item.getType() != Material.POTION || !item.hasItemMeta()) {
             return Optional.empty();
         }
-        final ItemStack clone = item.clone();
+        ItemStack clone = item.clone();
         PotionMeta meta = (PotionMeta) clone.getItemMeta();
         meta.setBasePotionData(new PotionData(potionType));
+        clone.setItemMeta(meta);
         net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(clone);
         NBTTagCompound nbt = nms.hasTag() ? nms.getTag() : new NBTTagCompound();
         nbt.set(NBT_KEY, new NBTTagString(potionId));
         nms.setTag(nbt);
-        clone.setItemMeta(meta);
-        return Optional.of(clone);
+        return Optional.of(CraftItemStack.asBukkitCopy(nms));
+    }
+
+    @Override
+    public String toString() {
+        return "Potion{" +
+                "potionEffects=" + potionEffects +
+                ", duration=" + duration +
+                ", potionId='" + potionId + '\'' +
+                ", potionType=" + potionType +
+                ", potion=" + potion +
+                '}';
+    }
+
+    public String getPotionId() {
+        return potionId;
     }
 
     enum PotionEnum implements FileEnum {
@@ -285,7 +274,5 @@ public class Potion implements ConfigurationSerializable {
                 }
             };
         }
-
-
     }
 }

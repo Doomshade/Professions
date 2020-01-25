@@ -13,7 +13,7 @@ import git.doomshade.professions.profession.types.crafting.ICrafting;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
 import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
 import git.doomshade.professions.profession.types.enchanting.EnchantManager;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemType;
+import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
 import git.doomshade.professions.profession.types.enchanting.enchants.RandomAttributeEnchant;
 import git.doomshade.professions.profession.types.gathering.IGathering;
@@ -251,9 +251,9 @@ public final class ProfessionManager implements ISetup {
                 return herb;
             }
         });
-        registerItemTypeHolder(new ItemTypeHolder<EnchantedItemType>() {
+        registerItemTypeHolder(new ItemTypeHolder<EnchantedItemItemType>() {
             @Override
-            public EnchantedItemType getItemType() {
+            public EnchantedItemItemType getItemType() {
                 EnchantManager enchm = EnchantManager.getInstance();
                 try {
                     enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
@@ -261,7 +261,7 @@ public final class ProfessionManager implements ISetup {
                     e.printStackTrace();
                 }
                 RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
-                EnchantedItemType eit = new EnchantedItemType(ench, 69);
+                EnchantedItemItemType eit = new EnchantedItemItemType(ench, 69);
                 ItemStack craftRequirement = new ItemStack(Material.GLASS);
                 ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
                 craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");

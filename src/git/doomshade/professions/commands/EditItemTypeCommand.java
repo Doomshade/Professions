@@ -180,7 +180,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                                     return true;
                                 }
                                 setValue = "your current location";
-                                loader.set(path, ((Player) sender).getLocation().serialize());
+                                loader.set(path, ((Player) sender).getLocation().getBlock().getLocation().serialize());
                                 break;
                             default:
                                 loader.set(path, value);
@@ -207,7 +207,7 @@ public class EditItemTypeCommand extends AbstractCommand {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            sender.sendMessage("Unexpected error occured. Check console for further logs.");
+            sender.sendMessage("Unexpected error occurred. Check console for further logs.");
         }
         return true;
     }

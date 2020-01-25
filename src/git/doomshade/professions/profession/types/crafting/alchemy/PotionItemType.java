@@ -124,15 +124,14 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
     @Override
     public void onDisable() {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            Potion.cache(p);
+            //Potion.cache(p);
         }
-        Potion.ACTIVE_POTIONS.clear();
     }
 
     @Override
     public void onReload() {
         for (Player p : Bukkit.getOnlinePlayers()) {
-            Potion.loadFromCache(p);
+            //Potion.loadFromCache(p);
         }
     }
 }

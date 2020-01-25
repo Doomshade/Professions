@@ -51,7 +51,7 @@ public class HerbItemType extends ItemType<Herb> {
     @Override
     public void onDisable() {
         for (Herb herb : Herb.HERBS.values()) {
-            for (HerbLocationOptions sp : herb.LOCATION_OPTIONS.values()) {
+            for (HerbLocationOptions sp : herb.getHerbLocationOptions().values()) {
                 sp.despawn();
             }
         }

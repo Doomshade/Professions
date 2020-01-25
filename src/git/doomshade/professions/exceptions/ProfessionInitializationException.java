@@ -52,6 +52,6 @@ public class ProfessionInitializationException extends Exception {
      * @param additionalMessage the additional message to add at the end of exception
      */
     public ProfessionInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id, String additionalMessage) {
-        super("Could not fully deserialize " + clazz.getSimpleName() + (id != NO_ID ? " with id " + id : "") + " as some of the keys are missing! - " + keys + ". " + additionalMessage);
+        super("Could not fully deserialize " + clazz.getSimpleName().replace("itemtype", "") + (id != NO_ID ? " with id " + id : "") + " as some of the keys are missing! - " + keys + ". " + additionalMessage);
     }
 }

@@ -17,7 +17,7 @@ import java.util.Arrays;
  */
 public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecificSettings implements Cloneable {
     private static final String SECTION = "defaults", NAME = "name", ICON = "icon", TYPE = "type";
-    private String name = "Profession name";
+    private String name;
     private ItemStack icon = ItemUtils.itemStackBuilder(Material.CHEST).withLore(Arrays.asList("The", "Lore")).withDisplayName("&aThe display name").build();
     private Profession.ProfessionType professionType = Profession.ProfessionType.PRIMARY;
 
@@ -28,6 +28,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
      */
     ProfessionSpecificDefaultsSettings(Profession<?> profession) {
         super(profession);
+        this.name = profession.getClass().getSimpleName().replace("profession", "");
     }
 
     @Override

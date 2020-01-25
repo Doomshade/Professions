@@ -1,8 +1,11 @@
 package git.doomshade.professions.profession.types.crafting.alchemy;
 
+import git.doomshade.professions.Professions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -15,7 +18,7 @@ public class PotionTask extends BukkitRunnable implements Serializable {
     final transient Player player;
     int duration;
 
-    PotionTask(Potion potion, Player player) {
+    public PotionTask(Potion potion, Player player) {
         this(potion, player, potion.getDuration());
     }
 
@@ -34,13 +37,9 @@ public class PotionTask extends BukkitRunnable implements Serializable {
 
     @Override
     public void run() {
-
-        if (duration <= 0) {
-            potion.unApply(player);
+        if (--duration <= 0) {
             cancel();
-            return;
         }
-        duration--;
     }
 
     @Override
@@ -55,5 +54,52 @@ public class PotionTask extends BukkitRunnable implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(potion, uuid);
+    }
+
+    public synchronized BukkitTask runTask() {
+        potion.addAttributes(player, false);
+        return super.runTaskLater(Professions.getInstance(), 20L);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+        return super.runTask(plugin);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTaskAsynchronously(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskAsynchronously(plugin);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskLater(plugin, delay);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskLaterAsynchronously(plugin, delay);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskTimer(plugin, delay, period);
+    }
+
+    @Deprecated
+    @Override
+    public synchronized BukkitTask runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskTimerAsynchronously(plugin, delay, period);
+    }
+
+    @Override
+    public synchronized void cancel() throws IllegalStateException {
+        potion.addAttributes(player, true);
+        super.cancel();
     }
 }

@@ -51,10 +51,10 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         this(false);
     }
 
-    Profession(boolean ignoreInitializationError) {
+    private Profession(boolean ignoreInitializationError) {
         ensureNotInitialized(ignoreInitializationError);
 
-        String fileName = getClass().getSimpleName().toLowerCase();
+        String fileName = getClass().getSimpleName().toLowerCase().replace("profession", "");
         this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
         if (!file.exists() && !fileName.isEmpty()) {
             try {

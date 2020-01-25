@@ -162,7 +162,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     private static <A extends ItemType<?>> File getFile(Class<A> clazz) {
-        return ItemUtils.getFile(clazz);
+        return ItemUtils.getItemTypeFile(clazz);
     }
 
     /**

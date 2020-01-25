@@ -6,6 +6,8 @@ import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
+import git.doomshade.professions.profession.types.crafting.alchemy.PotionTask;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -40,6 +42,7 @@ public final class User {
     private Map<Class<?>, UserProfessionData> professions;
     private Map<ProfessionType, Boolean> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
+    private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
 
     private User(Player player) throws IOException {
         this.player = player;
@@ -177,6 +180,7 @@ public final class User {
      * Unloads the player (used when player is logging off)
      */
     public void unloadUser() {
+        ACTIVE_POTIONS.forEach((x, y) -> y.cancel());
         USERS.remove(player.getUniqueId());
     }
 
@@ -397,6 +401,26 @@ public final class User {
      */
     public void setSuppressExpEvent(boolean suppressExpEvent) {
         this.suppressExpEvent = suppressExpEvent;
+    }
+
+    public void applyPotion(Potion potion) {
+        if (isActivePotion(potion)) {
+            return;
+        }
+        PotionTask potionTask = new PotionTask(potion, player);
+        potionTask.runTask();
+        ACTIVE_POTIONS.put(potion.getPotionId(), potionTask);
+    }
+
+    public boolean isActivePotion(Potion potion) {
+        return ACTIVE_POTIONS.containsKey(potion.getPotionId());
+    }
+
+    public void unApplyPotion(Potion potion) {
+        if (!isActivePotion(potion)) {
+            return;
+        }
+        ACTIVE_POTIONS.remove(potion.getPotionId()).cancel();
     }
 
     ConfigurationSection getProfessionsSection() {
