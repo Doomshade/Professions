@@ -7,6 +7,7 @@ import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.entity.EntityType;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -79,8 +80,8 @@ public class Prey extends ItemType<Mob> {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<PreyEnum, Object> getDefaultValues() {
+            return new EnumMap<PreyEnum, Object>(PreyEnum.class) {
                 {
                     put(ENTITY, EntityType.SKELETON.name());
                     put(CONFIG_NAME, "cfg-name");

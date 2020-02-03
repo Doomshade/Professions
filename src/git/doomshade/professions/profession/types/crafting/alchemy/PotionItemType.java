@@ -1,6 +1,6 @@
 package git.doomshade.professions.profession.types.crafting.alchemy;
 
-import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import com.sucy.skill.SkillAPI;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.IProfessionType;
@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PotionItemType extends ItemType<Potion> implements ICraftable {
     private double craftingTime = 0d;
@@ -46,19 +48,6 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
         final Optional<ItemStack> potionItem = potion.getPotionItem(potion.getItem());
         potionItem.ifPresent(this::setResult);
         return potion;
-    }
-
-    @Override
-    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
-        super.deserialize(map);
-        ICraftable.deserializeCraftable(map, this);
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = super.serialize();
-        map.putAll(ICraftable.serializeCraftable(this));
-        return map;
     }
 
     @Override
@@ -133,5 +122,33 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
         for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.loadFromCache(p);
         }
+    }
+
+    @Override
+    public void onLoad() {
+        final Pattern ATTRIBUTE_PATTERN = Pattern.compile("([\\w]+):([0-9]+)");
+        Potion.registerCustomPotionEffect((potionEffect, player, negated) -> {
+            Matcher m = ATTRIBUTE_PATTERN.matcher(potionEffect);
+            if (!m.find()) {
+                return;
+            }
+            String attribute = m.group(1);
+            int amount = Integer.parseInt(m.group(2));
+            if (negated) {
+                amount = -amount;
+            }
+
+            git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
+
+            if (laAttribute != null) {
+                git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
+            } else {
+                com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);
+                if (sapiAttribute != null) {
+                    SkillAPI.getPlayerData(player).addBonusAttributes(attribute, amount);
+                }
+            }
+
+        });
     }
 }

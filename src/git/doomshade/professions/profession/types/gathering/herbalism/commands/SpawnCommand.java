@@ -48,13 +48,24 @@ public class SpawnCommand extends AbstractCommand {
             return true;
         }
 
+        boolean force = false;
+
+        if (args.length >= 5) {
+            try {
+                force = Boolean.parseBoolean(args[4]);
+            } catch (Exception ignored) {
+            }
+        }
+
         if (loc == null) {
             for (Map.Entry<Location, HerbLocationOptions> entry : herb.getHerbLocationOptions().entrySet()) {
                 final HerbLocationOptions hlo = entry.getValue();
                 Location hloLoc = hlo.location;
                 String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
                 try {
-                    hlo.spawn();
+                    if (force) hlo.forceSpawn();
+                    else hlo.spawn();
+
                     sender.sendMessage("Successfully spawned herb at " + locName + ".");
                 } catch (Exception e) {
                     sender.sendMessage("Could not spawn herb at " + locName + ". Check console for error stacktrace.");
@@ -65,7 +76,8 @@ public class SpawnCommand extends AbstractCommand {
             String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             try {
                 final HerbLocationOptions hlo = herb.getHerbLocationOptions(loc);
-                hlo.spawn();
+                if (force) hlo.forceSpawn();
+                else hlo.spawn();
                 sender.sendMessage("Successfully spawned herb at " + locName + ".");
             } catch (Exception e) {
                 sender.sendMessage("Could not spawn herb at " + locName + ". Check console for error stacktrace.");

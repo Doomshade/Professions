@@ -1,11 +1,8 @@
 package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.Requirements;
-import git.doomshade.professions.utils.Strings;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
@@ -21,24 +18,31 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
 /**
  * Interface for craftable {@link ItemType}s. Implement this in a class extending {@link ItemType},
- * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeCraftable(Map, ICraftable)}
+ * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeCraftable(Map, ICustomType)}
  * with the map and {@code this} argument inside the {@link ItemType#deserialize(Map)} method.
  * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.}{@link ItemType#serialize()} {@link Map} variable with an argument
- * of {@link #serializeCraftable(ICraftable)} and return the map.
+ * of {@link #serializeCraftable(ICustomType)} and return the map.
  *
  * @author Doomshade
- * @see EnchantedItemItemType on GitHub for an example
+ * @see <a href="https://github.com/Doomshade/Professions/blob/test_branch/src/git/doomshade/professions/profession/types/enchanting/EnchantedItemItemType.java">Github</a> for an example
  */
-public interface ICraftable {
+public interface ICraftable extends ICustomType {
 
     /**
      * Make sure to override the {@link ItemType#serialize()} method and call and call {@link Map#putAll(Map)} of this map.
      *
-     * @param craftable the craftable item
+     * @param customType the craftable item
      * @return the serialized form of this class
      */
-    static Map<String, Object> serializeCraftable(ICraftable craftable) {
+    @SerializeMethod
+    static Map<String, Object> serializeCraftable(ICustomType customType) {
         Map<String, Object> map = new HashMap<>();
+
+        if (!(customType instanceof ICraftable)) {
+            return map;
+        }
+
+        ICraftable craftable = (ICraftable) customType;
         map.put(ITEM_REQUIREMENTS.s, craftable.getCraftingRequirements().serialize());
         map.put(RESULT.s, craftable.getResult().serialize());
         map.put(INVENTORY_REQUIREMENTS.s, craftable.getInventoryRequirements().serialize());
@@ -51,12 +55,17 @@ public interface ICraftable {
     /**
      * Make sure to override the {@link ItemType#deserialize(Map)} method and call this method.
      *
-     * @param map       the serialized version of this class
-     * @param craftable the craftable item
+     * @param map        the serialized version of this class
+     * @param customType the craftable item
      * @throws ProfessionInitializationException if the deserialization was unsuccessful
      */
-    static void deserializeCraftable(Map<String, Object> map, ICraftable craftable) throws ProfessionInitializationException {
+    @DeserializeMethod
+    static void deserializeCraftable(Map<String, Object> map, ICustomType customType) throws ProfessionInitializationException {
 
+        if (!(customType instanceof ICraftable)) {
+            return;
+        }
+        ICraftable craftable = (ICraftable) customType;
         craftable.setCraftingTime((double) map.getOrDefault(CRAFTING_TIME.s, 5d));
 
         craftable.setSounds(new HashMap<Sound, String>() {

@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.MaxProfessionsSettings;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
@@ -34,13 +36,12 @@ public final class User {
     private static final String KEY_NAME = "name";
     private static final String KEY_PROFESSIONS = "professions";
     private static final Map<UUID, User> USERS = new HashMap<>();
-    private static User noUser;
     private final Player player;
     private FileConfiguration loader;
     private File file;
     private ConfigurationSection profSection;
     private Map<Class<?>, UserProfessionData> professions;
-    private Map<ProfessionType, Boolean> usedProfessionTypes;
+    private Map<ProfessionType, Integer> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
     private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
 
@@ -58,12 +59,6 @@ public final class User {
         loadProfessions();
         this.setBypass(false);
         this.setSuppressExpEvent(false);
-    }
-
-    private User() {
-        this.player = null;
-        this.professions = new HashMap<>();
-        usedProfessionTypes = new HashMap<>();
     }
 
     /**
@@ -85,18 +80,6 @@ public final class User {
     public static void unloadUser(User user) throws IOException {
         user.save();
         user.unloadUser();
-    }
-
-    /**
-     * Used to get an instance of this class with no user
-     *
-     * @return no user
-     */
-    public static User getNoUser() {
-        if (noUser == null) {
-            noUser = new User();
-        }
-        return noUser;
     }
 
     /**
@@ -200,7 +183,7 @@ public final class User {
      * @return true if this user has already a profession of that type
      */
     private boolean hasProfessionType(ProfessionType type) {
-        return usedProfessionTypes.get(type);
+        return usedProfessionTypes.get(type) == Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
     /**
@@ -230,7 +213,8 @@ public final class User {
             return false;
         }
         professions.put(prof.getClass(), new UserProfessionData(this, prof));
-        usedProfessionTypes.put(prof.getProfessionType(), true);
+        final ProfessionType professionType = prof.getProfessionType();
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
         return true;
     }
 
@@ -245,7 +229,8 @@ public final class User {
             return false;
         }
         professions.remove(prof.getClass());
-        usedProfessionTypes.put(prof.getProfessionType(), false);
+        final ProfessionType professionType = prof.getProfessionType();
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) - 1);
         profSection.set(prof.getID(), null);
         return true;
     }
@@ -443,15 +428,20 @@ public final class User {
         });
         usedProfessionTypes = new HashMap<>();
         for (ProfessionType type : ProfessionType.values()) {
-            usedProfessionTypes.put(type, false);
+            usedProfessionTypes.put(type, 0);
         }
 
         for (UserProfessionData upd : professions.values()) {
-            usedProfessionTypes.put(upd.getProfession().getProfessionType(), true);
+            final ProfessionType professionType = upd.getProfession().getProfessionType();
+            usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
         }
 
-        if (professions.size() > 2) {
-            Professions.log(player.getName() + " has more than 2 professions! This should not happen!", Level.SEVERE);
+        final MaxProfessionsSettings settings = Settings.getSettings(MaxProfessionsSettings.class);
+        final int maxProfessions = settings.getMaxProfessions(ProfessionType.PRIMARY) + settings.getMaxProfessions(ProfessionType.SECONDARY);
+        if (professions.size() > maxProfessions) {
+            final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
+            Professions.log(message, Level.SEVERE);
+            Professions.log(message, Level.CONFIG);
         }
     }
 }

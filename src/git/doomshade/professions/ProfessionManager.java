@@ -3,7 +3,6 @@ package git.doomshade.professions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import git.doomshade.professions.profession.professions.*;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -229,7 +228,7 @@ public final class ProfessionManager implements ISetup {
 
             @Override
             public OreItemType getItemType() {
-                OreItemType ore = new OreItemType(new Ore(Material.OBSIDIAN, Maps.newTreeMap()), 100);
+                OreItemType ore = new OreItemType(Ore.EXAMPLE_ORE, 100);
                 ore.setName(ChatColor.GRAY + "Obsidian");
                 return ore;
             }

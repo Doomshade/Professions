@@ -1,11 +1,17 @@
 package git.doomshade.professions.profession.types.mining;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.profession.types.mining.spawn.OreLocationOptions;
+import git.doomshade.professions.profession.types.utils.LocationElement;
+import git.doomshade.professions.profession.types.utils.SpawnPoint;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.ParticleData;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
@@ -23,23 +29,30 @@ import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.*;
  *
  * @author Doomshade
  */
-public class Ore implements ConfigurationSerializable {
+public class Ore implements ConfigurationSerializable, LocationElement {
 
-
+    public static final HashMap<String, Ore> ORES = new HashMap<>();
+    private static final String EXAMPLE_ORE_ID = "example-ore";
+    public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, Maps.newTreeMap(), new ArrayList<>(), new ParticleData());
+    private final HashMap<Location, OreLocationOptions> LOCATION_OPTIONS = new HashMap<>();
     private Material oreMaterial;
     private TreeMap<Double, ItemStack> miningResults;
+    private final String id;
+    private ParticleData particleData;
+    private ArrayList<SpawnPoint> spawnPoints;
+    private String name;
 
-    /**
-     * Custom constructor
-     *
-     * @param oreMaterial
-     * @param miningResults
-     */
-    public Ore(Material oreMaterial, TreeMap<Double, ItemStack> miningResults) {
+    private Ore(String id, String name, Material oreMaterial, TreeMap<Double, ItemStack> miningResults, ArrayList<SpawnPoint> spawnPoints, ParticleData particleData) {
+        this.id = id;
+        this.name = name;
         this.oreMaterial = oreMaterial;
         this.miningResults = new TreeMap<>(Comparator.naturalOrder());
         this.miningResults.putAll(miningResults);
+        this.spawnPoints = spawnPoints;
+        this.particleData = particleData;
 
+        if (!id.equals(EXAMPLE_ORE_ID))
+            ORES.put(id, this);
     }
 
     /**
@@ -77,7 +90,8 @@ public class Ore implements ConfigurationSerializable {
         }
 
 
-        return new Ore(mat, miningResults);
+        // TODO
+        return null;
     }
 
     @Override
@@ -106,15 +120,6 @@ public class Ore implements ConfigurationSerializable {
     }
 
     /**
-     * Sets the ore material
-     *
-     * @param oreMaterial the material
-     */
-    public void setOreMaterial(Material oreMaterial) {
-        this.oreMaterial = oreMaterial;
-    }
-
-    /**
      * @return the mining result
      */
     @Nullable
@@ -130,17 +135,40 @@ public class Ore implements ConfigurationSerializable {
         return null;
     }
 
-    /**
-     * Sets the mining result
-     *
-     * @param miningResult the ItemStack
-     */
-    public void setMiningResult(TreeMap<Double, ItemStack> miningResult) {
-        this.miningResults = miningResult;
+    @Override
+    public ParticleData getParticleData() {
+        return particleData;
     }
 
-    public TreeMap<Double, ItemStack> getMiningResults() {
-        return miningResults;
+    @Override
+    public Material getMaterial() {
+        return oreMaterial;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public ArrayList<SpawnPoint> getSpawnPoints() {
+        return spawnPoints;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    public OreLocationOptions getLocationOptions(Location location) {
+        if (!LOCATION_OPTIONS.containsKey(location)) {
+            LOCATION_OPTIONS.put(location, new OreLocationOptions(location, this));
+        }
+        return LOCATION_OPTIONS.get(location);
+    }
+
+    public ImmutableMap<Location, OreLocationOptions> getOreLocationOptions() {
+        return ImmutableMap.copyOf(LOCATION_OPTIONS);
     }
 
     /**
@@ -156,8 +184,8 @@ public class Ore implements ConfigurationSerializable {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<OreEnum, Object> getDefaultValues() {
+            return new EnumMap<OreEnum, Object>(OreEnum.class) {
                 {
                     put(KEY_MATERIAL, Material.GLASS);
                     TreeMap<Double, ItemStack> map = new TreeMap<>(Comparator.naturalOrder());

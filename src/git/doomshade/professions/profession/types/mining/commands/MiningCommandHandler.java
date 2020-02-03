@@ -17,7 +17,9 @@ public class MiningCommandHandler extends AbstractCommandHandler {
 
     @Override
     public void registerCommands() {
-        registerCommand(new EditCommand());
+        registerCommand(new AddCommand());
+        registerCommand(new SetCommand());
+        registerCommand(new RemoveCommand());
         registerCommand(new ReloadCommand());
     }
 }

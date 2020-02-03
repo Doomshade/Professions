@@ -30,7 +30,7 @@ public class PlayerProfessionsGUI extends GUI {
             builder = builder.withItem(item);
         }
         setInventory(builder.build());
-        setNextGui(ProfessionGUI.class, Professions.getManager());
+        setNextGui(ProfessionGUI.class, Professions.getGUIManager());
     }
 
     @Override
@@ -43,7 +43,7 @@ public class PlayerProfessionsGUI extends GUI {
         }
         GUI gui = getNextGui();
         gui.getContext().addContext(ID_PROFESSION, Professions.getProfession(currentItem));
-        Professions.getManager().openGui(gui);
+        Professions.getGUIManager().openGui(gui);
     }
 
 }

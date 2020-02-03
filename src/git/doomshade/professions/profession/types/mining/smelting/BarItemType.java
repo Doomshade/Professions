@@ -1,6 +1,5 @@
 package git.doomshade.professions.profession.types.mining.smelting;
 
-import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.IProfessionType;
@@ -27,19 +26,6 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
 
     public BarItemType(ItemStack object, int exp) {
         super(object, exp);
-    }
-
-    @Override
-    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
-        super.deserialize(map);
-        ICraftable.deserializeCraftable(map, this);
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = super.serialize();
-        map.putAll(ICraftable.serializeCraftable(this));
-        return map;
     }
 
     @Override

@@ -33,7 +33,7 @@ public class ProfessionGUI extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
-        this.prof = (Profession<?>) getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION);
+        this.prof = getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION);
         Builder builder = getInventoryBuilder().size(9).title(prof.getColoredName());
 
         int pos = 0;
@@ -63,7 +63,7 @@ public class ProfessionGUI extends GUI {
             }
         }
         setInventory(builder.build());
-        setNextGui(TestThreeGui.class, Professions.getManager());
+        setNextGui(TestThreeGui.class, Professions.getGUIManager());
 
     }
 

@@ -2,11 +2,15 @@ package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.commands.CommandHandler;
+import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -143,6 +147,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         Iterator<String> it = itemsSection.getKeys(false).iterator();
         int i;
         final Class<? extends ItemType> clazz = itemType.getClass();
+        boolean successInit = true;
         while (it.hasNext()) {
             i = Integer.parseInt(it.next());
 
@@ -151,6 +156,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
                 deserializedItemType = (Type) ItemType.deserialize(clazz, i);
             } catch (ProfessionInitializationException e) {
                 Professions.log(e.getMessage(), Level.WARNING);
+                successInit = false;
                 continue;
             }
             if (deserializedItemType != null) {
@@ -159,6 +165,15 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
                 } else {
                     itemTypes.add(deserializedItemType);
                 }
+            }
+        }
+
+        if (!successInit) {
+            try {
+                final CommandHandler instance = CommandHandler.getInstance(CommandHandler.class);
+                if (instance != null)
+                    Professions.log("Could not deserialize all item types. Usage of " + instance.infoMessage(Utils.findInIterable(instance.getCommands(), x -> x.getClass().equals(GenerateDefaultsCommand.class))) + ChatColor.RESET + " is advised.");
+            } catch (Utils.SearchNotFoundException ignored) {
             }
         }
 

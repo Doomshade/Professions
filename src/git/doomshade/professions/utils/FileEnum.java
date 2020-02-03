@@ -1,8 +1,8 @@
 package git.doomshade.professions.utils;
 
-import java.util.Map;
+import java.util.EnumMap;
 
 public interface FileEnum {
 
-    Map<Enum, Object> getDefaultValues();
+    EnumMap<?, Object> getDefaultValues();
 }

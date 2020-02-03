@@ -29,6 +29,9 @@ items:
 
 ## default profession options
 profession:
+  max-professions:
+    primary: 1
+    secondary: 1
   defaults:
     ## the sorting order of items in GUI
     ## you may use: level-req, exp, name

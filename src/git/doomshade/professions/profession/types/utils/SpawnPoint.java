@@ -1,6 +1,7 @@
-package git.doomshade.professions.profession.types.gathering.herbalism;
+package git.doomshade.professions.profession.types.utils;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Range;
@@ -11,14 +12,14 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.*;
 
-import static git.doomshade.professions.profession.types.gathering.herbalism.SpawnPoint.SpawnPointEnum.*;
+import static git.doomshade.professions.profession.types.utils.SpawnPoint.SpawnPointEnum.*;
 
 public class SpawnPoint implements ConfigurationSerializable {
     public static final HashSet<SpawnPoint> SPAWN_POINTS = new HashSet<>();
     public final Location location;
-    public final Range respawnTime;
+    final Range respawnTime;
 
-    SpawnPoint(Location location, Range respawnTime) {
+    private SpawnPoint(Location location, Range respawnTime) {
         this.location = location;
         this.respawnTime = respawnTime;
         if (respawnTime.getMin() != -1)
@@ -29,7 +30,7 @@ public class SpawnPoint implements ConfigurationSerializable {
         this(location, new Range(-1));
     }
 
-    static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeysEnum);
@@ -87,8 +88,8 @@ public class SpawnPoint implements ConfigurationSerializable {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<SpawnPointEnum, Object> getDefaultValues() {
+            return new EnumMap<SpawnPointEnum, Object>(SpawnPointEnum.class) {
                 {
                     put(LOCATION, ItemUtils.EXAMPLE_LOCATION.serialize());
                     put(RESPAWN_TIME, 60);

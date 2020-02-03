@@ -1,6 +1,9 @@
 ## default lang
 lang: cz_CS
 
+## edit item material for stuff such as ore editing
+edit-item: GOLD_NUGGET
+
 ## default XP curve
 xp-curve:
   ## the formula is x*lvl^2 + y*lvl + z
@@ -29,6 +32,9 @@ items:
 
 ## default profession options
 profession:
+  max-professions:
+    primary: 1
+    secondary: 1
   defaults:
     ## the sorting order of items in GUI
     ## you may use: level-req, exp, name

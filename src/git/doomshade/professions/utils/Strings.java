@@ -4,8 +4,7 @@ import org.bukkit.Material;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.EnumMap;
 
 /**
  * A class of {@code public static final} {@link String}s divided into enums for queries.
@@ -27,8 +26,8 @@ public final class Strings {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ITrainableEnum, Object> getDefaultValues() {
+            return new EnumMap<ITrainableEnum, Object>(ITrainableEnum.class) {
                 {
                     put(TRAINABLE, true);
                     put(COST, 0);
@@ -63,8 +62,8 @@ public final class Strings {
 
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ICraftableEnum, Object> getDefaultValues() {
+            return new EnumMap<ICraftableEnum, Object>(ICraftableEnum.class) {
                 {
                     put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
@@ -105,8 +104,8 @@ public final class Strings {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ItemTypeEnum, Object> getDefaultValues() {
+            return new EnumMap<ItemTypeEnum, Object>(ItemTypeEnum.class) {
                 {
                     put(LEVEL_REQ, 0);
                     put(PROFTYPE, "crafting");

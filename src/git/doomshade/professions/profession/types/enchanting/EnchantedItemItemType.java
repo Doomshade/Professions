@@ -1,11 +1,11 @@
 package git.doomshade.professions.profession.types.enchanting;
 
-import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.GetSetWrapper;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -79,6 +79,11 @@ public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainab
     }
 
     @Override
+    public GetSetWrapper<String> getTrainabulId() {
+        return new GetSetWrapper<>("");
+    }
+
+    @Override
     public String getTrainableId() {
         if (trainableStringId == null) {
             if (getObject() == null) {
@@ -117,22 +122,6 @@ public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainab
     @Override
     public void setTrainableId(String trainableStringId) {
         this.trainableStringId = trainableStringId;
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = super.serialize();
-        map.putAll(ITrainable.serializeTrainable(this));
-        map.putAll(ICraftable.serializeCraftable(this));
-        return map;
-    }
-
-
-    @Override
-    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
-        super.deserialize(map);
-        ITrainable.deserializeTrainable(map, this);
-        ICraftable.deserializeCraftable(map, this);
     }
 
     @Override

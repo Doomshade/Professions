@@ -9,6 +9,11 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.io.Serializable;
 import java.util.logging.Level;
 
+/**
+ * Plugin specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
+ *
+ * @author Doomshade
+ */
 public abstract class AbstractSettings implements ISetup, Serializable {
     private transient static final Level LEVEL = Level.WARNING;
     protected transient static FileConfiguration config;

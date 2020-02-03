@@ -3,6 +3,8 @@ package git.doomshade.professions.profession.types.gathering.herbalism;
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.profession.types.utils.MarkableLocationElement;
+import git.doomshade.professions.profession.types.utils.SpawnPoint;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
@@ -26,7 +28,7 @@ import static git.doomshade.professions.profession.types.gathering.herbalism.Her
  *
  * @author Doomshade
  */
-public class Herb implements ConfigurationSerializable {
+public class Herb implements MarkableLocationElement, ConfigurationSerializable {
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
@@ -36,9 +38,12 @@ public class Herb implements ConfigurationSerializable {
     private final Material herbMaterial;
     private final String id;
     private final HashMap<Location, HerbLocationOptions> LOCATION_OPTIONS = new HashMap<>();
-    private final ArrayList<SpawnPoint> spawnPoints;
+    final ArrayList<SpawnPoint> spawnPoints;
     private final boolean enableSpawn;
     private final ParticleData particleData;
+
+    // TODO: 26.01.2020 make implementation of custom marker icons
+    private final String markerIcon;
 
     private Herb(String id, ItemStack gatherItem, Material herbMaterial, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData) {
         this.id = id;
@@ -47,12 +52,13 @@ public class Herb implements ConfigurationSerializable {
         this.spawnPoints = spawnPoints;
         this.enableSpawn = enableSpawn;
         this.particleData = particleData;
+        this.markerIcon = "flower";
         if (!id.equals(EXAMPLE_HERB_ID))
             HERBS.put(getId(), this);
     }
 
     public static Herb getHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return Utils.findInIterable(HERBS.values(), x -> x.getHerbMaterial() == herb && x.isSpawnPoint(location));
+        return Utils.findInIterable(HERBS.values(), x -> x.getMaterial() == herb && x.isSpawnPoint(location));
     }
 
     @Nullable
@@ -60,6 +66,7 @@ public class Herb implements ConfigurationSerializable {
         return HERBS.get(id);
     }
 
+    @SuppressWarnings("unused")
     public static boolean isHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
         return HERBS.containsValue(getHerb(herb, location));
     }
@@ -80,7 +87,10 @@ public class Herb implements ConfigurationSerializable {
         while ((spawnSection = ((MemorySection) map.get(SPAWN_POINT.s.concat("-" + i)))) != null) {
             SpawnPoint sp = SpawnPoint.deserialize(spawnSection.getValues(false));
             if (sp.location.clone().add(0, -1, 0).getBlock().getType() == Material.AIR) {
-                Professions.log(String.format("Spawn point %d of herb %s set to air. Make sure you have a block below the herb!", i, herbId), Level.INFO);
+                final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a block below the herb!", i, herbId);
+                Professions.log(message, Level.INFO);
+                Professions.log(message, Level.CONFIG);
+
             }
             spawnPoints.add(sp);
             i++;
@@ -89,6 +99,7 @@ public class Herb implements ConfigurationSerializable {
         return new Herb(herbId, gatherItem, herbMaterial, spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), ParticleData.deserialize(particleSection.getValues(true)));
     }
 
+    @SuppressWarnings("unused")
     public static Map<Herb, Location> getSpawnedHerbs(World world) {
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
@@ -106,6 +117,7 @@ public class Herb implements ConfigurationSerializable {
         }
     }
 
+    @SuppressWarnings("unused")
     public static void despawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
             entry.getKey().getHerbLocationOptions(entry.getValue()).despawn();
@@ -128,7 +140,7 @@ public class Herb implements ConfigurationSerializable {
         return spawnPoints.contains(new SpawnPoint(location));
     }
 
-    public boolean isSpawnEnabled() {
+    boolean isSpawnEnabled() {
         return enableSpawn;
     }
 
@@ -178,20 +190,29 @@ public class Herb implements ConfigurationSerializable {
         return gatherItem;
     }
 
-    public Material getHerbMaterial() {
+    @Override
+    public Material getMaterial() {
         return herbMaterial;
     }
 
+    @Override
     public ArrayList<SpawnPoint> getSpawnPoints() {
         return spawnPoints;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public ParticleData getParticleData() {
         return particleData;
+    }
+
+    @Override
+    public String getMarkerIcon() {
+        return markerIcon;
     }
 
     @Override
@@ -211,7 +232,7 @@ public class Herb implements ConfigurationSerializable {
      *
      * @return the name of this herb
      */
-    public String getName() {
+    public String getMarkerName() {
         final String material = gatherItem.getType().name();
         if (!gatherItem.hasItemMeta()) {
             return material;
@@ -238,8 +259,8 @@ public class Herb implements ConfigurationSerializable {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<HerbEnum, Object> getDefaultValues() {
+            return new EnumMap<HerbEnum, Object>(HerbEnum.class) {
                 {
                     ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
                     put(GATHER_ITEM, exampleResult.serialize());

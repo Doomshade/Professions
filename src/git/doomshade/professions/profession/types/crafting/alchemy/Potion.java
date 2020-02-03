@@ -1,7 +1,6 @@
 package git.doomshade.professions.profession.types.crafting.alchemy;
 
 import com.google.common.collect.ImmutableSet;
-import com.sucy.skill.SkillAPI;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
@@ -22,11 +21,12 @@ import org.bukkit.potion.PotionType;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
-import java.util.logging.Level;
 
 import static git.doomshade.professions.profession.types.crafting.alchemy.Potion.PotionEnum.*;
 
 public class Potion implements ConfigurationSerializable {
+
+    private static final HashSet<CustomPotionEffect> CUSTOM_POTION_EFFECTS = new HashSet<>();
 
     private static final String TEST_POTION_ID = "test_potion";
     public static final Potion EXAMPLE_POTION = new Potion(
@@ -133,38 +133,21 @@ public class Potion implements ConfigurationSerializable {
         }
     }
 
-    void addAttributes(Player player, boolean negate) {
-        final PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
-        itemMeta.getCustomEffects().forEach(x -> x.getType().createEffect(duration, 0).apply(player));
-        for (String s : potionEffects) {
-            try {
-                String[] split = s.split(SPLIT_CHAR);
-                String attribute = split[0];
-                int amount = Integer.parseInt(split[1]);
-                if (negate) {
-                    amount = -amount;
-                }
-
-                git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
-
-                if (laAttribute != null) {
-                    git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
-                } else {
-                    com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);
-                    if (sapiAttribute != null) {
-                        SkillAPI.getPlayerData(player).addBonusAttributes(attribute, amount);
-                    }
-                }
-
-            } catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
-                Professions.log(String.format("Incorrect format of potion effect for potion id %s. Found %s, expected %s", potionId, s, "attribute" + SPLIT_CHAR + "amount"), Level.WARNING);
-            }
-        }
-
+    public static void registerCustomPotionEffect(CustomPotionEffect effect) {
+        CUSTOM_POTION_EFFECTS.add(effect);
     }
 
-    public int getDuration() {
-        return duration;
+    void addAttributes(final Player player, final boolean negate) {
+        //final PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
+        //itemMeta.getCustomEffects().forEach(x -> x.getType().createEffect(duration, 0).apply(player));
+
+
+        potionEffects.forEach(x -> {
+            for (CustomPotionEffect potionEffect : CUSTOM_POTION_EFFECTS) {
+                potionEffect.apply(x, player, negate);
+            }
+        });
+
     }
 
     @SuppressWarnings("all")
@@ -243,6 +226,10 @@ public class Potion implements ConfigurationSerializable {
         return potionId;
     }
 
+    int getDuration() {
+        return duration;
+    }
+
     enum PotionEnum implements FileEnum {
         POTION_EFFECTS("potion-effects"), POTION_DURATION("duration"), POTION_FLAG("id"), POTION_TYPE("potion-type"), POTION("potion");
 
@@ -258,8 +245,8 @@ public class Potion implements ConfigurationSerializable {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<PotionEnum, Object> getDefaultValues() {
+            return new EnumMap<PotionEnum, Object>(PotionEnum.class) {
                 {
                     put(POTION_EFFECTS, Arrays.asList(
                             String.format("kriticky_utok%s10", SPLIT_CHAR),

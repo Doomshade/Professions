@@ -46,7 +46,7 @@ public class HerbalismProfession extends Profession<IGathering> {
                 if (addExp(e)) {
                     expMsg = Utils.getReceiveXp(e.getExp());
                 }
-                Professions.log(String.format("%s gathered %s on spawnpoint %s".concat(expMsg), e.getPlayer().getPlayer().getName(), herb.getName(), herbLocationOptions.location), Level.CONFIG);
+                Professions.log(String.format("%s gathered %s on spawnpoint %s".concat(expMsg), e.getPlayer().getPlayer().getName(), herb.getMarkerName(), herbLocationOptions.location), Level.CONFIG);
             }
         }
     }

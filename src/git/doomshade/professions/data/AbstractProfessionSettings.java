@@ -3,6 +3,13 @@ package git.doomshade.professions.data;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.io.Serializable;
+
+/**
+ * Profession specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
+ *
+ * @author Doomshade
+ */
 public abstract class AbstractProfessionSettings extends AbstractSettings {
     private transient static final String SECTION = "profession";
     private transient static ConfigurationSection section = config.getConfigurationSection(SECTION);

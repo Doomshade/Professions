@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -20,6 +21,7 @@ public final class Settings implements ISetup {
     private static Settings instance;
     private static FileConfiguration lang;
     private static File langFile;
+    private static Material editItem = Material.GOLD_NUGGET;
 
     static {
         plugin = Professions.getInstance();
@@ -37,6 +39,7 @@ public final class Settings implements ISetup {
         registerSettings(new SaveSettings());
         registerSettings(new TrainableSettings());
         registerSettings(new GUISettings());
+        registerSettings(new MaxProfessionsSettings());
     }
 
     private Settings() {
@@ -89,11 +92,18 @@ public final class Settings implements ISetup {
         return langFile;
     }
 
+    public static Material getEditItem() {
+        return editItem;
+    }
+
     @Override
     public void setup() throws IOException {
         plugin.reloadConfig();
 
         config = plugin.getConfig();
+
+        editItem = Material.getMaterial(config.getString("edit-item", "GOLD_NUGGET"));
+
         final File langFolder = plugin.getLangFolder();
         final String langString = config.getString("lang", DEFAULT_PROPERTIES);
         final File[] langs = langFolder.listFiles((dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null && name.startsWith(langString));
@@ -109,7 +119,6 @@ public final class Settings implements ISetup {
             lang = YamlConfiguration.loadConfiguration(langFile);
         } catch (Exception e) {
             throw new IOException("Could not load language settings!", e);
-
         }
     }
 }

@@ -67,7 +67,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 // "items: '1':"
                 ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
                 for (FileEnum en : missingKeys) {
-                    for (Map.Entry<Enum, Object> entry : en.getDefaultValues().entrySet()) {
+                    for (Map.Entry<?, Object> entry : en.getDefaultValues().entrySet()) {
                         if (!itemSection.isSet(entry.getKey().toString())) {
                             Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
                         }

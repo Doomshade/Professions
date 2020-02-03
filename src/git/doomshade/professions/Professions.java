@@ -7,6 +7,7 @@ import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
@@ -43,6 +44,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.dynmap.bukkit.DynmapPlugin;
 import org.fusesource.jansi.Ansi;
 
 import java.io.*;
@@ -105,8 +107,12 @@ public final class Professions extends JavaPlugin implements ISetup {
      *
      * @return the {@link GUIManager} instance
      */
-    public static GUIManager getManager() {
+    public static GUIManager getGUIManager() {
         return guiManager;
+    }
+
+    public static MarkerManager getMarkerManager() {
+        return MarkerManager.getInstance();
     }
 
     /**
@@ -344,6 +350,9 @@ public final class Professions extends JavaPlugin implements ISetup {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // Hook dynmap after setups as it uses config
+        hookDynmap();
         scheduleTasks();
 
         PluginManager pm = Bukkit.getPluginManager();
@@ -356,10 +365,8 @@ public final class Professions extends JavaPlugin implements ISetup {
                 itemType.onLoad();
             }
         }
-
-        test();
-        //Settings.getProfessionSettings(MiningProfession.class);
     }
+
 
     /**
      * @return the backup folder directory
@@ -382,26 +389,44 @@ public final class Professions extends JavaPlugin implements ISetup {
         return getFolder(ITEM_FOLDER);
     }
 
+    /**
+     * @return the {@link Profession} folder directory
+     */
     public File getProfessionFolder() {
         return getFolder(PROFESSION_FOLDER);
     }
 
+    /**
+     * @return the {@link User} cache folder directory
+     */
     public File getCacheFolder() {
         return getFolder(CACHE_FOLDER);
     }
 
+    /**
+     * @return the logs folder directory
+     */
     public File getLogsFolder() {
         return getFolder(LOGS_FOLDER);
     }
 
+    /**
+     * @return the filtered logs folder directory
+     */
     public File getFilteredLogsFolder() {
         return getFolder(FILTERED_LOGS_FOLDER);
     }
 
+    /**
+     * @return the lang folder directory
+     */
     public File getLangFolder() {
         return getFolder(LANG_FOLDER);
     }
 
+    /**
+     * @return the current log file
+     */
     public File getLogFile() {
         return LOG_FILE;
     }
@@ -436,6 +461,11 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
     }
 
+    /**
+     * Reloads the plugin
+     *
+     * @throws IOException if an error occurs
+     */
     public void reload() throws IOException {
 
         // Calls on pre reload on all item types
@@ -492,6 +522,12 @@ public final class Professions extends JavaPlugin implements ISetup {
         return task.getResult();
     }
 
+    /**
+     * Creates a folder if possible
+     *
+     * @param file the folder to create
+     * @return the same file
+     */
     private File getFolder(File file) {
         if (!file.isDirectory()) {
             file.mkdirs();
@@ -499,6 +535,9 @@ public final class Professions extends JavaPlugin implements ISetup {
         return file;
     }
 
+    /**
+     * Registers all setups
+     */
     private void registerSetups() {
         try {
             registerSetup(Settings.getInstance());
@@ -612,29 +651,26 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new SkillAPIListener(), this);
     }
 
+    private void hookDynmap() {
+        PluginManager pm = Bukkit.getPluginManager();
+        if (pm.getPlugin("dynmap") == null) {
+            return;
+        }
+
+        // sets the dynmap plugin to marker manager
+        MarkerManager.getInstance(DynmapPlugin.plugin);
+    }
+
     private void hookMessage(String plugin) {
         log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
     }
 
-    private void test() {
-        //ProtocolManager pm = ProtocolLibrary.getProtocolManager();
-        /*.addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.RESOURCE_PACK_SEND) {
-
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                if (event.getPacketType() == PacketType.Play.Server.RESOURCE_PACK_SEND) {
-                }
-            }
-        });
-         */
-        //IDynamicTexture texture;
-    }
 
     /**
-     * Overriden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-16 formatting.
+     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-16 formatting.
      *
-     * @param resourcePath
-     * @param replace
+     * @param resourcePath the path of file
+     * @param replace      whether or not to replace if the file already exists
      */
     @Override
     public void saveResource(String resourcePath, boolean replace) {

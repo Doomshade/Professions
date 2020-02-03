@@ -8,9 +8,7 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.Strings;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -23,6 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -107,12 +107,12 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Deserializes the ItemType. You may override this method in order to deserialize the {@link ITrainable} and {@link ICraftable} interfaces.
+     * Deserializes the ItemType including its potential implementations of {@link ICraftable} and {@link ITrainable}.
      *
      * @param map the serialization map
      * @throws ProfessionInitializationException when the deserialization is unsuccessful
      */
-    public void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
+    public final void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
 
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
@@ -141,6 +141,31 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId(), Level.WARNING);
         }
 
+        if (this instanceof ICustomType) {
+            if (this instanceof ITrainable)
+                invokeDeserialize(ITrainable.class, map);
+
+            if (this instanceof ICraftable)
+                invokeDeserialize(ICraftable.class, map);
+        }
+    }
+
+    private void invokeDeserialize(Class<? extends ICustomType> clazz, Map<String, Object> map) {
+        for (Method m : clazz.getDeclaredMethods()) {
+            final Parameter[] parameters = m.getParameters();
+            if (parameters.length > 1
+                    && m.isAnnotationPresent(DeserializeMethod.class)
+                    && parameters[0].getType().equals(Map.class)
+                    && parameters[1].getType().equals(ICustomType.class)) {
+                try {
+                    m.invoke(this, map, this);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException ex) {
+                    Professions.log(ex.getCause().getMessage(), Level.WARNING);
+                }
+            }
+        }
     }
 
     /**
@@ -279,7 +304,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @param upd the {@link git.doomshade.professions.user.User}'s {@link git.doomshade.professions.Profession} data to base the lore and {@link SkillupColor} around
      * @return the itemstack (icon) representation of this item type used in a GUI
      */
-    public ItemStack getIcon(UserProfessionData upd) {
+    public ItemStack getIcon(@Nullable UserProfessionData upd) {
         ItemStack icon = new ItemStack(getGuiMaterial());
         ItemMeta iconMeta = icon.getItemMeta();
         iconMeta.setDisplayName(getName());
@@ -337,7 +362,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @return serialized item type
      */
     @Override
-    public Map<String, Object> serialize() {
+    public final Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(OBJECT.s, getSerializedObject());
         map.put(EXP.s, exp);
@@ -349,7 +374,30 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
         map.put(HIDDEN.s, hiddenWhenUnavailable);
         map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
+        if (this instanceof ICustomType) {
+            if (this instanceof ITrainable)
+                map.putAll(invokeSerialize(ITrainable.class));
+            if (this instanceof ICraftable)
+                map.putAll(invokeSerialize(ICraftable.class));
+        }
         return map;
+    }
+
+    private Map<String, Object> invokeSerialize(Class<? extends ICustomType> clazz) {
+        for (Method m : clazz.getDeclaredMethods()) {
+            final Parameter[] parameters = m.getParameters();
+            if (parameters.length > 0 &&
+                    m.isAnnotationPresent(SerializeMethod.class)
+                    && parameters[0].getType().equals(ICustomType.class)
+                    && m.getReturnType().equals(Map.class)) {
+                try {
+                    return (Map<String, Object>) m.invoke(this, this);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return new HashMap<>();
     }
 
     /**

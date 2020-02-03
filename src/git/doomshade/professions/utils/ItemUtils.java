@@ -99,10 +99,12 @@ public final class ItemUtils {
             String regex = "\\{" + itemTypeEnum + "\\}";
             Object mapObject = map.get(itemTypeEnum.s);
 
-            String replacement = regex;
+            String replacement;
             if (itemTypeEnum == LEVEL_REQ_COLOR) {
                 if (upd != null)
                     replacement = String.valueOf(SkillupColor.getSkillupColor(itemType.getLevelReq(), upd.getLevel()).getColor());
+                else
+                    replacement = "";
             } else {
                 replacement = String.valueOf(mapObject);
             }
