@@ -52,7 +52,7 @@ public abstract class AbstractSettings implements ISetup, Serializable {
         return isSection;
     }
 
-    private final void assertSectionExists() throws ConfigurationException {
+    private void assertSectionExists() throws ConfigurationException {
         if (getDefaultSection() == null) {
             throw new ConfigurationException();
         }

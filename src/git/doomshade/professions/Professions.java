@@ -21,12 +21,12 @@ import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.listeners.ProfessionListener;
 import git.doomshade.professions.listeners.SkillAPIListener;
 import git.doomshade.professions.listeners.UserListener;
+import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
+import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
+import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
+import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.crafting.alchemy.commands.AlchemyCommandHandler;
-import git.doomshade.professions.profession.types.crafting.jewelcrafting.commands.JewelcraftingCommandHandler;
-import git.doomshade.professions.profession.types.gathering.herbalism.commands.HerbalismCommandHandler;
-import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.ProfessionTrainerTrait;
@@ -689,22 +689,14 @@ public final class Professions extends JavaPlugin implements ISetup {
         log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
     }
 
-
-    /**
-     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-16 formatting.
-     *
-     * @param resourcePath the path of file
-     * @param replace      whether or not to replace if the file already exists
-     */
-    @Override
-    public void saveResource(String resourcePath, boolean replace) {
+    public void saveResource(String resourcePath, String fileName, boolean replace) {
         if (resourcePath != null && !resourcePath.equals("")) {
             resourcePath = resourcePath.replace('\\', '/');
             Reader in = this.getTextResource(resourcePath);
             if (in == null) {
                 throw new IllegalArgumentException("The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
             } else {
-                File outFile = new File(this.getDataFolder(), resourcePath);
+                File outFile = new File(this.getDataFolder(), fileName);
                 int lastIndex = resourcePath.lastIndexOf(47);
                 File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
                 if (!outDir.exists()) {
@@ -715,7 +707,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                     if (!outFile.exists() || replace) {
 
                         // NOPES: UTF-16, ISO, UTF-16BE
-                        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_16);
+                        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
                         char[] buf = new char[1024];
 
                         int len;
@@ -736,5 +728,17 @@ public final class Professions extends JavaPlugin implements ISetup {
         } else {
             throw new IllegalArgumentException("ResourcePath cannot be null or empty");
         }
+    }
+
+
+    /**
+     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of file
+     * @param replace      whether or not to replace if the file already exists
+     */
+    @Override
+    public void saveResource(String resourcePath, boolean replace) {
+        saveResource(resourcePath, resourcePath, replace);
     }
 }

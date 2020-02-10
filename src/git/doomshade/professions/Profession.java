@@ -4,7 +4,10 @@ import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.profession.types.IProfessionEventable;
+import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
+import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
+import git.doomshade.professions.profession.professions.mining.MiningProfession;
+import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -29,12 +32,12 @@ import java.util.Set;
  * @param <T> the profession type
  * @author Doomshade
  * @see IProfessionType
- * @see git.doomshade.professions.profession.professions.EnchantingProfession
- * @see git.doomshade.professions.profession.professions.JewelcraftingProfession
- * @see git.doomshade.professions.profession.professions.MiningProfession
- * @see git.doomshade.professions.profession.professions.SkinningProfession
+ * @see EnchantingProfession
+ * @see JewelcraftingProfession
+ * @see MiningProfession
+ * @see SkinningProfession
  */
-public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>>, IProfessionEventable {
+public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>> {
 
     static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     @SuppressWarnings("serial")
@@ -354,4 +357,6 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     public List<String> getProfessionInformation(UserProfessionData upd) {
         return null;
     }
+
+    public abstract <T extends ItemType<?>> void onEvent(ProfessionEvent<T> e);
 }

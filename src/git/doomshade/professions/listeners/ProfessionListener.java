@@ -1,24 +1,26 @@
 package git.doomshade.professions.listeners;
 
+import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.profession.types.crafting.CustomRecipe;
-import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
-import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
-import git.doomshade.professions.profession.types.crafting.jewelcrafting.Gem;
-import git.doomshade.professions.profession.types.enchanting.Enchant;
-import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
-import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
-import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
-import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemType;
-import git.doomshade.professions.profession.types.gathering.herbalism.HerbLocationOptions;
-import git.doomshade.professions.profession.types.hunting.Mob;
-import git.doomshade.professions.profession.types.hunting.Prey;
-import git.doomshade.professions.profession.types.mining.Ore;
-import git.doomshade.professions.profession.types.mining.OreItemType;
-import git.doomshade.professions.profession.types.mining.spawn.OreLocationOptions;
-import git.doomshade.professions.profession.types.utils.SpawnPoint;
+import git.doomshade.professions.profession.professions.alchemy.Potion;
+import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
+import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
+import git.doomshade.professions.profession.professions.enchanting.Enchant;
+import git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType;
+import git.doomshade.professions.profession.professions.enchanting.PreEnchantedItem;
+import git.doomshade.professions.profession.professions.herbalism.Herb;
+import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
+import git.doomshade.professions.profession.professions.herbalism.HerbLocationOptions;
+import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
+import git.doomshade.professions.profession.professions.mining.Ore;
+import git.doomshade.professions.profession.professions.mining.OreItemType;
+import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
+import git.doomshade.professions.profession.professions.skinning.Mob;
+import git.doomshade.professions.profession.professions.skinning.Prey;
+import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -50,7 +52,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link git.doomshade.professions.Profession#onEvent(ProfessionEvent)}.
+ * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEvent)}.
  *
  * @author Doomshade
  */
@@ -96,31 +98,46 @@ public class ProfessionListener extends AbstractProfessionListener {
     @EventHandler(ignoreCancelled = true)
     public void onMine(BlockBreakEvent e) {
 
-        final Ore ore;
         final Block block = e.getBlock();
         final Location location = block.getLocation();
+
+        final Ore ore;
+
+        // is the destroyed block an ore?
         try {
+
+            // yes, continue
             ore = Utils.findInIterable(Ore.ORES.values(), x -> x != null && x.isSpawnPoint(location));
         } catch (Utils.SearchNotFoundException ex) {
+
+            // no, if the world is a mining world, cancel the event if the player is not ranked >=builder
+            if (Settings.getMiningWorlds().contains(location.getWorld().getName().toLowerCase()) && !Permissions.has(e.getPlayer(), Permissions.BUILDER)) {
+                e.setCancelled(true);
+            }
             return;
         }
 
+        // ore found, let's call the event and let the profession handle it
         final Player player = e.getPlayer();
         ProfessionEvent<OreItemType> event = getEvent(player, ore, OreItemType.class);
         if (event == null) {
             return;
         }
+
+        // add the location of ore because of its spawn point
         event.addExtra(location);
         callEvent(event);
 
         // event is cancelled when the player does not meet requirements
-        // destroy the block if the requirements are met
         if (event.isCancelled()) {
             e.setCancelled(true);
-        } else {
+        }
+        // destroy the block and disable particles if the requirements are met
+        else {
             final OreLocationOptions locationOptions = ore.getLocationOptions(location);
             locationOptions.despawn();
 
+            // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
             if (!(Permissions.has(player, Permissions.BUILDER) && player.getGameMode() == GameMode.CREATIVE)) {
                 locationOptions.scheduleSpawn();
             }

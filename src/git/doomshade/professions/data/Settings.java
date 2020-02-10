@@ -11,6 +11,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static git.doomshade.professions.data.AbstractSettings.LEVEL;
 import static git.doomshade.professions.data.AbstractSettings.outdated;
@@ -26,6 +29,8 @@ public final class Settings implements ISetup {
     private static File langFile;
     private static Material editItem = Material.GOLD_NUGGET;
     private static boolean autoSave = true;
+    private static boolean handleMineEvents = false;
+    private static Set<String> miningWorlds = new HashSet<>();
 
     static {
         plugin = Professions.getInstance();
@@ -101,6 +106,9 @@ public final class Settings implements ISetup {
         return autoSave;
     }
 
+    public static Set<String> getMiningWorlds() {
+        return miningWorlds;
+    }
 
     protected void printError(String section, Object value) {
         if (!outdated) {
@@ -131,6 +139,21 @@ public final class Settings implements ISetup {
 
         if (!config.contains(autoSavePath)) {
             printError(autoSavePath, true);
+        }
+
+        final String miningWorldsPath = "mining-worlds";
+        final List<String> stringList = config.getStringList(miningWorldsPath);
+        if (stringList == null || !config.contains(miningWorldsPath)) {
+            printError(miningWorldsPath, null);
+        } else {
+            miningWorlds = stringList.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        }
+
+        final String handleEventsPath = "handle-mine-events";
+        handleMineEvents = config.getBoolean(handleEventsPath, false);
+
+        if (!config.contains(handleEventsPath)) {
+            printError(handleEventsPath, false);
         }
 
         final File langFolder = plugin.getLangFolder();

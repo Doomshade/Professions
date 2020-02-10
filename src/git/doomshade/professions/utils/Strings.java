@@ -1,5 +1,7 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.ITrainable;
 import org.bukkit.Material;
 
 import java.util.Arrays;
@@ -14,7 +16,7 @@ import java.util.EnumMap;
 public final class Strings {
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.types.ITrainable}.
+     * The enum for {@link ITrainable}.
      */
     public enum ITrainableEnum implements FileEnum {
         TRAINABLE("trainable"), COST("trainable-cost"), TRAINABLE_ID("trainable-id"), VAR_TRAINABLE_COST("\\{trainable-cost\\}");
@@ -44,7 +46,7 @@ public final class Strings {
     }
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.types.ICraftable}
+     * The enum for {@link ICraftable}
      */
     public enum ICraftableEnum implements FileEnum {
         ITEM_REQUIREMENTS("item-requirements"),

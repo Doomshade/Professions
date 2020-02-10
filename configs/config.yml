@@ -1,5 +1,17 @@
 ## default lang
-lang: cz_CS
+lang: lang_en
+
+## the worlds that mining profession expects the ore in
+## the plugin handles
+mining-worlds:
+  - Miningbois
+  - Anotherminingworld
+
+## if set to true, the plugin will cancel any attempts to destroy a block for players with no builder/admin permission in mining worlds
+## it will of course let the ore get mined in the mining world
+## (basically, a player with low permissions can do nothing but mine certain ores in a mining world if this is set to true)
+## this does NOT mean that the player cannot mine in any other world
+handle-mine-events: true
 
 ## edit item material for stuff such as ore editing
 edit-item: GOLD_NUGGET
@@ -55,17 +67,24 @@ profession:
     not-trained:
       - '&aCan be trained'
       - '&aPrice: &6{trainable-cost}'
-    level-threshold: 3
 
   ## 4 types of colors - red, yellow, green and gray (still optional for colors)
   ##
+  ## used in GUI to determine the item type's current skillup event
+  ## skillup changes based on professions level
+  ##
+  ## skillup is basically an event that is thrown when you should gain experience
+  ## for example when you mine an ore and you have a mining profession
+  ##
   ## color = the color of skillup
-  ## chance = chance to gain a skillup with that color
+  ## chance = chance to gain experience with skillup
   ## color-change-after = after how many levels should the color change
   ##
-  ## For example: an item has level 10 requirement, everything has color-change-after: 3
+  ## For example: an ore has level 10 requirement, every color has set color-change-after to 3
   ##
-  ## The color will change as for user's profession has: red 0-9 level, yellow 10-13 level, green 14-17 level, gray 18+ level
+  ## The color will change to: red 0-9 level of player's profession, yellow 10-13 lvl, green 14-17 lvl, gray 18+ level
+  ## that means, if the color=red -> cannot mine, color=yellow,green,gray -> can mine, chance to gain exp based on the 'chance:' attribute,
+  ## in default case it is 100% for yellow, 50% for green and 0% for gray
   exp-settings:
     gray:
       chance: 0
@@ -91,6 +110,15 @@ profession:
     ## (20 - 5 - 10) * 0.03 = 0.15 = 15% chance for item to drop 2 times
     ##
     ## the drop priority is in sorted descending order (5, 4, 3..)
+    ##
+    ## in other words, since item level = 15 (10 (lvl req.) + 5 (inc.-since)) the chance for multiple drop increases by "increment-by"
+    ##
+    ## take the same example above and lets say the user is lvl 25
+    ## (25 (=user lvl) - 15 (=lvl above)) = 10; 10 * 0.03 (=inc.-by) = 0.3 = 30% chance for an item to drop 2 times
+    ## when the user hits lvl 30, the chance will be: 15 * 0.03 = 0.45 = 45% chance for an item to drop 2 times and so on
+    ## technically, once the user hits lvl 49, the chance will be 100% for an item to drop 2 times (34 * 0.03 = 1.02 = 1.0 = 100%)
+    ##
+    ## you can make the "increment-since" = 0, that would mean the chances for extra drop will increment every level since the start
     drop:
       ## The drop amount
       '4':
@@ -99,5 +127,19 @@ profession:
 
         ## Increment since - what level PLUS level req of item to start incrementing the chance from
         increment-since: 10
+      ## The drop amount
+      '2':
+        ## Increment chance by X% (increment-by: 10 = increment by 10%)
+        increment-by: 0.1
+
+        ## Increment since - what level PLUS level req of item to start incrementing the chance from
+        increment-since: 10
 gui:
   professions-gui-name: '&aProfessions'
+
+  ## shows gui items for which a player does not meet level requirements
+  ## example:
+  ## gui item has req. level of 10
+  ## player is level 6
+  ## show-level-threshold is greater than or equal to 4 -> the gui shows the gui item to the player
+  show-level-threshold: 3

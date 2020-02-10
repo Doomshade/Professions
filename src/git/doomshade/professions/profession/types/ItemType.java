@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types;
 
+import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
@@ -7,6 +8,9 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.ICustomType;
+import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
@@ -30,7 +34,7 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
 /**
- * <li>{@link git.doomshade.professions.event.ProfessionEvent} returns an object of this to handle in a {@link git.doomshade.professions.Profession}</li>
+ * <li>{@link git.doomshade.professions.event.ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
  * <li>If you want to make your own type, make a class extend this and override all constructors!</li>
  * <li> {@link #ItemType()} </li>
  * <li> {@link #ItemType(Object, int)} </li>
@@ -278,7 +282,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * @param upd the user profession data
-     * @return the color based on {@link git.doomshade.professions.user.User}'s {@link git.doomshade.professions.Profession} data
+     * @return the color based on {@link git.doomshade.professions.user.User}'s {@link Profession} data
      */
     public final SkillupColor getSkillupColor(UserProfessionData upd) {
         return upd.getSkillupColor(this);
@@ -303,7 +307,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @param upd the {@link git.doomshade.professions.user.User}'s {@link git.doomshade.professions.Profession} data to base the lore and {@link SkillupColor} around
+     * @param upd the {@link git.doomshade.professions.user.User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
      * @return the itemstack (icon) representation of this item type used in a GUI
      */
     public ItemStack getIcon(@Nullable UserProfessionData upd) {

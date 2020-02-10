@@ -2,8 +2,8 @@ package git.doomshade.professions.gui.oregui;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.mining.OreItemType;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 

@@ -1,5 +1,6 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.profession.ICraftable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -13,7 +14,7 @@ import java.util.*;
  * A class managing requirements of a player.
  *
  * @author Doomshade
- * @see git.doomshade.professions.profession.types.ICraftable
+ * @see ICraftable
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
     private final List<ItemStack> items;

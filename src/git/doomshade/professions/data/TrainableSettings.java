@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.profession.types.ITrainable;
+import git.doomshade.professions.profession.ITrainable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -11,10 +11,10 @@ import java.util.List;
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.VAR_TRAINABLE_COST;
 
 public class TrainableSettings extends AbstractProfessionSettings {
-    private static final String LEVEL_THRESHOLD = "level-threshold",
-            TRAINABLE_SECTION = "trainable", TRAINED = "trained", NOT_TRAINED = "not-trained";
+    private static final String TRAINABLE_SECTION = "trainable",
+            TRAINED = "trained",
+            NOT_TRAINED = "not-trained";
 
-    private int levelThreshold = 3;
     private final ArrayList<String> trainedLore, notTrainedLore;
 
     TrainableSettings() {
@@ -28,7 +28,6 @@ public class TrainableSettings extends AbstractProfessionSettings {
         ConfigurationSection section = getDefaultSection();
         ConfigurationSection trainableSection = section.getConfigurationSection(TRAINABLE_SECTION);
         if (trainableSection != null) {
-            levelThreshold = trainableSection.getInt(LEVEL_THRESHOLD);
             if (trainableSection.isList(TRAINED)) {
                 trainedLore.addAll(trainableSection.getStringList(TRAINED));
                 for (int i = 0; i < trainedLore.size(); i++) {
@@ -54,10 +53,6 @@ public class TrainableSettings extends AbstractProfessionSettings {
     public void cleanup() {
         trainedLore.clear();
         notTrainedLore.clear();
-    }
-
-    public int getLevelThreshold() {
-        return levelThreshold;
     }
 
     public List<String> getNotTrainedLore(ITrainable trainable) {
