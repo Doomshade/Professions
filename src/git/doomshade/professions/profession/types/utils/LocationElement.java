@@ -3,7 +3,7 @@ package git.doomshade.professions.profession.types.utils;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Material;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface LocationElement extends Element {
 
@@ -13,5 +13,5 @@ public interface LocationElement extends Element {
 
     String getName();
 
-    ArrayList<SpawnPoint> getSpawnPoints();
+    List<SpawnPoint> getSpawnPoints();
 }

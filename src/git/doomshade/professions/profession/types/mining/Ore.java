@@ -1,24 +1,21 @@
 package git.doomshade.professions.profession.types.mining;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.utils.LocationElement;
 import git.doomshade.professions.profession.types.utils.SpawnPoint;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.ParticleData;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.profession.types.utils.YieldResult;
+import git.doomshade.professions.utils.*;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.*;
 
 import static git.doomshade.professions.profession.types.mining.Ore.OreEnum.*;
@@ -33,26 +30,30 @@ public class Ore implements ConfigurationSerializable, LocationElement {
 
     public static final HashMap<String, Ore> ORES = new HashMap<>();
     private static final String EXAMPLE_ORE_ID = "example-ore";
-    public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, Maps.newTreeMap(), new ArrayList<>(), new ParticleData());
+    public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, new SortedList<>(Comparator.naturalOrder()), new ArrayList<>(), new ParticleData());
     private final HashMap<Location, OreLocationOptions> LOCATION_OPTIONS = new HashMap<>();
     private Material oreMaterial;
-    private TreeMap<Double, ItemStack> miningResults;
+    private SortedList<YieldResult> results;
     private final String id;
     private ParticleData particleData;
-    private ArrayList<SpawnPoint> spawnPoints;
+    private List<SpawnPoint> spawnPoints;
     private String name;
 
-    private Ore(String id, String name, Material oreMaterial, TreeMap<Double, ItemStack> miningResults, ArrayList<SpawnPoint> spawnPoints, ParticleData particleData) {
+    private Ore(String id, String name, Material oreMaterial, SortedList<YieldResult> results, List<SpawnPoint> spawnPoints, ParticleData particleData) {
         this.id = id;
         this.name = name;
         this.oreMaterial = oreMaterial;
-        this.miningResults = new TreeMap<>(Comparator.naturalOrder());
-        this.miningResults.putAll(miningResults);
         this.spawnPoints = spawnPoints;
         this.particleData = particleData;
+        this.results = results;
 
         if (!id.equals(EXAMPLE_ORE_ID))
             ORES.put(id, this);
+    }
+
+    @Nullable
+    public static Ore getOre(String id) {
+        return ORES.get(id);
     }
 
     /**
@@ -62,36 +63,72 @@ public class Ore implements ConfigurationSerializable, LocationElement {
      * @return deserialized Ore
      * @throws ProfessionObjectInitializationException when Ore is not initialized correctly
      */
-    public static Ore deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static Ore deserialize(Map<String, Object> map, String name) throws ProfessionObjectInitializationException {
         Set<String> list = Utils.getMissingKeys(map,
                 Arrays.stream(OreEnum.values())
-                        .filter(x -> x != KEY_ITEMSTACK && x != KEY_CHANCE && x != KEY_MINING_RESULT)
+                        .filter(x -> x != SPAWN_POINT && x != RESULT)
                         .toArray(OreEnum[]::new));
         if (!list.isEmpty()) {
             throw new ProfessionObjectInitializationException(OreItemType.class, list);
         }
 
-        Material mat = Material.getMaterial((String) map.get(KEY_MATERIAL.s));
-        MemorySection memorySection = (MemorySection) map.get(KEY_MINING_RESULT.s);
+        String id = (String) map.get(ID.s);
+        Material mat = Material.getMaterial((String) map.get(MATERIAL.s));
 
-        TreeMap<Double, ItemStack> miningResults = new TreeMap<>(Comparator.naturalOrder());
 
-        for (String s : memorySection.getKeys(false)) {
-            ConfigurationSection resultSection = memorySection.getConfigurationSection(s);
-            double chance = resultSection.getDouble(KEY_CHANCE.s);
+        SortedList<YieldResult> results = new SortedList<>(Comparator.naturalOrder());
 
-            try {
-                ItemStack item = ItemStack.deserialize(resultSection.getConfigurationSection(KEY_ITEMSTACK.s).getValues(true));
-                miningResults.put(chance, item);
+        MemorySection dropSection;
 
-            } catch (NullPointerException e) {
-                throw new ProfessionObjectInitializationException(OreItemType.class, Collections.singletonList(KEY_ITEMSTACK.s));
-            }
+        int i = 0;
+        while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
+            results.add(YieldResult.deserialize(dropSection.getValues(false)));
+            i++;
         }
 
+        List<SpawnPoint> spawnPoints = new ArrayList<>();
+        MemorySection spawnSection;
+        int x = 0;
+        while ((spawnSection = ((MemorySection) map.get(SPAWN_POINT.s.concat("-" + x)))) != null) {
+            spawnPoints.add(SpawnPoint.deserialize(spawnSection.getValues(false)));
+            x++;
+        }
 
-        // TODO
-        return null;
+        MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
+
+        return new Ore(id, name, mat, results, spawnPoints, ParticleData.deserialize(particleSection.getValues(true)));
+    }
+
+    public void addSpawnPoint(SpawnPoint sp) {
+        spawnPoints.add(sp);
+        update();
+    }
+
+    public void update() {
+        try {
+            Professions.getProfessionManager().getItemTypeHolder(OreItemType.class).save(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeSpawnPoint(int id) {
+        SpawnPoint sp = spawnPoints.get(id);
+        if (sp != null) {
+            getLocationOptions(sp.location).despawn();
+            spawnPoints.remove(id);
+            update();
+        }
+    }
+
+    public void removeSpawnPoint(SpawnPoint sp) {
+        if (!isSpawnPoint(sp.location)) {
+            return;
+        }
+        getLocationOptions(sp.location).despawn();
+        spawnPoints.remove(sp);
+        update();
+
     }
 
     @Override
@@ -99,16 +136,21 @@ public class Ore implements ConfigurationSerializable, LocationElement {
 
         return new HashMap<String, Object>() {
             {
-                put(KEY_MATERIAL.s, oreMaterial.name());
-
-                final Iterator<Entry<Double, ItemStack>> iterator = miningResults.entrySet().iterator();
-                for (int i = 0; i < miningResults.size(); i++) {
-                    String s = KEY_MINING_RESULT.s.concat(String.valueOf(i));
-                    Entry<Double, ItemStack> entry = iterator.next();
-                    put(s.concat(KEY_CHANCE.s), entry.getKey());
-                    put(s.concat(KEY_ITEMSTACK.s), entry.getValue().serialize());
+                put(ID.s, id);
+                put(MATERIAL.s, oreMaterial.name());
+                for (int i = 0; i < results.size(); i++) {
+                    put(RESULT.s.concat("-" + i), results.get(i).serialize());
                 }
+
+                int i = 0;
+
+                for (SpawnPoint spawnPoint : spawnPoints) {
+                    put(SPAWN_POINT.s.concat("-" + i), spawnPoint.serialize());
+                    i++;
+                }
+                put(PARTICLE.s, particleData.serialize());
             }
+
         };
     }
 
@@ -126,9 +168,9 @@ public class Ore implements ConfigurationSerializable, LocationElement {
     public ItemStack getMiningResult() {
         double random = Math.random() * 100;
 
-        for (Map.Entry<Double, ItemStack> entry : miningResults.entrySet()) {
-            if (random < entry.getKey()) {
-                return entry.getValue();
+        for (YieldResult result : results) {
+            if (random < result.chance) {
+                return result.drop;
             }
         }
 
@@ -151,7 +193,7 @@ public class Ore implements ConfigurationSerializable, LocationElement {
     }
 
     @Override
-    public ArrayList<SpawnPoint> getSpawnPoints() {
+    public List<SpawnPoint> getSpawnPoints() {
         return spawnPoints;
     }
 
@@ -160,7 +202,7 @@ public class Ore implements ConfigurationSerializable, LocationElement {
         return id;
     }
 
-    public OreLocationOptions getLocationOptions(Location location) {
+    public OreLocationOptions getLocationOptions(Location location) throws IllegalArgumentException {
         if (!LOCATION_OPTIONS.containsKey(location)) {
             LOCATION_OPTIONS.put(location, new OreLocationOptions(location, this));
         }
@@ -171,11 +213,19 @@ public class Ore implements ConfigurationSerializable, LocationElement {
         return ImmutableMap.copyOf(LOCATION_OPTIONS);
     }
 
+    public boolean isSpawnPoint(Location location) {
+        return spawnPoints.contains(new SpawnPoint(location));
+    }
+
     /**
      * Enum for keys in file
      */
     enum OreEnum implements FileEnum {
-        KEY_MATERIAL("material"), KEY_MINING_RESULT("mining-result"), KEY_CHANCE("chance"), KEY_ITEMSTACK("item");
+        SPAWN_POINT("spawnpoint"),
+        ID("id"),
+        MATERIAL("material"),
+        PARTICLE("particle"),
+        RESULT("drop");
 
         final String s;
 
@@ -187,10 +237,11 @@ public class Ore implements ConfigurationSerializable, LocationElement {
         public EnumMap<OreEnum, Object> getDefaultValues() {
             return new EnumMap<OreEnum, Object>(OreEnum.class) {
                 {
-                    put(KEY_MATERIAL, Material.GLASS);
-                    TreeMap<Double, ItemStack> map = new TreeMap<>(Comparator.naturalOrder());
-                    map.put(0d, new ItemStack(Material.BED));
-                    put(KEY_MINING_RESULT, Maps.asMap(Sets.newHashSet(0d), x -> ItemUtils.EXAMPLE_RESULT.serialize()));
+                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
+                    put(ID, "some_id");
+                    put(MATERIAL, Material.GLASS);
+                    put(PARTICLE, new ParticleData());
+                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT));
                 }
             };
         }

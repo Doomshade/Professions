@@ -77,14 +77,14 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
         MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-        ItemStack gatherItem = ItemStack.deserialize(mem.getValues(false));
+        ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
         Material herbMaterial = Material.getMaterial((String) map.get(HERB_MATERIAL.s));
         String herbId = (String) map.get(ID.s);
 
         int i = 0;
         MemorySection spawnSection;
         ArrayList<SpawnPoint> spawnPoints = new ArrayList<>();
-        while ((spawnSection = ((MemorySection) map.get(SPAWN_POINT.s.concat("-" + i)))) != null) {
+        while ((spawnSection = (MemorySection) map.get(SPAWN_POINT.s.concat("-" + i))) != null) {
             SpawnPoint sp = SpawnPoint.deserialize(spawnSection.getValues(false));
             if (sp.location.clone().add(0, -1, 0).getBlock().getType() == Material.AIR) {
                 final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a block below the herb!", i, herbId);
@@ -163,7 +163,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     public Map<String, Object> serialize() {
         return new HashMap<String, Object>() {
             {
-                put(GATHER_ITEM.s, gatherItem.serialize());
+                put(GATHER_ITEM.s, ItemUtils.serialize(gatherItem));
                 put(HERB_MATERIAL.s, herbMaterial.name());
                 for (int i = 0; i < spawnPoints.size(); i++) {
                     put(SPAWN_POINT.s.concat("-" + i), spawnPoints.get(i).serialize());
@@ -196,7 +196,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     }
 
     @Override
-    public ArrayList<SpawnPoint> getSpawnPoints() {
+    public List<SpawnPoint> getSpawnPoints() {
         return spawnPoints;
     }
 
@@ -232,7 +232,8 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
      *
      * @return the name of this herb
      */
-    public String getMarkerName() {
+    @Override
+    public String getName() {
         final String material = gatherItem.getType().name();
         if (!gatherItem.hasItemMeta()) {
             return material;
@@ -245,7 +246,12 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     }
 
     enum HerbEnum implements FileEnum {
-        GATHER_ITEM("gather-item"), HERB_MATERIAL("herb-material"), SPAWN_POINT("spawnpoint"), ENABLE_SPAWN("enable-spawn"), ID("id"), PARTICLE("particle");
+        GATHER_ITEM("gather-item"),
+        HERB_MATERIAL("herb-material"),
+        SPAWN_POINT("spawnpoint"),
+        ENABLE_SPAWN("enable-spawn"),
+        ID("id"),
+        PARTICLE("particle");
 
         private final String s;
 
@@ -265,10 +271,9 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
                     ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
                     put(GATHER_ITEM, exampleResult.serialize());
                     put(HERB_MATERIAL, exampleResult.getType().name());
-                    put(SPAWN_POINT, ItemUtils.EXAMPLE_LOCATION.serialize());
-                    //put(SPAWN_POINT, new SpawnPoint(ItemUtils.EXAMPLE_LOCATION, 60).serialize());
+                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
                     put(ENABLE_SPAWN, false);
-                    put(ID, "herb_identification");
+                    put(ID, "herb_id");
                     put(PARTICLE, new ParticleData());
                 }
             };

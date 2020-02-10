@@ -115,6 +115,7 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
         for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.cache(p);
         }
+        Potion.POTIONS.clear();
     }
 
     @Override
@@ -127,6 +128,8 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
     @Override
     public void onLoad() {
         final Pattern ATTRIBUTE_PATTERN = Pattern.compile("([\\w]+):([0-9]+)");
+
+
         Potion.registerCustomPotionEffect((potionEffect, player, negated) -> {
             Matcher m = ATTRIBUTE_PATTERN.matcher(potionEffect);
             if (!m.find()) {

@@ -1,9 +1,9 @@
 package git.doomshade.professions.profession.types.mining.commands;
 
-import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.utils.SpawnPoint;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,7 +18,7 @@ import java.util.*;
  *
  * @author Doomshade
  */
-public class EditCommand extends AbstractCommand {
+public class EditCommand extends AbstractEditCommand {
 
     private final HashSet<Location> EDITED = new HashSet<>();
 
@@ -28,8 +28,8 @@ public class EditCommand extends AbstractCommand {
     public EditCommand() {
         setCommand("edit");
         setRequiresPlayer(true);
-        setRequiresOp(true);
         setArg(false, Collections.singletonList("allwool/allore"));
+        addPermission(Permissions.BUILDER);
     }
 
     @Override

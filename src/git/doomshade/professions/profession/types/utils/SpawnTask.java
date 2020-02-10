@@ -1,8 +1,10 @@
 package git.doomshade.professions.profession.types.utils;
 
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class SpawnTask extends BukkitRunnable {
     public final LocationOptions locationOptions;
@@ -13,12 +15,12 @@ public class SpawnTask extends BukkitRunnable {
         this.locationOptions = locationOptions;
         SpawnPoint example = new SpawnPoint(locationOptions.location);
 
-        final ArrayList<SpawnPoint> spawnPoints = locationOptions.element.getSpawnPoints();
+        final List<SpawnPoint> spawnPoints = locationOptions.element.getSpawnPoints();
         for (int i = 0; i < spawnPoints.size(); i++) {
             SpawnPoint sp = spawnPoints.get(i);
             if (sp.equals(example)) {
                 this.id = i;
-                this.respawnTime = sp.respawnTime.getRandom();
+                this.respawnTime = sp.respawnTime.getRandom() + 1;
                 return;
             }
         }
@@ -37,5 +39,11 @@ public class SpawnTask extends BukkitRunnable {
             return;
         }
         respawnTime--;
+    }
+
+
+    @Override
+    public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+        return super.runTaskTimer(plugin, 0L, 20L);
     }
 }

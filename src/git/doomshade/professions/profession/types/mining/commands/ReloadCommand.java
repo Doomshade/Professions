@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.types.mining.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -14,7 +15,8 @@ import java.util.List;
 public class ReloadCommand extends AbstractCommand {
 
     public ReloadCommand() {
-        setRequiresOp(true);
+        setCommand("reload");
+        addPermission(Permissions.BUILDER);
     }
 
     @Override

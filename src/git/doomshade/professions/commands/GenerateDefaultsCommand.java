@@ -5,10 +5,7 @@ import git.doomshade.professions.profession.types.ICraftable;
 import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.Strings;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.utils.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -33,8 +30,8 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     public GenerateDefaultsCommand() {
         setCommand("generate-defaults");
         setDescription("Generates the defaults of item types (does not override existing data).");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override

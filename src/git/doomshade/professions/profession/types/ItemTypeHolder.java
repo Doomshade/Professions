@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.types;
 
+import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.CommandHandler;
@@ -80,7 +81,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
      *
      * @throws IOException
      */
-    public final void save() throws IOException {
+    public final void save(boolean safely) throws IOException {
         File itemFile = itemType.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
@@ -89,22 +90,33 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
             Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
             return;
         }
-
-        loader.addDefault(ERROR_MESSAGE, errorMessage);
-        loader.addDefault(SORTED_BY, Settings.getSettings(DefaultsSettings.class).getSortedBy());
-        loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
+        final ImmutableList<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
+        if (safely) {
+            loader.addDefault(ERROR_MESSAGE, errorMessage);
+            loader.addDefault(SORTED_BY, sortedBy);
+            loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
+        } else {
+            loader.set(ERROR_MESSAGE, errorMessage);
+            loader.set(SORTED_BY, sortedBy);
+            loader.set(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
+        }
         ConfigurationSection itemsSection;
         if (loader.isConfigurationSection(ItemType.KEY)) {
             itemsSection = loader.getConfigurationSection(ItemType.KEY);
         } else {
             itemsSection = loader.createSection(ItemType.KEY);
         }
-        itemsSection.addDefault(String.valueOf(0), itemType.serialize());
 
+        if (safely) {
+            itemsSection.addDefault(String.valueOf(0), itemType.serialize());
+        }
         if (!itemTypes.isEmpty())
             for (int i = 0; i < itemTypes.size(); i++) {
                 Type registeredObject = itemTypes.get(i);
-                itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
+                if (safely)
+                    itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
+                else
+                    itemsSection.set(String.valueOf(i), registeredObject.serialize());
             }
         loader.options().copyDefaults(true);
         loader.save(itemFile);
@@ -194,7 +206,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
     }
 
     public void update() throws IOException {
-        save();
+        save(true);
         load();
     }
 

@@ -2,6 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.task.BackupTask;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -11,9 +12,9 @@ public class BackupCommand extends AbstractCommand {
 
     public BackupCommand() {
         setRequiresPlayer(false);
-        setRequiresOp(true);
         setDescription("Backs up needed files");
         setCommand("backup");
+        addPermission(Permissions.ADMIN);
     }
 
     @Override

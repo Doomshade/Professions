@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -16,8 +17,8 @@ public class BypassCommand extends AbstractCommand {
         setArg(true, Arrays.asList("true/false"));
         setCommand("bypass");
         setDescription("Allows user to bypass level restrictions");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override

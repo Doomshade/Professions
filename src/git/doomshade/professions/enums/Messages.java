@@ -74,7 +74,8 @@ public class Messages implements ISetup {
         NO_INVENTORY_SPACE("no-inventory-space"),
         SUCCESSFULLY_TRAINED("successfully-trained"),
         NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
-        POTION_ALREADY_ACTIVE("potion-already-active");
+        POTION_ALREADY_ACTIVE("potion-already-active"),
+        NOT_PROFESSED("not-professed");
 
         private final String fileId;
 

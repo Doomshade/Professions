@@ -6,11 +6,11 @@ import org.bukkit.configuration.ConfigurationSection;
 
 public class MaxProfessionsSettings extends AbstractProfessionSettings {
 
-    private int maxPrimaryProfessions, maxSecondaryProfessions;
+    private int maxPrimaryProfessions = 1, maxSecondaryProfessions = 1;
 
     @Override
     public void setup() throws ConfigurationException {
-        maxPrimaryProfessions = maxSecondaryProfessions = 1;
+
         super.setup();
         final String SECTION = "max-professions";
 

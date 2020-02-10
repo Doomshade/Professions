@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,8 +23,7 @@ public class AddExpCommand extends AbstractCommand {
         setArgs(args);
         setCommand("exp");
         setDescription("Gives exp to the player or sets it");
-        setRequiresOp(true);
-        setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override

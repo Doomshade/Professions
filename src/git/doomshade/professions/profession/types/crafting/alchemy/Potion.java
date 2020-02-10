@@ -37,7 +37,9 @@ public class Potion implements ConfigurationSerializable {
             ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
 
     private static final String NBT_KEY = "profession_potion";
-    private static final HashSet<Potion> POTIONS = new HashSet<>();
+
+    // TODO clearing them currently in onDisable
+    static final HashSet<Potion> POTIONS = new HashSet<>();
     private static final String SPLIT_CHAR = ":";
 
     private final ArrayList<String> potionEffects = new ArrayList<>();
@@ -162,7 +164,7 @@ public class Potion implements ConfigurationSerializable {
         String potionId = (String) map.get(POTION_FLAG.s);
         PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
         MemorySection mem = (MemorySection) map.get(POTION.s);
-        ItemStack potion = ItemStack.deserialize(mem.getValues(false));
+        ItemStack potion = ItemUtils.deserialize(mem.getValues(false));
         return new Potion(potionEffects, duration, potionId, potionType, potion);
     }
 
@@ -191,7 +193,7 @@ public class Potion implements ConfigurationSerializable {
                 put(POTION_DURATION.s, duration);
                 put(POTION_FLAG.s, potionId);
                 put(POTION_TYPE.s, potionType.name());
-                put(POTION.s, potion.serialize());
+                put(POTION.s, ItemUtils.serialize(potion));
             }
         };
     }

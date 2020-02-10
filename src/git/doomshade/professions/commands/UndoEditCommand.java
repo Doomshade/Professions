@@ -1,5 +1,6 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,8 +17,9 @@ public class UndoEditCommand extends AbstractCommand {
         setArg(true, Collections.singletonList(EditItemTypeCommand.ARG_FILE));
         setCommand("undo");
         setDescription("Undoes previous actions made to an item type file");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+
+        addPermission(Permissions.ADMIN);
     }
 
     @Override

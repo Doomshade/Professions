@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,10 +18,10 @@ public class LevelCommand extends AbstractCommand {
     public LevelCommand() {
         setArg(true, Arrays.asList("profession", "add/set", "level"));
         setArg(false, Arrays.asList("player"));
-        setRequiresOp(true);
         setCommand("level");
         setRequiresPlayer(false);
         setDescription("Adds levels or sets the level of the player");
+        addPermission(Permissions.HELPER);
     }
 
     @Override

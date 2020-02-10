@@ -1,6 +1,8 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -28,10 +30,10 @@ public class EditItemTypeCommand extends AbstractCommand {
         setArg(true, Arrays.asList(ARG_FILE, "path (ex. items.0.crafting-time)", "value\nfor booleans: true or false\nfor list: end each line with ';', ex. firstLine;secondLine;thirdLine\nfor item: hand\nfor item material: material\nfor location: location"));
         setCommand("edit");
         setDescription("Edits something in item type file");
-        setRequiresOp(true);
         setRequiresPlayer(false);
         files.clear();
         files.addAll(Arrays.stream(Objects.requireNonNull(Professions.getInstance().getItemsFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
+        addPermission(Permissions.ADMIN);
     }
 
     static File getFile(String[] args) {
@@ -153,7 +155,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                                     } else {
                                         setValue += materialName;
                                     }
-                                    loader.set(path, hand.serialize());
+                                    loader.set(path, ItemUtils.serialize(hand));
                                 } else {
                                     setValue = "null item";
                                     loader.set(path, null);

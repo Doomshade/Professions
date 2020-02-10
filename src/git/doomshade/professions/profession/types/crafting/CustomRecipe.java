@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types.crafting;
 
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
@@ -84,7 +85,7 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         Map<Character, ItemStack> map = new HashMap<>();
         ingredients.forEach((x, y) -> {
             map.put(x.charAt(0),
-                    y == null ? null : ItemStack.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
+                    y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
         });
         return map;
     }
@@ -101,8 +102,11 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         } else {
             return null;
         }
-        ShapedRecipe recipe = new ShapedRecipe(ItemStack.deserialize(recipeDes))
-                .shape(((ArrayList<String>) map.get(SHAPE)).toArray(new String[0]));
+        final ItemStack deserialize = ItemUtils.deserialize(recipeDes);
+        if (deserialize == null) {
+            return null;
+        }
+        ShapedRecipe recipe = new ShapedRecipe(deserialize).shape(((ArrayList<String>) map.get(SHAPE)).toArray(new String[0]));
 
         Map<String, Object> ingredDes = ((MemorySection) map.get(INGREDIENTS)).getValues(false);
         Map<Character, ItemStack> ingredients = deserializeIngredients(ingredDes);

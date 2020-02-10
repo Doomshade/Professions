@@ -12,6 +12,7 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -240,7 +242,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         return false;
     }
 
-    private <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
+    protected final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
         return e.getPlayer().hasProfession(this);
     }
 
@@ -276,6 +278,13 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      * Called after being loaded from a file
      */
     public void onLoad() {
+    }
+
+    /**
+     * Called when a user level ups
+     */
+    public void onLevelUp(UserProfessionData upd) {
+
     }
 
     public final Set<String> getRequiredPlugins() {
@@ -339,5 +348,10 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         public String toString() {
             return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
+    }
+
+    @Nullable
+    public List<String> getProfessionInformation(UserProfessionData upd) {
+        return null;
     }
 }

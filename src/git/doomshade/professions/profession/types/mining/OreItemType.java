@@ -46,7 +46,7 @@ public class OreItemType extends ItemType<Ore> {
 
     @Override
     protected Ore deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return Ore.deserialize(map);
+        return Ore.deserialize(map, getName());
     }
 
     @Override

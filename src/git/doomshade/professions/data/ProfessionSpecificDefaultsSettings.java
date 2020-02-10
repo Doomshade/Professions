@@ -45,7 +45,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
 
         ConfigurationSection actualSection = section.createSection(SECTION);
         actualSection.set(NAME, name);
-        actualSection.set(ICON, icon);
+        actualSection.set(ICON, ItemUtils.serialize(icon));
         actualSection.set(TYPE, professionType.name());
         return actualSection;
 
@@ -57,7 +57,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         ConfigurationSection section = getDefaultSection();
 
         this.name = section.getString(NAME);
-        this.icon = section.getItemStack(ICON);
+        this.icon = ItemUtils.deserialize(section.getValues(false));
         this.professionType = Profession.ProfessionType.fromString(section.getString(TYPE));
     }
 

@@ -3,6 +3,7 @@ package git.doomshade.professions.commands;
 import com.google.common.collect.ImmutableSortedSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.SortedList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * A command handler
@@ -24,7 +26,7 @@ import java.util.*;
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
-    private final SortedList<AbstractCommand> INSTANCE_COMMANDS = new SortedList<>(Comparator.comparing(AbstractCommand::getCommand));
+    protected final SortedList<AbstractCommand> INSTANCE_COMMANDS = new SortedList<>(Comparator.comparing(AbstractCommand::getCommand));
     private final File FOLDER = new File(plugin.getDataFolder(), "commands");
     private PluginCommand cmd = null;
     private File file;
@@ -35,8 +37,23 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
     }
 
-    public ImmutableSortedSet<AbstractCommand> getCommands() {
-        return ImmutableSortedSet.copyOf(INSTANCE_COMMANDS);
+    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
+
+        if (acmd.requiresPlayer() && !(sender instanceof Player)) {
+            return false;
+        }
+
+        if (sender.isOp()) {
+            return true;
+        }
+
+        final Player player = (Player) sender;
+        for (String perm : acmd.getPermissions()) {
+            if (!Permissions.has(player, perm)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass) {
@@ -56,8 +73,8 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         return null;
     }
 
-    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
-        return (!acmd.requiresOp() || sender.isOp()) && (!acmd.requiresPlayer() || sender instanceof Player);
+    public final ImmutableSortedSet<AbstractCommand> getCommands() {
+        return ImmutableSortedSet.copyOf(INSTANCE_COMMANDS);
     }
 
     protected abstract String getCommandName();
@@ -85,9 +102,9 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                 cmd.setCommand(fileCommand.getCommand());
                 cmd.setArgs(fileCommand.getArgs());
                 cmd.setDescription(fileCommand.getDescription());
-                cmd.setRequiresOp(fileCommand.requiresOp());
                 cmd.setRequiresPlayer(fileCommand.requiresPlayer());
                 cmd.setMessages(fileCommand.getMessages());
+                cmd.setPermissions(fileCommand.getPermissions());
             }
         }
     }
@@ -136,7 +153,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     @Override
     public final void setup() throws IOException {
         if (cmd == null) {
-
             String commandName = getCommandName();
             try {
                 file = new File(FOLDER, String.format("%s.yml", commandName));
@@ -183,7 +199,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     }
 
     @Override
-    public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" + ChatColor.RED
                     + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
@@ -192,10 +208,9 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
             // TODO add pages
             for (AbstractCommand acmd : INSTANCE_COMMANDS) {
-                if (!isValid(sender, acmd)) {
-                    continue;
+                if (isValid(sender, acmd)) {
+                    sender.sendMessage(infoMessage(acmd));
                 }
-                sender.sendMessage(infoMessage(acmd));
                 /*amnt++;
                 if (amnt % 6 == 0) {
                     int page = amnt / 6;
@@ -217,7 +232,11 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                     sender.sendMessage(infoMessage(acmd));
                     return true;
                 }
-                return acmd.onCommand(sender, cmd, label, args);
+                final boolean result = acmd.onCommand(sender, cmd, label, args);
+                if ((acmd.getPermissions().contains(Permissions.HELPER) || acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
+                    Professions.log(String.format("%s issued %s command with arguments: %s and result %s", sender.getName(), acmd.getCommand(), Arrays.toString(args), result), Level.CONFIG);
+                }
+                return result;
             }
         }
         return false;

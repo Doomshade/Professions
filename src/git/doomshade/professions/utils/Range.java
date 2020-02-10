@@ -72,6 +72,6 @@ public class Range {
 
     @Override
     public String toString() {
-        return String.format("%d-%d", min, max);
+        return min == max ? String.valueOf(min) : String.format("%d-%d", min, max);
     }
 }

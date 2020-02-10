@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types.enchanting;
 
 import git.doomshade.professions.utils.ItemAttribute;
 import git.doomshade.professions.utils.ItemAttribute.AttributeType;
+import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -47,7 +48,7 @@ public abstract class Enchant implements ConfigurationSerializable {
 
         try {
             MemorySection mem = (MemorySection) map.get(ITEMSTACK);
-            ItemStack item = ItemStack.deserialize(mem.getValues(true));
+            ItemStack item = ItemUtils.deserialize(mem.getValues(false));
             Class<? extends Enchant> clazz = (Class<? extends Enchant>) Class.forName((String) map.get(CLASS));
             int expYield = (int) map.get(CRAFT_EXP_YIELD);
             Enchant ench = EnchantManager.getInstance().getEnchant(clazz);
@@ -179,7 +180,7 @@ public abstract class Enchant implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(ITEMSTACK, item.serialize());
+        map.put(ITEMSTACK, ItemUtils.serialize(item));
         map.put(CLASS, getClass().getName());
         map.put(CRAFT_EXP_YIELD, craftExpYield);
         return map;

@@ -40,10 +40,10 @@ public final class MarkerManager {
         final String markerSetId = markable.getMarkerSetId();
         MarkerSet set = markerApi.getMarkerSet(markerSetId);
 
-        if (set != null) {
-            return;
+
+        if (set == null) {
+            set = markerApi.createMarkerSet(markerSetId, label, null, true);
         }
-        set = markerApi.createMarkerSet(markerSetId, label, null, true);
         set.setHideByDefault(true);
         set.setLabelShow(false);
         MARKERS.put(markerSetId, set);
@@ -51,6 +51,7 @@ public final class MarkerManager {
 
     public void show(IMarkable markable) {
         MarkerSet set = MARKERS.get(markable.getMarkerSetId());
+
         if (set == null) {
             return;
         }

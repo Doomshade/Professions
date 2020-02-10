@@ -3,7 +3,10 @@ package git.doomshade.professions.profession.types;
 
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.DeserializeMethod;
+import git.doomshade.professions.utils.SerializeMethod;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,8 +76,6 @@ public interface ITrainable extends ICustomType {
             throw new ProfessionInitializationException((Class<? extends ItemType>) trainable.getClass(), list);
         }
     }
-
-    GetSetWrapper<String> getTrainabulId();
 
     /**
      * @return the trainable id of this item type

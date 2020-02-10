@@ -24,6 +24,7 @@ import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.types.crafting.alchemy.commands.AlchemyCommandHandler;
+import git.doomshade.professions.profession.types.crafting.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.types.gathering.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
@@ -39,6 +40,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
@@ -46,7 +48,10 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.bukkit.DynmapPlugin;
 import org.fusesource.jansi.Ansi;
+import ru.tehkode.permissions.PermissionManager;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -68,6 +73,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
+    private static PermissionManager permMan;
     private static Economy econ;
 
     // 5 minutes
@@ -111,8 +117,14 @@ public final class Professions extends JavaPlugin implements ISetup {
         return guiManager;
     }
 
+    @Nullable
     public static MarkerManager getMarkerManager() {
         return MarkerManager.getInstance();
+    }
+
+    @Nullable
+    public static PermissionManager getPermissionManager() {
+        return permMan;
     }
 
     /**
@@ -341,6 +353,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         hookCitizens();
         hookSkillAPI();
         hookVault();
+        hookPex();
 
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
@@ -532,6 +545,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         if (!file.isDirectory()) {
             file.mkdirs();
         }
+        CraftPlayer p;
         return file;
     }
 
@@ -560,6 +574,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         registerCommandHandler(MiningCommandHandler.class);
         registerCommandHandler(HerbalismCommandHandler.class);
         registerCommandHandler(AlchemyCommandHandler.class);
+        registerCommandHandler(JewelcraftingCommandHandler.class);
 
         registerSetup(ProfessionManager.getInstance());
     }
@@ -649,6 +664,15 @@ public final class Professions extends JavaPlugin implements ISetup {
             return;
         }
         pm.registerEvents(new SkillAPIListener(), this);
+    }
+
+    private void hookPex() {
+        PluginManager pm = Bukkit.getPluginManager();
+        if (pm.getPlugin("PermissionsEx") == null) {
+            permMan = null;
+        } else {
+            permMan = PermissionsEx.getPermissionManager();
+        }
     }
 
     private void hookDynmap() {

@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -19,22 +20,21 @@ public class AddExtraCommand extends AbstractCommand {
         setDescription("Adds an \"extra\" to a profession for requirement purposes");
         setArg(true, Arrays.asList("user", "profession", "extra"));
         setCommand("extra");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         User user = User.getUser(Bukkit.getPlayer(args[1]));
         Profession<?> prof = Professions.getProfession(args[2]);
-        HashSet<String> extras = new HashSet<>();
-        for (int i = 3; i < args.length; i++) {
-            extras.add(args[i]);
-        }
+        HashSet<String> extras = new HashSet<>(Arrays.asList(args).subList(3, args.length));
 
         UserProfessionData upd = user.getProfessionData(prof);
         String extra = extras.toString().replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("[,]", "");
-        upd.addExtra(extra);
+        if (upd != null) {
+            upd.addExtra(extra);
+        }
         try {
             user.save();
         } catch (IOException e) {

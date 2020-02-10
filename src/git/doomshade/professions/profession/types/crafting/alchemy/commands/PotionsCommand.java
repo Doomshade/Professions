@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.types.crafting.alchemy.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -11,8 +12,8 @@ public class PotionsCommand extends AbstractCommand {
 
     public PotionsCommand() {
         setCommand("potions");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override

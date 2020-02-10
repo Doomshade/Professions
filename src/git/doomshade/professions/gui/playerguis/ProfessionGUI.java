@@ -1,7 +1,10 @@
 package git.doomshade.professions.gui.playerguis;
 
-import git.doomshade.guiapi.*;
+import git.doomshade.guiapi.GUI;
+import git.doomshade.guiapi.GUIClickEvent;
 import git.doomshade.guiapi.GUIInventory.Builder;
+import git.doomshade.guiapi.GUIItem;
+import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
@@ -13,12 +16,16 @@ import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ProfessionGUI extends GUI {
@@ -32,7 +39,7 @@ public class ProfessionGUI extends GUI {
     }
 
     @Override
-    public void init() throws GUIInitializationException {
+    public void init() {
         this.prof = getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION);
         Builder builder = getInventoryBuilder().size(9).title(prof.getColoredName());
 
@@ -42,8 +49,23 @@ public class ProfessionGUI extends GUI {
         if (upd == null) {
             throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
         }
+        List<String> lore = prof.getProfessionInformation(upd);
+        final boolean profHasLore = lore != null && !lore.isEmpty();
+
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
+                if (pos == 5 && profHasLore) {
+                    GUIItem infoItem = new GUIItem(Material.SIGN, pos);
+                    final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.SIGN);
+
+                    // TODO add to config
+                    itemMeta.setDisplayName(ChatColor.DARK_GREEN + "Informace");
+                    itemMeta.setLore(lore);
+                    infoItem.changeItem(this, () -> itemMeta);
+                    builder = builder.withItem(infoItem);
+                    pos++;
+                    continue;
+                }
                 ItemStack icon = item.getIcon(upd);
                 GUIItem guiItem = new GUIItem(icon.getType(), pos);
                 boolean hasRecipe = upd.hasExtra(icon.getItemMeta().getDisplayName());

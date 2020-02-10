@@ -6,6 +6,7 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
 import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
+import git.doomshade.professions.profession.types.crafting.jewelcrafting.Gem;
 import git.doomshade.professions.profession.types.enchanting.Enchant;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.types.enchanting.PreEnchantedItem;
@@ -16,10 +17,13 @@ import git.doomshade.professions.profession.types.hunting.Mob;
 import git.doomshade.professions.profession.types.hunting.Prey;
 import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
+import git.doomshade.professions.profession.types.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.utils.SpawnPoint;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -32,18 +36,17 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.util.Vector;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -90,32 +93,24 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @Override
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onMine(BlockBreakEvent e) {
 
-        // don't even check for event if the event is cancelled
-        if (e.isCancelled()) {
-            return;
-        }
-
-        OreItemType ott;
+        final Ore ore;
+        final Block block = e.getBlock();
+        final Location location = block.getLocation();
         try {
-            final Material type = e.getBlock().getType();
-            ott = Utils.findInIterable(Professions.getProfessionManager().getItemTypeHolder(OreItemType.class), x -> {
-                        final Ore ore = x.getObject();
-                        return ore != null && ore.getOreMaterial() == type;
-                    }
-            );
+            ore = Utils.findInIterable(Ore.ORES.values(), x -> x != null && x.isSpawnPoint(location));
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
 
-        Ore ore = ott.getObject();
-        ProfessionEvent<OreItemType> event = getEvent(e.getPlayer(), ore, OreItemType.class);
+        final Player player = e.getPlayer();
+        ProfessionEvent<OreItemType> event = getEvent(player, ore, OreItemType.class);
         if (event == null) {
             return;
         }
-        event.addExtra(e.getBlock().getLocation().add(new Vector(0.5, 0, 0.5)));
+        event.addExtra(location);
         callEvent(event);
 
         // event is cancelled when the player does not meet requirements
@@ -123,16 +118,18 @@ public class ProfessionListener extends AbstractProfessionListener {
         if (event.isCancelled()) {
             e.setCancelled(true);
         } else {
-            e.getBlock().setType(Material.AIR);
+            final OreLocationOptions locationOptions = ore.getLocationOptions(location);
+            locationOptions.despawn();
+
+            if (!(Permissions.has(player, Permissions.BUILDER) && player.getGameMode() == GameMode.CREATIVE)) {
+                locationOptions.scheduleSpawn();
+            }
         }
     }
 
     @Override
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onCraft(CraftItemEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
 
         HumanEntity he = e.getWhoClicked();
         ItemStack cursor = e.getCursor();
@@ -209,11 +206,11 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @Override
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onGather(PlayerInteractEvent e) {
 
         // Gathering blocks by right clicking it
-        if (e.isCancelled() || e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
@@ -235,21 +232,18 @@ public class ProfessionListener extends AbstractProfessionListener {
         callEvent(event);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onHerbDestroy(BlockBreakEvent e) {
         // For admins due to possible breaking of the herb - need to remove particles from the location
 
-        if (e.isCancelled()) {
-            return;
-        }
         try {
             final Block block = e.getBlock();
             final Location location = block.getLocation();
             Herb herb = Herb.getHerb(block.getType(), location);
 
             final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
-            herbLocationOptions.removeParticles();
-            final ArrayList<SpawnPoint> spawnPoints = herb.getSpawnPoints();
+            herbLocationOptions.despawn();
+            final List<SpawnPoint> spawnPoints = herb.getSpawnPoints();
             String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
             final Player player = e.getPlayer();
             for (int i = 0; i < spawnPoints.size(); i++) {
@@ -272,11 +266,8 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @Override
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onEnchant(PlayerInteractEvent e) {
-        if (e.isCancelled()) {
-            return;
-        }
 
         Player hrac = e.getPlayer();
 
@@ -305,7 +296,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPotionDrink(PlayerItemConsumeEvent e) {
         Potion potion = Potion.getItem(e.getItem());
         if (potion != null) {
@@ -318,6 +309,78 @@ public class ProfessionListener extends AbstractProfessionListener {
                 e.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onGemInsert(PlayerInteractEvent e) {
+
+        /*final ItemStack item = e.getItem();
+        Optional<Gem> optGem = Gem.getGem(item);
+
+        if (optGem.isPresent()) {
+            Gem gem = optGem.get();
+            GetSet<ItemStack> gs = new GetSet<>(item);
+
+            if (gem.insert(gs, true)) {
+                e.getPlayer().getInventory().setItemInMainHand(gs.t);
+            }
+        }
+         */
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent e) {
+        if (!(e.getPlayer() instanceof Player)) {
+            return;
+        }
+        update((Player) e.getPlayer());
+    }
+
+    @EventHandler
+    public void onJoinE(PlayerJoinEvent e) {
+        updateLater(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onLeaveE(PlayerQuitEvent e) {
+        Gem.unApplyAll(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onClick(InventoryClickEvent e) {
+        if (!(e.getWhoClicked() instanceof Player)) {
+            return;
+        }
+        updateLater((Player) e.getWhoClicked());
+    }
+
+    @EventHandler
+    public void onHotbarScroll(PlayerItemHeldEvent e) {
+        updateLater(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onPickup(PlayerPickupItemEvent e) {
+        updateLater(e.getPlayer());
+    }
+
+    @EventHandler
+    public void onThrow(PlayerDropItemEvent e) {
+        update(e.getPlayer());
+    }
+
+    private void update(Player player) {
+        Gem.update(player);
+    }
+
+    private void updateLater(Player player) {
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                update(player);
+            }
+        }.runTaskLater(Professions.getInstance(), 1L);
     }
 
     @EventHandler

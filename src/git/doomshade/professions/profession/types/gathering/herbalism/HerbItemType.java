@@ -71,7 +71,7 @@ public class HerbItemType extends ItemType<Herb> {
                     exampleLocation = entry.getKey();
                 }
                 if (marker != null)
-                    marker.setLabel(name.isEmpty() ? "Ore" : ChatColor.stripColor(name));
+                    marker.setLabel(name.isEmpty() ? "Herb" : ChatColor.stripColor(name));
             }
             markMan.register(new HerbLocationOptions(exampleLocation, getObject()), "Herbalism");
         }

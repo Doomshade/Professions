@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -15,8 +16,8 @@ public class ProfessionListCommand extends AbstractCommand {
     public ProfessionListCommand() {
         setCommand("list");
         setDescription("Shows a list of professions");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override

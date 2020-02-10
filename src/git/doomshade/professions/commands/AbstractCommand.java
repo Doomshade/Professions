@@ -1,13 +1,9 @@
 package git.doomshade.professions.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import ru.tehkode.permissions.PermissionUser;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import java.util.*;
 
@@ -21,15 +17,16 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     private static final String COMMAND = "command";
     private static final String DESCRIPTION = "description";
     private static final String REQUIRES_PLAYER = "requiresPlayer";
-    private static final String REQUIRES_OP = "requiresOp";
     private static final String ARG_TRUE = "arg-true";
     private static final String ARG_FALSE = "arg-false";
     private static final String MESSAGE = "message";
+    private static final String REQUIRED_PERMISSIONS = "permissions";
     protected String command = "";
     protected String description = "";
+    protected Collection<String> requiredPermissions = new ArrayList<>();
     protected List<String> messages = new ArrayList<>();
     protected Map<Boolean, List<String>> args = new HashMap<>();
-    protected boolean requiresPlayer = false, requiresOp = false;
+    protected boolean requiresPlayer = false;
 
     /**
      * Partly deserializes a command (overrides all but {@code getId()} getter methods)
@@ -82,11 +79,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
             }
 
             @Override
-            public boolean requiresOp() {
-                return (boolean) map.get(REQUIRES_OP);
-            }
-
-            @Override
             public String getID() {
                 return null;
             }
@@ -97,6 +89,11 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 return (List<String>) map.get(MESSAGE);
             }
 
+            @SuppressWarnings("unchecked")
+            @Override
+            public Collection<String> getPermissions() {
+                return (List<String>) map.get(REQUIRED_PERMISSIONS);
+            }
         };
     }
 
@@ -117,16 +114,16 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         if (o == null || getClass() != o.getClass()) return false;
         AbstractCommand that = (AbstractCommand) o;
         return requiresPlayer == that.requiresPlayer &&
-                requiresOp == that.requiresOp &&
                 command.equals(that.command) &&
                 description.equals(that.description) &&
                 messages.equals(that.messages) &&
-                args.equals(that.args);
+                args.equals(that.args) &&
+                requiredPermissions.equals(that.requiredPermissions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(command, description, messages, args, requiresPlayer, requiresOp);
+        return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
     }
 
     /**
@@ -197,13 +194,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     /**
-     * @return should return true if the command requires op
-     */
-    public boolean requiresOp() {
-        return requiresOp;
-    }
-
-    /**
      * @return a unique ID for the command
      */
     public abstract String getID();
@@ -213,13 +203,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public final void setRequiresPlayer(boolean requiresPlayer) {
         this.requiresPlayer = requiresPlayer;
-    }
-
-    /**
-     * @param requiresOp the requiresOp to set
-     */
-    public final void setRequiresOp(boolean requiresOp) {
-        this.requiresOp = requiresOp;
     }
 
     public final void setArg(boolean bool, List<String> args) {
@@ -240,51 +223,22 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         map.put(COMMAND, getCommand());
         map.put(DESCRIPTION, getDescription());
         map.put(REQUIRES_PLAYER, requiresPlayer());
-        map.put(REQUIRES_OP, requiresOp());
         map.put(ARG_TRUE, getArgs().get(true));
         map.put(ARG_FALSE, getArgs().get(false));
         map.put(MESSAGE, getMessages());
+        map.put(REQUIRED_PERMISSIONS, getPermissions());
         return map;
     }
 
-    public boolean hasPermission(CommandSender sender) {
-        for (CommandPermission perm : CommandPermission.values()) {
-            if (!hasPermission(sender, perm)) {
-                return false;
-            }
-        }
-        return true;
+    public final void addPermission(String... permissions) {
+        requiredPermissions.addAll(Arrays.asList(permissions));
     }
 
-    /**
-     * @param sender the sender of command
-     * @param perm   the permission
-     * @return {@code true} if the {@code sender} has the {@code perm}
-     */
-    public boolean hasPermission(CommandSender sender, CommandPermission perm) {
-        switch (perm) {
-            case PLAYER_ONLY:
-                return sender instanceof Player;
-            case BUILDER:
-            case ADMIN:
-                if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
-                    return false;
-                }
-                PermissionUser permUser = PermissionsEx.getUser((Player) sender);
-                final String s = perm.toString();
-                return permUser.inGroup(s.charAt(0) + s.toLowerCase().substring(1));
-            case OP:
-                return sender.isOp();
-        }
-        return false;
+    public Collection<String> getPermissions() {
+        return requiredPermissions;
     }
 
-
-    /**
-     * Lists of permissions
-     */
-    public enum CommandPermission {
-        PLAYER_ONLY, BUILDER, ADMIN, OP
+    public final void setPermissions(Collection<String> permissions) {
+        this.requiredPermissions = permissions;
     }
-
 }

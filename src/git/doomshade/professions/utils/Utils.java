@@ -1,7 +1,10 @@
 package git.doomshade.professions.utils;
 
 import com.avaje.ebean.validation.NotNull;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,6 +25,10 @@ public final class Utils {
 
     public static String getReceiveXp(int xp) {
         return String.format(" and received %d XP", xp);
+    }
+
+    public static Location getLookingAt(Player player) {
+        return player.getTargetBlock((Set<Material>) null, 5).getLocation();
     }
 
 

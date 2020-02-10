@@ -10,6 +10,7 @@ import git.doomshade.professions.profession.types.gathering.herbalism.HerbItemTy
 import git.doomshade.professions.profession.types.gathering.herbalism.HerbLocationOptions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
 import java.util.logging.Level;
@@ -41,12 +42,13 @@ public class HerbalismProfession extends Profession<IGathering> {
                 final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
                 herbLocationOptions.despawn();
                 herbLocationOptions.scheduleSpawn();
-                e.getPlayer().getPlayer().getInventory().addItem(herb.getGatherItem());
+                final Player player = e.getPlayer().getPlayer();
+                player.getInventory().addItem(herb.getGatherItem());
                 String expMsg = "";
                 if (addExp(e)) {
                     expMsg = Utils.getReceiveXp(e.getExp());
                 }
-                Professions.log(String.format("%s gathered %s on spawnpoint %s".concat(expMsg), e.getPlayer().getPlayer().getName(), herb.getMarkerName(), herbLocationOptions.location), Level.CONFIG);
+                Professions.log(String.format("%s gathered %s on spawnpoint %s".concat(expMsg), player.getName(), herb.getName(), herbLocationOptions.location), Level.CONFIG);
             }
         }
     }

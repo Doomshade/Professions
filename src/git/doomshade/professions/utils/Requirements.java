@@ -44,7 +44,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         Iterator<Object> iterator = map.values().iterator();
         while (iterator.hasNext()) {
             Object next = iterator.next();
-            items.add(ItemStack.deserialize(((MemorySection) next).getValues(true)));
+            items.add(ItemUtils.deserialize(((MemorySection) next).getValues(true)));
         }
         return new Requirements(items);
     }
@@ -53,7 +53,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < items.size(); i++) {
-            map.put(String.valueOf(i), items.get(i).serialize());
+            map.put(String.valueOf(i), ItemUtils.serialize(items.get(i)));
         }
         return map;
     }

@@ -11,6 +11,8 @@ import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
 import git.doomshade.professions.profession.types.crafting.alchemy.Potion;
 import git.doomshade.professions.profession.types.crafting.alchemy.PotionItemType;
+import git.doomshade.professions.profession.types.crafting.jewelcrafting.Gem;
+import git.doomshade.professions.profession.types.crafting.jewelcrafting.GemItemType;
 import git.doomshade.professions.profession.types.enchanting.EnchantManager;
 import git.doomshade.professions.profession.types.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.types.enchanting.IEnchanting;
@@ -315,6 +317,12 @@ public final class ProfessionManager implements ISetup {
             @Override
             protected PotionItemType getItemType() {
                 return new PotionItemType(Potion.EXAMPLE_POTION, 60);
+            }
+        });
+        registerItemTypeHolder(new ItemTypeHolder<GemItemType>() {
+            @Override
+            protected GemItemType getItemType() {
+                return new GemItemType(Gem.EXAMPLE_GEM, 100);
             }
         });
     }

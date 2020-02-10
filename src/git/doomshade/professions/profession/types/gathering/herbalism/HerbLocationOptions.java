@@ -1,9 +1,9 @@
 package git.doomshade.professions.profession.types.gathering.herbalism;
 
-import git.doomshade.professions.profession.types.utils.LocationOptions;
+import git.doomshade.professions.profession.types.utils.MarkableLocationOptions;
 import org.bukkit.Location;
 
-public class HerbLocationOptions extends LocationOptions {
+public class HerbLocationOptions extends MarkableLocationOptions {
 
     /*@SuppressWarnings("unused")
     public static final Pattern MARK_ID_PATTERN = Pattern.compile("[\\w]+-[0-9]+");*/

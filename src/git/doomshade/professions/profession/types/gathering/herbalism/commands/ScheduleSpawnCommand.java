@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.types.gathering.herbalism.commands;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.types.gathering.herbalism.Herb;
 import git.doomshade.professions.profession.types.gathering.herbalism.HerbLocationOptions;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,8 +21,8 @@ public class ScheduleSpawnCommand extends AbstractCommand {
         setArg(false, Collections.singletonList("forcespawn (bypass respawn timer and configuration in itemtype, default: false)"));
         setCommand("schedulespawn");
         setDescription("Schedules a spawn of a herb");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override

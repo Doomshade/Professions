@@ -12,6 +12,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 
+import static git.doomshade.professions.data.AbstractSettings.LEVEL;
+import static git.doomshade.professions.data.AbstractSettings.outdated;
+
 public final class Settings implements ISetup {
 
     public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
@@ -22,15 +25,13 @@ public final class Settings implements ISetup {
     private static FileConfiguration lang;
     private static File langFile;
     private static Material editItem = Material.GOLD_NUGGET;
+    private static boolean autoSave = true;
 
     static {
         plugin = Professions.getInstance();
         instance = new Settings();
-        try {
-            instance.setup();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        plugin.reloadConfig();
+        config = plugin.getConfig();
 
         registerSettings(new DefaultsSettings());
         registerSettings(new ExpSettings());
@@ -96,13 +97,41 @@ public final class Settings implements ISetup {
         return editItem;
     }
 
+    public static boolean isAutoSave() {
+        return autoSave;
+    }
+
+
+    protected void printError(String section, Object value) {
+        if (!outdated) {
+            Professions.log("Your configuration file is outdated!", LEVEL);
+            outdated = true;
+        }
+        Professions.log(String.format("Missing \"%s\" variable!", section), LEVEL);
+        if (value == null)
+            Professions.log("Using default values.", LEVEL);
+        else
+            Professions.log(String.format("Using %s as default value.", value.toString()), LEVEL);
+    }
+
     @Override
     public void setup() throws IOException {
-        plugin.reloadConfig();
 
+        plugin.reloadConfig();
         config = plugin.getConfig();
 
-        editItem = Material.getMaterial(config.getString("edit-item", "GOLD_NUGGET"));
+        final String editItemPath = "edit-item";
+        editItem = Material.getMaterial(config.getString(editItemPath, "GOLD_NUGGET"));
+        if (!config.contains(editItemPath)) {
+            printError(editItemPath, "GOLD_NUGGET");
+        }
+
+        final String autoSavePath = "auto-save-before-edit";
+        autoSave = config.getBoolean(autoSavePath, true);
+
+        if (!config.contains(autoSavePath)) {
+            printError(autoSavePath, true);
+        }
 
         final File langFolder = plugin.getLangFolder();
         final String langString = config.getString("lang", DEFAULT_PROPERTIES);
@@ -121,4 +150,6 @@ public final class Settings implements ISetup {
             throw new IOException("Could not load language settings!", e);
         }
     }
+
+
 }

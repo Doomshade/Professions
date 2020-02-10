@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -23,7 +24,7 @@ public class LogFilterCommand extends AbstractCommand {
         setArg(true, Collections.singletonList("\"regex\""));
         setCommand("log");
         setDescription("Creates a log file in log directory with the searched term");
-        setRequiresOp(true);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override
@@ -49,11 +50,15 @@ public class LogFilterCommand extends AbstractCommand {
         }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
 
         final Pattern pattern = Pattern.compile(thePattern);
+        final Professions instance = Professions.getInstance();
         if (args.length >= 3) {
             String logFileName = String.join(" ", Arrays.asList(args).subList(i[0], args.length));
-            logFile = new File(Professions.getInstance().getLogsFolder(), logFileName);
+            logFile = new File(instance.getLogsFolder(), logFileName);
+            if (!logFile.exists()) {
+                logFile = new File(instance.getFilteredLogsFolder(), logFileName);
+            }
         } else {
-            logFile = Professions.getInstance().getLogFile();
+            logFile = instance.getLogFile();
             i[0]++;
         }
         if (!logFile.exists()) {
@@ -63,7 +68,7 @@ public class LogFilterCommand extends AbstractCommand {
         sender.sendMessage("Iterating through " + logFile.getName() + " with pattern: " + pattern.pattern());
 
         try (Scanner sc = new Scanner(logFile)) {
-            final File filteredLogsFolder = Professions.getInstance().getFilteredLogsFolder();
+            final File filteredLogsFolder = instance.getFilteredLogsFolder();
             File customLog = new File(filteredLogsFolder, pattern.pattern().concat("-log-".concat(System.currentTimeMillis() + ".txt")));
             if (!customLog.exists()) {
                 customLog.createNewFile();

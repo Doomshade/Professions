@@ -2,6 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -17,8 +18,8 @@ public class ProfessionInfoCommand extends AbstractCommand {
         setArgs(args);
         setCommand("info");
         setDescription("Shows all information about a player profession");
-        setRequiresOp(false);
         setRequiresPlayer(false);
+        addPermission(Permissions.DEFAULT_COMMAND_USAGE);
     }
 
     @Override

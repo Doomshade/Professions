@@ -112,13 +112,20 @@ public class UserProfessionData {
      * @param level the level to set to
      */
     public void setLevel(int level) {
+        int temp = this.level;
         this.level = Math.min(level, getLevelCap());
+        if (temp == this.level) {
+            return;
+        }
+
         if (!isMaxLevel()) {
             user.sendMessage(builder.setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
         } else {
             user.sendMessage(builder.setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
         }
 
+
+        profession.onLevelUp(this);
         // prints new possible items
         for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
             try {

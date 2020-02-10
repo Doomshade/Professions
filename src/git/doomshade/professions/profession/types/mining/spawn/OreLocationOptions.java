@@ -5,12 +5,7 @@ import git.doomshade.professions.profession.types.utils.LocationOptions;
 import org.bukkit.Location;
 
 public class OreLocationOptions extends LocationOptions {
-    public OreLocationOptions(Location location, Ore element) {
+    public OreLocationOptions(Location location, Ore element) throws IllegalArgumentException {
         super(location, element);
-    }
-
-    @Override
-    public String getMarkerSetId() {
-        return "mining";
     }
 }

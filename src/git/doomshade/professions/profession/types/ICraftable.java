@@ -87,7 +87,7 @@ public interface ICraftable extends ICustomType {
         craftable.setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
 
         MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
-        craftable.setResult(ItemStack.deserialize(itemStackSection.getValues(false)));
+        craftable.setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
 
 
     }

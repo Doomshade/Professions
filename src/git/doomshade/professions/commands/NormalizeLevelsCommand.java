@@ -1,5 +1,6 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -13,9 +14,9 @@ public class NormalizeLevelsCommand extends AbstractCommand {
         setCommand("normalize");
         setDescription(
                 "(DOESN'T WORK YET) Normalizes levels based on XP this curve (use with caution, save users before using this command!)");
-        setRequiresOp(true);
         setMessages(Arrays.asList("Normalized %d users."));
         setRequiresPlayer(false);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override

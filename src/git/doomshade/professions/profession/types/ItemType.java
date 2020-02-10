@@ -62,6 +62,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @param exp    the experience yield
      */
     public ItemType(T object, int exp) {
+
         this.itemFile = getFile(getClass());
         if (!itemFile.exists()) {
             try {
@@ -139,6 +140,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             Professions.log(e.getMessage(), Level.WARNING);
         } catch (NullPointerException e1) {
             Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId(), Level.WARNING);
+            e1.printStackTrace();
         }
 
         if (this instanceof ICustomType) {

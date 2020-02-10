@@ -1,12 +1,11 @@
 package git.doomshade.professions.profession.types.mining.commands;
 
-import git.doomshade.professions.commands.AbstractCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
-public class SetCommand extends AbstractCommand {
+public class SetCommand extends AbstractEditCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         return false;

@@ -10,14 +10,18 @@ import git.doomshade.professions.profession.types.mining.Ore;
 import git.doomshade.professions.profession.types.mining.OreItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.logging.Level;
 
 public final class MiningProfession extends Profession<IMining> {
+
 
     @Override
     public void onLoad() {
@@ -33,12 +37,18 @@ public final class MiningProfession extends Profession<IMining> {
     @Override
     @EventHandler
     public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> ev) {
+
+        final User user = ev.getPlayer();
+        final Player player = user.getPlayer();
+        if (!playerHasProfession(ev) && !Permissions.has(player, Permissions.BUILDER)) {
+            ev.setCancelled(true);
+            return;
+        }
         if (!isValidEvent(ev, OreItemType.class)) {
             return;
         }
         ProfessionEvent<OreItemType> e = getEvent(ev, OreItemType.class);
-        User hrac = e.getPlayer();
-        UserProfessionData upd = hrac.getProfessionData(getClass());
+        UserProfessionData upd = user.getProfessionData(getClass());
         if (!playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(upd);
@@ -53,21 +63,28 @@ public final class MiningProfession extends Profession<IMining> {
             int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, itemType);
             Ore ore = itemType.getObject();
 
-            String message = "";
+            if (ore == null) {
+                return;
+            }
+
+            String message = player.getName() + " mined " + ore.getName();
+
+            if (loc == null) {
+                Professions.log("Somehow mined an ore with a null location, this should not happen!", Level.WARNING);
+                return;
+            }
+
 
             // randomize drop for each drop amount
             for (int i = 0; i < amount; i++) {
-                ItemStack miningResult = null;
-                if (ore != null) {
-                    miningResult = ore.getMiningResult();
-                }
+                ItemStack miningResult = ore.getMiningResult();
 
                 if (miningResult != null) {
-                    if (loc != null) {
-                        loc.getWorld().dropItem(loc, miningResult);
-                    }
+                    loc.getWorld().dropItem(loc.clone().add(0.5, 0.5, 0.5), miningResult);
                 }
             }
+
+
             if (addExp(e)) {
                 message = message.concat(Utils.getReceiveXp(e.getExp()));
             }
@@ -75,5 +92,16 @@ public final class MiningProfession extends Profession<IMining> {
         }
     }
 
-
+    @Override
+    public List<String> getProfessionInformation(UserProfessionData upd) {
+       /* CraftPlayer pl;
+        pl.getAttribute(Attribute.).
+        MobEffectList mel = MobEffects.FASTER_DIG;
+        AttributeModifier mod;
+        //Bukkit.getPlayer("").addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 0, 0));
+        pl.getAttribute(Attribute.GENERIC_ARMOR).get
+        AttributeInstance ai;
+        AttributeBase base;*/
+        return null;
+    }
 }

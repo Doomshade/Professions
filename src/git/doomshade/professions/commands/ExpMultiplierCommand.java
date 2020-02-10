@@ -15,7 +15,6 @@ public class ExpMultiplierCommand extends AbstractCommand {
         setArg(true, Arrays.asList("multiplier", "skillapi/professions"));
         setCommand("exp-multiplier");
         setDescription("Sets the exp multiplier. (Default 1)");
-        setRequiresOp(true);
         setRequiresPlayer(false);
     }
 

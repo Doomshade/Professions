@@ -21,8 +21,8 @@ public class AdminProfessionGUI extends GUI {
     }
 
     @Override
-    public void init() throws GUIInitializationException {
-        this.prof = (Profession<?>) getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
+    public void init() {
+        this.prof = getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
         GUIInventory.Builder builder = getInventoryBuilder().size(18).title(prof.getColoredName());
 
         int i = -1;

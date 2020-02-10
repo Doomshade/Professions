@@ -5,9 +5,15 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.crafting.CustomRecipe;
 import git.doomshade.professions.profession.types.crafting.ICrafting;
+import git.doomshade.professions.profession.types.crafting.jewelcrafting.GemItemType;
 import org.bukkit.event.EventHandler;
 
 public final class JewelcraftingProfession extends Profession<ICrafting> {
+
+    @Override
+    public void onLoad() {
+        addItems(GemItemType.class);
+    }
 
     @Override
     public String getID() {

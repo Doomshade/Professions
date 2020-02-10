@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,8 +14,10 @@ public class ReloadCommand extends AbstractCommand {
     public ReloadCommand() {
         setCommand("reload");
         setDescription("Reloads plugin");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+
+        // TODO take into consideration
+        addPermission(Permissions.HELPER);
     }
 
     @Override

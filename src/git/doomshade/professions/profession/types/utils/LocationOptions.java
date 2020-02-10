@@ -1,8 +1,6 @@
 package git.doomshade.professions.profession.types.utils;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.dynmap.IMarkable;
-import git.doomshade.professions.dynmap.MarkerWrapper;
 import git.doomshade.professions.task.ParticleTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -11,26 +9,22 @@ import org.bukkit.Material;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public abstract class LocationOptions implements IMarkable {
+public abstract class LocationOptions {
 
     public final Location location;
     public final LocationElement element;
-    private final MarkerWrapper marker;
     private ParticleTask particleTask;
-    private SpawnTask spawnTask;
+    protected SpawnTask spawnTask;
     private boolean spawned = false;
 
-    public LocationOptions(Location location, LocationElement element) {
+    public LocationOptions(Location location, LocationElement element) throws IllegalArgumentException {
         this.location = location;
         this.element = element;
+        if (!element.getSpawnPoints().contains(new SpawnPoint(location))) {
+            throw new IllegalArgumentException("No spawn point with that location exists for " + element.getName());
+        }
         particleTask = new ParticleTask(element.getParticleData(), location);
         spawnTask = new SpawnTask(this);
-        final int id = spawnTask.id;
-        if (id != -1 && element instanceof MarkableLocationElement) {
-            this.marker = new MarkerWrapper(element.getId().concat("-").concat(String.valueOf(id)), ((MarkableLocationElement) element).getMarkerIcon(), location);
-        } else {
-            marker = null;
-        }
     }
 
     public boolean isSpawned() {
@@ -47,7 +41,7 @@ public abstract class LocationOptions implements IMarkable {
         } catch (IllegalStateException ignored) {
         }
         spawnTask = new SpawnTask(spawnTask);
-        spawnTask.runTaskTimer(Professions.getInstance(), 20L, 20L);
+        spawnTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
     }
 
     public void spawn() {
@@ -61,9 +55,6 @@ public abstract class LocationOptions implements IMarkable {
         location.getBlock().setType(element.getMaterial());
         unscheduleSpawn();
         spawned = true;
-        if (marker != null) {
-            Professions.getMarkerManager().show(this);
-        }
         Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
@@ -78,11 +69,8 @@ public abstract class LocationOptions implements IMarkable {
         removeParticles();
         location.getBlock().setType(Material.AIR);
         unscheduleSpawn();
-        if (marker != null) {
-            Professions.getMarkerManager().hide(this);
-        }
         spawned = false;
-        Professions.log(String.format("Herb %s despawned at %s", element.getName(), location), Level.CONFIG);
+        Professions.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
     private void addParticles() {
@@ -116,10 +104,5 @@ public abstract class LocationOptions implements IMarkable {
     @Override
     public int hashCode() {
         return Objects.hash(location, element);
-    }
-
-    @Override
-    public final MarkerWrapper getMarker() {
-        return marker;
     }
 }

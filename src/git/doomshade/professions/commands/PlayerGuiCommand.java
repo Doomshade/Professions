@@ -2,6 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,8 +14,8 @@ public class PlayerGuiCommand extends AbstractCommand {
     public PlayerGuiCommand() {
         setCommand("gui");
         setDescription("Opens the professions GUI");
-        setRequiresOp(false);
         setRequiresPlayer(true);
+        addPermission(Permissions.DEFAULT_COMMAND_USAGE);
     }
 
     @Override

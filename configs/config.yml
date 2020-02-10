@@ -4,6 +4,9 @@ lang: cz_CS
 ## edit item material for stuff such as ore editing
 edit-item: GOLD_NUGGET
 
+## auto saves the plugin before editing files in-game (e.g. adding a new Ore)
+auto-save-before-edit: true
+
 ## default XP curve
 xp-curve:
   ## the formula is x*lvl^2 + y*lvl + z

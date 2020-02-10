@@ -15,17 +15,36 @@ import java.util.*;
 import static git.doomshade.professions.profession.types.utils.SpawnPoint.SpawnPointEnum.*;
 
 public class SpawnPoint implements ConfigurationSerializable {
-    public static final HashSet<SpawnPoint> SPAWN_POINTS = new HashSet<>();
+
+    public static final HashSet<SpawnPoint> SPAWN_POINTS;
+    public static final SpawnPoint EXAMPLE;
+
+    static {
+        SPAWN_POINTS = new HashSet<>();
+        EXAMPLE = new SpawnPoint(ItemUtils.EXAMPLE_LOCATION, new Range(5));
+    }
+
     public final Location location;
     final Range respawnTime;
 
-    private SpawnPoint(Location location, Range respawnTime) {
+    /**
+     * Use this constructor to create a new spawn point
+     *
+     * @param location
+     * @param respawnTime
+     */
+    public SpawnPoint(Location location, Range respawnTime) {
         this.location = location;
         this.respawnTime = respawnTime;
         if (respawnTime.getMin() != -1)
             SPAWN_POINTS.add(this);
     }
 
+    /**
+     * For hashcode purposes only! Makes checking collections with {@code contains} method easier.
+     *
+     * @param location
+     */
     public SpawnPoint(Location location) {
         this(location, new Range(-1));
     }
@@ -68,7 +87,7 @@ public class SpawnPoint implements ConfigurationSerializable {
         return new HashMap<String, Object>() {
             {
                 put(LOCATION.s, location.serialize());
-                put(RESPAWN_TIME.s, respawnTime);
+                put(RESPAWN_TIME.s, respawnTime.toString());
             }
         };
     }

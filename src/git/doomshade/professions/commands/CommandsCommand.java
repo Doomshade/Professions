@@ -1,5 +1,6 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,8 +12,8 @@ public class CommandsCommand extends AbstractCommand {
     public CommandsCommand() {
         setCommand("cmds");
         setDescription("Shows all available commands");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
