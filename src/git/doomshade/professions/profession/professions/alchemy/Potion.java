@@ -38,7 +38,6 @@ public class Potion implements ConfigurationSerializable {
 
     private static final String NBT_KEY = "profession_potion";
 
-    // TODO clearing them currently in onDisable
     static final HashSet<Potion> POTIONS = new HashSet<>();
     private static final String SPLIT_CHAR = ":";
 

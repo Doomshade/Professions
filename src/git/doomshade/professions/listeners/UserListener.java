@@ -2,9 +2,6 @@ package git.doomshade.professions.listeners;
 
 import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
-import net.minecraft.server.v1_9_R1.MobEffect;
-import net.minecraft.server.v1_9_R1.MobEffects;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -82,7 +79,7 @@ public class UserListener implements Listener {
 
         //
         // TODO
-        ((CraftPlayer) player).getHandle().addEffect(new MobEffect(MobEffects.FASTER_DIG, 60, 0, false, false));
+        // ((CraftPlayer) player).getHandle().addEffect(new MobEffect(MobEffects.FASTER_DIG, 60, 0, false, false));
 
     }
 

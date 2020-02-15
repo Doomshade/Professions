@@ -191,7 +191,7 @@ public abstract class Enchant implements ConfigurationSerializable {
         return "enchant name: " + getClass().getSimpleName() + "\nitem: " + item;
     }
 
-    // TODO might not be used
+    // might not be used
     public abstract List<Integer> getIntensities();
 
     public int getCraftExpYield() {

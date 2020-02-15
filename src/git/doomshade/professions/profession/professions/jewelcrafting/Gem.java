@@ -126,7 +126,6 @@ public class Gem implements ConfigurationSerializable {
 
         Set<Gem> gems = new HashSet<>();
 
-        // TODO unapply gem, který dřív byl aktivní!
         final PlayerInventory inventory = player.getInventory();
         for (ItemStack item : inventory.getArmorContents()) {
             if (item == null) {
@@ -147,6 +146,7 @@ public class Gem implements ConfigurationSerializable {
             }
         }
 
+        // apply new gems and unapply the ones that are no longer active
         Set<Gem> activeGems = ACTIVE_GEMS.getOrDefault(player.getUniqueId(), new HashSet<>());
         final Sets.SetView<Gem> difference1 = Sets.difference(gems, activeGems);
         difference1.forEach(x -> x.apply(player));
