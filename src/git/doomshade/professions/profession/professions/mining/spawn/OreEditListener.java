@@ -1,38 +1,99 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
-import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.gui.oregui.OreGUI;
+import git.doomshade.professions.profession.professions.mining.Ore;
+import git.doomshade.professions.profession.professions.mining.OreItemType;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.utils.Range;
+import git.doomshade.professions.utils.Utils;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OreEditListener implements Listener {
 
+    private static final HashMap<UUID, OreLocation> CHAT = new HashMap<>();
 
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-
-        // no reason to check if no block right clicked
-        if (!event.hasBlock() || event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockPlace(BlockPlaceEvent event) {
         final Player player = event.getPlayer();
-        ItemStack hand = player.getInventory().getItemInMainHand();
+        final UUID uuid = player.getUniqueId();
+        if (CHAT.containsKey(uuid)) {
+            event.setCancelled(true);
+            player.sendMessage("Musíš prvně napsat range (buď číslo nebo číslo-číslo) (např. 5 nebo 8-11)");
+        }
+        try {
+            final ItemTypeHolder<OreItemType> itemTypeHolder = Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);
+            final ItemStack itemInHand = event.getItemInHand();
+            if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName()) {
+                return;
+            }
+            final String displayName = itemInHand.getItemMeta().getDisplayName();
+            OreItemType oreItemType = Utils.findInIterable(itemTypeHolder.getRegisteredItemTypes(), x -> x.getIcon(null).getItemMeta().getDisplayName().equals(displayName));
+            net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(itemInHand);
+            final Location location = event.getBlock().getLocation();
+            final Ore ore = oreItemType.getObject();
+            if (ore != null) {
+                if (nms.hasTag() && nms.getTag().hasKey("ignoreRange") && nms.getTag().getByte("ignoreRange") == 1) {
+                    final SpawnPoint sp = new SpawnPoint(location, new Range(0));
+                    ore.addSpawnPoint(sp);
+                    ore.getLocationOptions(sp.location).spawn();
+                    player.sendMessage("Přidán nový spawn point pro " + ore.getName());
+                } else {
+                    CHAT.put(uuid, new OreLocation(ore, location));
+                    player.sendMessage("Nyní napiš range (buď číslo nebo číslo-číslo) (např. 5 nebo 8-11)");
+                }
+            }
+        } catch (Utils.SearchNotFoundException ignored) {
+        }
+    }
 
-        // Checks if the block is clicked with editor and is a wool
-        if (hand == null || hand.getType() != Settings.getEditItem())
-            return;
+    @EventHandler(ignoreCancelled = true)
+    public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
+        final Player player = event.getPlayer();
+        final UUID uuid = player.getUniqueId();
+        final OreLocation oreLocation = CHAT.remove(uuid);
+        if (oreLocation != null) {
+            event.setCancelled(true);
+            Pattern rangePattern = Range.RANGE_PATTERN;
+            Matcher matcher = rangePattern.matcher(event.getMessage());
+            if (!matcher.find()) {
+                CHAT.put(uuid, oreLocation);
+                player.sendMessage("Neplatná range");
+                return;
+            }
+            Ore ore = oreLocation.ore;
+            final Range respawnTime = Range.fromString(event.getMessage());
+            if (ore != null && respawnTime != null) {
+                final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime);
+                ore.addSpawnPoint(sp);
+                ore.getLocationOptions(sp.location).spawn();
+                player.sendMessage("Přidán nový spawn point pro " + ore.getName());
+            } else {
+                player.sendMessage("Nastala neočekávaná chyba, ore == null || respawnTime == null");
+            }
 
-        final Optional<? extends GUI> optionalGUI = Professions.getGUIManager().getGui(OreGUI.class, player);
-        if (optionalGUI.isPresent()) {
-            GUI gui = optionalGUI.get();
-            gui.getContext().addContext(OreGUI.ORE_LOCATION, event.getClickedBlock().getLocation());
+        }
+    }
+
+    private static class OreLocation {
+        private final Ore ore;
+        private final Location location;
+
+        private OreLocation(Ore ore, Location location) {
+            this.ore = ore;
+            this.location = location;
         }
     }
 }

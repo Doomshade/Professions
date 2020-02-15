@@ -46,7 +46,6 @@ public class Ore implements ConfigurationSerializable, LocationElement {
         this.spawnPoints = spawnPoints;
         this.particleData = particleData;
         this.results = results;
-
         if (!id.equals(EXAMPLE_ORE_ID))
             ORES.put(id, this);
     }

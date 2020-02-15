@@ -13,6 +13,7 @@ import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.gui.adminguis.AdminProfessionGUI;
 import git.doomshade.professions.gui.adminguis.AdminProfessionsGUI;
+import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
@@ -25,6 +26,7 @@ import git.doomshade.professions.profession.professions.alchemy.commands.Alchemy
 import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
+import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
@@ -372,6 +374,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new UserListener(), this);
         pm.registerEvents(new ProfessionListener(), this);
         pm.registerEvents(new PluginProfessionListener(), this);
+        pm.registerEvents(new OreEditListener(), this);
 
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
@@ -631,6 +634,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         guiManager.registerGui(ProfessionTrainerGUI.class);
         guiManager.registerGui(AdminProfessionsGUI.class);
         guiManager.registerGui(AdminProfessionGUI.class);
+        guiManager.registerGui(OreGUI.class);
         hookMessage("GUIApi");
     }
 

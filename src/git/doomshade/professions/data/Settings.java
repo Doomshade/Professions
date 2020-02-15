@@ -110,6 +110,10 @@ public final class Settings implements ISetup {
         return miningWorlds;
     }
 
+    public static boolean isHandleMineEvents() {
+        return handleMineEvents;
+    }
+
     protected void printError(String section, Object value) {
         if (!outdated) {
             Professions.log("Your configuration file is outdated!", LEVEL);

@@ -32,12 +32,8 @@ public final class EventManager {
         if (object == null) {
             return null;
         }
-        String itemTypeClassName = itemTypeClass.getSimpleName();
         for (ItemTypeHolder<?> itemHolder : Professions.getProfessionManager().getItemTypeHolders()) {
-            String[] typeNameSplit = itemHolder.getClass().getGenericSuperclass().getTypeName().split("[.]");
-            final String s = typeNameSplit[typeNameSplit.length - 1];
-            String itemHolderItemTypeName = s.substring(0, s.length() - 1);
-            if (!itemHolderItemTypeName.equalsIgnoreCase(itemTypeClassName)) {
+            if (!itemHolder.getItemType().getClass().equals(itemTypeClass)) {
                 continue;
             }
             for (ItemType<?> item : itemHolder.getRegisteredItemTypes()) {

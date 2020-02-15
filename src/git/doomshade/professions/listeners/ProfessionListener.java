@@ -102,7 +102,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         final Location location = block.getLocation();
 
         final Ore ore;
-
+        final Player player = e.getPlayer();
         // is the destroyed block an ore?
         try {
 
@@ -110,15 +110,21 @@ public class ProfessionListener extends AbstractProfessionListener {
             ore = Utils.findInIterable(Ore.ORES.values(), x -> x != null && x.isSpawnPoint(location));
         } catch (Utils.SearchNotFoundException ex) {
 
-            // no, if the world is a mining world, cancel the event if the player is not ranked >=builder
-            if (Settings.getMiningWorlds().contains(location.getWorld().getName().toLowerCase()) && !Permissions.has(e.getPlayer(), Permissions.BUILDER)) {
+            // no, if the world is a mining world AND also if the plugin should handle the event, cancel the event if the player is not ranked >=builder
+            final boolean world = Settings.getMiningWorlds().contains(location.getWorld().getName().toLowerCase());
+
+            final boolean permission = Permissions.has(e.getPlayer(), Permissions.BUILDER);
+            final boolean handleEvents = Settings.isHandleMineEvents();
+
+            if (world && !permission && handleEvents) {
+
+                // keep the e.setCancelled(true) because we ONLY want to cancel the event if the requirements are met
                 e.setCancelled(true);
             }
             return;
         }
 
         // ore found, let's call the event and let the profession handle it
-        final Player player = e.getPlayer();
         ProfessionEvent<OreItemType> event = getEvent(player, ore, OreItemType.class);
         if (event == null) {
             return;
@@ -355,12 +361,10 @@ public class ProfessionListener extends AbstractProfessionListener {
 
     @EventHandler
     public void onJoinE(PlayerJoinEvent e) {
-        updateLater(e.getPlayer());
     }
 
     @EventHandler
     public void onLeaveE(PlayerQuitEvent e) {
-        Gem.unApplyAll(e.getPlayer());
     }
 
     @EventHandler
@@ -404,11 +408,16 @@ public class ProfessionListener extends AbstractProfessionListener {
     public void onLeave(PlayerQuitEvent e) {
         //Potion.cache(e.getPlayer());
 
+        // unapplies gem effects
+        Gem.unApplyAll(e.getPlayer());
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         //Potion.loadFromCache(e.getPlayer());
+
+        // updates gems
+        updateLater(e.getPlayer());
     }
 
     @Override

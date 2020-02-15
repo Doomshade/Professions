@@ -136,6 +136,8 @@ public abstract class AbstractProfessionListener implements Listener {
 
         T itemType = em.getItemType(item, itemClass);
         if (itemType == null) {
+            // log
+            player.sendMessage("itemtype == null");
             return null;
         }
         return em.getEvent(itemType, User.getUser(player), extras);

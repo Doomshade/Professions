@@ -12,7 +12,6 @@ import java.util.Optional;
 
 public class AlchemyProfession extends Profession<ICrafting> {
 
-
     @Override
     public void onLoad() {
         addItems(PotionItemType.class);

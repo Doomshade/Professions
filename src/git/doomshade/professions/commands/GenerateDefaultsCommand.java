@@ -39,7 +39,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
 
         for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfessionManager().getItemTypeHolders()) {
-            ItemType<?> itemType = itemTypeHolder.getItemTypeItem();
+            ItemType<?> itemType = itemTypeHolder.getItemType();
 
             Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), itemType.getId());
 

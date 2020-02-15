@@ -33,7 +33,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @see ProfessionManager and its regsiterItemTypeHolders() method on GitHub to see an example on how to register this holder properly.
  */
-public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
+public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
 
     /**
      * Keys in item type file
@@ -59,8 +59,8 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
 
     private Type itemType;
 
-    public ItemTypeHolder() {
-        this.itemType = getItemType();
+    public ItemTypeHolder(Type itemType) {
+        this.itemType = itemType;
     }
 
     public final void registerObject(Type item) {
@@ -122,9 +122,7 @@ public abstract class ItemTypeHolder<Type extends ItemType<?>> implements Iterab
         loader.save(itemFile);
     }
 
-    protected abstract Type getItemType();
-
-    public final Type getItemTypeItem() {
+    public final Type getItemType() {
         return itemType;
     }
 

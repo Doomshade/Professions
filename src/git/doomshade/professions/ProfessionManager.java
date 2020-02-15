@@ -40,7 +40,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -137,7 +136,7 @@ public final class ProfessionManager implements ISetup {
      */
     public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemTypeItem().getClass());
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
     }
 
     /**
@@ -179,28 +178,11 @@ public final class ProfessionManager implements ISetup {
     }
 
     /**
-     * Registers a {@link Profession}. Call this method in your {@link org.bukkit.plugin.java.JavaPlugin}'s {@link JavaPlugin#onEnable()} method.
-     *
-     * @param profession the {@link Profession} class
-     */
-    public void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
-        try {
-            if (Profession.INITED_PROFESSIONS.contains(profession)) {
-                throw new IllegalStateException(profession.getSimpleName() + " is already registered!");
-            }
-            registerProfession(profession.getDeclaredConstructor().newInstance());
-        } catch (Exception e) {
-            Professions.log("Do not override nor create any new constructors in your profession class!", Level.WARNING);
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * @param clazz the {@link IProfessionType} class
      * @see IProfessionType for already registered profession types.
      * Registers a custom {@link IProfessionType}.
      */
-    public void registerProfessionType(Class<? extends IProfessionType> clazz) {
+    private void registerProfessionType(Class<? extends IProfessionType> clazz) {
         PROFESSION_TYPES.add(clazz);
     }
 
@@ -225,105 +207,75 @@ public final class ProfessionManager implements ISetup {
     }
 
     private void registerItemTypeHolders() throws IOException {
-        registerItemTypeHolder(new ItemTypeHolder<OreItemType>() {
+        {
+            OreItemType ore = new OreItemType(Ore.EXAMPLE_ORE, 100);
+            ore.setName(ChatColor.GRAY + "Obsidian");
+            registerItemTypeHolder(new ItemTypeHolder<>(ore));
+        }
+        {
+            Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
+            prey.setName(ChatColor.YELLOW + "Kostlivec");
+            registerItemTypeHolder(new ItemTypeHolder<>(prey));
+        }
+        {
+            HerbItemType herb = new HerbItemType(Herb.EXAMPLE_HERB, 500);
+            herb.setName(ChatColor.DARK_AQUA + "Test gather item");
+            registerItemTypeHolder(new ItemTypeHolder<>(herb));
+        }
+        {
+            EnchantManager enchm = EnchantManager.getInstance();
+            try {
+                enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
+            EnchantedItemItemType eit = new EnchantedItemItemType(ench, 69);
+            ItemStack craftRequirement = new ItemStack(Material.GLASS);
+            ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
+            craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
+            craftRequirementMeta.setLore(ImmutableList.of("Japato"));
+            craftRequirement.setItemMeta(craftRequirementMeta);
+            eit.addCraftingRequirement(craftRequirement);
+            eit.setName(ChatColor.RED + "Test random attribute enchantment");
+            registerItemTypeHolder(new ItemTypeHolder<>(eit));
+        }
+        {
+            ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
+            CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
+            cr.setName(ChatColor.DARK_GREEN + "Test recipe");
+            final ItemTypeHolder<CustomRecipe> itemTypeHolder = new ItemTypeHolder<>(cr);
+            itemTypeHolder.registerObject(cr);
 
-            @Override
-            public OreItemType getItemType() {
-                OreItemType ore = new OreItemType(Ore.EXAMPLE_ORE, 100);
-                ore.setName(ChatColor.GRAY + "Obsidian");
-                return ore;
-            }
-        });
-        registerItemTypeHolder(new ItemTypeHolder<Prey>() {
-            @Override
-            public Prey getItemType() {
-                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
-                prey.setName(ChatColor.YELLOW + "Kostlivec");
-                return prey;
-            }
-        });
-
-        registerItemTypeHolder(new ItemTypeHolder<HerbItemType>() {
-            @Override
-            public HerbItemType getItemType() {
-                HerbItemType herb = new HerbItemType(Herb.EXAMPLE_HERB, 500);
-                herb.setName(ChatColor.DARK_AQUA + "Test gather item");
-                return herb;
-            }
-        });
-        registerItemTypeHolder(new ItemTypeHolder<EnchantedItemItemType>() {
-            @Override
-            public EnchantedItemItemType getItemType() {
-                EnchantManager enchm = EnchantManager.getInstance();
-                try {
-                    enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
-                } catch (Exception e) {
-                    e.printStackTrace();
+            // clear these recipes if they exist, let the CustomRecipe class handle it!
+            final Server server = Bukkit.getServer();
+            Iterator<Recipe> bukkitRecipes = server.recipeIterator();
+            while (bukkitRecipes.hasNext()) {
+                Recipe bukkitRecipe = bukkitRecipes.next();
+                if (!(bukkitRecipe instanceof ShapedRecipe)) {
+                    continue;
                 }
-                RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
-                EnchantedItemItemType eit = new EnchantedItemItemType(ench, 69);
-                ItemStack craftRequirement = new ItemStack(Material.GLASS);
-                ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
-                craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
-                craftRequirementMeta.setLore(ImmutableList.of("Japato"));
-                craftRequirement.setItemMeta(craftRequirementMeta);
-                eit.addCraftingRequirement(craftRequirement);
-                eit.setName(ChatColor.RED + "Test random attribute enchantment");
-                return eit;
-            }
-        });
-
-        registerItemTypeHolder(new ItemTypeHolder<CustomRecipe>() {
-            @Override
-            public CustomRecipe getItemType() {
-                ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
-                CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
-                cr.setName(ChatColor.DARK_GREEN + "Test recipe");
-                registerObject(cr);
-
-                // clear these recipes if they exist, let the CustomRecipe class handle it!
-                final Server server = Bukkit.getServer();
-                Iterator<Recipe> bukkitRecipes = server.recipeIterator();
-                while (bukkitRecipes.hasNext()) {
-                    Recipe bukkitRecipe = bukkitRecipes.next();
-                    if (!(bukkitRecipe instanceof ShapedRecipe)) {
-                        continue;
-                    }
-                    CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
-                    for (CustomRecipe customRecipe : getRegisteredItemTypes()) {
-                        if (customRecipe.equalsObject(bukkitShapedRecipe)) {
-                            bukkitRecipes.remove();
-                        }
+                CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
+                for (CustomRecipe customRecipe : itemTypeHolder.getRegisteredItemTypes()) {
+                    if (customRecipe.equalsObject(bukkitShapedRecipe)) {
+                        bukkitRecipes.remove();
                     }
                 }
-                return cr;
             }
-        });
-
-        registerItemTypeHolder(new ItemTypeHolder<BarItemType>() {
-
-            @Override
-            protected BarItemType getItemType() {
-                BarItemType barItemType = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
-                barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-                barItemType.setName(ChatColor.BLUE + "Test bar");
-                return barItemType;
-            }
-        });
-
-        registerItemTypeHolder(new ItemTypeHolder<PotionItemType>() {
-
-            @Override
-            protected PotionItemType getItemType() {
-                return new PotionItemType(Potion.EXAMPLE_POTION, 60);
-            }
-        });
-        registerItemTypeHolder(new ItemTypeHolder<GemItemType>() {
-            @Override
-            protected GemItemType getItemType() {
-                return new GemItemType(Gem.EXAMPLE_GEM, 100);
-            }
-        });
+            registerItemTypeHolder(itemTypeHolder);
+        }
+        {
+            BarItemType barItemType = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
+            barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+            barItemType.setName(ChatColor.BLUE + "Test bar");
+            registerItemTypeHolder(new ItemTypeHolder<>(barItemType));
+        }
+        {
+            registerItemTypeHolder(new ItemTypeHolder<>(new PotionItemType(Potion.EXAMPLE_POTION, 60)));
+        }
+        {
+            registerItemTypeHolder(new ItemTypeHolder<>(new GemItemType(Gem.EXAMPLE_GEM, 100)));
+        }
     }
 
 
@@ -377,7 +329,7 @@ public final class ProfessionManager implements ISetup {
             REGISTERED_PROFESSIONS.add(prof.getClass());
         }
 
-        /*Professions.log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
+        /*Professions._log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);
         e.printStackTrace();
         */
         prof.onLoad();
@@ -385,7 +337,7 @@ public final class ProfessionManager implements ISetup {
             Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
     }
 
-    private void registerProfession(Profession<? extends IProfessionType> prof) {
+    public void registerProfession(Profession<? extends IProfessionType> prof) {
         registerProfession(prof, true);
     }
 
@@ -396,13 +348,11 @@ public final class ProfessionManager implements ISetup {
         PROFESSIONS_NAME = sortByValue(MAP_COPY);
     }
 
-    private Map<String, Profession<? extends IProfessionType>> sortByValue(
-            Map<String, Profession<? extends IProfessionType>> unsortMap) {
+    private Map<String, Profession<? extends IProfessionType>> sortByValue(Map<String, Profession<? extends IProfessionType>> unsortMap) {
 
-        List<Entry<String, Profession<? extends IProfessionType>>> list = new LinkedList<>(
-                unsortMap.entrySet());
+        List<Entry<String, Profession<? extends IProfessionType>>> list = new LinkedList<>(unsortMap.entrySet());
 
-        Collections.sort(list, Comparator.comparing(o -> o.getValue().getName()));
+        list.sort(Comparator.comparing(o -> o.getValue().getName()));
         Map<String, Profession<? extends IProfessionType>> sortedMap = new LinkedHashMap<>();
         for (Entry<String, Profession<? extends IProfessionType>> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());

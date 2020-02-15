@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * @author Doomshade
  */
 public class Range {
-    private static final Pattern RANGE_PATTERN = Pattern.compile("([0-9]+)-([0-9]+)");
+    public static final Pattern RANGE_PATTERN = Pattern.compile("(\\d)+(-(\\d)+)?");
     private final int min, max;
     private final Random random = new Random();
 
@@ -60,7 +60,12 @@ public class Range {
     public static Range fromString(String s) {
         Matcher m = RANGE_PATTERN.matcher(s);
         if (m.find()) {
-            return new Range(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+            final String group = m.group(2);
+            final int min = Integer.parseInt(m.group(1));
+            if (group != null)
+                return new Range(min, Integer.parseInt(group));
+            else
+                return new Range(min);
         } else {
             try {
                 return new Range(Integer.parseInt(s.trim()));

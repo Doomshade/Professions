@@ -214,20 +214,6 @@ public final class ItemUtils {
             .build();
     public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
 
-
-    private static ItemUtils instance;
-
-    static {
-        instance = new ItemUtils();
-    }
-
-    /**
-     * @return the instance of this class
-     */
-    public static ItemUtils getInstance() {
-        return instance;
-    }
-
     /**
      * Calls {@link #getDescription(ItemType, List)} with {@link ItemType}'s description from file.
      *
