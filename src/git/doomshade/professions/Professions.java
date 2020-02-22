@@ -1,6 +1,10 @@
 package git.doomshade.professions;
 
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.commands.AbstractCommandHandler;
@@ -18,10 +22,7 @@ import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
 import git.doomshade.professions.gui.playerguis.TestThreeGui;
-import git.doomshade.professions.listeners.PluginProfessionListener;
-import git.doomshade.professions.listeners.ProfessionListener;
-import git.doomshade.professions.listeners.SkillAPIListener;
-import git.doomshade.professions.listeners.UserListener;
+import git.doomshade.professions.listeners.*;
 import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
 import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
@@ -370,17 +371,38 @@ public final class Professions extends JavaPlugin implements ISetup {
         hookDynmap();
         scheduleTasks();
 
-        PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(new UserListener(), this);
-        pm.registerEvents(new ProfessionListener(), this);
-        pm.registerEvents(new PluginProfessionListener(), this);
-        pm.registerEvents(new OreEditListener(), this);
+        registerListeners();
+
+
+        // TODO test
+        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Server.ENTITY_EQUIPMENT, PacketType.Play.Server.ENTITY) {
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+                // je to BLOCK_PLACE nebo ITEM_USE packet, který
+
+                Professions.log(event.getPacket());
+            }
+
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                Professions.log(event.getPacket());
+            }
+        });
 
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 itemType.onLoad();
             }
         }
+    }
+
+    private void registerListeners() {
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(new UserListener(), this);
+        pm.registerEvents(new ProfessionListener(), this);
+        pm.registerEvents(new PluginProfessionListener(), this);
+        pm.registerEvents(new OreEditListener(), this);
+        pm.registerEvents(new JewelcraftingListener(), this);
     }
 
 

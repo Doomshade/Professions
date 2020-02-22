@@ -9,6 +9,7 @@ import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import net.minecraft.server.v1_9_R1.NBTTagCompound;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -66,28 +68,12 @@ public class Gem implements ConfigurationSerializable {
         }
     }
 
-    public static Optional<Gem> getGem(String id) {
-        return Optional.ofNullable(GEMS.get(id));
-    }
-
-    /**
-     * Checks for the NBT Tag of the ItemStack. If found, returns the gem
-     *
-     * @param item the item to check for
-     * @return the gem if it actually is one
-     */
-    public static Optional<Gem> getGem(ItemStack item) {
-        return getGem(item, GEM_NBT_TAG);
-    }
-
-    public static Optional<Gem> getGemInItem(ItemStack item) {
-        return getGem(item, ACTIVE_GEM_NBT_TAG);
-    }
-
     private static Optional<Gem> getGem(ItemStack item, String tag) {
+
+
         final Optional<Gem> empty = Optional.empty();
 
-        if (item == null) {
+        if (item == null || item.getType() == Material.AIR) {
             return empty;
         }
         net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
@@ -112,6 +98,32 @@ public class Gem implements ConfigurationSerializable {
         }
 
         return Optional.of(value);
+    }
+
+    public static Optional<Gem> getGem(String id) {
+        return Optional.ofNullable(GEMS.get(id));
+    }
+
+    /**
+     * Checks for the NBT Tag of the ItemStack. If found, returns the gem
+     *
+     * @param item the item to check for
+     * @return the gem if it actually is one
+     */
+    public static Optional<Gem> getGem(ItemStack item) {
+        return getGem(item, GEM_NBT_TAG);
+    }
+
+    public static Optional<Gem> getGemInItem(ItemStack item) {
+        return getGem(item, ACTIVE_GEM_NBT_TAG);
+    }
+
+    private ItemStack addNbtTag(ItemStack gem) {
+        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(gem);
+        NBTTagCompound nbtTag = itemStack.hasTag() ? itemStack.getTag() : new NBTTagCompound();
+        nbtTag.setString(GEM_NBT_TAG, id);
+        itemStack.setTag(nbtTag);
+        return CraftItemStack.asBukkitCopy(itemStack);
     }
 
     public static boolean hasGem(ItemStack item) {
@@ -191,13 +203,6 @@ public class Gem implements ConfigurationSerializable {
         return context;
     }
 
-    private ItemStack addNbtTag(ItemStack gem) {
-        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(gem);
-        NBTTagCompound nbtTag = itemStack.hasTag() ? itemStack.getTag() : new NBTTagCompound();
-        nbtTag.setString(GEM_NBT_TAG, id);
-        itemStack.setTag(nbtTag);
-        return CraftItemStack.asBukkitCopy(itemStack);
-    }
 
     public void apply(Player player) {
         final UUID uniqueId = player.getUniqueId();
@@ -221,51 +226,84 @@ public class Gem implements ConfigurationSerializable {
         return ACTIVE_GEMS.getOrDefault(player.getUniqueId(), new HashSet<>()).contains(this);
     }
 
-    public boolean insert(GetSet<ItemStack> getSet, boolean ignoreMisto) {
+    public InsertResult insert(GetSet<ItemStack> getSet) {
+        return insert(getSet, false);
+    }
 
-        ItemStack item = getSet.t;
+    public InsertResult insert(GetSet<ItemStack> getSet, boolean ignoreMisto) {
+
+        ItemStack item = getSet.t.clone();
 
         // firstly check whether or not the item has lore
         if (item == null || (!ignoreMisto && !item.hasItemMeta())) {
-            return false;
+            return InsertResult.INVALID_ITEM;
         }
 
         final ItemMeta itemMeta = item.getItemMeta();
 
         if (!ignoreMisto && !itemMeta.hasLore()) {
-            return false;
+            return InsertResult.INVALID_ITEM;
         }
 
-        if (!ignoreMisto) {
-            AtomicInteger i = new AtomicInteger(-1);
-            final List<String> lore = itemMeta.getLore();
+        if (hasGem(item)) {
+            return InsertResult.NO_GEM_SPACE;
+        }
 
-            // look for the gem slot, return false if not found
-            try {
-                Utils.findInIterable(lore, x -> {
-                    i.getAndIncrement();
-                    return !x.isEmpty() && ChatColor.stripColor(x).equalsIgnoreCase(EMPTY_GEM);
-                });
-            } catch (Utils.SearchNotFoundException e) {
-                return false;
-            }
 
-            lore.set(i.get(), displayName);
+        AtomicInteger index = new AtomicInteger(-1);
+        final List<String> lore = itemMeta.getLore();
+
+        // look for the gem slot, return false if not found
+        try {
+            Utils.findInIterable(lore, new Predicate<String>() {
+
+                boolean alreadyFound = false;
+
+                int i = 0;
+
+                @Override
+                public boolean test(String x) {
+                    boolean found = !x.isEmpty() && ChatColor.stripColor(x).equalsIgnoreCase(EMPTY_GEM);
+
+                    if (!alreadyFound) {
+                        if (found) {
+                            alreadyFound = true;
+                            index.set(i);
+                        } else {
+                            i++;
+                        }
+                    }
+
+                    return found;
+                }
+            });
+        } catch (Utils.SearchNotFoundException e) {
+            if (!ignoreMisto)
+                return InsertResult.NO_GEM_SPACE;
+        }
+
+        final int theIndex = index.get();
+
+        if (theIndex != -1) {
+            lore.set(theIndex, displayName);
+            itemMeta.setLore(lore);
+            item.setItemMeta(itemMeta);
         }
 
         // gem slot found, time to add NBT tag and replace the gem line
         net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
 
         NBTTagCompound nbtTag = itemStack.hasTag() ? itemStack.getTag() : new NBTTagCompound();
-        String theTag = nbtTag.hasKey(ACTIVE_GEM_NBT_TAG) ? nbtTag.getString(ACTIVE_GEM_NBT_TAG).concat(":") : "";
-
-
-        nbtTag.setString(ACTIVE_GEM_NBT_TAG, theTag.concat(id));
+        nbtTag.setString(ACTIVE_GEM_NBT_TAG, id);
         itemStack.setTag(nbtTag);
 
         getSet.t = CraftItemStack.asBukkitCopy(itemStack);
 
-        return true;
+        return InsertResult.SUCCESS;
+    }
+
+    public enum InsertResult {
+        INVALID_ITEM, NO_GEM_SPACE, SUCCESS
     }
 
     @Override

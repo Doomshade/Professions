@@ -4,8 +4,8 @@ lang: lang_en
 ## the worlds that mining profession expects the ore in
 ## the plugin handles
 mining-worlds:
-- Miningbois
-- Anotherminingworld
+  - Miningbois
+  - Anotherminingworld
 
 ## if set to true, the plugin will cancel any attempts to destroy a block for players with no builder/admin permission in mining worlds
 ## it will of course let the ore get mined in the mining world
@@ -43,7 +43,7 @@ saving:
 ## item options
 items:
   default-lore:
-  - '{level-req-color}&lLevel requirement level: {level-req}'
+    - '{level-req-color}&lLevel requirement level: {level-req}'
 
 ## default profession options
 profession:
@@ -54,19 +54,19 @@ profession:
     ## the sorting order of items in GUI
     ## you may use: level-req, exp, name
     sorted-by:
-    - level-req
-    - exp
-    - name
+      - level-req
+      - exp
+      - name
 
   ## options for trainable items
   ## you may use any item variable + trainable variables (see any file in itemtypes folder)
   ## you may not use object's variables and craftable variables
   trainable:
     trained:
-    - '&aYou already know {name}'
+      - '&aYou already know {name}'
     not-trained:
-    - '&aCan be trained'
-    - '&aPrice: &6{trainable-cost}'
+      - '&aCan be trained'
+      - '&aPrice: &6{trainable-cost}'
 
   ## 4 types of colors - red, yellow, green and gray (still optional for colors)
   ##
