@@ -39,7 +39,7 @@ public class InsertCommand extends AbstractCommand {
         final PlayerInventory inventory = ((Player) sender).getInventory();
         GetSet<ItemStack> item = new GetSet<>(inventory.getItemInMainHand());
         gem.insert(item, true);
-        inventory.setItemInMainHand(item.t);
+        inventory.setItemInMainHand(item.get());
 
         return true;
     }

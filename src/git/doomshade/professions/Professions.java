@@ -1,10 +1,6 @@
 package git.doomshade.professions;
 
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.commands.AbstractCommandHandler;
@@ -375,7 +371,7 @@ public final class Professions extends JavaPlugin implements ISetup {
 
 
         // TODO test
-        ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Server.ENTITY_EQUIPMENT, PacketType.Play.Server.ENTITY) {
+        /*ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Server.ENTITY_EQUIPMENT, PacketType.Play.Server.ENTITY) {
             @Override
             public void onPacketReceiving(PacketEvent event) {
                 // je to BLOCK_PLACE nebo ITEM_USE packet, který
@@ -387,7 +383,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             public void onPacketSending(PacketEvent event) {
                 Professions.log(event.getPacket());
             }
-        });
+        });*/
 
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {

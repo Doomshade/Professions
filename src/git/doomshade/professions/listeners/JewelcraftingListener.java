@@ -1,7 +1,9 @@
 package git.doomshade.professions.listeners;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.utils.GetSet;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,7 +11,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -53,9 +57,13 @@ public class JewelcraftingListener implements Listener {
                     return;
                 }
 
+                final ItemStack itemStack = new ItemStack(Material.BARRIER);
+
+
                 // clicked a gem before and has an item in hand -> try to insert
                 GetSet<ItemStack> gs = new GetSet<>(hand);
                 Gem.InsertResult result = gem.insert(gs);
+
 
                 // TODO messages
                 switch (result) {
@@ -66,11 +74,28 @@ public class JewelcraftingListener implements Listener {
                         player.sendMessage("V předmětu není místo pro klenot");
                         break;
                     case SUCCESS:
-                        player.sendMessage("Přidán gem do předmětu");
+
+                        ItemStack[] armorContents = inventory.getArmorContents();
+                        ItemStack[] copy = Arrays.copyOf(armorContents, armorContents.length);
+                        for (int i = 0; i < copy.length; i++) {
+                            ItemStack item = copy[i];
+                            if (item == null) {
+                                copy[i] = itemStack;
+                            }
+                        }
+                        inventory.setArmorContents(copy);
                         inventory.removeItem(gem.getGem());
-                        inventory.setItemInMainHand(gs.t);
+                        inventory.setItemInMainHand(gs.get());
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                inventory.setArmorContents(armorContents);
+                            }
+                        }.runTaskLater(Professions.getInstance(), 1);
+                        player.sendMessage("Přidán gem do předmětu");
                         break;
                 }
+
             }
         }
     }

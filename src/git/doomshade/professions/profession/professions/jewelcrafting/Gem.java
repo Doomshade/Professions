@@ -232,7 +232,7 @@ public class Gem implements ConfigurationSerializable {
 
     public InsertResult insert(GetSet<ItemStack> getSet, boolean ignoreMisto) {
 
-        ItemStack item = getSet.t.clone();
+        ItemStack item = getSet.get().clone();
 
         // firstly check whether or not the item has lore
         if (item == null || (!ignoreMisto && !item.hasItemMeta())) {
@@ -297,7 +297,7 @@ public class Gem implements ConfigurationSerializable {
         nbtTag.setString(ACTIVE_GEM_NBT_TAG, id);
         itemStack.setTag(nbtTag);
 
-        getSet.t = CraftItemStack.asBukkitCopy(itemStack);
+        getSet.set(CraftItemStack.asBukkitCopy(itemStack));
 
         return InsertResult.SUCCESS;
     }
