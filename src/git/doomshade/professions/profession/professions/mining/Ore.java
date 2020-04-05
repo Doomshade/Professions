@@ -187,6 +187,11 @@ public class Ore implements ConfigurationSerializable, LocationElement {
     }
 
     @Override
+    public byte getMaterialData() {
+        return 0;
+    }
+
+    @Override
     public String getName() {
         return name;
     }

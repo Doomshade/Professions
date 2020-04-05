@@ -55,7 +55,7 @@ public class ProfessionGUI extends GUI {
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (pos == 5 && profHasLore) {
-                    GUIItem infoItem = new GUIItem(Material.SIGN, pos);
+                    GUIItem infoItem = new GUIItem(Material.SIGN, pos, 1, (short) 0);
                     final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.SIGN);
 
                     // TODO add to config
@@ -67,7 +67,7 @@ public class ProfessionGUI extends GUI {
                     continue;
                 }
                 ItemStack icon = item.getIcon(upd);
-                GUIItem guiItem = new GUIItem(icon.getType(), pos);
+                GUIItem guiItem = new GUIItem(icon.getType(), pos, icon.getAmount(), icon.getDurability());
                 boolean hasRecipe = upd.hasExtra(icon.getItemMeta().getDisplayName());
                 boolean meetsLevel = item.meetsLevelReq(upd.getLevel() + levelThreshold);
                 if (item.isHiddenWhenUnavailable())

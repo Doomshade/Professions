@@ -11,6 +11,7 @@ public class HerbalismCommandHandler extends AbstractCommandHandler {
 
     @Override
     public void registerCommands() {
+        registerCommand(new AddCommand());
         registerCommand(new SpawnCommand());
         registerCommand(new DespawnCommand());
         registerCommand(new ScheduleSpawnCommand());

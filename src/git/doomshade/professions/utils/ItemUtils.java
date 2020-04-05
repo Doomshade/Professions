@@ -47,6 +47,17 @@ public final class ItemUtils {
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
 
+    public static ItemStack deserializeMaterial(String material) {
+        String[] split = material.split(":");
+        final short damage;
+        if (split.length == 2) {
+            damage = Short.parseShort(split[1]);
+        } else {
+            damage = 0;
+        }
+        return new ItemStack(Material.valueOf(split[0]), 1, damage);
+    }
+
     @SuppressWarnings("unchecked")
     public static ItemStack deserialize(Map<String, Object> map) {
         if (map == null) {
@@ -56,7 +67,8 @@ public final class ItemUtils {
         if (potentialMaterial == null) {
             return null;
         }
-        ItemStack item = new ItemStack(Material.valueOf((String) potentialMaterial));
+
+        ItemStack item = deserializeMaterial((String) potentialMaterial);
 
         ItemMeta meta = item.getItemMeta();
         final Object potentialDisplayName = map.get(DISPLAY_NAME);

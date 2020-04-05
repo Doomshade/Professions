@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.professions.herbalism;
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.utils.MarkableLocationElement;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.utils.FileEnum;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -32,7 +34,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
-    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, new ArrayList<>(), false, new ParticleData());
+    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData());
 
     private final ItemStack gatherItem;
     private final Material herbMaterial;
@@ -41,12 +43,14 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     final ArrayList<SpawnPoint> spawnPoints;
     private final boolean enableSpawn;
     private final ParticleData particleData;
+    private final byte materialData;
 
     // TODO: 26.01.2020 make implementation of custom marker icons
     private final String markerIcon;
 
-    private Herb(String id, ItemStack gatherItem, Material herbMaterial, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData) {
+    private Herb(String id, ItemStack gatherItem, Material herbMaterial, byte materialData, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData) {
         this.id = id;
+        this.materialData = materialData;
         this.gatherItem = gatherItem;
         this.herbMaterial = herbMaterial;
         this.spawnPoints = spawnPoints;
@@ -78,7 +82,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         }
         MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
         ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
-        Material herbMaterial = Material.getMaterial((String) map.get(HERB_MATERIAL.s));
+        ItemStack herbMaterial = ItemUtils.deserializeMaterial((String) map.get(HERB_MATERIAL.s));
         String herbId = (String) map.get(ID.s);
 
         int i = 0;
@@ -96,7 +100,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
             i++;
         }
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
-        return new Herb(herbId, gatherItem, herbMaterial, spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), ParticleData.deserialize(particleSection.getValues(true)));
+        return new Herb(herbId, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), ParticleData.deserialize(particleSection.getValues(true)));
     }
 
     @SuppressWarnings("unused")
@@ -113,7 +117,11 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
 
     public static void spawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
-            entry.getKey().getHerbLocationOptions(entry.getValue()).spawn();
+            try {
+                entry.getKey().getHerbLocationOptions(entry.getValue()).spawn();
+            } catch (SpawnException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -164,7 +172,9 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         return new HashMap<String, Object>() {
             {
                 put(GATHER_ITEM.s, ItemUtils.serialize(gatherItem));
-                put(HERB_MATERIAL.s, herbMaterial.name());
+
+                // adds ":[0-9]+" to the material
+                put(HERB_MATERIAL.s, herbMaterial.name() + (materialData != 0 ? ":" + materialData : ""));
                 for (int i = 0; i < spawnPoints.size(); i++) {
                     put(SPAWN_POINT.s.concat("-" + i), spawnPoints.get(i).serialize());
                 }
@@ -186,6 +196,38 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         return ImmutableMap.copyOf(LOCATION_OPTIONS);
     }
 
+    public void addSpawnPoint(SpawnPoint sp) {
+        this.spawnPoints.add(sp);
+        update();
+    }
+
+    public void removeSpawnPoint(int id) {
+        SpawnPoint sp = spawnPoints.get(id);
+        if (sp != null) {
+            getHerbLocationOptions(sp.location).despawn();
+            spawnPoints.remove(id);
+            update();
+        }
+    }
+
+    public void removeSpawnPoint(SpawnPoint sp) {
+        if (!isSpawnPoint(sp.location)) {
+            return;
+        }
+        getHerbLocationOptions(sp.location).despawn();
+        spawnPoints.remove(sp);
+        update();
+
+    }
+
+    public void update() {
+        try {
+            Professions.getProfessionManager().getItemTypeHolder(HerbItemType.class).save(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public ItemStack getGatherItem() {
         return gatherItem;
     }
@@ -193,6 +235,11 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     @Override
     public Material getMaterial() {
         return herbMaterial;
+    }
+
+    @Override
+    public byte getMaterialData() {
+        return materialData;
     }
 
     @Override
@@ -217,14 +264,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
 
     @Override
     public String toString() {
-        return "Herb{" +
-                "gatherItem=" + gatherItem +
-                ", herbMaterial=" + herbMaterial +
-                ", id='" + id + '\'' +
-                ", spawnPoints=" + spawnPoints +
-                ", enableSpawn=" + enableSpawn +
-                ", particleData=" + particleData +
-                '}';
+        return String.format("Herb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(), this.getMaterial().name());
     }
 
     /**
@@ -270,7 +310,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
                 {
                     ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
                     put(GATHER_ITEM, exampleResult.serialize());
-                    put(HERB_MATERIAL, exampleResult.getType().name());
+                    put(HERB_MATERIAL, exampleResult.getType().name() + ":0");
                     put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
                     put(ENABLE_SPAWN, false);
                     put(ID, "herb_id");

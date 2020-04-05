@@ -33,7 +33,7 @@ public class OreGUI extends GUI {
 
         int i = -1;
         for (OreItemType ore : holder.getRegisteredItemTypes()) {
-            GUIItem item = new GUIItem(ore.getGuiMaterial(), ++i);
+            GUIItem item = new GUIItem(ore.getGuiMaterial().getType(), ++i, 1, ore.getGuiMaterial().getDurability());
             final ItemStack click = ore.getIcon(null).clone();
             final ItemMeta itemMeta = click.getItemMeta();
             final List<String> lore = itemMeta.getLore();

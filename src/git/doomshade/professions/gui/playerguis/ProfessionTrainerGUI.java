@@ -71,7 +71,8 @@ public class ProfessionTrainerGUI extends GUI {
                 if (itemType instanceof ITrainable) {
                     ITrainable trainable = (ITrainable) itemType;
                     if (trainable.isTrainable()) {
-                        GUIItem item = new GUIItem(itemType.getGuiMaterial(), position++);
+                        final short durability = itemType.getGuiMaterial().getDurability();
+                        GUIItem item = new GUIItem(itemType.getGuiMaterial().getType(), position++, 1, durability);
                         item.changeItem(this, () -> {
                             ItemMeta meta = itemType.getIcon(upd).getItemMeta();
                             List<String> lore;

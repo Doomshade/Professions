@@ -25,8 +25,9 @@ public class PlayerProfessionsGUI extends GUI {
         User user = User.getUser(getHolder());
         int i = -1;
         for (UserProfessionData upd : user.getProfessions()) {
-            GUIItem item = new GUIItem(upd.getProfession().getIcon().getType(), ++i);
-            item.changeItem(this, () -> upd.getProfession().getIcon().getItemMeta());
+            final ItemStack icon = upd.getProfession().getIcon();
+            GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
+            item.changeItem(this, icon::getItemMeta);
             builder = builder.withItem(item);
         }
         setInventory(builder.build());

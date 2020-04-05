@@ -11,6 +11,8 @@ public interface LocationElement extends Element {
 
     Material getMaterial();
 
+    byte getMaterialData();
+
     String getName();
 
     List<SpawnPoint> getSpawnPoints();

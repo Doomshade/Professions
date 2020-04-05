@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -48,7 +49,11 @@ public class OreEditListener implements Listener {
                 if (nms.hasTag() && nms.getTag().hasKey("ignoreRange") && nms.getTag().getByte("ignoreRange") == 1) {
                     final SpawnPoint sp = new SpawnPoint(location, new Range(0));
                     ore.addSpawnPoint(sp);
-                    ore.getLocationOptions(sp.location).spawn();
+                    try {
+                        ore.getLocationOptions(sp.location).spawn();
+                    } catch (SpawnException e) {
+                        e.printStackTrace();
+                    }
                     player.sendMessage("Přidán nový spawn point pro " + ore.getName());
                 } else {
                     CHAT.put(uuid, new OreLocation(ore, location));
@@ -78,7 +83,11 @@ public class OreEditListener implements Listener {
             if (ore != null && respawnTime != null) {
                 final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime);
                 ore.addSpawnPoint(sp);
-                ore.getLocationOptions(sp.location).spawn();
+                try {
+                    ore.getLocationOptions(sp.location).spawn();
+                } catch (SpawnException e) {
+                    e.printStackTrace();
+                }
                 player.sendMessage("Přidán nový spawn point pro " + ore.getName());
             } else {
                 player.sendMessage("Nastala neočekávaná chyba, ore == null || respawnTime == null");

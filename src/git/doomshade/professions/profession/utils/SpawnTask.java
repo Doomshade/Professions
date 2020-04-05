@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.utils;
 
+import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -34,7 +35,13 @@ public class SpawnTask extends BukkitRunnable {
     @Override
     public void run() {
         if (respawnTime <= 0) {
-            locationOptions.spawn();
+            try {
+                locationOptions.spawn();
+            } catch (SpawnException e) {
+                e.printStackTrace();
+                cancel();
+                return;
+            }
             cancel();
             return;
         }

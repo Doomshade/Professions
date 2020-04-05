@@ -29,7 +29,7 @@ public class AdminProfessionGUI extends GUI {
         for (Strings.ItemTypeEnum e : Strings.ItemTypeEnum.values()) {
             ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.CHEST);
             meta.setDisplayName(e.s);
-            GUIItem item = new GUIItem(Material.CHEST, ++i);
+            GUIItem item = new GUIItem(Material.CHEST, ++i, 1, (short) 0);
             item.changeItem(this, () -> meta);
 
             builder = builder.withItem(item);

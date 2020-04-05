@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.dynmap.IMarkable;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
+import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.Location;
 
 public abstract class MarkableLocationOptions extends LocationOptions implements IMarkable {
@@ -18,7 +19,7 @@ public abstract class MarkableLocationOptions extends LocationOptions implements
     }
 
     @Override
-    public void forceSpawn() {
+    public void forceSpawn() throws SpawnException {
         super.forceSpawn();
         if (MARKER_MANAGER != null)
             MARKER_MANAGER.show(this);

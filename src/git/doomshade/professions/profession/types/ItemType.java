@@ -50,7 +50,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private File itemFile;
     private String name = "";
     private List<String> description, restrictedWorlds;
-    private Material guiMaterial = Material.CHEST;
+    private ItemStack guiMaterial = new ItemStack(Material.CHEST);
     private int itemTypeId;
     private boolean hiddenWhenUnavailable, ignoreSkillupColor;
 
@@ -126,7 +126,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         if (!getName().isEmpty()) {
             setName(ChatColor.translateAlternateColorCodes('&', getName()));
         }
-        setGuiMaterial(Material.getMaterial((String) map.getOrDefault(MATERIAL.s, "CHEST")));
+        setGuiMaterial(ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s)));
         setHiddenWhenUnavailable((boolean) map.getOrDefault(HIDDEN.s, true));
         setIgnoreSkillupColor((boolean) map.getOrDefault(IGNORE_SKILLUP_COLOR.s, true));
         setDescription(ItemUtils.getItemTypeLore(this));
@@ -251,7 +251,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * @return the material in a GUI (used for visual representation in an item)
      */
-    public final Material getGuiMaterial() {
+    public final ItemStack getGuiMaterial() {
         return guiMaterial;
     }
 
@@ -260,7 +260,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *
      * @param guiMaterial the material to set
      */
-    public final void setGuiMaterial(Material guiMaterial) {
+    public final void setGuiMaterial(ItemStack guiMaterial) {
         this.guiMaterial = guiMaterial;
     }
 
@@ -376,7 +376,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
         map.put(NAME.s, name);
         map.put(DESCRIPTION.s, description);
-        map.put(MATERIAL.s, guiMaterial.name());
+        map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
         map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
         map.put(HIDDEN.s, hiddenWhenUnavailable);
         map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);

@@ -14,10 +14,10 @@ public class TestThreeGui extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
-        Integer pos = (Integer) getContext().getContext(ProfessionGUI.POSITION_GUI);
+        Integer pos = getContext().getContext(ProfessionGUI.POSITION_GUI);
         ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
-        meta.setDisplayName((String) getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION));
-        GUIItem guiItem = new GUIItem(Material.DIAMOND_PICKAXE, pos);
+        meta.setDisplayName(getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION));
+        GUIItem guiItem = new GUIItem(Material.DIAMOND_PICKAXE, pos, 1, (short) 0);
         guiItem.changeItem(this, () -> meta);
         setInventory(getInventoryBuilder().size(9).withItem(guiItem).title("PERFECTO TOT").size(9 * 4).build());
     }

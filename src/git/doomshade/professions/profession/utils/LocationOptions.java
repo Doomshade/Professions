@@ -1,21 +1,41 @@
 package git.doomshade.professions.profession.utils;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.task.ParticleTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 
 import java.util.Objects;
 import java.util.logging.Level;
 
 public abstract class LocationOptions {
 
+    /**
+     * The location
+     */
     public final Location location;
+
+    /**
+     * The location element containing data about the location
+     */
     public final LocationElement element;
-    private ParticleTask particleTask;
+    /**
+     * Spawn task that spawns the herb once it's ready
+     */
     protected SpawnTask spawnTask;
+    /**
+     * Particle task that spawns particles periodically
+     */
+    private ParticleTask particleTask;
+
     private boolean spawned = false;
+    /**
+     * Boolean to make sure that the error does not spam console
+     */
+    private boolean enableSpawn = true;
 
     public LocationOptions(Location location, LocationElement element) throws IllegalArgumentException {
         this.location = location;
@@ -44,15 +64,30 @@ public abstract class LocationOptions {
         spawnTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
     }
 
-    public void spawn() {
+    public void spawn() throws SpawnException {
         if (isSpawnable() && !spawned) {
             forceSpawn();
         }
     }
 
-    public void forceSpawn() {
+    @SuppressWarnings("deprecation")
+    public void forceSpawn() throws SpawnException {
+        if (!enableSpawn) return;
+        final Material material = element.getMaterial();
+        if (material == null) {
+            this.enableSpawn = false;
+            throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_MATERIAL, element);
+        }
+        final Block block;
+        if (location == null || (block = location.getBlock()) == null) {
+            this.enableSpawn = false;
+            throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_LOCATION, element);
+        }
+        final byte materialData = element.getMaterialData();
+
+        block.setType(material);
+        block.setData(materialData);
         addParticles();
-        location.getBlock().setType(element.getMaterial());
         unscheduleSpawn();
         spawned = true;
         Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);

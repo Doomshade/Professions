@@ -57,7 +57,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         ConfigurationSection section = getDefaultSection();
 
         this.name = section.getString(NAME);
-        this.icon = ItemUtils.deserialize(section.getValues(false));
+        this.icon = ItemUtils.deserialize(section.getConfigurationSection(ICON).getValues(false));
         this.professionType = Profession.ProfessionType.fromString(section.getString(TYPE));
     }
 
