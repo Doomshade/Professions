@@ -591,17 +591,18 @@ public final class Professions extends JavaPlugin implements ISetup {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        registerCommandHandler(CommandHandler.class);
-        registerCommandHandler(MiningCommandHandler.class);
-        registerCommandHandler(HerbalismCommandHandler.class);
-        registerCommandHandler(AlchemyCommandHandler.class);
-        registerCommandHandler(JewelcraftingCommandHandler.class);
+        registerCommandHandler(new CommandHandler());
+        registerCommandHandler(new MiningCommandHandler());
+        registerCommandHandler(new HerbalismCommandHandler());
+        registerCommandHandler(new AlchemyCommandHandler());
+        registerCommandHandler(new JewelcraftingCommandHandler());
 
         registerSetup(ProfessionManager.getInstance());
     }
 
-    private void registerCommandHandler(Class<? extends AbstractCommandHandler> commandHandler) {
-        registerSetup(CommandHandler.getInstance(commandHandler));
+    private void registerCommandHandler(AbstractCommandHandler commandHandler) {
+        AbstractCommandHandler.register(commandHandler);
+        registerSetup(commandHandler);
     }
 
     private void setupFiles() throws IllegalArgumentException {

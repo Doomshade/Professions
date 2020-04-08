@@ -5,11 +5,13 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.types.IGathering;
 import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class HerbalismProfession extends Profession<IGathering> {
@@ -35,17 +37,33 @@ public class HerbalismProfession extends Profession<IGathering> {
         if (e.hasExtra(Location.class)) {
             final Location location = e.getExtra(Location.class);
             final Herb herb = event.getItemType().getObject();
+
+
             if (herb != null && location != null) {
                 final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
-                herbLocationOptions.despawn();
-                herbLocationOptions.scheduleSpawn();
                 final Player player = e.getPlayer().getPlayer();
-                player.getInventory().addItem(herb.getGatherItem());
-                String expMsg = "";
-                if (addExp(e)) {
-                    expMsg = Utils.getReceiveXp(e.getExp());
-                }
-                Professions.log(String.format("%s gathered %s on spawnpoint %s".concat(expMsg), player.getName(), herb.getName(), herbLocationOptions.location), Level.CONFIG);
+
+                Consumer<GatherTask.GatherResult> endResultAction = x -> {
+                    String msg = "";
+                    switch (x) {
+                        case SUCCESS:
+                            msg = String.format("%s gathered %s on spawnpoint %s", player.getName(), herb.getName(), herbLocationOptions.location);
+                            if (addExp(e)) {
+                                msg = msg.concat(Utils.getReceiveXp(e.getExp()));
+                            }
+                            break;
+                        case FULL_INVENTORY:
+                            msg = String.format("%s could not gather %s as he had full inventory", player.getName(), herb.getName());
+                            break;
+                        case LOCATION_AIR:
+                            msg = String.format("%s could not gather %s as the herb no longer existed", player.getName(), herb.getName());
+                            break;
+                    }
+                    Professions.log(msg, Level.CONFIG);
+                };
+
+                HerbGatherTask herbGatherTask = new HerbGatherTask(herbLocationOptions, getUserProfessionData(e.getPlayer()), herb.getGatherItem(), endResultAction);
+                herbGatherTask.runTaskLater(Professions.getInstance(), 5 * 20);
             }
         }
     }

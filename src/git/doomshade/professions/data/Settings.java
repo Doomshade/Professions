@@ -10,9 +10,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.data.AbstractSettings.LEVEL;
@@ -30,6 +31,9 @@ public final class Settings implements ISetup {
     private static Material editItem = Material.GOLD_NUGGET;
     private static boolean autoSave = true;
     private static boolean handleMineEvents = false;
+
+    // TODO: 08.04.2020 make this a BossBarOptions and create a new path for bossbars (adding the customizability for BossBars)
+    private static boolean useBossBar = false;
     private static Set<String> miningWorlds = new HashSet<>();
 
     static {
@@ -114,6 +118,10 @@ public final class Settings implements ISetup {
         return handleMineEvents;
     }
 
+    public static boolean isUseBossBar() {
+        return useBossBar;
+    }
+
     protected void printError(String section, Object value) {
         if (!outdated) {
             Professions.log("Your configuration file is outdated!", LEVEL);
@@ -126,42 +134,45 @@ public final class Settings implements ISetup {
             Professions.log(String.format("Using %s as default value.", value.toString()), LEVEL);
     }
 
+    private <T> T setupVariable(String configPath, T defaultCase, UnaryOperator<T> extraAction) {
+        T value = (T) config.get(configPath, defaultCase);
+        if (extraAction != null) {
+            value = extraAction.apply(value);
+        }
+
+        if (!config.contains(configPath)) {
+            printError(configPath, defaultCase);
+        }
+        return value;
+    }
+
+    private <T> T setupVariable(String configPath, T defaultCase) {
+        return setupVariable(configPath, defaultCase, null);
+    }
+
     @Override
     public void setup() throws IOException {
 
         plugin.reloadConfig();
         config = plugin.getConfig();
 
-        final String editItemPath = "edit-item";
-        editItem = Material.getMaterial(config.getString(editItemPath, "GOLD_NUGGET"));
-        if (!config.contains(editItemPath)) {
-            printError(editItemPath, "GOLD_NUGGET");
-        }
+        useBossBar = setupVariable("use-bossbar", false);
+        editItem = setupVariable("edit-item", Material.GOLD_NUGGET);
+        autoSave = setupVariable("auto-save-before-edit", true);
+        miningWorlds = setupVariable("mining-worlds",
+                // using Collections#checkedSet to get a Set<String> (not a HashSet)
+                Collections.checkedSet(new HashSet<>(), String.class),
+                x -> x.stream().map(String::toLowerCase).collect(Collectors.toSet()));
+        handleMineEvents = setupVariable("handle-mine-events", false);
 
-        final String autoSavePath = "auto-save-before-edit";
-        autoSave = config.getBoolean(autoSavePath, true);
+        // setup lang as last as it could throw an exception
+        setupLang();
 
-        if (!config.contains(autoSavePath)) {
-            printError(autoSavePath, true);
-        }
+    }
 
-        final String miningWorldsPath = "mining-worlds";
-        final List<String> stringList = config.getStringList(miningWorldsPath);
-        if (stringList == null || !config.contains(miningWorldsPath)) {
-            printError(miningWorldsPath, null);
-        } else {
-            miningWorlds = stringList.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        }
-
-        final String handleEventsPath = "handle-mine-events";
-        handleMineEvents = config.getBoolean(handleEventsPath, false);
-
-        if (!config.contains(handleEventsPath)) {
-            printError(handleEventsPath, false);
-        }
-
+    private void setupLang() throws IOException {
         final File langFolder = plugin.getLangFolder();
-        final String langString = config.getString("lang", DEFAULT_PROPERTIES);
+        final String langString = setupVariable("lang", DEFAULT_PROPERTIES);
         final File[] langs = langFolder.listFiles((dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null && name.startsWith(langString));
         if (langs != null && langs.length > 0) {
             langFile = langs[0];
@@ -177,6 +188,4 @@ public final class Settings implements ISetup {
             throw new IOException("Could not load language settings!", e);
         }
     }
-
-
 }

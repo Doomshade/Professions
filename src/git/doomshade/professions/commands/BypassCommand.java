@@ -10,6 +10,12 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Allows a player to bypass level requirement restrictions
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class BypassCommand extends AbstractCommand {
 
     public BypassCommand() {

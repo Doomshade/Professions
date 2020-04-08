@@ -6,6 +6,12 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * Command for creating of item types
+ *
+ * @author Doomshade
+ * @version NOT_YET_IMPLEMENTED
+ */
 public class CreateItemTypeCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

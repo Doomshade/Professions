@@ -1,7 +1,10 @@
 package git.doomshade.professions.commands;
 
 /**
+ * An implementation of command handler for command "prof"
+ *
  * @author Doomshade
+ * @version 1.0
  */
 public class CommandHandler extends AbstractCommandHandler {
 

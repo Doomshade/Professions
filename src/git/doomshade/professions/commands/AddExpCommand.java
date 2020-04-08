@@ -14,6 +14,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Adds profession exp to a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class AddExpCommand extends AbstractCommand {
 
     public AddExpCommand() {

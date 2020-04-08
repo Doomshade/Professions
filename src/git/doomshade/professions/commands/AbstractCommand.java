@@ -8,12 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
- * Class representing all the commands
+ * Class representing all the commands. This is not a {@link org.bukkit.command.CommandExecutor}, the executor is the command handler registering this command!
  *
  * @author Doomshade
+ * @version 1.0
+ * @see AbstractCommandHandler
  */
 public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
 
+    // path names in commands.yml
     private static final String COMMAND = "command";
     private static final String DESCRIPTION = "description";
     private static final String REQUIRES_PLAYER = "requiresPlayer";
@@ -21,6 +24,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     private static final String ARG_FALSE = "arg-false";
     private static final String MESSAGE = "message";
     private static final String REQUIRED_PERMISSIONS = "permissions";
+    // end of path names
     protected String command = "";
     protected String description = "";
     protected Collection<String> requiredPermissions = new ArrayList<>();
@@ -101,7 +105,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * Compares commands to each other based on their command name
      *
      * @param o the other command to compare to
-     * @return
+     * @return a comparison of command names
      */
     @Override
     public int compareTo(@NotNull AbstractCommand o) {
@@ -126,22 +130,8 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
     }
 
-    /**
-     * @param sender
-     * @param cmd
-     * @param label
-     * @param args
-     * @return
-     */
     public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 
-    /**
-     * @param sender
-     * @param cmd
-     * @param label
-     * @param args
-     * @return
-     */
     public abstract List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args);
 
     /**
@@ -205,14 +195,28 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         this.requiresPlayer = requiresPlayer;
     }
 
+    /**
+     * Sets an argument to the command
+     *
+     * @param bool use {@code true} if the argument is required, {@code false} otherwise
+     * @param args the arguments
+     */
     public final void setArg(boolean bool, List<String> args) {
         this.args.put(bool, args);
     }
 
+    /**
+     * @return custom messages of the command
+     */
     public List<String> getMessages() {
         return messages;
     }
 
+    /**
+     * Sets custom messages of the command
+     *
+     * @param messages the messages
+     */
     public final void setMessages(List<String> messages) {
         this.messages = messages;
     }
@@ -230,14 +234,28 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         return map;
     }
 
+    /**
+     * Adds a required permissions for this command usage
+     *
+     * @param permissions the permissions
+     * @see git.doomshade.professions.utils.Permissions
+     */
     public final void addPermission(String... permissions) {
         requiredPermissions.addAll(Arrays.asList(permissions));
     }
 
+    /**
+     * @return required permissions
+     */
     public Collection<String> getPermissions() {
         return requiredPermissions;
     }
 
+    /**
+     * Sets the required permissions
+     *
+     * @param permissions the permissions
+     */
     public final void setPermissions(Collection<String> permissions) {
         this.requiredPermissions = permissions;
     }

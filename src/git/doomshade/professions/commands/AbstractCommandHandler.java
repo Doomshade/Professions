@@ -14,14 +14,14 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.logging.Level;
 
 /**
- * A command handler
+ * A command handler and executor/tab completer
  *
  * @author Doomshade
+ * @version 1.0
  */
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
     static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
@@ -56,16 +56,16 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         return true;
     }
 
+    public static void register(AbstractCommandHandler commandHandler) {
+        INSTANCES.putIfAbsent(commandHandler.getClass(), commandHandler);
+    }
+
     public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass) {
         try {
-            Constructor<T> constructor = commandHandlerClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
             if (INSTANCES.containsKey(commandHandlerClass)) {
                 return (T) INSTANCES.get(commandHandlerClass);
             } else {
-                T t = constructor.newInstance();
-                INSTANCES.put(commandHandlerClass, t);
-                return t;
+                throw new RuntimeException(commandHandlerClass.getSimpleName() + " is not a registered command handler!");
             }
         } catch (Exception e) {
             e.printStackTrace();

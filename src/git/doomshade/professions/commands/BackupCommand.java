@@ -8,6 +8,12 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * Backs up files to a zip in "backup" folder
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class BackupCommand extends AbstractCommand {
 
     public BackupCommand() {

@@ -9,6 +9,7 @@ import java.io.Serializable;
  * Profession specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
  *
  * @author Doomshade
+ * @version 1.0
  */
 public abstract class AbstractProfessionSettings extends AbstractSettings {
     private transient static final String SECTION = "profession";

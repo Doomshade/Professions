@@ -19,6 +19,13 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Command for editing certain parts of an item type in a file
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.professions.profession.types.ItemType
+ */
 public class EditItemTypeCommand extends AbstractCommand {
 
     static final HashSet<String> files = new HashSet<>();

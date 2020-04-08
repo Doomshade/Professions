@@ -14,6 +14,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Adds an "extra" (a string, like a flag) for requirements purposes such as letting the player craft some item only under a circumstance (the "extra")
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class AddExtraCommand extends AbstractCommand {
 
     public AddExtraCommand() {
