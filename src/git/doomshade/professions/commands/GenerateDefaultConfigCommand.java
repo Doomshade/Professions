@@ -7,6 +7,12 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * Command for "defaultconfig.yml" file generation (creates a copy of plugin's config.yml)
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class GenerateDefaultConfigCommand extends AbstractCommand {
 
     public GenerateDefaultConfigCommand() {

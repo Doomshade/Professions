@@ -25,7 +25,7 @@ public class CommandsCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         sender.sendMessage("Available commands:");
-        for (AbstractCommandHandler ach : AbstractCommandHandler.INSTANCES.values()) {
+        for (AbstractCommandHandler ach : AbstractCommandHandler.getInstances()) {
             sender.sendMessage(ChatColor.DARK_AQUA + "/" + ach.getCommandName());
         }
         return true;

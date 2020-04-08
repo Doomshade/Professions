@@ -13,6 +13,12 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
+/**
+ * Unprofesses a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class UnprofessCommand extends AbstractCommand {
 
     public UnprofessCommand() {

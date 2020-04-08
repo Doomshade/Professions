@@ -4,6 +4,13 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * GUI settings
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.professions.commands.PlayerGuiCommand
+ */
 public class GUISettings extends AbstractSettings {
     private static final String SECTION = "gui", PROFESSIONS_GUI_NAME = "professions-gui-name", LEVEL_THRESHOLD = "show-level-threshold";
     private String professionsGuiName = "Professions";

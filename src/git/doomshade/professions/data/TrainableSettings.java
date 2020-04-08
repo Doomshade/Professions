@@ -10,6 +10,12 @@ import java.util.List;
 
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.VAR_TRAINABLE_COST;
 
+/**
+ * Settings for trainable item types
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class TrainableSettings extends AbstractProfessionSettings {
     private static final String TRAINABLE_SECTION = "trainable",
             TRAINED = "trained",

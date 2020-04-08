@@ -3,6 +3,12 @@ package git.doomshade.professions.enums;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
+/**
+ * The sort type of item types in a profession GUI
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public enum SortType {
     NAME("name"), EXPERIENCE("exp"), LEVEL_REQ("level-req");
 

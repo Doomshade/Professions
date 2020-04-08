@@ -10,9 +10,10 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.Serializable;
 
 /**
- * Profession specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
+ * Profession specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable} or {@code transient}, too!
  *
  * @author Doomshade
+ * @version 1.0
  */
 public abstract class AbstractProfessionSpecificSettings extends AbstractSettings {
 

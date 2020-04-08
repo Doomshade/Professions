@@ -3,6 +3,7 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -10,11 +11,35 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
+/**
+ * <p> Prints information to the sender about a profession. The "message" list must not be an empty array in prof.yml, otherwise this prints nothing.
+ * <p> Available arguments:
+ * <ul>
+ *     <li>level</li>
+ *     <li>max-level</li>
+ *     <li>exp</li>
+ *     <li>req-exp</li>
+ *     <li>profession</li>
+ *     <li>profession-type</li>
+ *     <li>user</li>
+ * <p>
+ *     <li>level-bold</li>
+ *     <li>max-level-bold</li>
+ *     <li>exp-bold</li>
+ *     <li>req-exp-bold</li>
+ *     <li>profession-bold</li>
+ *     <li>profession-type-bold</li>
+ *     <li>user-bold</li>
+ * </ul>
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionInfoCommand extends AbstractCommand {
 
     public ProfessionInfoCommand() {
         args = new HashMap<>();
-        args.put(false, Arrays.asList("player"));
+        args.put(false, Collections.singletonList("player"));
         setArgs(args);
         setCommand("info");
         setDescription("Shows all information about a player profession");
@@ -24,9 +49,19 @@ public class ProfessionInfoCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        User user = User.getUser((Player) sender);
+        final User user;
+
+        if (args.length >= 2) {
+            user = User.getUser(Bukkit.getPlayer(args[1]));
+        } else if (sender instanceof Player) {
+            user = User.getUser((Player) sender);
+        } else {
+            return false;
+        }
+
+
         if (user.getProfessions().isEmpty()) {
-            user.sendMessage("Nemáš žádné profese");
+            sender.sendMessage(user.getPlayer().getName() + " has no professions");
             return true;
         }
         final List<String> messages = getMessages();
@@ -37,7 +72,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
         // get a  better way of doing this..
         final String firstMessage = messages.get(0);
         if (!firstMessage.isEmpty())
-            user.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
         ArrayList<UserProfessionData> profs = new ArrayList<>(user.getProfessions());
         profs.sort(Comparator.comparing(x -> x.getProfession().getProfessionType()));
         for (UserProfessionData prof : profs) {
@@ -81,10 +116,10 @@ public class ProfessionInfoCommand extends AbstractCommand {
                             replacement = user.getPlayer().getDisplayName();
                             break;
                     }
-                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "\\}", replacement));
-                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold\\}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
+                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "}", replacement));
+                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
                 }
-                user.sendMessage(s);
+                sender.sendMessage(s);
             }
         }
         return true;
@@ -100,8 +135,14 @@ public class ProfessionInfoCommand extends AbstractCommand {
         return "professioninfo";
     }
 
-    private enum Regex {
-        LEVEL, MAX_LEVEL, EXP, REQ_EXP, PROFESSION, PROFESSION_TYPE, USER
+    public enum Regex {
+        LEVEL,
+        MAX_LEVEL,
+        EXP,
+        REQ_EXP,
+        PROFESSION,
+        PROFESSION_TYPE,
+        USER
     }
 
 }

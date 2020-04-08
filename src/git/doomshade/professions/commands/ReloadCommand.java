@@ -9,6 +9,12 @@ import org.bukkit.command.CommandSender;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Reloads the plugin
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ReloadCommand extends AbstractCommand {
 
     public ReloadCommand() {

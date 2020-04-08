@@ -1,5 +1,7 @@
 package git.doomshade.professions.commands;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
@@ -24,12 +26,16 @@ import java.util.logging.Level;
  * @version 1.0
  */
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
-    static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
+    private static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
     protected final SortedList<AbstractCommand> INSTANCE_COMMANDS = new SortedList<>(Comparator.comparing(AbstractCommand::getCommand));
     private final File FOLDER = new File(plugin.getDataFolder(), "commands");
     private PluginCommand cmd = null;
     private File file;
+
+    public static ImmutableCollection<AbstractCommandHandler> getInstances() {
+        return ImmutableSet.copyOf(INSTANCES.values());
+    }
 
     {
         if (!FOLDER.isDirectory()) {

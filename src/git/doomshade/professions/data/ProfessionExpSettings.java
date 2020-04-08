@@ -5,6 +5,12 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * Profession specific exp settings
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionExpSettings extends AbstractProfessionSettings {
 
     private static final String

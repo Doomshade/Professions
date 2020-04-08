@@ -17,6 +17,12 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * A command to create log files
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class LogFilterCommand extends AbstractCommand {
 
     public LogFilterCommand() {

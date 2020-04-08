@@ -11,6 +11,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Undoes latest edit to a file. Can be executed as long as there were edits
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.professions.profession.professions.mining.commands.EditCommand
+ */
 public class UndoEditCommand extends AbstractCommand {
 
     public UndoEditCommand() {

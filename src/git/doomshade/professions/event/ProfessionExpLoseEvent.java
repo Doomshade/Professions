@@ -2,7 +2,12 @@ package git.doomshade.professions.event;
 
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.HandlerList;
-
+/**
+ * Called when a player loses exp
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
     private static HandlerList handlerList = new HandlerList();
     private double exp;

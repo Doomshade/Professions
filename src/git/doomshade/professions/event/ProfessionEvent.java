@@ -15,6 +15,14 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * An event that professions handle
+ *
+ * @param <T> an item type
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.professions.Profession#onEvent(ProfessionEvent)
+ */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
     private static HandlerList handlerList = new HandlerList();
     private final User user;

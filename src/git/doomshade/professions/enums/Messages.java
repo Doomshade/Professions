@@ -23,6 +23,12 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+/**
+ * The messages manager that loads and retrieves messages from a lang file
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class Messages implements ISetup {
 
     private static Messages instance;
@@ -75,7 +81,8 @@ public class Messages implements ISetup {
         SUCCESSFULLY_TRAINED("successfully-trained"),
         NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
         POTION_ALREADY_ACTIVE("potion-already-active"),
-        NOT_PROFESSED("not-professed");
+        NOT_PROFESSED("not-professed"),
+        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage");
 
         private final String fileId;
 

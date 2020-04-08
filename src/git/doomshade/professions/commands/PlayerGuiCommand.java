@@ -9,6 +9,14 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/**
+ * Opens profession GUI with help of GUIApi framework
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.guiapi.GUI
+ * @see git.doomshade.guiapi.GUIApi
+ */
 public class PlayerGuiCommand extends AbstractCommand {
 
     public PlayerGuiCommand() {

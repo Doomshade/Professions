@@ -9,13 +9,19 @@ import org.bukkit.Material;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * A task for gathering profession type purposes
@@ -31,6 +37,9 @@ public class GatherTask extends BukkitRunnable {
     protected final UserProfessionData gatherer;
     protected final Consumer<GatherResult> endResultAction;
     protected final BossBarOptions bossBarOptions;
+    private static final HashMap<UUID, BossBar> ACTIVE_BOSSBARS = new HashMap<>();
+    private static final HashSet<GatherTask> TASKS = new HashSet<>();
+    private Predicate<EntityDamageEvent> damageEventPredicate;
 
     public GatherTask(LocationOptions locationOptions, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions) {
         this.result = result;
@@ -38,6 +47,22 @@ public class GatherTask extends BukkitRunnable {
         this.gatherer = gatherer;
         this.bossBarOptions = bossBarOptions;
         this.endResultAction = endResultAction;
+        TASKS.add(this);
+    }
+
+    public static void onGathererDamaged(EntityDamageEvent damageEvent) {
+        for (GatherTask gatherTask : TASKS) {
+            if (gatherTask.damageEventPredicate == null) return;
+
+            if (!gatherTask.damageEventPredicate.test(damageEvent)) {
+                gatherTask.setResult(GatherResult.CANCELLED_BY_DAMAGE);
+                gatherTask.cancel();
+            }
+        }
+    }
+
+    public void setOnGathererDamaged(Predicate<EntityDamageEvent> damageEventPredicate) {
+        this.damageEventPredicate = damageEventPredicate;
     }
 
     private void setResult(GatherResult gatherResult) {
@@ -68,19 +93,36 @@ public class GatherTask extends BukkitRunnable {
     }
 
     private BossBar getBossBar() {
-        return Bukkit.createBossBar(locationOptions.element.getName(), bossBarOptions.barColor, bossBarOptions.barStyle);
+        return Bukkit.createBossBar(bossBarOptions.title, bossBarOptions.barColor, bossBarOptions.barStyle);
+    }
+
+    @Override
+    public synchronized void cancel() throws IllegalStateException {
+        super.cancel();
+
+        final UUID uuid = gatherer.getUser().getPlayer().getUniqueId();
+        final BossBar bossBar = ACTIVE_BOSSBARS.get(uuid);
+        if (bossBar == null) return;
+
+        bossBar.removeAll();
+        ACTIVE_BOSSBARS.remove(uuid);
     }
 
     @Override
     public final synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+        final Player player = gatherer.getUser().getPlayer();
+        final BossBar bossBar = getBossBar();
+
+        if (ACTIVE_BOSSBARS.putIfAbsent(player.getUniqueId(), bossBar) != null) {
+            return null;
+        }
 
         // check if we use bossbars
         if (bossBarOptions.useBossBar && Settings.isUseBossBar()) {
             // setup bossbar
-            BossBar bossBar = getBossBar();
             bossBar.setProgress(1);
-            bossBar.addPlayer(gatherer.getUser().getPlayer());
-            final int period = 20;
+            bossBar.addPlayer(player);
+            final int period = 1;
 
             // create a runnable for the bossbar
             new BukkitRunnable() {
@@ -103,10 +145,32 @@ public class GatherTask extends BukkitRunnable {
                     bossBar.setProgress((delay - currTime) / delay);
                     currTime += period;
                 }
-            }.runTaskTimer(plugin, period, period);
+            }.runTaskTimer(plugin, 0, period);
         }
         return super.runTaskLater(plugin, delay);
     }
+
+    public enum GatherResult {
+        SUCCESS,
+        FULL_INVENTORY,
+        LOCATION_AIR,
+        CANCELLED_BY_DAMAGE,
+        UNKNOWN
+    }
+
+    public static class BossBarOptions {
+
+        // boolean for the API not the user!
+        // this boolean is defined by the person coding this
+        public boolean useBossBar = false;
+        public BarColor barColor = BarColor.WHITE;
+        public BarStyle barStyle = BarStyle.SOLID;
+        public String title = "";
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Deprecating other tasks
+    ///////////////////////////////////////////////////////////////////////////
 
     @Override
     @Deprecated
@@ -119,10 +183,6 @@ public class GatherTask extends BukkitRunnable {
     public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
         return null;
     }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Deprecating other tasks
-    ///////////////////////////////////////////////////////////////////////////
 
     @Override
     @Deprecated
@@ -142,19 +202,5 @@ public class GatherTask extends BukkitRunnable {
         return null;
     }
 
-    public enum GatherResult {
-        SUCCESS,
-        FULL_INVENTORY,
-        LOCATION_AIR,
-        UNKNOWN
-    }
 
-    public static class BossBarOptions {
-
-        // boolean for the API not the user!
-        // this boolean is defined by the person coding this
-        public boolean useBossBar = false;
-        public BarColor barColor = BarColor.WHITE;
-        public BarStyle barStyle = BarStyle.SOLID;
-    }
 }

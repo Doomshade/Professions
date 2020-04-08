@@ -15,6 +15,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.logging.Level;
 
+/**
+ * A profession settings manager
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public final class ProfessionSettingsManager extends AbstractSettings {
     private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
     private transient final Profession<?> profession;

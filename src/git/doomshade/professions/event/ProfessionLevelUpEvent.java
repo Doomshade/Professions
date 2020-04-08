@@ -3,6 +3,12 @@ package git.doomshade.professions.event;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.HandlerList;
 
+/**
+ * Called when a player levels up
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionLevelUpEvent extends AbstractProfessionEvent {
     private static HandlerList handlerList = new HandlerList();
     private int before, after;

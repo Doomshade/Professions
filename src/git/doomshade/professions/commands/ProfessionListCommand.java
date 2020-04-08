@@ -11,6 +11,12 @@ import org.bukkit.command.CommandSender;
 
 import java.util.*;
 
+/**
+ * Prints the list of all professions
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionListCommand extends AbstractCommand {
 
     public ProfessionListCommand() {

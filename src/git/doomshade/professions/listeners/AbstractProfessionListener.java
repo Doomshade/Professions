@@ -94,21 +94,21 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     /**
-     * @param player    the player that calls this event
-     * @param item      the generic object of {@link ItemType}
-     * @param itemClass the custom ItemType class
+     * @param player        the player that calls this event
+     * @param item          the generic object of {@link ItemType}
+     * @param itemTypeClass the custom ItemType class
      * @param extras
      * @return
      */
     @Nullable
     public final <Obj, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(Player player, Obj item,
-                                                                             Class<T> itemClass, Object... extras) {
+                                                                             Class<T> itemTypeClass, Object... extras) {
 
         if (player == null || item == null) {
             return null;
         }
 
-        T itemType = em.getItemType(item, itemClass);
+        T itemType = em.getItemType(item, itemTypeClass);
         if (itemType == null) {
             return null;
         }

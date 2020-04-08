@@ -39,7 +39,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
@@ -58,6 +57,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
@@ -76,10 +76,10 @@ public final class Professions extends JavaPlugin implements ISetup {
     private static Economy econ;
 
     // 5 minutes
-    private final int SAVE_DELAY = 5 * 60;
+    private static final int SAVE_DELAY = 5 * 60;
 
     // 1 hr
-    private final int BACKUP_DELAY = 60 * 60;
+    private static final int BACKUP_DELAY = 60 * 60;
 
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
@@ -207,7 +207,7 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     /**
      * @param user the user to unload
-     * @throws IOException
+     * @throws IOException if the unload was unsuccessful
      * @see User#unloadUser(User)
      */
     public static void unloadUser(User user) throws IOException {
@@ -348,11 +348,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     @Override
     public void onEnable() {
         setInstance(this);
-        hookGuiApi();
-        hookCitizens();
-        hookSkillAPI();
-        hookVault();
-        hookPex();
+        hookPlugins();
 
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
@@ -364,31 +360,74 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
 
         // Hook dynmap after setups as it uses config
-        hookDynmap();
+        hookPlugin("dynmap", x -> {
+            // sets the dynmap plugin to marker manager
+            MarkerManager.getInstance(DynmapPlugin.plugin);
+            return true;
+        });
         scheduleTasks();
 
         registerListeners();
-
-
-        // TODO test
-        /*ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, PacketType.Play.Server.ENTITY_EQUIPMENT, PacketType.Play.Server.ENTITY) {
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-                // je to BLOCK_PLACE nebo ITEM_USE packet, který
-
-                Professions.log(event.getPacket());
-            }
-
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                Professions.log(event.getPacket());
-            }
-        });*/
 
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 itemType.onLoad();
             }
+        }
+    }
+
+    private void hookPlugins() {
+        hookPlugin("GUIApi", x -> {
+            guiManager = GUIApi.getGuiManager(this);
+            guiManager.registerGui(PlayerProfessionsGUI.class);
+            guiManager.registerGui(ProfessionGUI.class);
+            guiManager.registerGui(TestThreeGui.class);
+            guiManager.registerGui(ProfessionTrainerGUI.class);
+            guiManager.registerGui(AdminProfessionsGUI.class);
+            guiManager.registerGui(AdminProfessionGUI.class);
+            guiManager.registerGui(OreGUI.class);
+            return true;
+        });
+        hookPlugin("Citizens", x -> {
+            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
+            return true;
+        });
+        hookPlugin("SkillAPI", x -> {
+            Bukkit.getPluginManager().registerEvents(new SkillAPIListener(), this);
+            return true;
+        });
+        hookPlugin("Vault", x -> {
+            RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+            if (rsp == null) {
+                return false;
+            }
+
+            econ = rsp.getProvider();
+            return true;
+        });
+        hookPlugin("PermissionsEx", x -> {
+            permMan = PermissionsEx.getPermissionManager();
+            return true;
+        });
+    }
+
+    private void hookPlugin(String plugin, Predicate<Void> func) {
+        if (Bukkit.getPluginManager().getPlugin(plugin) == null) {
+            return;
+        }
+
+        final boolean bool;
+        try {
+            bool = func.test(null);
+        } catch (Exception e) {
+            log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
+            e.printStackTrace();
+            return;
+        }
+        if (bool) {
+            log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
+        } else {
+            log(String.format("Could not hook with %s plugin", plugin), Level.INFO);
         }
     }
 
@@ -566,7 +605,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         if (!file.isDirectory()) {
             file.mkdirs();
         }
-        CraftPlayer p;
         return file;
     }
 
@@ -645,74 +683,15 @@ public final class Professions extends JavaPlugin implements ISetup {
         new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
     }
 
-    private void hookGuiApi() {
-        guiManager = GUIApi.getGuiManager(this);
-        guiManager.registerGui(PlayerProfessionsGUI.class);
-        guiManager.registerGui(ProfessionGUI.class);
-        guiManager.registerGui(TestThreeGui.class);
-        guiManager.registerGui(ProfessionTrainerGUI.class);
-        guiManager.registerGui(AdminProfessionsGUI.class);
-        guiManager.registerGui(AdminProfessionGUI.class);
-        guiManager.registerGui(OreGUI.class);
-        hookMessage("GUIApi");
-    }
-
-    private void hookCitizens() {
-        if (Bukkit.getPluginManager().getPlugin("Citizens") == null) {
-            return;
-        }
-        CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
-        hookMessage("Citizens");
-    }
-
-    private void hookVault() {
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-            return;
-        }
-        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return;
-        }
-
-        hookMessage("Vault");
-        econ = rsp.getProvider();
-    }
 
     /**
-     * Hooks SkillAPI
+     * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of resource
+     * @param replace      whether or not to replace if the file already exists
+     * @param fileName     the file name
      */
-    private void hookSkillAPI() {
-        PluginManager pm = Bukkit.getPluginManager();
-        if (pm.getPlugin("SkillAPI") == null) {
-            return;
-        }
-        pm.registerEvents(new SkillAPIListener(), this);
-    }
-
-    private void hookPex() {
-        PluginManager pm = Bukkit.getPluginManager();
-        if (pm.getPlugin("PermissionsEx") == null) {
-            permMan = null;
-        } else {
-            permMan = PermissionsEx.getPermissionManager();
-        }
-    }
-
-    private void hookDynmap() {
-        PluginManager pm = Bukkit.getPluginManager();
-        if (pm.getPlugin("dynmap") == null) {
-            return;
-        }
-
-        // sets the dynmap plugin to marker manager
-        MarkerManager.getInstance(DynmapPlugin.plugin);
-    }
-
-    private void hookMessage(String plugin) {
-        log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
-    }
-
-    public void saveResource(String resourcePath, String fileName, boolean replace) {
+    public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
         if (resourcePath != null && !resourcePath.equals("")) {
             resourcePath = resourcePath.replace('\\', '/');
             Reader in = this.getTextResource(resourcePath);
@@ -761,7 +740,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @param replace      whether or not to replace if the file already exists
      */
     @Override
-    public void saveResource(String resourcePath, boolean replace) {
+    public void saveResource(String resourcePath, boolean replace) throws IllegalArgumentException {
         saveResource(resourcePath, resourcePath, replace);
     }
 }

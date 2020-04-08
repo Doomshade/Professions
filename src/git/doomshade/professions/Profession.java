@@ -31,11 +31,14 @@ import java.util.Set;
  *
  * @param <T> the profession type
  * @author Doomshade
+ * @version 1.0
  * @see IProfessionType
  * @see EnchantingProfession
  * @see JewelcraftingProfession
  * @see MiningProfession
  * @see SkinningProfession
+ * @see git.doomshade.professions.profession.professions.alchemy.AlchemyProfession
+ * @see git.doomshade.professions.profession.professions.smelting.SmeltingProfession
  */
 public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>> {
 
@@ -298,12 +301,19 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         requiredPlugins.add(plugin);
     }
 
+    public abstract <IType extends ItemType<?>> void onEvent(ProfessionEvent<IType> e);
+
+    @Nullable
+    public List<String> getProfessionInformation(UserProfessionData upd) {
+        return null;
+    }
+
     /**
      * The profession types. Translated to czech
      */
     public enum ProfessionType {
-        PRIMARY("primární"),
-        SECONDARY("sekundární");
+        PRIMARY("primary"),
+        SECONDARY("secondary");
 
         private final String name;
 
@@ -323,7 +333,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             }
             StringBuilder sb = new StringBuilder(professionType + " is not a valid profession type! (");
             for (ProfessionType type : values()) {
-                sb.append(type.ordinal() + "=" + type.toString());
+                sb.append(type.ordinal()).append("=").append(type.toString());
             }
             sb.append(")");
             throw new IllegalArgumentException(sb.toString());
@@ -341,7 +351,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             }
             StringBuilder sb = new StringBuilder(id + " is not a valid profession id type! (");
             for (ProfessionType type : values()) {
-                sb.append(type.ordinal() + "=" + type.toString());
+                sb.append(type.ordinal()).append("=").append(type.toString());
             }
             sb.append(")");
             throw new IllegalArgumentException(sb.toString());
@@ -352,11 +362,4 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
     }
-
-    @Nullable
-    public List<String> getProfessionInformation(UserProfessionData upd) {
-        return null;
-    }
-
-    public abstract <T extends ItemType<?>> void onEvent(ProfessionEvent<T> e);
 }

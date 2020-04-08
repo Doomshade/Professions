@@ -9,6 +9,12 @@ import org.dynmap.markers.MarkerSet;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 
+/**
+ * The marker manager that displays icons (herbs only currently) on dynmap
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public final class MarkerManager {
 
     private static MarkerManager instance = null;
@@ -36,6 +42,12 @@ public final class MarkerManager {
         return instance;
     }
 
+    /**
+     * Registers an icon on dynmap
+     *
+     * @param markable the icon
+     * @param label    the label of icon
+     */
     public void register(IMarkable markable, String label) {
         final String markerSetId = markable.getMarkerSetId();
         MarkerSet set = markerApi.getMarkerSet(markerSetId);
@@ -49,6 +61,11 @@ public final class MarkerManager {
         MARKERS.put(markerSetId, set);
     }
 
+    /**
+     * Shows the icon on dynmap
+     *
+     * @param markable the icon
+     */
     public void show(IMarkable markable) {
         MarkerSet set = MARKERS.get(markable.getMarkerSetId());
 
@@ -65,6 +82,11 @@ public final class MarkerManager {
         set.createMarker(markerWrapper.id, markerWrapper.getLabel(), location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), markerApi.getMarkerIcon(markerWrapper.markerIcon), false);
     }
 
+    /**
+     * Hides the icon on dynmap
+     *
+     * @param markable the icon
+     */
     public void hide(IMarkable markable) {
         MarkerSet set = MARKERS.get(markable.getMarkerSetId());
         if (set == null) {

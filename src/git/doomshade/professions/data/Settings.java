@@ -10,15 +10,22 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.data.AbstractSettings.LEVEL;
 import static git.doomshade.professions.data.AbstractSettings.outdated;
 
+/**
+ * The main settings class that registers all setting instances. Also manages settings in the root path.
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public final class Settings implements ISetup {
 
     public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
@@ -34,7 +41,7 @@ public final class Settings implements ISetup {
 
     // TODO: 08.04.2020 make this a BossBarOptions and create a new path for bossbars (adding the customizability for BossBars)
     private static boolean useBossBar = false;
-    private static Set<String> miningWorlds = new HashSet<>();
+    private static Collection<String> miningWorlds = new HashSet<>();
 
     static {
         plugin = Professions.getInstance();
@@ -110,7 +117,7 @@ public final class Settings implements ISetup {
         return autoSave;
     }
 
-    public static Set<String> getMiningWorlds() {
+    public static Collection<String> getMiningWorlds() {
         return miningWorlds;
     }
 
@@ -157,12 +164,12 @@ public final class Settings implements ISetup {
         config = plugin.getConfig();
 
         useBossBar = setupVariable("use-bossbar", false);
-        editItem = setupVariable("edit-item", Material.GOLD_NUGGET);
+        editItem = Material.getMaterial(setupVariable("edit-item", "GOLD_NUGGET"));
         autoSave = setupVariable("auto-save-before-edit", true);
         miningWorlds = setupVariable("mining-worlds",
                 // using Collections#checkedSet to get a Set<String> (not a HashSet)
-                Collections.checkedSet(new HashSet<>(), String.class),
-                x -> x.stream().map(String::toLowerCase).collect(Collectors.toSet()));
+                Collections.checkedList(new ArrayList<>(), String.class),
+                x -> x.stream().map(String::toLowerCase).collect(Collectors.toList()));
         handleMineEvents = setupVariable("handle-mine-events", false);
 
         // setup lang as last as it could throw an exception

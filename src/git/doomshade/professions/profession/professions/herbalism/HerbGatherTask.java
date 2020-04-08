@@ -18,7 +18,9 @@ public class HerbGatherTask extends GatherTask {
         bossBarOptions.barStyle = BarStyle.SOLID;
     }
 
-    public HerbGatherTask(HerbLocationOptions location, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction) {
+    public HerbGatherTask(HerbLocationOptions location, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, String title) {
         super(location, gatherer, result, endResultAction, bossBarOptions);
+        bossBarOptions.title = title;
+        setOnGathererDamaged(x -> true);
     }
 }

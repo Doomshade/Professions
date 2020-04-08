@@ -13,14 +13,22 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Professes a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessCommand extends AbstractCommand {
 
     public ProfessCommand() {
-        args = new HashMap<>();
-        args.put(true, Collections.singletonList("profession"));
-        args.put(false, Collections.singletonList("player"));
+        setArg(true, Collections.singletonList("profession"));
+        setArg(false, Collections.singletonList("player"));
         setCommand("profess");
         setDescription("Professes a player");
         setRequiresPlayer(false);

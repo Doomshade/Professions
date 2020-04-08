@@ -9,6 +9,12 @@ import org.bukkit.command.CommandSender;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Saves current player data from memory to file
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class SaveCommand extends AbstractCommand {
 
     public SaveCommand() {

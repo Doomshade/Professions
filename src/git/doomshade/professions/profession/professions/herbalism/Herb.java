@@ -34,7 +34,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
-    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData());
+    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5);
 
     private final ItemStack gatherItem;
     private final Material herbMaterial;
@@ -44,11 +44,12 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     private final boolean enableSpawn;
     private final ParticleData particleData;
     private final byte materialData;
+    private final int gatherTime;
 
     // TODO: 26.01.2020 make implementation of custom marker icons
     private final String markerIcon;
 
-    private Herb(String id, ItemStack gatherItem, Material herbMaterial, byte materialData, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData) {
+    private Herb(String id, ItemStack gatherItem, Material herbMaterial, byte materialData, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData, int gatherTime) {
         this.id = id;
         this.materialData = materialData;
         this.gatherItem = gatherItem;
@@ -56,6 +57,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         this.spawnPoints = spawnPoints;
         this.enableSpawn = enableSpawn;
         this.particleData = particleData;
+        this.gatherTime = gatherTime;
         this.markerIcon = "flower";
         if (!id.equals(EXAMPLE_HERB_ID))
             HERBS.put(getId(), this);
@@ -80,11 +82,18 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
+
+        // gather item
         MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
         ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
+
+        // herb material
         ItemStack herbMaterial = ItemUtils.deserializeMaterial((String) map.get(HERB_MATERIAL.s));
+
+        // herb id
         String herbId = (String) map.get(ID.s);
 
+        // spawn points
         int i = 0;
         MemorySection spawnSection;
         ArrayList<SpawnPoint> spawnPoints = new ArrayList<>();
@@ -99,8 +108,15 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
             spawnPoints.add(sp);
             i++;
         }
+
+        // particles
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
-        return new Herb(herbId, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), ParticleData.deserialize(particleSection.getValues(true)));
+        final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
+
+        // gather time
+        int gatherTime = (int) map.get(GATHER_TIME.s);
+
+        return new Herb(herbId, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
     }
 
     @SuppressWarnings("unused")
@@ -285,13 +301,18 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         return meta.getDisplayName();
     }
 
+    public int getGatherTime() {
+        return gatherTime;
+    }
+
     enum HerbEnum implements FileEnum {
         GATHER_ITEM("gather-item"),
         HERB_MATERIAL("herb-material"),
         SPAWN_POINT("spawnpoint"),
         ENABLE_SPAWN("enable-spawn"),
         ID("id"),
-        PARTICLE("particle");
+        PARTICLE("particle"),
+        GATHER_TIME("gather-duration");
 
         private final String s;
 
@@ -315,6 +336,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
                     put(ENABLE_SPAWN, false);
                     put(ID, "herb_id");
                     put(PARTICLE, new ParticleData());
+                    put(GATHER_TIME, 5);
                 }
             };
         }
