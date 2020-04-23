@@ -13,15 +13,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static git.doomshade.professions.profession.professions.skinning.Prey.PreyEnum.CONFIG_NAME;
-import static git.doomshade.professions.profession.professions.skinning.Prey.PreyEnum.ENTITY;
+import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.CONFIG_NAME;
+import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.ENTITY;
 
 /**
  * A prey (mob hunting) example for {@link SkinningProfession}
  *
  * @author Doomshade
  */
-public class Prey extends ItemType<Mob> {
+public class PreyItemType extends ItemType<Mob> {
+
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public PreyItemType(Mob object) {
+        super(object);
+    }
 
     @Override
     public Map<String, Object> getSerializedObject() {
@@ -33,23 +42,6 @@ public class Prey extends ItemType<Mob> {
         map.put(ENTITY.s, mob.type.name());
         map.put(CONFIG_NAME.s, mob.configName);
         return map;
-    }
-
-    /**
-     * Required constructor
-     */
-    public Prey() {
-        super();
-    }
-
-    /**
-     * Required constructor
-     *
-     * @param object
-     * @param exp
-     */
-    public Prey(Mob object, int exp) {
-        super(object, exp);
     }
 
     @Override

@@ -6,6 +6,8 @@ import git.doomshade.professions.Professions;
  * This interface is only for this plugin's purposes, not the API's, the {@link #setup()} method will not be called during {@link Professions#onEnable()} even if you register it!
  *
  * @author Doomshade
+ * @version 1.0
+ * @apiNote both setup and cleanup methods could possibly return a boolean inducing the result, but perhaps it's too late for that (too lazy)
  */
 public interface ISetup {
     /**

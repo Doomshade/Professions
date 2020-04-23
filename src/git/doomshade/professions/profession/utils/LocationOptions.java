@@ -11,7 +11,7 @@ import org.bukkit.block.Block;
 import java.util.Objects;
 import java.util.logging.Level;
 
-public abstract class LocationOptions {
+public class LocationOptions {
 
     /**
      * The location
@@ -85,8 +85,14 @@ public abstract class LocationOptions {
         }
         final byte materialData = element.getMaterialData();
 
-        block.setType(material);
+        block.setType(material, false);
         block.setData(materialData);
+        if (material == Material.DOUBLE_PLANT) {
+            final Block top = location.getWorld().getBlockAt(location.clone().add(0, 1, 0));
+            top.setType(material, false);
+            top.setData((byte) 10);
+        }
+
         addParticles();
         unscheduleSpawn();
         spawned = true;

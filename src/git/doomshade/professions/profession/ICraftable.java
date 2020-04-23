@@ -19,12 +19,6 @@ import java.util.regex.Pattern;
 import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
 /**
- * Interface for craftable {@link ItemType}s. Implement this in a class extending {@link ItemType},
- * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeCraftable(Map, ICustomType)}
- * with the map and {@code this} argument inside the {@link ItemType#deserialize(Map)} method.
- * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.}{@link ItemType#serialize()} {@link Map} variable with an argument
- * of {@link #serializeCraftable(ICustomType)} and return the map.
- *
  * @author Doomshade
  * @see <a href="https://github.com/Doomshade/Professions/blob/test_branch/src/git/doomshade/professions/profession/types/enchanting/EnchantedItemItemType.java">Github</a> for an example
  */
@@ -33,29 +27,22 @@ public interface ICraftable extends ICustomType {
     /**
      * Make sure to override the {@link ItemType#serialize()} method and call and call {@link Map#putAll(Map)} of this map.
      *
-     * @param customType the craftable item
      * @return the serialized form of this class
      */
     @SerializeMethod
-    static Map<String, Object> serializeCraftable(ICustomType customType) {
+    default Map<String, Object> serializeCraftable() {
         Map<String, Object> map = new HashMap<>();
 
-        if (!(customType instanceof ICraftable)) {
-            return map;
-        }
-
-        ICraftable craftable = (ICraftable) customType;
-        map.put(ITEM_REQUIREMENTS.s, craftable.getCraftingRequirements().serialize());
-        map.put(RESULT.s, craftable.getResult().serialize());
-        map.put(INVENTORY_REQUIREMENTS.s, craftable.getInventoryRequirements().serialize());
-        map.put(CRAFTING_TIME.s, craftable.getCraftingTime());
-        map.put(SOUND_CRAFTED.s, craftable.getSounds().get(Sound.ON_CRAFT));
-        map.put(SOUND_CRAFTING.s, craftable.getSounds().get(Sound.CRAFTING));
+        map.put(ITEM_REQUIREMENTS.s, getCraftingRequirements().serialize());
+        map.put(RESULT.s, getResult().serialize());
+        map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
+        map.put(CRAFTING_TIME.s, getCraftingTime());
+        map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
+        map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
         return map;
     }
 
     /**
-     * Make sure to override the {@link ItemType#deserialize(Map)} method and call this method.
      *
      * @param map        the serialized version of this class
      * @param customType the craftable item

@@ -10,7 +10,7 @@ public final class SkinningProfession extends Profession<IHunting> {
 
     @Override
     public void onLoad() {
-        addItems(Prey.class);
+        addItems(PreyItemType.class);
     }
 
     @Override
@@ -21,8 +21,8 @@ public final class SkinningProfession extends Profession<IHunting> {
     @Override
     @EventHandler
     public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> e) {
-        ProfessionEvent<Prey> event = getEvent(e, Prey.class);
-        if (!isValidEvent(event, Prey.class) || !playerMeetsLevelRequirements(e)) {
+        ProfessionEvent<PreyItemType> event = getEvent(e, PreyItemType.class);
+        if (!isValidEvent(event, PreyItemType.class) || !playerMeetsLevelRequirements(e)) {
             return;
         }
         addExp(event);

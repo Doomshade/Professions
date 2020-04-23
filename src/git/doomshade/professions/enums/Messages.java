@@ -49,7 +49,7 @@ public class Messages implements ISetup {
     public void setup() {
         lang = Settings.getLang();
         final Set<String> propertyNames = lang.getKeys(false);
-        final Sets.SetView<String> missing = Sets.difference(Arrays.stream(Message.values()).map(x -> x.fileId).collect(Collectors.toSet()), propertyNames);
+        final Sets.SetView<String> missing = Sets.difference(Arrays.stream(Message.values()).map(x -> x.key).collect(Collectors.toSet()), propertyNames);
         if (!missing.isEmpty()) {
             try {
                 Professions.log("Your language file is outdated!", Level.WARNING);
@@ -82,16 +82,41 @@ public class Messages implements ISetup {
         NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
         POTION_ALREADY_ACTIVE("potion-already-active"),
         NOT_PROFESSED("not-professed"),
-        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage");
+        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
+        GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement"),
+        PROFTYPE_PRIMARY("proftype-primary"),
+        PROFTYPE_SECONDARY("proftype-secondary");
 
-        private final String fileId;
 
-        Message(String fileId) {
-            this.fileId = fileId;
+        private final String key;
+
+        Message(String key) {
+            this.key = key;
         }
 
         public String getMessage() {
-            return lang.getString(fileId);
+            return lang.getString(key);
+        }
+
+        public String getColoredMessage() {
+            String msg = getMessage();
+            if (msg.isEmpty()) {
+                return msg;
+            }
+            return ChatColor.translateAlternateColorCodes('&', msg);
+        }
+
+        public String getMessage(String defaultMessage) {
+            final String msg = lang.getString(key);
+            if (msg.isEmpty()) {
+                return defaultMessage;
+            }
+            return msg;
+        }
+
+        public String getColoredMessage(String defaultMessage) {
+            String msg = getMessage(defaultMessage);
+            return ChatColor.translateAlternateColorCodes('&', msg);
         }
     }
 

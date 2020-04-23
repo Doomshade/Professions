@@ -20,12 +20,13 @@ public class BarItemType extends ItemType<ItemStack> implements ICraftable {
     private Requirements inventoryRequirements = new Requirements(), craftingRequirements = new Requirements();
     private Map<Sound, String> sounds = new HashMap<>();
 
-    public BarItemType() {
-        super();
-    }
-
-    public BarItemType(ItemStack object, int exp) {
-        super(object, exp);
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public BarItemType(ItemStack object) {
+        super(object);
     }
 
     @Override

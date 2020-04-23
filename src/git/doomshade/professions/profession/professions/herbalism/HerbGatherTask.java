@@ -22,5 +22,6 @@ public class HerbGatherTask extends GatherTask {
         super(location, gatherer, result, endResultAction, bossBarOptions);
         bossBarOptions.title = title;
         setOnGathererDamaged(x -> true);
+        setOnMoved(x -> x >= 5d);
     }
 }

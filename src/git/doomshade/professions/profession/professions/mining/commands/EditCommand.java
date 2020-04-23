@@ -40,7 +40,7 @@ public class EditCommand extends AbstractEditCommand {
             switch (args[1].toLowerCase()) {
                 case "allwool":
                     for (Ore ore : ores.values()) {
-                        ore.getOreLocationOptions().values().forEach(x -> {
+                        ore.getLocationOptions().values().forEach(x -> {
                             x.despawn();
                             Location loc = x.location;
                             loc.getBlock().setType(Material.WOOL);
@@ -50,7 +50,7 @@ public class EditCommand extends AbstractEditCommand {
                     break;
                 case "allore":
                     for (Ore ore : ores.values()) {
-                        ore.getOreLocationOptions().values().forEach(x -> {
+                        ore.getLocationOptions().values().forEach(x -> {
                             x.despawn();
                             x.scheduleSpawn();
                         });

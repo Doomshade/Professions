@@ -3,6 +3,7 @@ package git.doomshade.professions;
 import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
@@ -13,6 +14,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
@@ -309,13 +311,13 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * The profession types. Translated to czech
+     * The profession types
      */
-    public enum ProfessionType {
-        PRIMARY("primary"),
-        SECONDARY("secondary");
+    public enum ProfessionType implements ISetup {
+        PRIMARY("Primary"),
+        SECONDARY("Secondary");
 
-        private final String name;
+        private String name;
 
         ProfessionType(String name) {
             this.name = name;
@@ -360,6 +362,12 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         @Override
         public String toString() {
             return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
+        }
+
+        @Override
+        public void setup() {
+            PRIMARY.name = Messages.Message.PROFTYPE_PRIMARY.getColoredMessage("Primary");
+            SECONDARY.name = Messages.Message.PROFTYPE_SECONDARY.getColoredMessage("Secondary");
         }
     }
 }

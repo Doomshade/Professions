@@ -34,20 +34,12 @@ public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainab
     private Map<Sound, String> sounds = new HashMap<>();
 
     /**
-     * Required constructor
-     */
-    public EnchantedItemItemType() {
-        super();
-    }
-
-    /**
-     * Required constructor
+     * Constructor for creation of the item type object
      *
      * @param object
-     * @param exp
      */
-    public EnchantedItemItemType(Enchant object, int exp) {
-        super(object, exp);
+    public EnchantedItemItemType(Enchant object) {
+        super(object);
     }
 
     @Override

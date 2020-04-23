@@ -1,11 +1,12 @@
 package git.doomshade.professions.profession.professions.mining;
 
-import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.LocationElement;
 import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.*;
 import org.bukkit.Location;
@@ -13,9 +14,9 @@ import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.*;
 
 import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.*;
@@ -26,24 +27,22 @@ import static git.doomshade.professions.profession.professions.mining.Ore.OreEnu
  *
  * @author Doomshade
  */
-public class Ore implements ConfigurationSerializable, LocationElement {
+public class Ore extends SpawnableElement<OreLocationOptions> implements ConfigurationSerializable, LocationElement {
 
     public static final HashMap<String, Ore> ORES = new HashMap<>();
     private static final String EXAMPLE_ORE_ID = "example-ore";
     public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, new SortedList<>(Comparator.naturalOrder()), new ArrayList<>(), new ParticleData());
-    private final HashMap<Location, OreLocationOptions> LOCATION_OPTIONS = new HashMap<>();
     private Material oreMaterial;
     private SortedList<YieldResult> results;
     private final String id;
     private ParticleData particleData;
-    private List<SpawnPoint> spawnPoints;
     private String name;
 
     private Ore(String id, String name, Material oreMaterial, SortedList<YieldResult> results, List<SpawnPoint> spawnPoints, ParticleData particleData) {
+        super(spawnPoints);
         this.id = id;
         this.name = name;
         this.oreMaterial = oreMaterial;
-        this.spawnPoints = spawnPoints;
         this.particleData = particleData;
         this.results = results;
         if (!id.equals(EXAMPLE_ORE_ID))
@@ -98,36 +97,15 @@ public class Ore implements ConfigurationSerializable, LocationElement {
         return new Ore(id, name, mat, results, spawnPoints, ParticleData.deserialize(particleSection.getValues(true)));
     }
 
-    public void addSpawnPoint(SpawnPoint sp) {
-        spawnPoints.add(sp);
-        update();
+    @Override
+    protected OreLocationOptions createLocationOptions(Location location) {
+        return new OreLocationOptions(location, this);
     }
 
-    public void update() {
-        try {
-            Professions.getProfessionManager().getItemTypeHolder(OreItemType.class).save(false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void removeSpawnPoint(int id) {
-        SpawnPoint sp = spawnPoints.get(id);
-        if (sp != null) {
-            getLocationOptions(sp.location).despawn();
-            spawnPoints.remove(id);
-            update();
-        }
-    }
-
-    public void removeSpawnPoint(SpawnPoint sp) {
-        if (!isSpawnPoint(sp.location)) {
-            return;
-        }
-        getLocationOptions(sp.location).despawn();
-        spawnPoints.remove(sp);
-        update();
-
+    @NotNull
+    @Override
+    protected ItemTypeHolder<OreItemType> getItemTypeHolder() {
+        return Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);
     }
 
     @Override
@@ -143,7 +121,7 @@ public class Ore implements ConfigurationSerializable, LocationElement {
 
                 int i = 0;
 
-                for (SpawnPoint spawnPoint : spawnPoints) {
+                for (SpawnPoint spawnPoint : getSpawnPoints()) {
                     put(SPAWN_POINT.s.concat("-" + i), spawnPoint.serialize());
                     i++;
                 }
@@ -197,28 +175,8 @@ public class Ore implements ConfigurationSerializable, LocationElement {
     }
 
     @Override
-    public List<SpawnPoint> getSpawnPoints() {
-        return spawnPoints;
-    }
-
-    @Override
     public String getId() {
         return id;
-    }
-
-    public OreLocationOptions getLocationOptions(Location location) throws IllegalArgumentException {
-        if (!LOCATION_OPTIONS.containsKey(location)) {
-            LOCATION_OPTIONS.put(location, new OreLocationOptions(location, this));
-        }
-        return LOCATION_OPTIONS.get(location);
-    }
-
-    public ImmutableMap<Location, OreLocationOptions> getOreLocationOptions() {
-        return ImmutableMap.copyOf(LOCATION_OPTIONS);
-    }
-
-    public boolean isSpawnPoint(Location location) {
-        return spawnPoints.contains(new SpawnPoint(location));
     }
 
     /**

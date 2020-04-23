@@ -68,6 +68,7 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup {
 
+    // managers
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
@@ -82,21 +83,29 @@ public final class Professions extends JavaPlugin implements ISetup {
     private static final int BACKUP_DELAY = 60 * 60;
 
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
-    private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
     private static PrintStream fos;
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
     private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
-    private final File LOGS_FOLDER = new File(getDataFolder(), "logs");
-    private final File LOG_FILE = new File(getLogsFolder(), String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy H_m"))));
+    // files
+    // TODO: 23.04.2020 perhaps make some IOManager for this someday?
+    private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
+    private final File LOGS_FOLDER;
+    private final File LOG_FILE;
+
     private final File FILTERED_LOGS_FOLDER = new File(getDataFolder(), "filtered logs");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
+
     public static final String LANG_PATH = "lang/";
-
-    private FileConfiguration configLoader;
     private final File LANG_FOLDER = new File(getDataFolder(), "lang");
+    private FileConfiguration configLoader;
 
+    // put it in an initialization block so the order is obvious
+    {
+        LOGS_FOLDER = new File(getDataFolder(), "logs");
+        LOG_FILE = new File(getLogsFolder(), String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy H_m"))));
+    }
 
     /**
      * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
@@ -536,15 +545,22 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     /**
      * Reloads the plugin
-     *
-     * @throws IOException if an error occurs
      */
-    public void reload() throws IOException {
+    public boolean reload() {
+
+        boolean successful = true;
 
         // Calls on pre reload on all item types
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
-                itemType.onPreReload();
+                try {
+                    itemType.onPreReload();
+                } catch (Exception e) {
+                    String errormsg = "Failed to reload itemtype " + itemType.getName() + ".";
+                    log(errormsg.concat(" Check log file for exception message."));
+                    log(new Exception(errormsg), Level.CONFIG);
+                    successful = false;
+                }
             }
         }
 
@@ -554,7 +570,14 @@ public final class Professions extends JavaPlugin implements ISetup {
         // Saves and unloads users
 
         for (Player p : Bukkit.getOnlinePlayers()) {
-            User.unloadUser(p);
+            try {
+                User.unloadUser(p);
+            } catch (IOException e) {
+                String errormsg = "Failed to unload user " + p.getName() + ".";
+                log(errormsg.concat(" Check log file for exception message."));
+                log(new IOException(errormsg), Level.CONFIG);
+                successful = false;
+            }
         }
 
 
@@ -564,14 +587,30 @@ public final class Professions extends JavaPlugin implements ISetup {
         // Calls on reload on all item types
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
-                itemType.onReload();
+                try {
+                    itemType.onReload();
+                } catch (Exception e) {
+                    String errormsg = "Failed to reload itemtype " + itemType.getName() + ".";
+                    log(errormsg.concat(" Check log file for exception message."));
+                    log(new Exception(errormsg), Level.CONFIG);
+                    e.printStackTrace();
+                    successful = false;
+                }
             }
         }
 
         // Finally loads users again
         for (Player p : Bukkit.getOnlinePlayers()) {
-            User.loadUser(p);
+            try {
+                User.loadUser(p);
+            } catch (IOException e) {
+                String errormsg = "Failed to load user " + p.getName() + ".";
+                log(errormsg.concat(" Check log file for exception message."));
+                log(new IOException(errormsg), Level.CONFIG);
+                successful = false;
+            }
         }
+        return successful;
     }
 
     /**
@@ -612,11 +651,15 @@ public final class Professions extends JavaPlugin implements ISetup {
      * Registers all setups
      */
     private void registerSetups() {
+
+        // register main settings first
         try {
             registerSetup(Settings.getInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // then other settings
         for (AbstractSettings s : Settings.SETTINGS) {
             try {
                 registerSetup(s);
@@ -624,11 +667,16 @@ public final class Professions extends JavaPlugin implements ISetup {
                 e.printStackTrace();
             }
         }
+
+        // then messages
         try {
             registerSetup(Messages.getInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // then the rest
+        registerSetup(Profession.ProfessionType.PRIMARY);
+
         registerCommandHandler(new CommandHandler());
         registerCommandHandler(new MiningCommandHandler());
         registerCommandHandler(new HerbalismCommandHandler());

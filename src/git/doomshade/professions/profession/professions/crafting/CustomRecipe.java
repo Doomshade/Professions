@@ -16,12 +16,13 @@ import java.util.Map.Entry;
 public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     private static final String RESULT = "result", SHAPE = "shape", INGREDIENTS = "ingredients";
 
-    public CustomRecipe() {
-        super();
-    }
-
-    public CustomRecipe(CraftShapedRecipe object, int exp) {
-        super(object, exp);
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public CustomRecipe(CraftShapedRecipe object) {
+        super(object);
     }
 
     @Override

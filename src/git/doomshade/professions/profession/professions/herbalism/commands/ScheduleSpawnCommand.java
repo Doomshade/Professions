@@ -53,7 +53,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
         }
 
         if (loc == null) {
-            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getHerbLocationOptions().entrySet()) {
+            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getLocationOptions().entrySet()) {
                 final HerbLocationOptions hlo = entry.getValue();
                 Location hloLoc = hlo.location;
                 String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
@@ -68,7 +68,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
         } else {
             String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             try {
-                final HerbLocationOptions hlo = herb.getHerbLocationOptions(loc);
+                final HerbLocationOptions hlo = herb.getLocationOptions(loc);
                 hlo.scheduleSpawn();
                 sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
             } catch (Exception e) {

@@ -79,7 +79,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
     /**
      * Adds defaults and saves files
      *
-     * @throws IOException
+     * @throws IOException if the save is unsuccessful
      */
     public final void save(boolean safely) throws IOException {
         File itemFile = itemType.getFile();
@@ -130,7 +130,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         return itemType.getFile();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("all")
     public void load() throws IOException {
         File itemFile = itemType.getFile();
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);

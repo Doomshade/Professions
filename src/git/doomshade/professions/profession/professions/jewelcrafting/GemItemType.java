@@ -24,12 +24,13 @@ public class GemItemType extends ItemType<Gem> implements ICraftable, ITrainable
     private boolean trainable = true;
     private int cost = 0;
 
-    public GemItemType() {
-        super();
-    }
-
-    public GemItemType(Gem object, int exp) {
-        super(object, exp);
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public GemItemType(Gem object) {
+        super(object);
     }
 
     @Override

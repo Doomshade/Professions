@@ -49,7 +49,7 @@ public class AddCommand extends AbstractCommand {
 
         herb.addSpawnPoint(new SpawnPoint(lookingAt, respawnTime));
         try {
-            herb.getHerbLocationOptions(lookingAt).spawn();
+            herb.getLocationOptions(lookingAt).spawn();
         } catch (SpawnException e) {
             e.printStackTrace();
         }

@@ -36,8 +36,6 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 /**
  * <li>{@link git.doomshade.professions.event.ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
  * <li>If you want to make your own type, make a class extend this and override all constructors!</li>
- * <li> {@link #ItemType()} </li>
- * <li> {@link #ItemType(Object, int)} </li>
  *
  * @param <T> the item type to look for in {@link git.doomshade.professions.event.ProfessionEvent}
  * @author Doomshade
@@ -54,19 +52,13 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private int itemTypeId;
     private boolean hiddenWhenUnavailable, ignoreSkillupColor;
 
-    /**
-     * Calls {@link #ItemType(Object, int)} with {@code null, 0} parameters
-     */
-    public ItemType() {
-        this(null, 0);
-    }
 
     /**
-     * @param object the object
-     * @param exp    the experience yield
+     * Constructor for creation of the item type object
+     *
+     * @param object
      */
-    public ItemType(T object, int exp) {
-
+    public ItemType(T object) {
         this.itemFile = getFile(getClass());
         if (!itemFile.exists()) {
             try {
@@ -76,12 +68,22 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             }
         }
         this.setLevelReq(1);
-        this.setExp(exp);
+        this.setExp(0);
         this.setObject(object);
         this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
         this.setHiddenWhenUnavailable(false);
         this.setIgnoreSkillupColor(false);
+    }
+
+    @SuppressWarnings("all")
+    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object) {
+        try {
+            // log
+            return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -94,19 +96,23 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @throws ProfessionInitializationException when the deserialization is unsuccessful
      */
     @Nullable
+    @SuppressWarnings("all")
     public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws ProfessionInitializationException {
         Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
         try {
-            Constructor<A> c = clazz.getDeclaredConstructor();
+            Constructor<?> c = clazz.getDeclaredConstructors()[0];
             c.setAccessible(true);
-            A instance = c.newInstance();
-            instance.setId(id);
-            instance.deserialize(map);
+
+            // create a null object and pass it to the instance
+            // we cannot directly pass null as it would think there are no arguments FOR SOME REASON
+            final Object obj = null;
+            final A instance = (A) c.newInstance(obj);
+            instance.deserialize(id, map);
             return instance;
-        } catch (InstantiationException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+        } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
             Professions.log("Could not deserialize " + clazz.getSimpleName()
-                    + " from file as it does not override an ItemType() constructor!", Level.SEVERE);
+                    + " from file as it does not override an ItemType(T) constructor!", Level.SEVERE);
         }
         return null;
     }
@@ -114,11 +120,12 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * Deserializes the ItemType including its potential implementations of {@link ICraftable} and {@link ITrainable}.
      *
-     * @param map the serialization map
-     * @throws ProfessionInitializationException when the deserialization is unsuccessful
+     * @param id  the id of this itemtype
+     * @param map the map
+     * @throws ProfessionInitializationException if the inicialization of this class is unsuccessful
      */
-    public final void deserialize(Map<String, Object> map) throws ProfessionInitializationException {
-
+    public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+        setId(id);
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
         setName((String) map.getOrDefault(NAME.s, "Unknown name"));
@@ -389,15 +396,13 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         return map;
     }
 
+    @SuppressWarnings("all")
     private Map<String, Object> invokeSerialize(Class<? extends ICustomType> clazz) {
         for (Method m : clazz.getDeclaredMethods()) {
-            final Parameter[] parameters = m.getParameters();
-            if (parameters.length > 0 &&
-                    m.isAnnotationPresent(SerializeMethod.class)
-                    && parameters[0].getType().equals(ICustomType.class)
+            if (m.isAnnotationPresent(SerializeMethod.class)
                     && m.getReturnType().equals(Map.class)) {
                 try {
-                    return (Map<String, Object>) m.invoke(this, this);
+                    return (Map<String, Object>) m.invoke(this);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
@@ -444,6 +449,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     @Override
+    @SuppressWarnings("all")
     public String toString() {
         StringBuilder sb = new StringBuilder()
                 .append(OBJECT + ": " + getSerializedObject().toString())

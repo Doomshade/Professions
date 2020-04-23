@@ -3,8 +3,8 @@ package git.doomshade.professions.profession.professions.skinning;
 import org.bukkit.entity.EntityType;
 
 /**
- * Custom class for {@link Prey}
- * Here I needed mob's config name (if the Prey is a MythicMob), I'd have otherwise only passed {@link EntityType} as a generic argument to {@link Prey}.
+ * Custom class for {@link PreyItemType}
+ * Here I needed mob's config name (if the Prey is a MythicMob), I'd have otherwise only passed {@link EntityType} as a generic argument to {@link PreyItemType}.
  *
  * @author Doomshade
  */

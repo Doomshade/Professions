@@ -1,11 +1,12 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
-import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.MarkableLocationElement;
 import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
@@ -17,9 +18,9 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -30,7 +31,7 @@ import static git.doomshade.professions.profession.professions.herbalism.Herb.He
  *
  * @author Doomshade
  */
-public class Herb implements MarkableLocationElement, ConfigurationSerializable {
+public class Herb extends SpawnableElement<HerbLocationOptions> implements MarkableLocationElement, ConfigurationSerializable {
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
@@ -39,8 +40,6 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     private final ItemStack gatherItem;
     private final Material herbMaterial;
     private final String id;
-    private final HashMap<Location, HerbLocationOptions> LOCATION_OPTIONS = new HashMap<>();
-    final ArrayList<SpawnPoint> spawnPoints;
     private final boolean enableSpawn;
     private final ParticleData particleData;
     private final byte materialData;
@@ -50,11 +49,11 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     private final String markerIcon;
 
     private Herb(String id, ItemStack gatherItem, Material herbMaterial, byte materialData, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData, int gatherTime) {
+        super(spawnPoints);
         this.id = id;
         this.materialData = materialData;
         this.gatherItem = gatherItem;
         this.herbMaterial = herbMaterial;
-        this.spawnPoints = spawnPoints;
         this.enableSpawn = enableSpawn;
         this.particleData = particleData;
         this.gatherTime = gatherTime;
@@ -124,7 +123,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
             Herb herb = entry.getKey();
-            if (herb.getHerbLocationOptions(entry.getValue()).isSpawned()) {
+            if (herb.getLocationOptions(entry.getValue()).isSpawned()) {
                 herbs.put(herb, entry.getValue());
             }
         }
@@ -134,7 +133,7 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     public static void spawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
             try {
-                entry.getKey().getHerbLocationOptions(entry.getValue()).spawn();
+                entry.getKey().getLocationOptions(entry.getValue()).spawn();
             } catch (SpawnException e) {
                 e.printStackTrace();
             }
@@ -144,24 +143,20 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     @SuppressWarnings("unused")
     public static void despawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
-            entry.getKey().getHerbLocationOptions(entry.getValue()).despawn();
+            entry.getKey().getLocationOptions(entry.getValue()).despawn();
         }
     }
 
     private static Map<Herb, Location> getHerbsInWorld(World world) {
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Herb herb : HERBS.values()) {
-            for (SpawnPoint spawnPoint : herb.spawnPoints) {
+            for (SpawnPoint spawnPoint : herb.getSpawnPoints()) {
                 if (spawnPoint.location.getWorld().equals(world)) {
                     herbs.put(herb, spawnPoint.location);
                 }
             }
         }
         return herbs;
-    }
-
-    private boolean isSpawnPoint(Location location) {
-        return spawnPoints.contains(new SpawnPoint(location));
     }
 
     boolean isSpawnEnabled() {
@@ -191,57 +186,26 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
 
                 // adds ":[0-9]+" to the material
                 put(HERB_MATERIAL.s, herbMaterial.name() + (materialData != 0 ? ":" + materialData : ""));
-                for (int i = 0; i < spawnPoints.size(); i++) {
-                    put(SPAWN_POINT.s.concat("-" + i), spawnPoints.get(i).serialize());
+                for (int i = 0; i < getSpawnPoints().size(); i++) {
+                    put(SPAWN_POINT.s.concat("-" + i), getSpawnPoints().get(i).serialize());
                 }
                 put(ENABLE_SPAWN.s, enableSpawn);
                 put(ID.s, id);
                 put(PARTICLE.s, particleData.serialize());
+                put(GATHER_TIME.s, gatherTime);
             }
         };
     }
 
-    public HerbLocationOptions getHerbLocationOptions(Location location) {
-        if (!LOCATION_OPTIONS.containsKey(location)) {
-            LOCATION_OPTIONS.put(location, new HerbLocationOptions(location, this));
-        }
-        return LOCATION_OPTIONS.get(location);
+    @Override
+    protected HerbLocationOptions createLocationOptions(Location location) {
+        return new HerbLocationOptions(location, this);
     }
 
-    public ImmutableMap<Location, HerbLocationOptions> getHerbLocationOptions() {
-        return ImmutableMap.copyOf(LOCATION_OPTIONS);
-    }
-
-    public void addSpawnPoint(SpawnPoint sp) {
-        this.spawnPoints.add(sp);
-        update();
-    }
-
-    public void removeSpawnPoint(int id) {
-        SpawnPoint sp = spawnPoints.get(id);
-        if (sp != null) {
-            getHerbLocationOptions(sp.location).despawn();
-            spawnPoints.remove(id);
-            update();
-        }
-    }
-
-    public void removeSpawnPoint(SpawnPoint sp) {
-        if (!isSpawnPoint(sp.location)) {
-            return;
-        }
-        getHerbLocationOptions(sp.location).despawn();
-        spawnPoints.remove(sp);
-        update();
-
-    }
-
-    public void update() {
-        try {
-            Professions.getProfessionManager().getItemTypeHolder(HerbItemType.class).save(false);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @NotNull
+    @Override
+    protected ItemTypeHolder<HerbItemType> getItemTypeHolder() {
+        return Professions.getProfessionManager().getItemTypeHolder(HerbItemType.class);
     }
 
     public ItemStack getGatherItem() {
@@ -256,11 +220,6 @@ public class Herb implements MarkableLocationElement, ConfigurationSerializable 
     @Override
     public byte getMaterialData() {
         return materialData;
-    }
-
-    @Override
-    public List<SpawnPoint> getSpawnPoints() {
-        return spawnPoints;
     }
 
     @Override

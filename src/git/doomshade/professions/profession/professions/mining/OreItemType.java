@@ -1,11 +1,9 @@
 package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.IMining;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.utils.LocationOptions;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 
 import java.util.HashMap;
@@ -18,22 +16,13 @@ import java.util.Map;
  */
 public class OreItemType extends ItemType<Ore> {
 
-
     /**
-     * Required constructor
-     */
-    public OreItemType() {
-        super();
-    }
-
-    /**
-     * Required constructor
+     * Constructor for creation of the item type object
      *
      * @param object
-     * @param exp
      */
-    public OreItemType(Ore object, int exp) {
-        super(object, exp);
+    public OreItemType(Ore object) {
+        super(object);
     }
 
     @Override
@@ -58,19 +47,14 @@ public class OreItemType extends ItemType<Ore> {
     @Override
     public void onLoad() {
         for (Ore ore : Ore.ORES.values()) {
-            for (SpawnPoint sp : ore.getSpawnPoints()) {
-                OreLocationOptions options = ore.getLocationOptions(sp.location);
-                options.scheduleSpawn();
-            }
+            ore.scheduleSpawns();
         }
     }
 
     @Override
     public void onDisable() {
         for (Ore ore : Ore.ORES.values()) {
-            for (LocationOptions opt : ore.getOreLocationOptions().values()) {
-                opt.despawn();
-            }
+            ore.despawnAll();
         }
         Ore.ORES.clear();
         SpawnPoint.SPAWN_POINTS.clear();

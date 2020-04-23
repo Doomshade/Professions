@@ -21,7 +21,7 @@ import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
-import git.doomshade.professions.profession.professions.skinning.Prey;
+import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
@@ -208,17 +208,17 @@ public final class ProfessionManager implements ISetup {
 
     private void registerItemTypeHolders() throws IOException {
         {
-            OreItemType ore = new OreItemType(Ore.EXAMPLE_ORE, 100);
+            OreItemType ore = ItemType.getExampleItemType(OreItemType.class, Ore.EXAMPLE_ORE);
             ore.setName(ChatColor.GRAY + "Obsidian");
             registerItemTypeHolder(new ItemTypeHolder<>(ore));
         }
         {
-            Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
-            prey.setName(ChatColor.YELLOW + "Kostlivec");
-            registerItemTypeHolder(new ItemTypeHolder<>(prey));
+            PreyItemType preyItemType = ItemType.getExampleItemType(PreyItemType.class, new Mob(EntityType.SKELETON));
+            preyItemType.setName(ChatColor.YELLOW + "Kostlivec");
+            registerItemTypeHolder(new ItemTypeHolder<>(preyItemType));
         }
         {
-            HerbItemType herb = new HerbItemType(Herb.EXAMPLE_HERB, 500);
+            HerbItemType herb = ItemType.getExampleItemType(HerbItemType.class, Herb.EXAMPLE_HERB);
             herb.setName(ChatColor.DARK_AQUA + "Test gather item");
             registerItemTypeHolder(new ItemTypeHolder<>(herb));
         }
@@ -230,7 +230,7 @@ public final class ProfessionManager implements ISetup {
                 e.printStackTrace();
             }
             RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
-            EnchantedItemItemType eit = new EnchantedItemItemType(ench, 69);
+            EnchantedItemItemType eit = ItemType.getExampleItemType(EnchantedItemItemType.class, ench);
             ItemStack craftRequirement = new ItemStack(Material.GLASS);
             ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
             craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
@@ -242,7 +242,7 @@ public final class ProfessionManager implements ISetup {
         }
         {
             ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
-            CustomRecipe cr = new CustomRecipe(CraftShapedRecipe.fromBukkitRecipe(recipe), 500);
+            CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, CraftShapedRecipe.fromBukkitRecipe(recipe));
             cr.setName(ChatColor.DARK_GREEN + "Test recipe");
             final ItemTypeHolder<CustomRecipe> itemTypeHolder = new ItemTypeHolder<>(cr);
             itemTypeHolder.registerObject(cr);
@@ -265,16 +265,18 @@ public final class ProfessionManager implements ISetup {
             registerItemTypeHolder(itemTypeHolder);
         }
         {
-            BarItemType barItemType = new BarItemType(ItemUtils.EXAMPLE_RESULT, 50);
+            BarItemType barItemType = ItemType.getExampleItemType(BarItemType.class, ItemUtils.EXAMPLE_RESULT);
             barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             barItemType.setName(ChatColor.BLUE + "Test bar");
             registerItemTypeHolder(new ItemTypeHolder<>(barItemType));
         }
         {
-            registerItemTypeHolder(new ItemTypeHolder<>(new PotionItemType(Potion.EXAMPLE_POTION, 60)));
+            final PotionItemType potionItemType = ItemType.getExampleItemType(PotionItemType.class, Potion.EXAMPLE_POTION);
+            registerItemTypeHolder(new ItemTypeHolder<>(potionItemType));
         }
         {
-            registerItemTypeHolder(new ItemTypeHolder<>(new GemItemType(Gem.EXAMPLE_GEM, 100)));
+            final GemItemType gemItemType = ItemType.getExampleItemType(GemItemType.class, Gem.EXAMPLE_GEM);
+            registerItemTypeHolder(new ItemTypeHolder<>(gemItemType));
         }
     }
 

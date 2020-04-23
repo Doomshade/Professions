@@ -17,10 +17,12 @@ import git.doomshade.professions.profession.professions.herbalism.HerbLocationOp
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.professions.skinning.Mob;
-import git.doomshade.professions.profession.professions.skinning.Prey;
+import git.doomshade.professions.profession.professions.skinning.PreyItemType;
+import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.profession.utils.LocationOptions;
 import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -36,6 +38,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -55,16 +58,27 @@ import java.util.UUID;
  * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEvent)}.
  *
  * @author Doomshade
+ * @version 1.0
+ * @apiNote Will most likely be separated for each profession later on if this class gets too big
  */
 public class ProfessionListener extends AbstractProfessionListener {
+
+    /**
+     * Hashmap for enchants
+     */
     private static final HashMap<UUID, Enchant> ENCHANTS = new HashMap<>();
+    private static final HashMap<UUID, PlayerMove> MOVE_LEN = new HashMap<>();
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Mining
+    ///////////////////////////////////////////////////////////////////////////
 
     /**
      * Determines whether the two items are similar based on display name and lore
      *
-     * @param one
-     * @param two
-     * @return
+     * @param one the first one
+     * @param two the second one
+     * @return {@code true} if they are similar
      */
     private static boolean areSimilar(ItemStack one, ItemStack two) {
 
@@ -94,6 +108,15 @@ public class ProfessionListener extends AbstractProfessionListener {
         return displayName && lore;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Crafting profession
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Mine event for {@link git.doomshade.professions.profession.professions.mining.MiningProfession}
+     *
+     * @param e the block break event
+     */
     @Override
     @EventHandler(ignoreCancelled = true)
     public void onMine(BlockBreakEvent e) {
@@ -140,7 +163,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
         // destroy the block and disable particles if the requirements are met
         else {
-            final OreLocationOptions locationOptions = ore.getLocationOptions(location);
+            final LocationOptions locationOptions = ore.getLocationOptions(location);
             locationOptions.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
@@ -150,6 +173,50 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
+    /**
+     * Gets the maximum amount of items that can be crafted
+     *
+     * @param result the result to check for
+     * @param hrac   the player to check the inventory for
+     * @param e      the event to check in
+     * @return ItemStack amount * Math#min(possible craftings, possible creations)
+     */
+    private int getAmountOfItems(ItemStack result, Player hrac, CraftItemEvent e) {
+        int possibleCraftings = 1;
+        int possibleCreations = 0;
+        if (e.isShiftClick()) {
+            int itemsChecked = 0;
+            for (ItemStack item : e.getInventory().getMatrix()) {
+                if (item != null && !item.getType().equals(Material.AIR)) {
+                    if (itemsChecked == 0)
+                        possibleCraftings = item.getAmount();
+                    else
+                        possibleCraftings = Math.min(possibleCraftings, item.getAmount());
+                    itemsChecked++;
+                }
+            }
+        }
+        for (ItemStack itemm : hrac.getInventory().getStorageContents()) {
+            if (itemm == null) {
+                possibleCreations += result.getMaxStackSize();
+                continue;
+            }
+            if (itemm.isSimilar(result)) {
+                possibleCreations += result.getMaxStackSize() - itemm.getAmount();
+            }
+        }
+        return result.getAmount() * Math.min(possibleCraftings, possibleCreations);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Herbalism
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The crafitng event for future crafting professions, currently creating {@link CustomRecipe}
+     *
+     * @param e the craft item event
+     */
     @Override
     @EventHandler(ignoreCancelled = true)
     public void onCraft(CraftItemEvent e) {
@@ -194,40 +261,88 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     /**
-     * Gets the maximum amount of items that can be crafted
+     * Herb destroy event for admins due to possible breaking of the herb - need to remove particles from the location
      *
-     * @param result the result to check for
-     * @param hrac   the player to check the inventory for
-     * @param e      the event to check in
-     * @return ItemStack amount * Math#min(possible craftings, possible creations)
+     * @param e the block break event
      */
-    private int getAmountOfItems(ItemStack result, Player hrac, CraftItemEvent e) {
-        int possibleCraftings = 1;
-        int possibleCreations = 0;
-        if (e.isShiftClick()) {
-            int itemsChecked = 0;
-            for (ItemStack item : e.getInventory().getMatrix()) {
-                if (item != null && !item.getType().equals(Material.AIR)) {
-                    if (itemsChecked == 0)
-                        possibleCraftings = item.getAmount();
-                    else
-                        possibleCraftings = Math.min(possibleCraftings, item.getAmount());
-                    itemsChecked++;
+    @EventHandler(ignoreCancelled = true)
+    public void onHerbDestroy(BlockBreakEvent e) {
+        try {
+            final Block block = e.getBlock();
+            final Location location = block.getLocation();
+            Herb herb = Herb.getHerb(block.getType(), location);
+
+            final HerbLocationOptions herbLocationOptions = herb.getLocationOptions(location);
+            herbLocationOptions.despawn(true);
+            final List<SpawnPoint> spawnPoints = herb.getSpawnPoints();
+            String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
+            final Player player = e.getPlayer();
+            for (int i = 0; i < spawnPoints.size(); i++) {
+                final SpawnPoint spawnPoint = spawnPoints.get(i);
+                if (spawnPoint.location.equals(location)) {
+                    player.sendMessage(message.concat(String.format(" Spawn location ID: %d. Removed spawn point.", i)));
+                    herb.removeSpawnPoint(spawnPoint);
+                    return;
                 }
             }
+            player.sendMessage(message);
+        } catch (Utils.SearchNotFoundException ignored) {
         }
-        for (ItemStack itemm : hrac.getInventory().getStorageContents()) {
-            if (itemm == null) {
-                possibleCreations += result.getMaxStackSize();
-                continue;
-            }
-            if (itemm.isSimilar(result)) {
-                possibleCreations += result.getMaxStackSize() - itemm.getAmount();
-            }
-        }
-        return result.getAmount() * Math.min(possibleCraftings, possibleCreations);
+
     }
 
+    /**
+     * Spawns herbs in the world during initialization
+     *
+     * @param e the world init event
+     */
+    @EventHandler
+    public void onWorldLoad(WorldInitEvent e) {
+        Herb.spawnHerbs(e.getWorld());
+    }
+
+    /**
+     * Calls an event to gather task to further handle. The damage event is handled inside gather task, so no need to do anything but call it with the right parameter
+     *
+     * @param event the damage event
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onGathererDamaged(EntityDamageEvent event) {
+        GatherTask.onGathererDamaged(event);
+    }
+
+    /**
+     * Calls an even to gather task to further handle. The move event is handled inside gather task.
+     *
+     * @param event the move event
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerMoveFromHerb(PlayerMoveEvent event) {
+        final Player player = event.getPlayer();
+        final UUID uuid = player.getUniqueId();
+
+        // the player has no task active, do not add to MOVE_LEN hashmap for performance reasons and remove if there was a player move
+        if (!GatherTask.isActive(player)) {
+            MOVE_LEN.remove(uuid);
+            return;
+        }
+
+        final PlayerMove playerMove = MOVE_LEN.get(uuid);
+
+        // we call Map#put in the onGather method
+        // this should not happen just to make sure no errors are thrown
+        if (playerMove == null) return;
+
+        final double length = playerMove.computeLength();
+        GatherTask.onGathererMoved(player, length);
+        MOVE_LEN.put(uuid, playerMove);
+    }
+
+    /**
+     * The gathering event for {@link git.doomshade.professions.profession.professions.herbalism.HerbalismProfession}
+     *
+     * @param e the gather event
+     */
     @Override
     @EventHandler(ignoreCancelled = true)
     public void onGather(PlayerInteractEvent e) {
@@ -238,55 +353,44 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
 
         Herb herb;
+        final Block block = e.getClickedBlock();
         try {
 
             // Checks whether or not the right clicked block is a herb
-            herb = Herb.getHerb(e.getClickedBlock().getType(), e.getClickedBlock().getLocation());
+            herb = Herb.getHerb(block.getType(), block.getLocation());
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
 
         // The block is a herb -> call event with the location
-        ProfessionEvent<HerbItemType> event = getEvent(e.getPlayer(), herb, HerbItemType.class);
+        final Player player = e.getPlayer();
+        ProfessionEvent<HerbItemType> event = getEvent(player, herb, HerbItemType.class);
         if (event == null) {
             return;
         }
-        event.addExtra(e.getClickedBlock().getLocation());
+        event.addExtra(block.getLocation());
         callEvent(event);
+        MOVE_LEN.put(player.getUniqueId(), new PlayerMove(player, block.getLocation()));
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onHerbDestroy(BlockBreakEvent e) {
-        // For admins due to possible breaking of the herb - need to remove particles from the location
+    public void onPotionDrink(PlayerItemConsumeEvent e) {
+        Potion potion = Potion.getItem(e.getItem());
+        if (potion != null) {
 
-        try {
-            final Block block = e.getBlock();
-            final Location location = block.getLocation();
-            Herb herb = Herb.getHerb(block.getType(), location);
-
-            final HerbLocationOptions herbLocationOptions = herb.getHerbLocationOptions(location);
-            herbLocationOptions.despawn();
-            final List<SpawnPoint> spawnPoints = herb.getSpawnPoints();
-            String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
-            final Player player = e.getPlayer();
-            for (int i = 0; i < spawnPoints.size(); i++) {
-                if (spawnPoints.get(i).location.equals(location)) {
-                    player.sendMessage(message.concat(String.format(" Spawn location ID: %d.", i)));
-                    return;
-                }
+            final User user = User.getUser(e.getPlayer());
+            if (!user.isActivePotion(potion)) {
+                user.applyPotion(potion);
+            } else {
+                user.sendMessage(new Messages.MessageBuilder(Messages.Message.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(ItemType.getExampleItemType(PotionItemType.class, potion)).build());
+                e.setCancelled(true);
             }
-            player.sendMessage(message);
-        } catch (Utils.SearchNotFoundException ignored) {
         }
-
     }
 
-    @EventHandler
-    public void onWorldLoad(WorldInitEvent e) {
-
-        // does not work
-        Herb.spawnHerbs(e.getWorld());
-    }
+    ///////////////////////////////////////////////////////////////////////////
+    // Enchanting
+    ///////////////////////////////////////////////////////////////////////////
 
     @Override
     @EventHandler(ignoreCancelled = true)
@@ -319,20 +423,24 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onPotionDrink(PlayerItemConsumeEvent e) {
-        Potion potion = Potion.getItem(e.getItem());
-        if (potion != null) {
+    ///////////////////////////////////////////////////////////////////////////
+    // Alchemy
+    ///////////////////////////////////////////////////////////////////////////
 
-            final User user = User.getUser(e.getPlayer());
-            if (!user.isActivePotion(potion)) {
-                user.applyPotion(potion);
-            } else {
-                user.sendMessage(new Messages.MessageBuilder(Messages.Message.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(new PotionItemType(potion, 50)).build());
-                e.setCancelled(true);
-            }
+    @Override
+    @EventHandler
+    public void onKill(EntityDeathEvent e) {
+        LivingEntity entity = e.getEntity();
+        if (entity == null || entity.getKiller() == null) {
+            return;
         }
+        callEvent(entity.getKiller(), new Mob(entity.getType()), PreyItemType.class);
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Gem updates
+    ///////////////////////////////////////////////////////////////////////////
 
     @EventHandler(ignoreCancelled = true)
     public void onGemInsert(PlayerInteractEvent e) {
@@ -357,14 +465,6 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
         update((Player) e.getPlayer());
-    }
-
-    @EventHandler
-    public void onJoinE(PlayerJoinEvent e) {
-    }
-
-    @EventHandler
-    public void onLeaveE(PlayerQuitEvent e) {
     }
 
     @EventHandler
@@ -420,14 +520,22 @@ public class ProfessionListener extends AbstractProfessionListener {
         updateLater(e.getPlayer());
     }
 
-    @Override
-    @EventHandler
-    public void onKill(EntityDeathEvent e) {
-        LivingEntity entity = e.getEntity();
-        if (entity == null || entity.getKiller() == null) {
-            return;
+    ///////////////////////////////////////////////////////////////////////////
+    // Skinning
+    ///////////////////////////////////////////////////////////////////////////
+
+    private static class PlayerMove {
+        private final Player movingPlayer;
+        private final Location start;
+
+        private PlayerMove(Player movingPlayer, Location herbLocation) {
+            this.movingPlayer = movingPlayer;
+            this.start = herbLocation;
         }
-        callEvent(entity.getKiller(), new Mob(entity.getType()), Prey.class);
+
+        private double computeLength() {
+            return start.distance(movingPlayer.getLocation());
+        }
     }
 
 }

@@ -16,15 +16,14 @@ import java.util.Map;
 
 public class HerbItemType extends ItemType<Herb> {
 
-
-    public HerbItemType() {
-        super();
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public HerbItemType(Herb object) {
+        super(object);
     }
-
-    public HerbItemType(Herb object, int exp) {
-        super(object, exp);
-    }
-
 
     @Override
     public Map<String, Object> getSerializedObject() {
@@ -48,10 +47,7 @@ public class HerbItemType extends ItemType<Herb> {
     public void onLoad() {
 
         for (Herb herb : Herb.HERBS.values()) {
-            for (SpawnPoint sp : herb.getSpawnPoints()) {
-                HerbLocationOptions locationOptions = herb.getHerbLocationOptions(sp.location);
-                locationOptions.scheduleSpawn();
-            }
+            herb.scheduleSpawns();
         }
 
         Herb herb = getObject();
@@ -65,7 +61,7 @@ public class HerbItemType extends ItemType<Herb> {
         MarkerManager markMan = Professions.getMarkerManager();
         if (markMan != null) {
             Location exampleLocation = null;
-            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getHerbLocationOptions().entrySet()) {
+            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getLocationOptions().entrySet()) {
                 final MarkerWrapper marker = entry.getValue().getMarker();
                 if (exampleLocation == null) {
                     exampleLocation = entry.getKey();
@@ -81,9 +77,7 @@ public class HerbItemType extends ItemType<Herb> {
     @Override
     public void onDisable() {
         for (Herb herb : Herb.HERBS.values()) {
-            for (HerbLocationOptions sp : herb.getHerbLocationOptions().values()) {
-                sp.despawn();
-            }
+            herb.despawnAll(true);
         }
         Herb.HERBS.clear();
         SpawnPoint.SPAWN_POINTS.clear();

@@ -5,6 +5,7 @@ import git.doomshade.professions.dynmap.IMarkable;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
 import git.doomshade.professions.exceptions.SpawnException;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 public abstract class MarkableLocationOptions extends LocationOptions implements IMarkable {
@@ -16,20 +17,30 @@ public abstract class MarkableLocationOptions extends LocationOptions implements
         super(location, element);
         final int id = spawnTask.id;
         this.marker = new MarkerWrapper(element.getId().concat("-").concat(String.valueOf(id)), element.getMarkerIcon(), location);
+        marker.setLabel(ChatColor.stripColor(element.getName()));
     }
 
     @Override
     public void forceSpawn() throws SpawnException {
         super.forceSpawn();
-        if (MARKER_MANAGER != null)
-            MARKER_MANAGER.show(this);
+        setMarkerVisible(true);
     }
 
-    @Override
-    public void despawn() {
-        super.despawn();
-        if (MARKER_MANAGER != null)
+    public void setMarkerVisible(boolean visible) {
+        if (MARKER_MANAGER == null) return;
+
+        if (visible) {
+            MARKER_MANAGER.show(this);
+        } else {
             MARKER_MANAGER.hide(this);
+        }
+    }
+
+    public void despawn(boolean hideOnDynmap) {
+        super.despawn();
+        if (hideOnDynmap) {
+            setMarkerVisible(false);
+        }
     }
 
     @Override

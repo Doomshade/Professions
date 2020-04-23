@@ -25,13 +25,13 @@ public class PotionItemType extends ItemType<Potion> implements ICraftable {
     private Requirements craftingRequirements = new Requirements();
     private Map<Sound, String> sounds = new HashMap<>();
 
-
-    public PotionItemType() {
-        super();
-    }
-
-    public PotionItemType(Potion object, int exp) {
-        super(object, exp);
+    /**
+     * Constructor for creation of the item type object
+     *
+     * @param object
+     */
+    public PotionItemType(Potion object) {
+        super(object);
     }
 
     @Override

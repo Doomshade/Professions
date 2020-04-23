@@ -17,44 +17,27 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 
 /**
- * Interface for trainable {@link ItemType}s. Implement this in a class extending {@link ItemType},
- * then override {@link ItemType#deserialize(Map)} and call {@link #deserializeTrainable(Map, ICustomType)}
- * with the map and {@code this} argument inside the {@link ItemType#deserialize(Map)} method.
- * Override {@link ItemType#serialize()} as well and call {@link Map#putAll(Map)} on a {@code super.}{@link ItemType#serialize()} {@link Map} variable with an argument
- * of {@link #serializeTrainable(ICustomType)} and return the map.
- *
  * @author Doomshade
  * @see EnchantedItemItemType on GitHub for an example
  */
 public interface ITrainable extends ICustomType {
 
     /**
-     * Make sure to override the {@link ItemType#serialize()} method and call and call {@link Map#putAll(Map)} of this map.
-     *
-     * @param customType the trainable item
      * @return the serialized form of this class
      */
     @SerializeMethod
-    static Map<String, Object> serializeTrainable(final ICustomType customType) {
+    default Map<String, Object> serializeTrainable() {
         Map<String, Object> map = new HashMap<>();
 
-        if (!(customType instanceof ITrainable)) {
-            return map;
-        }
 
-        ITrainable trainable = (ITrainable) customType;
-
-
-        map.put(TRAINABLE.s, trainable.isTrainable());
-        map.put(COST.s, trainable.getCost());
-        map.put(TRAINABLE_ID.s, trainable.getTrainableId());
+        map.put(TRAINABLE.s, isTrainable());
+        map.put(COST.s, getCost());
+        map.put(TRAINABLE_ID.s, getTrainableId());
 
         return map;
     }
 
     /**
-     * Make sure to override the {@link ItemType#deserialize(Map)} method and call this method.
-     *
      * @param map        the serialized version of this class
      * @param customType the trainable item
      * @throws ProfessionInitializationException if the deserialization was unsuccessful
