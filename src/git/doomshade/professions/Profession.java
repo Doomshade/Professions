@@ -5,6 +5,7 @@ import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
@@ -15,9 +16,11 @@ import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
@@ -122,7 +125,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      */
     @SuppressWarnings({"unchecked", "unused"})
     protected static <A extends ItemType<?>> ProfessionEvent<A> getEvent(ProfessionEvent<?> event,
-                                                                         Class<A> clazz) {
+                                                                         Class<A> clazz) throws ClassCastException {
         return (ProfessionEvent<A>) event;
     }
 
@@ -154,7 +157,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * Adds {@link ItemType}s to this profession to handle in {@link #onEvent(ProfessionEvent)}
+     * Adds {@link ItemType}s to this profession to handle in
      *
      * @param items the items
      */
@@ -234,20 +237,30 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * @param e    event to check for
-     * @param item the event type
+     * @param e event to check for
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
-    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e, Class<ItemTypeClass> item) {
-        ItemType<?> obj = e.getItemType();
-        for (ItemTypeHolder<?> ith : items) {
-            for (ItemType<?> it : ith) {
-                if (it.getClass().equals(obj.getClass())) {
-                    return playerHasProfession(e) && obj.getClass().getSimpleName().equalsIgnoreCase(item.getSimpleName());
-                }
+    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e, boolean errorMessage) {
+        final boolean playerHasProf = playerHasProfession(e);
+        if (!playerHasProf) {
+            e.setCancelled(true);
+            if (errorMessage) {
+                final User player = e.getPlayer();
+                player.sendMessage(new Messages.MessageBuilder(Messages.Message.PROFESSION_REQUIRED_FOR_THIS_ACTION)
+                        .setPlayer(player)
+                        .setProfession(this)
+                        .build());
             }
         }
-        return false;
+        return playerHasProf;
+    }
+
+    /**
+     * @param e event to check for
+     * @return {@code true} if event has registered an object of item type, {@code false} otherwise
+     */
+    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
+        return isValidEvent(e, true);
     }
 
     protected final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
@@ -303,7 +316,35 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         requiredPlugins.add(plugin);
     }
 
-    public abstract <IType extends ItemType<?>> void onEvent(ProfessionEvent<IType> e);
+    /**
+     * Handles the called profession event from {@link git.doomshade.professions.listeners.ProfessionListener} <br>
+     * Cancels the event if the player does not have this profession and is a rank lower than builder <br>
+     * If the player has this profession and the profession event is correct, {@link #onEvent(ProfessionEventWrapper)} is called
+     *
+     * @param event   the profession event
+     * @param <IType> the item type argument of the event (this prevents wildcards)
+     */
+    @EventHandler
+    public <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
+
+        // the player has no profession but has a rank builder+ -> do not cancel the event
+        if (!playerHasProfession(event)) {
+
+            // cancels the event if the player is a rank lower than builder
+            event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
+            return;
+        }
+        for (ItemTypeHolder<?> ith : items) {
+            for (ItemType<?> it : ith) {
+                if (it.getClass().equals(event.getItemType().getClass())) {
+                    onEvent(new ProfessionEventWrapper<>(event));
+                    return;
+                }
+            }
+        }
+    }
+
+    public abstract <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> e);
 
     @Nullable
     public List<String> getProfessionInformation(UserProfessionData upd) {

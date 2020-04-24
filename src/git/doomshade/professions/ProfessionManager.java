@@ -27,6 +27,7 @@ import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.profession.types.*;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.IrremovableSet;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
@@ -60,8 +61,7 @@ public final class ProfessionManager implements ISetup {
     private static final ProfessionManager instance = new ProfessionManager();
     @SuppressWarnings("rawtypes")
 
-    // never call clear() on this hashset! this hashset makes sure that professions gets their events registered ONLY ONCE
-    private final HashSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new HashSet<>();
+    private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
     private final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
     private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
@@ -309,7 +309,7 @@ public final class ProfessionManager implements ISetup {
         }
         if (!requiredPlugins.isEmpty()) {
             throw new IllegalStateException(String.format("Could not load %s as some plugins are missing!%s\nRequired plugins: %s\nPlugins missing: %s",
-                    prof.getColoredName(), ChatColor.RESET, String.join("", prof.getRequiredPlugins()), String.join("", requiredPlugins)));
+                    prof.getColoredName(), ChatColor.RESET, String.join(", ", prof.getRequiredPlugins()), String.join(", ", requiredPlugins)));
         }
         if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
             try {

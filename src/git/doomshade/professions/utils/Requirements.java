@@ -42,10 +42,9 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      */
     public static Requirements deserialize(Map<String, Object> map) {
         List<ItemStack> items = new ArrayList<>();
-        Iterator<Object> iterator = map.values().iterator();
-        while (iterator.hasNext()) {
-            Object next = iterator.next();
-            items.add(ItemUtils.deserialize(((MemorySection) next).getValues(true)));
+        for (Object next : map.values()) {
+            if (next instanceof MemorySection)
+                items.add(ItemUtils.deserialize(((MemorySection) next).getValues(true)));
         }
         return new Requirements(items);
     }

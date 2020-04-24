@@ -6,6 +6,7 @@ import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
+import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.ICraftable;
@@ -34,10 +35,10 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
 /**
- * <li>{@link git.doomshade.professions.event.ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
+ * <li>{@link ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
  * <li>If you want to make your own type, make a class extend this and override all constructors!</li>
  *
- * @param <T> the item type to look for in {@link git.doomshade.professions.event.ProfessionEvent}
+ * @param <T> the item type to look for in {@link ProfessionEvent}
  * @author Doomshade
  */
 public abstract class ItemType<T> implements ConfigurationSerializable, Comparable<ItemType<T>> {
@@ -79,7 +80,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @SuppressWarnings("all")
     public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object) {
         try {
-            // log
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -2,10 +2,10 @@ package git.doomshade.professions.profession.professions.alchemy;
 
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.types.ICrafting;
 import git.doomshade.professions.profession.types.ItemType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Optional;
@@ -23,12 +23,13 @@ public class AlchemyProfession extends Profession<ICrafting> {
     }
 
     @Override
-    @EventHandler
-    public <T extends ItemType<?>> void onEvent(ProfessionEvent<T> e) {
-        if (!isValidEvent(e, PotionItemType.class)) {
+    public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> ev) {
+        ProfessionEvent<PotionItemType> event;
+        try {
+            event = getEvent(ev.event, PotionItemType.class);
+        } catch (ClassCastException e) {
             return;
         }
-        ProfessionEvent<PotionItemType> event = getEvent(e, PotionItemType.class);
         final PotionItemType itemType = event.getItemType();
 
         final ItemStack craftedItem = itemType.getResult();
@@ -40,12 +41,12 @@ public class AlchemyProfession extends Profession<ICrafting> {
                 return;
             }
 
-            e.setCancelled(true);
-            final Player player = e.getPlayer().getPlayer();
+            event.setCancelled(true);
+            final Player player = event.getPlayer().getPlayer();
 
             itemType.removeCraftingRequirements(player);
             optionalPotion.ifPresent(potion -> player.getInventory().addItem(potion));
-            addExp(e);
+            addExp(event);
         }
     }
 }

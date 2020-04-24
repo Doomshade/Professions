@@ -85,7 +85,8 @@ public class Messages implements ISetup {
         GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
         GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement"),
         PROFTYPE_PRIMARY("proftype-primary"),
-        PROFTYPE_SECONDARY("proftype-secondary");
+        PROFTYPE_SECONDARY("proftype-secondary"),
+        PROFESSION_REQUIRED_FOR_THIS_ACTION("profession-required-for-this-action");
 
 
         private final String key;

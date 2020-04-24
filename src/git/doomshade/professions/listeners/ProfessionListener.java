@@ -108,10 +108,6 @@ public class ProfessionListener extends AbstractProfessionListener {
         return displayName && lore;
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Crafting profession
-    ///////////////////////////////////////////////////////////////////////////
-
     /**
      * Mine event for {@link git.doomshade.professions.profession.professions.mining.MiningProfession}
      *

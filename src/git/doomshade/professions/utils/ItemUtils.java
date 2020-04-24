@@ -58,6 +58,13 @@ public final class ItemUtils {
         return new ItemStack(Material.valueOf(split[0]), 1, damage);
     }
 
+    /**
+     * Deserializes an ItemStack from a map. <br>
+     * Do not overuse this method as it may not be the fastest in deserializing Potions
+     *
+     * @param map
+     * @return
+     */
     @SuppressWarnings("unchecked")
     public static ItemStack deserialize(Map<String, Object> map) {
         if (map == null) {
@@ -78,7 +85,7 @@ public final class ItemUtils {
         }
 
         final Object potentialLore = map.get(LORE);
-        if (potentialLore != null) {
+        if (potentialLore instanceof List) {
             final List<String> lore = ((List<String>) potentialLore).stream().map(x -> x.isEmpty() ? x : ChatColor.translateAlternateColorCodes('&', x)).collect(Collectors.toList());
             meta.setLore(lore);
         }

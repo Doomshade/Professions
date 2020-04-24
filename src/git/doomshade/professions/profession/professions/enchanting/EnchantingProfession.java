@@ -2,11 +2,11 @@ package git.doomshade.professions.profession.professions.enchanting;
 
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.types.ICrafting;
 import git.doomshade.professions.profession.types.IEnchanting;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
-import org.bukkit.event.EventHandler;
 
 public final class EnchantingProfession extends Profession<IEnchanting> implements ICrafting {
 
@@ -22,38 +22,38 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
     }
 
     @Override
-    @EventHandler
-    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> event) {
-
-        if (!isValidEvent(event, EnchantedItemItemType.class)) {
+    public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
+        final ProfessionEvent<T> ev = e.event;
+        ProfessionEvent<EnchantedItemItemType> event;
+        try {
+            event = getEvent(ev, EnchantedItemItemType.class);
+        } catch (ClassCastException ex) {
             return;
         }
 
-        ProfessionEvent<EnchantedItemItemType> e = getEvent(event, EnchantedItemItemType.class);
-
-        User user = e.getPlayer();
-        if (!playerMeetsLevelRequirements(e)) {
-            e.setCancelled(true);
-            e.printErrorMessage(getUserProfessionData(user));
+        User user = event.getPlayer();
+        if (!playerMeetsLevelRequirements(event)) {
+            event.setCancelled(true);
+            event.printErrorMessage(getUserProfessionData(user));
             return;
         }
 
-        PreEnchantedItem preEnchantedItem = e.getExtra(PreEnchantedItem.class);
+        PreEnchantedItem preEnchantedItem = event.getExtra(PreEnchantedItem.class);
         if (preEnchantedItem == null) {
             return;
         }
-        ProfessionEventType profEventType = e.getExtra(ProfessionEventType.class);
+        ProfessionEventType profEventType = event.getExtra(ProfessionEventType.class);
         if (profEventType == null) {
             return;
         }
 
         switch (profEventType) {
             case CRAFT:
-                addExp(preEnchantedItem.enchant.getCraftExpYield(), user, e.getItemType());
+                addExp(preEnchantedItem.enchant.getCraftExpYield(), user, event.getItemType());
                 break;
             case ENCHANT:
                 preEnchantedItem.enchant();
-                addExp(e);
+                addExp(event);
                 break;
         }
 

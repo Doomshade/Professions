@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.types.IGathering;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.task.GatherTask;
@@ -11,7 +12,6 @@ import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -28,11 +28,8 @@ public class HerbalismProfession extends Profession<IGathering> {
     }
 
     @Override
-    @EventHandler
-    public <T extends ItemType<?>> void onEvent(ProfessionEvent<T> e) {
-        if (!isValidEvent(e, HerbItemType.class)) {
-            return;
-        }
+    public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> event) {
+        final ProfessionEvent<T> e = event.event;
 
         // check for level requirements
         final UserProfessionData upd = getUserProfessionData(e.getPlayer());
@@ -45,7 +42,12 @@ public class HerbalismProfession extends Profession<IGathering> {
         if (!e.hasExtra(Location.class)) throw new RuntimeException("No location given, this should not happen");
 
         final Location location = e.getExtra(Location.class);
-        final HerbItemType itemType = getEvent(e, HerbItemType.class).getItemType();
+        final HerbItemType itemType;
+        try {
+            itemType = getEvent(e, HerbItemType.class).getItemType();
+        } catch (ClassCastException ex) {
+            return;
+        }
         final Herb herb = itemType.getObject();
 
         // this should not happen either but just making sure

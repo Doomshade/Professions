@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.types.IMining;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
@@ -13,7 +14,6 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -34,13 +34,13 @@ public final class MiningProfession extends Profession<IMining> {
     }
 
     @Override
-    @EventHandler
-    public <A extends ItemType<?>> void onEvent(ProfessionEvent<A> ev) {
-
-        if (!isValidEvent(ev, OreItemType.class)) {
+    public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
+        ProfessionEvent<OreItemType> e;
+        try {
+            e = getEvent(event.event, OreItemType.class);
+        } catch (ClassCastException ex) {
             return;
         }
-        ProfessionEvent<OreItemType> e = getEvent(ev, OreItemType.class);
 
         final User user = e.getPlayer();
         final Player player = user.getPlayer();

@@ -3,10 +3,10 @@ package git.doomshade.professions.profession.professions.smelting;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.types.ICrafting;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Utils;
-import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.logging.Level;
@@ -24,13 +24,14 @@ public class SmeltingProfession extends Profession<ICrafting> {
     }
 
     @Override
-    @EventHandler
-    public <T extends ItemType<?>> void onEvent(ProfessionEvent<T> e) {
-
-        if (!isValidEvent(e, BarItemType.class)) {
+    public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> ev) {
+        final ProfessionEvent<T> e = ev.event;
+        ProfessionEvent<BarItemType> event;
+        try {
+            event = getEvent(e, BarItemType.class);
+        } catch (ClassCastException ex) {
             return;
         }
-        ProfessionEvent<BarItemType> event = getEvent(e, BarItemType.class);
         String expMsg = "";
         if (addExp(e)) {
             expMsg = Utils.getReceiveXp(e.getExp());
