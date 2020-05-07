@@ -1,7 +1,10 @@
 package git.doomshade.professions.profession.utils;
 
 import com.google.common.collect.ImmutableMap;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.task.BackupTask;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,6 +42,13 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     public final void removeSpawnPoint(SpawnPoint sp) {
         if (sp == null || !isSpawnPoint(sp.location)) {
             return;
+        }
+        final BackupTask.Result result = Professions.getInstance().backupFirst();
+        if (result != null) {
+            if (result == BackupTask.Result.SUCCESS)
+                Professions.log(ChatColor.GREEN + "Backed up files before editing file.");
+            else
+                Professions.log(ChatColor.RED + "Failed to back up files. Contact admins to check console output!");
         }
         spawnPoints.remove(sp);
         getLocationOptions(sp.location).despawn();

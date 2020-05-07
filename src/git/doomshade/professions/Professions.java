@@ -100,6 +100,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     public static final String LANG_PATH = "lang/";
     private final File LANG_FOLDER = new File(getDataFolder(), "lang");
     private FileConfiguration configLoader;
+    private static boolean FIRST_BACKUP = true;
 
     // put it in an initialization block so the order is obvious
     {
@@ -790,5 +791,18 @@ public final class Professions extends JavaPlugin implements ISetup {
     @Override
     public void saveResource(String resourcePath, boolean replace) throws IllegalArgumentException {
         saveResource(resourcePath, resourcePath, replace);
+    }
+
+    public BackupTask.Result backupFirst() {
+        if (FIRST_BACKUP) {
+            try {
+                FIRST_BACKUP = false;
+                return backup();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return BackupTask.Result.FAILURE;
+            }
+        }
+        return null;
     }
 }

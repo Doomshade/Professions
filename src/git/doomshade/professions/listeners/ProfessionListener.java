@@ -5,6 +5,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
@@ -55,7 +56,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEvent)}.
+ * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEventWrapper)}.
  *
  * @author Doomshade
  * @version 1.0
@@ -267,11 +268,11 @@ public class ProfessionListener extends AbstractProfessionListener {
             final Block block = e.getBlock();
             final Location location = block.getLocation();
             Herb herb = Herb.getHerb(block.getType(), location);
-
             final HerbLocationOptions herbLocationOptions = herb.getLocationOptions(location);
             herbLocationOptions.despawn(true);
             final List<SpawnPoint> spawnPoints = herb.getSpawnPoints();
             String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
+
             final Player player = e.getPlayer();
             for (int i = 0; i < spawnPoints.size(); i++) {
                 final SpawnPoint spawnPoint = spawnPoints.get(i);
