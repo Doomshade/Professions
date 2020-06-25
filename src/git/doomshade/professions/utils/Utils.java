@@ -60,10 +60,14 @@ public final class Utils {
      * @param <A>       the generic type
      * @return an {@code <A>} with given {@code condition}
      * @throws SearchNotFoundException when nothing is found under the given condition
-     * @see #findAllInIterable(Iterable, Predicate)
      */
     public static <A> A findInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
-        return findAllInIterable(iterable, condition).iterator().next();
+        for (A a : iterable) {
+            if (condition.test(a)) {
+                return a;
+            }
+        }
+        throw new SearchNotFoundException();
     }
 
     /**
