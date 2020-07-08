@@ -17,7 +17,8 @@ import java.util.Optional;
  *
  * @author Doomshade
  */
-@TraitName(value = "professiontrainer")
+@Deprecated
+@TraitName(value = "profession_trainer")
 public class ProfessionTrainerTrait extends Trait {
     private static final String KEY_PROFESSION = "profession";
 
@@ -33,7 +34,6 @@ public class ProfessionTrainerTrait extends Trait {
         if (e.getNPC() != npc) {
             return;
         }
-
 
         if (profession == null) {
             throw new IllegalStateException("Could not find a profession!");
@@ -55,7 +55,6 @@ public class ProfessionTrainerTrait extends Trait {
     @Override
     public void load(DataKey key) {
         this.profession = Professions.getProfession(key.getString(KEY_PROFESSION));
-
     }
 
     @Override

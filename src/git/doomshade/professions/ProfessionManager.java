@@ -63,6 +63,8 @@ public final class ProfessionManager implements ISetup {
 
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
     private final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
+
+    @SuppressWarnings("rawtypes")
     private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
@@ -190,6 +192,42 @@ public final class ProfessionManager implements ISetup {
     public void setup() throws IOException {
         register();
         registerProfessions();
+        detectDuplicates();
+    }
+
+    private void detectDuplicates() {
+        boolean loggedDuplicate = false;
+        HashMap<String, ItemType<?>> map = new HashMap<>();
+        LinkedList<ItemType<?>> duplicates = new LinkedList<>();
+        for (ItemTypeHolder<?> holder : getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                final ItemType<?> put = map.putIfAbsent(itemType.getConfigName(), itemType);
+                if (put != null) {
+                    if (!loggedDuplicate) {
+                        final String errorMsg = "Failed to load plugin due to duplicate config names";
+                        Professions.log(errorMsg, Level.CONFIG);
+                        Professions.log(errorMsg, Level.SEVERE);
+                        loggedDuplicate = true;
+                    }
+                    duplicates.add(put);
+                    duplicates.add(itemType);
+                }
+            }
+        }
+
+        StringBuilder duplicatesString = new StringBuilder();
+        if (loggedDuplicate) {
+            Professions.log("Duplicates:");
+            Professions.log("Duplicates:", Level.CONFIG);
+
+            for (ItemType<?> duplicate : duplicates) {
+                duplicatesString.append("\n").append(duplicate.toCompactString());
+            }
+            System.out.println(duplicatesString);
+            Professions.log(duplicatesString, Level.CONFIG);
+        }
+
+        // TODO: 28.06.2020 last edit
     }
 
     @Override

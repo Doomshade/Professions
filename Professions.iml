@@ -29,5 +29,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Project Libraries" level="project" />
+    <orderEntry type="library" name="citizens-2.0.17-SNAPSHOT" level="project" />
   </component>
 </module>

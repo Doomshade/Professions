@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
 /**
+ * Interface for craft-able {@link ItemType}s
+ *
  * @author Doomshade
  * @see <a href="https://github.com/Doomshade/Professions/blob/test_branch/src/git/doomshade/professions/profession/types/enchanting/EnchantedItemItemType.java">Github</a> for an example
  */
@@ -43,7 +45,6 @@ public interface ICraftable extends ICustomType {
     }
 
     /**
-     *
      * @param map        the serialized version of this class
      * @param customType the craftable item
      * @throws ProfessionInitializationException if the deserialization was unsuccessful

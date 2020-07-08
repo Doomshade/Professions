@@ -41,7 +41,12 @@ public class AddCommand extends AbstractCommand {
             return true;
         }
 
-        final Range respawnTime = Range.fromString(args[2]);
+        Range respawnTime = null;
+        try {
+            respawnTime = Range.fromString(args[2]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
             return true;

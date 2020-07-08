@@ -79,7 +79,12 @@ public class OreEditListener implements Listener {
                 return;
             }
             Ore ore = oreLocation.ore;
-            final Range respawnTime = Range.fromString(event.getMessage());
+            Range respawnTime = null;
+            try {
+                respawnTime = Range.fromString(event.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if (ore != null && respawnTime != null) {
                 final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime);
                 ore.addSpawnPoint(sp);

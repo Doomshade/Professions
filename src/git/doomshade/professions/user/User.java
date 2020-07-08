@@ -30,6 +30,7 @@ import java.util.logging.Level;
  * Class representing a user
  *
  * @author Doomshade
+ * @version 1.0
  */
 public final class User {
 

@@ -37,6 +37,9 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 /**
  * <li>{@link ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
  * <li>If you want to make your own type, make a class extend this and override all constructors!</li>
+ * <li>To make a specialized item type (e.g. making this item craft-able - yields a result in a time with
+ * given prerequisites or train-able from an NPC with {@link git.doomshade.professions.trait.TrainerTrait}) trait,
+ * see {@link ICustomType} extensions</li>
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
  * @author Doomshade
@@ -48,6 +51,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private T item;
     private File itemFile;
     private String name = "";
+    private String id = "";
     private List<String> description, restrictedWorlds;
     private ItemStack guiMaterial = new ItemStack(Material.CHEST);
     private int itemTypeId;
@@ -126,6 +130,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
         setId(id);
+        setConfigName((String) map.getOrDefault(ID.s, "Unknown ID"));
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
         setName((String) map.getOrDefault(NAME.s, "Unknown name"));
@@ -150,7 +155,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         } catch (ProfessionObjectInitializationException e) {
             Professions.log(e.getMessage(), Level.WARNING);
         } catch (NullPointerException e1) {
-            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId(), Level.WARNING);
+            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId() + " (" + getConfigName() + ")", Level.WARNING);
             e1.printStackTrace();
         }
 
@@ -190,12 +195,26 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         return itemTypeId;
     }
 
+
+    /**
+     * Represents a config name (ID) of the item type.
+     *
+     * @return the config name
+     */
+    public final String getConfigName() {
+        return id;
+    }
+
+    private void setConfigName(String id) {
+        this.id = id;
+    }
+
     /**
      * Sets the id of this item type (use with caution)
      *
      * @param id the id to set
      */
-    public final void setId(int id) {
+    private void setId(int id) {
         this.itemTypeId = id;
     }
 
@@ -341,6 +360,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         return item;
     }
 
+
     /**
      * Sets the object (or objective) of this item type and also sets the name of this item type to {@code item.toString()}.
      *
@@ -383,6 +403,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
         map.put(NAME.s, name);
         map.put(DESCRIPTION.s, description);
+        map.put(ID.s, id);
         map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
         map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
         map.put(HIDDEN.s, hiddenWhenUnavailable);
@@ -452,6 +473,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @SuppressWarnings("all")
     public String toString() {
         StringBuilder sb = new StringBuilder()
+                .append(ID + ": " + getConfigName())
+                .append("\n")
                 .append(OBJECT + ": " + getSerializedObject().toString())
                 .append("\n")
                 .append(EXP + ": " + exp)
@@ -463,6 +486,19 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                 .append(NAME + ": " + name)
                 .append("\n")
                 .append(DESCRIPTION + ": " + description);
+        return sb.toString();
+    }
+
+    @SuppressWarnings("all")
+    public String toCompactString() {
+        String name = Professions.getProfessionManager().getItemTypeHolder(getClass()).getFile().getName();
+        StringBuilder sb = new StringBuilder("{")
+                .append(ID + ": " + getConfigName())
+                .append(",")
+                .append(name)
+                .append(",")
+                .append("config-id: " + itemTypeId)
+                .append("}");
         return sb.toString();
     }
 

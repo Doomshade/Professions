@@ -28,7 +28,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
-import git.doomshade.professions.trait.ProfessionTrainerTrait;
+import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
 import net.citizensnpcs.Citizens;
@@ -96,6 +96,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     private final File FILTERED_LOGS_FOLDER = new File(getDataFolder(), "filtered logs");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
+    private final File TRAINER_FOLDER = new File(getDataFolder(), "trainer gui");
 
     public static final String LANG_PATH = "lang/";
     private final File LANG_FOLDER = new File(getDataFolder(), "lang");
@@ -399,7 +400,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             return true;
         });
         hookPlugin("Citizens", x -> {
-            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
+            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(TrainerTrait.class));
             return true;
         });
         hookPlugin("SkillAPI", x -> {
@@ -508,6 +509,13 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
+     * @return the folder with trainer GUI
+     */
+    public File getTrainerFolder() {
+        return getFolder(TRAINER_FOLDER);
+    }
+
+    /**
      * @return the current log file
      */
     public File getLogFile() {
@@ -585,6 +593,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         // Sets up all classes again
         setup();
 
+
         // Calls on reload on all item types
         for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
@@ -611,6 +620,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 successful = false;
             }
         }
+
         return successful;
     }
 

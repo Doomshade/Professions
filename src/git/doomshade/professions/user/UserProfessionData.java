@@ -28,6 +28,7 @@ import java.util.List;
  * Class responsible for storing and manipulating {@link User}'s {@link Profession} data.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class UserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";

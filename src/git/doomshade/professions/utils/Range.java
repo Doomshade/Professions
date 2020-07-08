@@ -57,20 +57,24 @@ public class Range {
     }
 
     @Nullable
-    public static Range fromString(String s) {
+    public static Range fromString(String s) throws Exception {
         Matcher m = RANGE_PATTERN.matcher(s);
         if (m.find()) {
             final String group = m.group(3);
             final int min = Integer.parseInt(m.group(1));
             if (group != null)
-                return new Range(min, Integer.parseInt(group.substring(1)));
+                try {
+                    return new Range(min, Integer.parseInt(group));
+                } catch (NumberFormatException e) {
+                    throw new Exception("Could not get range from \"" + s + "\"");
+                }
             else
                 return new Range(min);
         } else {
             try {
                 return new Range(Integer.parseInt(s.trim()));
             } catch (NumberFormatException e) {
-                return null;
+                throw new Exception("Could not get range from \"" + s + "\"");
             }
         }
     }

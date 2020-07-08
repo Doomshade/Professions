@@ -1,7 +1,6 @@
 package git.doomshade.professions.profession.utils;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Range;
@@ -52,19 +51,23 @@ public class SpawnPoint implements ConfigurationSerializable {
     public static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
-            throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeysEnum);
+            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of missing keys");
         }
         MemorySection mem = (MemorySection) map.get(LOCATION.s);
         Location loc = Location.deserialize(mem.getValues(false));
-        Range range;
+        Range range = null;
         Object obj = map.get(RESPAWN_TIME.s);
         if (obj instanceof String) {
-            range = Range.fromString((String) obj);
+            try {
+                range = Range.fromString((String) obj);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             range = new Range((int) obj);
         }
         if (range == null) {
-            throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeysEnum, "Invalid range format");
+            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of invalid range format");
         }
         return new SpawnPoint(loc, range);
     }

@@ -74,4 +74,8 @@ public class ProfessionObjectInitializationException extends Exception {
         }
     }
 
+    public ProfessionObjectInitializationException(String message) {
+        super(message);
+    }
+
 }

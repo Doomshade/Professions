@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ITrainableEnum.*;
 
 /**
+ * Interface for train-able {@link ItemType}s
+ *
  * @author Doomshade
  * @see EnchantedItemItemType on GitHub for an example
  */

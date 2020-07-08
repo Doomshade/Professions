@@ -182,7 +182,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             try {
                 final CommandHandler instance = CommandHandler.getInstance(CommandHandler.class);
                 if (instance != null)
-                    Professions.log("Could not deserialize all item types. Usage of " + instance.infoMessage(Utils.findInIterable(instance.getCommands(), x -> x.getClass().equals(GenerateDefaultsCommand.class))) + ChatColor.RESET + " is advised.");
+                    Professions.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(Utils.findInIterable(instance.getCommands(), x -> x.getClass().equals(GenerateDefaultsCommand.class)))) + " is advised.");
             } catch (Utils.SearchNotFoundException ignored) {
             }
         }
