@@ -242,7 +242,7 @@ public final class ItemUtils {
      */
     @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>> List<String> getItemTypeLore(A itemType) {
-        Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
+        Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getFileId());
         List<String> desc = (List<String>) map.getOrDefault(DESCRIPTION.s, new ArrayList<String>());
         return getDescription(itemType, desc);
     }
@@ -267,7 +267,7 @@ public final class ItemUtils {
      * @return a description of {@link ItemType}
      */
     public static <A extends ItemType<?>> List<String> getDescription(A itemType, List<String> description, UserProfessionData upd) {
-        Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getId());
+        Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getFileId());
         List<String> desc = new ArrayList<>(description);
         for (Strings.ItemTypeEnum itemTypeEnum : Strings.ItemTypeEnum.values()) {
             String regex = "\\{" + itemTypeEnum + "}";
@@ -296,7 +296,7 @@ public final class ItemUtils {
 
     /**
      * @param clazz the {@link ItemType} class
-     * @param id    the {@link ItemType#getId()}
+     * @param id    the {@link ItemType#getFileId()}
      * @param <A>   the {@link ItemType}
      * @return the serialization of {@link ItemType}
      */

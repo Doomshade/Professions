@@ -5,6 +5,10 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version NOT_YET_IMPLEMENTED
+ */
 public class GiveRecipeCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

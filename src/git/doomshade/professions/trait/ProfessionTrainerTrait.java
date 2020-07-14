@@ -25,7 +25,7 @@ public class ProfessionTrainerTrait extends Trait {
     private Profession<?> profession;
 
     public ProfessionTrainerTrait() {
-        super("professiontrainer");
+        super("profession_trainer");
 
     }
 

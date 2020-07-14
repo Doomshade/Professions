@@ -9,6 +9,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class SmeltingProfession extends Profession<ICrafting> {
@@ -25,19 +26,16 @@ public class SmeltingProfession extends Profession<ICrafting> {
 
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> ev) {
-        final ProfessionEvent<T> e = ev.event;
-        ProfessionEvent<BarItemType> event;
-        try {
-            event = getEvent(e, BarItemType.class);
-        } catch (ClassCastException ex) {
-            return;
-        }
+        final Optional<ProfessionEvent<BarItemType>> opt = getEvent(ev, BarItemType.class);
+        if (!opt.isPresent()) return;
+
+        final ProfessionEvent<BarItemType> event = opt.get();
         String expMsg = "";
-        if (addExp(e)) {
-            expMsg = Utils.getReceiveXp(e.getExp());
+        if (addExp(event)) {
+            expMsg = Utils.getReceiveXp(event.getExp());
         }
         ItemStack item = event.getItemType().getObject();
         String itemName = item != null ? item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
-        Professions.log(String.format("%s smelted %s".concat(expMsg), e.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
+        Professions.log(String.format("%s smelted %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
     }
 }

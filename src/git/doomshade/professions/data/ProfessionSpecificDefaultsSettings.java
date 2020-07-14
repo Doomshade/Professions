@@ -14,6 +14,7 @@ import java.util.Arrays;
  * Class for {@link Profession} defaults
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecificSettings implements Cloneable {
     private static final String SECTION = "defaults", NAME = "name", ICON = "icon", TYPE = "type";

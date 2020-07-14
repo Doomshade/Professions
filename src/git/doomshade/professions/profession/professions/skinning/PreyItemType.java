@@ -50,7 +50,7 @@ public class PreyItemType extends ItemType<Mob> {
         Set<String> list = Utils.getMissingKeys(map, PreyEnum.values());
 
         if (!list.isEmpty()) {
-            throw new ProfessionObjectInitializationException(getClass(), list, getId());
+            throw new ProfessionObjectInitializationException(getClass(), list, getFileId());
         }
 
         String entityTypeName = (String) map.get(ENTITY.s);

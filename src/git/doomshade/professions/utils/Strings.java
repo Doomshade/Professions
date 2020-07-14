@@ -92,7 +92,6 @@ public final class Strings {
         EXP("exp"),
         OBJECT("object"),
         NAME("name"),
-        ID("uniqueId"),
         DESCRIPTION("description"),
         MATERIAL("gui-material"),
         RESTRICTED_WORLDS("restricted-worlds"),
@@ -114,7 +113,6 @@ public final class Strings {
                     put(PROFTYPE, "crafting");
                     put(EXP, 0);
                     put(NAME, "&eNO_NAME");
-                    put(ID, "NO_ID");
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));
                     put(MATERIAL, Material.CHEST);
                     put(RESTRICTED_WORLDS, Arrays.asList("some_world", "some_other_world"));

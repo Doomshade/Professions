@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -119,14 +120,27 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      * Casts desired event to another one.
      *
      * @param event the profession event to cast
-     * @param clazz the class to cast to
      * @param <A>   the generic argument of the event
      * @return the casted event
      */
-    @SuppressWarnings({"unchecked", "unused"})
-    protected static <A extends ItemType<?>> ProfessionEvent<A> getEvent(ProfessionEvent<?> event,
-                                                                         Class<A> clazz) throws ClassCastException {
-        return (ProfessionEvent<A>) event;
+    @SuppressWarnings({"unchecked"})
+    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event, Class<A> clazz) throws ClassCastException {
+        try {
+            return Optional.of((ProfessionEvent<A>) event);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Casts desired event to another one.
+     *
+     * @param event the profession event to cast
+     * @param <A>   the generic argument of the event
+     * @return the casted event
+     */
+    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
+        return getEvent(event.event, clazz);
     }
 
     /**

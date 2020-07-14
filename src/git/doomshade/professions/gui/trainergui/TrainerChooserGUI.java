@@ -6,8 +6,6 @@ import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.utils.Utils;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
-import net.citizensnpcs.api.util.DataKey;
-import net.citizensnpcs.api.util.MemoryDataKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TrainerChooserGUI extends GUI {
-    public static final String KEY_TRAINER = "trainer";
     private static final String KEY_NAME = "name";
     private Map<String, String> NAME_ID_MAP = new HashMap<>();
 
@@ -38,14 +35,10 @@ public class TrainerChooserGUI extends GUI {
         File[] files = plugin.getTrainerFolder().listFiles();
 
         if (files == null) throw new GUIInitializationException();
-
         GUIInventory.Builder builder = getInventoryBuilder().size(9).title("Trainer chooser");
         int position = 0;
         for (File file : files) {
             String id = file.getName().substring(0, file.getName().lastIndexOf('.'));
-
-            // log
-            System.out.println(id);
 
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
             String name = Utils.translateName(loader.getString(KEY_NAME, "Trainer name"));
@@ -78,17 +71,17 @@ public class TrainerChooserGUI extends GUI {
             return;
         }
 
-        if (npc.hasTrait(TrainerTrait.class)) {
+        /*if (npc.hasTrait(TrainerTrait.class)) {
             he.sendMessage("This NPC has already been given Trainer Trait. If you wish to change the type of trainer, remove the trait and add it again.");
             return;
-        }
-
-        DataKey dataKey = new MemoryDataKey();
+        }*/
 
         String name = item.getItemMeta().getDisplayName();
         String id = NAME_ID_MAP.get(name);
         if (id == null) return;
 
-        dataKey.setString(KEY_TRAINER, id);
+        npc.data().setPersistent(TrainerTrait.KEY_TRAINER_ID, id);
+
+        he.sendMessage("Successfully set to a " + id + " trainer.");
     }
 }

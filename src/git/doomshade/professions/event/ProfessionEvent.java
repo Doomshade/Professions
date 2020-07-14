@@ -21,7 +21,7 @@ import java.util.List;
  * @param <T> an item type
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.Profession#onEvent(ProfessionEvent)
+ * @see git.doomshade.professions.Profession#onEvent(ProfessionEventWrapper)
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
     private static HandlerList handlerList = new HandlerList();

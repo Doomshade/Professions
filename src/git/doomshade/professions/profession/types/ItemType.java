@@ -51,10 +51,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private T item;
     private File itemFile;
     private String name = "";
-    private String id = "";
+    private String configName = "";
     private List<String> description, restrictedWorlds;
     private ItemStack guiMaterial = new ItemStack(Material.CHEST);
-    private int itemTypeId;
+    private int fileId = -1;
     private boolean hiddenWhenUnavailable, ignoreSkillupColor;
 
 
@@ -126,11 +126,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *
      * @param id  the id of this itemtype
      * @param map the map
-     * @throws ProfessionInitializationException if the inicialization of this class is unsuccessful
+     * @throws ProfessionInitializationException if the initialization of this class is unsuccessful
      */
     public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
-        setId(id);
-        setConfigName((String) map.getOrDefault(ID.s, "Unknown ID"));
+        setFileId(id);
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
         setName((String) map.getOrDefault(NAME.s, "Unknown name"));
@@ -146,7 +145,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s)).collect(Collectors.toSet());
 
         if (!list.isEmpty()) {
-            throw new ProfessionInitializationException(getClass(), list, getId());
+            throw new ProfessionInitializationException(getClass(), list, getFileId());
         }
         MemorySection mem = (MemorySection) map.get(OBJECT.s);
 
@@ -155,7 +154,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         } catch (ProfessionObjectInitializationException e) {
             Professions.log(e.getMessage(), Level.WARNING);
         } catch (NullPointerException e1) {
-            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getId() + " (" + getConfigName() + ")", Level.WARNING);
+            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
             e1.printStackTrace();
         }
 
@@ -187,35 +186,36 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Represents an ID in the item type file.
+     * Represents the number ID in the item type file.
      *
-     * @return the ID
+     * @return the ID number in the file
      */
-    public final int getId() {
-        return itemTypeId;
+    public final int getFileId() {
+        if (fileId == -1) throw new UnsupportedOperationException("Cannot get the file ID of an example Item Type!");
+        return fileId;
     }
 
+    /**
+     * Sets the id of this item type
+     *
+     * @param fileId the id to set
+     */
+    private void setFileId(int fileId) {
+        this.fileId = fileId;
+        final String fileName = getFile().getName();
+        this.configName = fileName.substring(0, fileName.lastIndexOf('.')) + "." + fileId;
+    }
 
     /**
-     * Represents a config name (ID) of the item type.
+     * Represents the config name of this item type in a "filename.fileId" format (filename without the .yml extension).
      *
      * @return the config name
+     * @apiNote This method was created for consistent ID's of item types, this is only a generated ID from the file.
      */
     public final String getConfigName() {
-        return id;
-    }
-
-    private void setConfigName(String id) {
-        this.id = id;
-    }
-
-    /**
-     * Sets the id of this item type (use with caution)
-     *
-     * @param id the id to set
-     */
-    private void setId(int id) {
-        this.itemTypeId = id;
+        if (configName.isEmpty())
+            throw new UnsupportedOperationException("Cannot get the config name of an example Item Type!");
+        return configName;
     }
 
     private static <A extends ItemType<?>> File getFile(Class<A> clazz) {
@@ -223,7 +223,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * This is basically a {@link ConfigurationSerializable#serialize()} with an argument.
+     * This is basically a {@link ConfigurationSerializable#serialize()} but for the specific object.
      *
      * @return the map of serialization of the object
      */
@@ -403,7 +403,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
         map.put(NAME.s, name);
         map.put(DESCRIPTION.s, description);
-        map.put(ID.s, id);
         map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
         map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
         map.put(HIDDEN.s, hiddenWhenUnavailable);
@@ -473,8 +472,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @SuppressWarnings("all")
     public String toString() {
         StringBuilder sb = new StringBuilder()
-                .append(ID + ": " + getConfigName())
-                .append("\n")
                 .append(OBJECT + ": " + getSerializedObject().toString())
                 .append("\n")
                 .append(EXP + ": " + exp)
@@ -491,13 +488,11 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     @SuppressWarnings("all")
     public String toCompactString() {
-        String name = Professions.getProfessionManager().getItemTypeHolder(getClass()).getFile().getName();
+        String name = getFile().getName();
         StringBuilder sb = new StringBuilder("{")
-                .append(ID + ": " + getConfigName())
-                .append(",")
                 .append(name)
                 .append(",")
-                .append("config-id: " + itemTypeId)
+                .append("config-id: " + configName)
                 .append("}");
         return sb.toString();
     }

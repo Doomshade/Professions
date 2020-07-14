@@ -3,41 +3,52 @@ package git.doomshade.professions.task;
 import git.doomshade.professions.Professions;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Backup task.
+ * Backs up the plugin into the backup directory.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class BackupTask extends BukkitRunnable {
+    private static final String BACKUP = "backup";
+    private static final FilenameFilter FILE_FILTER = (dir, name) -> !(name.contains(BACKUP) || dir.getName().contains(BACKUP));
 
-    private Map<File, List<File>> fileList;
+    /**
+     * Defaults to failure
+     */
     private Result result = Result.FAILURE;
 
     @Override
     public void run() {
-        fileList = new HashMap<>(getAllFiles(Professions.getInstance().getDataFolder()));
 
         try {
-            writeZipFile(new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * @return the result of backup
+     */
     public Result getResult() {
         return result;
     }
 
-    private void writeZipFile(File outputFile) throws IOException {
+    /**
+     * Writes the
+     *
+     * @param outputFile
+     * @throws IOException
+     */
+    private void writeZipFile(Collection<File> fileList, File outputFile) throws IOException {
 
         if (!outputFile.exists()) {
             outputFile.createNewFile();
@@ -45,34 +56,42 @@ public class BackupTask extends BukkitRunnable {
         FileOutputStream fos = new FileOutputStream(outputFile);
         ZipOutputStream zos = new ZipOutputStream(fos);
 
-        for (Map.Entry<File, List<File>> file : fileList.entrySet()) {
-            for (File filee : file.getValue())
-                addToZip(file.getKey(), filee, zos);
+        for (File file : fileList) {
+            try (FileInputStream fis = new FileInputStream(file)) {
+                ZipEntry zipEntry = new ZipEntry(file.getAbsolutePath());
+                zos.putNextEntry(zipEntry);
+                byte[] bytes = new byte[1024];
+                int length;
+                while ((length = fis.read(bytes)) != -1) {
+                    zos.write(bytes, 0, length);
+                }
+                zos.closeEntry();
+            }
         }
 
         zos.close();
         fos.close();
     }
 
-    private Map<File, List<File>> getAllFiles(File dir) {
-        return getAllFiles(dir, new HashMap<>());
+    /**
+     * @param dir the directory
+     * @return the list of files in a directory
+     */
+    private Collection<File> getAllFiles(File dir) {
+        return getAllFiles(dir, new ArrayList<>());
     }
 
-    private Map<File, List<File>> getAllFiles(File dir, Map<File, List<File>> currentFiles) {
-        if (dir == null) {
-            return currentFiles;
-        }
-        for (File file : Objects.requireNonNull(dir.listFiles())) {
-            if (file.getName().contains("backup")) {
-                continue;
-            }
+    private Collection<File> getAllFiles(File dir, Collection<File> currentFiles) {
+        if (dir == null) return currentFiles;
+
+        final File[] files = dir.listFiles(FILE_FILTER);
+        if (files == null) return currentFiles;
+
+        for (File file : files) {
             if (file.isDirectory()) {
                 getAllFiles(file, currentFiles);
-
             } else {
-                List<File> files = new ArrayList<>(currentFiles.getOrDefault(dir, new ArrayList<>()));
-                files.add(file);
-                currentFiles.put(dir, files);
+                currentFiles.add(file);
             }
         }
         return currentFiles;
@@ -80,22 +99,5 @@ public class BackupTask extends BukkitRunnable {
 
     public enum Result {
         SUCCESS, FAILURE
-    }
-
-    private void addToZip(File dir, File file, ZipOutputStream zos) throws
-            IOException {
-        FileInputStream fis = new FileInputStream(file);
-
-        ZipEntry zipEntry = new ZipEntry(dir + "/" + file.getName());
-        zos.putNextEntry(zipEntry);
-
-        byte[] bytes = new byte[1024];
-        int length;
-        while ((length = fis.read(bytes)) >= 0) {
-            zos.write(bytes, 0, length);
-        }
-
-        zos.closeEntry();
-        fis.close();
     }
 }

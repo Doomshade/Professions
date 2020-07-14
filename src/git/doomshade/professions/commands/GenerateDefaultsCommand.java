@@ -39,7 +39,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfessionManager().getItemTypeHolders()) {
             ItemType<?> itemType = itemTypeHolder.getItemType();
-            Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), itemType.getId());
+            Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
 
             // get the missing keys
             Set<FileEnum> missingKeys = Utils.getMissingKeysEnum(map, Strings.ItemTypeEnum.values());

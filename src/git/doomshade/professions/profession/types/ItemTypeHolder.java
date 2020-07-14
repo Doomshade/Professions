@@ -9,7 +9,6 @@ import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -29,8 +27,9 @@ import java.util.logging.Level;
 /**
  * Holder for {@link ItemType}. To register this holder call {@link git.doomshade.professions.ProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
  *
- * @param <Type>
+ * @param <Type> the ItemType
  * @author Doomshade
+ * @version 1.0
  * @see ProfessionManager and its regsiterItemTypeHolders() method on GitHub to see an example on how to register this holder properly.
  */
 public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
@@ -45,24 +44,39 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
      */
     private List<Type> itemTypes = new ArrayList<>();
 
+    /**
+     * The sorting order
+     */
     private final List<SortType> sortTypes = new ArrayList<>();
+    /**
+     * The example item type (this item type should have an ID of -1)
+     */
+    private final Type itemType;
+    /**
+     * The error message
+     */
     private List<String> errorMessage = new ArrayList<>();
+    /**
+     * The new items message
+     */
     private List<String> newItemsMessage = new ArrayList<>();
 
-    public List<String> getErrorMessage() {
-        return errorMessage;
-    }
-
-    public List<String> getNewItemsMessage() {
-        return newItemsMessage;
-    }
-
-    private Type itemType;
-
+    /**
+     * The main constructor of a holder of ItemType
+     *
+     * @param itemType the ItemType to create a holder for
+     * @apiNote the ItemType should have an ID of -1 (i.e. not deserialized from file) !
+     */
     public ItemTypeHolder(Type itemType) {
         this.itemType = itemType;
     }
 
+    /**
+     * Adds a custom item type that is not in the file into this item holder
+     *
+     * @param item the ItemType to add
+     * @see #getRegisteredItemTypes()
+     */
     public final void registerObject(Type item) {
         if (!itemTypes.contains(item)) {
             itemTypes.add(item);
@@ -122,14 +136,27 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         loader.save(itemFile);
     }
 
+    /**
+     * @return the example item type this holder holds
+     */
     public final Type getItemType() {
         return itemType;
     }
 
+    /**
+     * @return the file of this item type holder
+     * @see ItemType#getFile()
+     */
     public final File getFile() {
         return itemType.getFile();
     }
 
+
+    /**
+     * Loads the item type holder from file
+     *
+     * @throws IOException if an IO error occurs
+     */
     @SuppressWarnings("all")
     public void load() throws IOException {
         File itemFile = itemType.getFile();
@@ -141,7 +168,8 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             return;
         }
 
-        this.errorMessage = ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
+        // TODO make a new method for this
+        this.errorMessage = loader.getStringList(ERROR_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
 
         this.sortTypes.clear();
         for (String st : loader.getStringList(SORTED_BY)) {
@@ -151,7 +179,8 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             }
         }
 
-        this.newItemsMessage = ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
+        // TODO
+        this.newItemsMessage = loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
         Iterator<String> it = itemsSection.getKeys(false).iterator();
@@ -187,25 +216,48 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             }
         }
 
-        for (int j = sortTypes.size() - 1; j >= 0; j--) {
-            switch (sortTypes.get(j)) {
-                case NAME:
-                    itemTypes.sort(Comparator.comparing(o -> o.getName()));
-                    break;
-                case EXPERIENCE:
-                    itemTypes.sort(Comparator.comparing(o -> -o.getExp()));
-                    break;
-                case LEVEL_REQ:
-                    itemTypes.sort(Comparator.comparing(o -> o.getLevelReq()));
-                    break;
-            }
-        }
-
+        sortItems();
     }
 
+    /**
+     * Sorts from last index to first index as the first sort has the highest priority
+     */
+    public void sortItems() {
+        for (int j = sortTypes.size() - 1; j >= 0; j--) {
+            final SortType sortType = sortTypes.get(j);
+            itemTypes.sort(sortType.getComparator());
+        }
+    }
+
+    public void sortItems(List<ItemType<?>> items) {
+        for (int j = sortTypes.size() - 1; j >= 0; j--) {
+            final SortType sortType = sortTypes.get(j);
+            items.sort(sortType.getComparator());
+        }
+    }
+
+    /**
+     * Saves and loads the item type holder
+     *
+     * @throws IOException if an error occurs
+     */
     public void update() throws IOException {
         save(true);
         load();
+    }
+
+    /**
+     * @return the error message
+     */
+    public List<String> getErrorMessage() {
+        return errorMessage;
+    }
+
+    /**
+     * @return the new items message
+     */
+    public List<String> getNewItemsMessage() {
+        return newItemsMessage;
     }
 
     @NotNull

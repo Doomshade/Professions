@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
  * Wrapper class for {@link org.dynmap.markers.Marker}
  *
  * @author Doomshade
+ * @version 1.0
  */
 public final class MarkerWrapper {
 

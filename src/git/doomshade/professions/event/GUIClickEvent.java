@@ -5,6 +5,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
+@Deprecated
 public class GUIClickEvent extends Event {
     private static HandlerList handlerList = new HandlerList();
     private InventoryClickEvent e;

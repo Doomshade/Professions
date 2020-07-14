@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public final class MiningProfession extends Profession<IMining> {
@@ -35,12 +36,10 @@ public final class MiningProfession extends Profession<IMining> {
 
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
-        ProfessionEvent<OreItemType> e;
-        try {
-            e = getEvent(event.event, OreItemType.class);
-        } catch (ClassCastException ex) {
-            return;
-        }
+        final Optional<ProfessionEvent<OreItemType>> opt = getEvent(event, OreItemType.class);
+        if (!opt.isPresent()) return;
+
+        final ProfessionEvent<OreItemType> e = opt.get();
 
         final User user = e.getPlayer();
         final Player player = user.getPlayer();

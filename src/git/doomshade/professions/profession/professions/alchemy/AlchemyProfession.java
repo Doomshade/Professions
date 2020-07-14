@@ -24,12 +24,10 @@ public class AlchemyProfession extends Profession<ICrafting> {
 
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> ev) {
-        ProfessionEvent<PotionItemType> event;
-        try {
-            event = getEvent(ev.event, PotionItemType.class);
-        } catch (ClassCastException e) {
-            return;
-        }
+        final Optional<ProfessionEvent<PotionItemType>> opt = getEvent(ev, PotionItemType.class);
+        if (!opt.isPresent()) return;
+
+        final ProfessionEvent<PotionItemType> event = opt.get();
         final PotionItemType itemType = event.getItemType();
 
         final ItemStack craftedItem = itemType.getResult();

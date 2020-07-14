@@ -12,6 +12,10 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version TEST_VERSION
+ */
 public class TestCommand extends AbstractCommand {
 
     public TestCommand() {

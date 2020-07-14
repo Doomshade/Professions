@@ -18,6 +18,8 @@ import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
 import git.doomshade.professions.gui.playerguis.TestThreeGui;
+import git.doomshade.professions.gui.trainergui.TrainerChooserGUI;
+import git.doomshade.professions.gui.trainergui.TrainerGUI;
 import git.doomshade.professions.listeners.*;
 import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
 import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
@@ -62,9 +64,9 @@ import java.util.logging.Level;
 
 /**
  * The Main API class as well as the {@link JavaPlugin} class.
- * Professions is an API for plugin developers that want to create their own customizable professions. This plugin also includes a set of examples of custom professions that's function can be disabled in config.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public final class Professions extends JavaPlugin implements ISetup {
 
@@ -397,6 +399,11 @@ public final class Professions extends JavaPlugin implements ISetup {
             guiManager.registerGui(AdminProfessionsGUI.class);
             guiManager.registerGui(AdminProfessionGUI.class);
             guiManager.registerGui(OreGUI.class);
+            guiManager.registerGui(TrainerGUI.class);
+            guiManager.registerGui(TrainerChooserGUI.class);
+
+            // could be unsafe, idk
+            registerSetup((ISetup) guiManager.getGui(TrainerGUI.class, null).get());
             return true;
         });
         hookPlugin("Citizens", x -> {
@@ -436,7 +443,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             return;
         }
         if (bool) {
-            log(String.format("Sucessfully hooked with %s plugin", plugin), Level.INFO);
+            log(String.format("Successfully hooked with %s plugin", plugin), Level.INFO);
         } else {
             log(String.format("Could not hook with %s plugin", plugin), Level.INFO);
         }
@@ -577,7 +584,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         cleanup();
 
         // Saves and unloads users
-
         for (Player p : Bukkit.getOnlinePlayers()) {
             try {
                 User.unloadUser(p);
@@ -635,7 +641,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * Backs up all data into a zip file.
+     * Forces the backup of plugin.
      *
      * @return the result of backup
      */

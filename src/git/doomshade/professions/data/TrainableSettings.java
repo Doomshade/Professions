@@ -4,6 +4,7 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.ITrainable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +20,15 @@ import static git.doomshade.professions.utils.Strings.ITrainableEnum.VAR_TRAINAB
 public class TrainableSettings extends AbstractProfessionSettings {
     private static final String TRAINABLE_SECTION = "trainable",
             TRAINED = "trained",
-            NOT_TRAINED = "not-trained";
+            NOT_TRAINED = "not-trained",
+            CANNOT_TRAIN = "cannot-train";
 
-    private final ArrayList<String> trainedLore, notTrainedLore;
+    private final ArrayList<String> trainedLore, notTrainedLore, unableToTrainLore;
 
     TrainableSettings() {
         trainedLore = new ArrayList<>();
         notTrainedLore = new ArrayList<>();
+        unableToTrainLore = new ArrayList<>();
     }
 
     @Override
@@ -34,24 +37,22 @@ public class TrainableSettings extends AbstractProfessionSettings {
         ConfigurationSection section = getDefaultSection();
         ConfigurationSection trainableSection = section.getConfigurationSection(TRAINABLE_SECTION);
         if (trainableSection != null) {
-            if (trainableSection.isList(TRAINED)) {
-                trainedLore.addAll(trainableSection.getStringList(TRAINED));
-                for (int i = 0; i < trainedLore.size(); i++) {
-                    trainedLore.set(i, ChatColor.translateAlternateColorCodes('&', trainedLore.get(i)));
-                }
-            } else {
-                printError(TRAINABLE_SECTION + "." + TRAINED, null);
-            }
-            if (trainableSection.isList(NOT_TRAINED)) {
-                notTrainedLore.addAll(trainableSection.getStringList(NOT_TRAINED));
-                for (int i = 0; i < notTrainedLore.size(); i++) {
-                    notTrainedLore.set(i, ChatColor.translateAlternateColorCodes('&', notTrainedLore.get(i)));
-                }
-            } else {
-                printError(TRAINABLE_SECTION + "." + NOT_TRAINED, null);
-            }
+            initLore(trainableSection, TRAINED, trainedLore);
+            initLore(trainableSection, NOT_TRAINED, notTrainedLore);
+            initLore(trainableSection, CANNOT_TRAIN, unableToTrainLore);
         } else {
             printError(TRAINABLE_SECTION, null);
+        }
+    }
+
+    private void initLore(ConfigurationSection trainableSection, String section, ArrayList<String> lore) {
+        if (trainableSection.isList(section)) {
+            lore.addAll(trainableSection.getStringList(section));
+            for (int i = 0; i < lore.size(); i++) {
+                lore.set(i, ChatColor.translateAlternateColorCodes('&', lore.get(i)));
+            }
+        } else {
+            printError(TRAINABLE_SECTION + "." + section, null);
         }
     }
 
@@ -62,16 +63,23 @@ public class TrainableSettings extends AbstractProfessionSettings {
     }
 
     public List<String> getNotTrainedLore(ITrainable trainable) {
-        for (int i = 0; i < notTrainedLore.size(); i++) {
-            notTrainedLore.set(i, notTrainedLore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
-        }
-        return notTrainedLore;
+        return replaceStrings(trainable, notTrainedLore);
     }
 
     public List<String> getTrainedLore(ITrainable trainable) {
-        for (int i = 0; i < trainedLore.size(); i++) {
-            trainedLore.set(i, trainedLore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
+        return replaceStrings(trainable, trainedLore);
+    }
+
+
+    public List<String> getUnableToTrainLore(ITrainable trainable) {
+        return replaceStrings(trainable, unableToTrainLore);
+    }
+
+    @NotNull
+    private List<String> replaceStrings(ITrainable trainable, ArrayList<String> lore) {
+        for (int i = 0; i < lore.size(); i++) {
+            lore.set(i, lore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
         }
-        return trainedLore;
+        return lore;
     }
 }

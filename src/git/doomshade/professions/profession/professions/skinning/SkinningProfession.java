@@ -21,16 +21,10 @@ public final class SkinningProfession extends Profession<IHunting> {
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> ev) {
         final ProfessionEvent<A> e = ev.event;
-        ProfessionEvent<PreyItemType> event;
-        try {
-            event = getEvent(e, PreyItemType.class);
-        } catch (ClassCastException ex) {
-            return;
-        }
         if (!playerMeetsLevelRequirements(e)) {
             return;
         }
-        addExp(event);
+        addExp(e);
     }
 
 }

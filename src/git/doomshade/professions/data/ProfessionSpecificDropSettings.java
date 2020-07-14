@@ -15,6 +15,7 @@ import java.util.LinkedList;
  * Class for {@link Profession} drop settings.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings {
     private transient static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE = "increment-since";

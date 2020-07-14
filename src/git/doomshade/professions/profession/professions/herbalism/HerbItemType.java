@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.types.IGathering;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -14,7 +15,41 @@ import org.bukkit.Location;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HerbItemType extends ItemType<Herb> {
+public class HerbItemType extends ItemType<Herb> implements ITrainable {
+
+    private String trainableId;
+    private int cost;
+    private boolean trainable;
+
+    @Override
+    public String getTrainableId() {
+        return trainableId;
+    }
+
+    @Override
+    public void setTrainableId(String trainableId) {
+        this.trainableId = trainableId;
+    }
+
+    @Override
+    public int getCost() {
+        return cost;
+    }
+
+    @Override
+    public void setCost(int cost) {
+        this.cost = cost;
+    }
+
+    @Override
+    public boolean isTrainable() {
+        return trainable;
+    }
+
+    @Override
+    public void setTrainable(boolean trainable) {
+        this.trainable = trainable;
+    }
 
     /**
      * Constructor for creation of the item type object

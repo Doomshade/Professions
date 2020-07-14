@@ -7,6 +7,10 @@ import org.bukkit.command.CommandSender;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version NOT_YET_IMPLEMENTED
+ */
 public class NormalizeLevelsCommand extends AbstractCommand {
 
     public NormalizeLevelsCommand() {
