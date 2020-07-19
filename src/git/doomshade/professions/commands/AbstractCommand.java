@@ -1,44 +1,49 @@
 package git.doomshade.professions.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.Player;
-import ru.tehkode.permissions.PermissionUser;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Class representing all the commands
+ * Class representing all the commands. This is not a {@link org.bukkit.command.CommandExecutor}, the executor is the command handler registering this command!
+ *
  * @author Doomshade
+ * @version 1.0
+ * @see AbstractCommandHandler
  */
-public abstract class AbstractCommand implements ConfigurationSerializable {
+public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
 
+    // path names in commands.yml
     private static final String COMMAND = "command";
     private static final String DESCRIPTION = "description";
     private static final String REQUIRES_PLAYER = "requiresPlayer";
-    private static final String REQUIRES_OP = "requiresOp";
     private static final String ARG_TRUE = "arg-true";
     private static final String ARG_FALSE = "arg-false";
     private static final String MESSAGE = "message";
+    private static final String REQUIRED_PERMISSIONS = "permissions";
+    // end of path names
     protected String command = "";
     protected String description = "";
+    protected Collection<String> requiredPermissions = new ArrayList<>();
     protected List<String> messages = new ArrayList<>();
     protected Map<Boolean, List<String>> args = new HashMap<>();
-    protected boolean requiresPlayer = false, requiresOp = false;
+    protected boolean requiresPlayer = false;
 
     /**
-     * Partly deserializes a command (overrides all getters but {@code getId()} method)
+     * Partly deserializes a command (overrides all but {@code getId()} getter methods)
+     *
      * @param map the map
      * @return partly deserialized command
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
         return new AbstractCommand() {
+
+            @Override
+            public int compareTo(AbstractCommand o) {
+                return getCommand().compareTo(o.getCommand());
+            }
 
             @Override
             public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -77,11 +82,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
             }
 
             @Override
-            public boolean requiresOp() {
-                return (boolean) map.get(REQUIRES_OP);
-            }
-
-            @Override
             public String getID() {
                 return null;
             }
@@ -92,26 +92,45 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
                 return (List<String>) map.get(MESSAGE);
             }
 
+            @SuppressWarnings("unchecked")
+            @Override
+            public Collection<String> getPermissions() {
+                return (List<String>) map.get(REQUIRED_PERMISSIONS);
+            }
         };
     }
 
     /**
+     * Compares commands to each other based on their command name
      *
-     * @param sender
-     * @param cmd
-     * @param label
-     * @param args
-     * @return
+     * @param o the other command to compare to
+     * @return a comparison of command names
      */
+    @Override
+    public int compareTo(AbstractCommand o) {
+        return getCommand().compareTo(o.getCommand());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AbstractCommand that = (AbstractCommand) o;
+        return requiresPlayer == that.requiresPlayer &&
+                command.equals(that.command) &&
+                description.equals(that.description) &&
+                messages.equals(that.messages) &&
+                args.equals(that.args) &&
+                requiredPermissions.equals(that.requiredPermissions);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
+    }
+
     public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
 
-    /**
-     * @param sender
-     * @param cmd
-     * @param label
-     * @param args
-     * @return
-     */
     public abstract List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args);
 
     /**
@@ -164,13 +183,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     }
 
     /**
-     * @return should return true if the command requires op
-     */
-    public boolean requiresOp() {
-        return requiresOp;
-    }
-
-    /**
      * @return a unique ID for the command
      */
     public abstract String getID();
@@ -183,76 +195,67 @@ public abstract class AbstractCommand implements ConfigurationSerializable {
     }
 
     /**
-     * @param requiresOp the requiresOp to set
+     * Sets an argument to the command
+     *
+     * @param bool use {@code true} if the argument is required, {@code false} otherwise
+     * @param args the arguments
      */
-    public final void setRequiresOp(boolean requiresOp) {
-        this.requiresOp = requiresOp;
-    }
-
     public final void setArg(boolean bool, List<String> args) {
         this.args.put(bool, args);
     }
 
+    /**
+     * @return custom messages of the command
+     */
     public List<String> getMessages() {
         return messages;
     }
 
+    /**
+     * Sets custom messages of the command
+     *
+     * @param messages the messages
+     */
     public final void setMessages(List<String> messages) {
         this.messages = messages;
     }
 
     @Override
     public Map<String, Object> serialize() {
-        // TODO Auto-generated method stub
         Map<String, Object> map = new HashMap<>();
         map.put(COMMAND, getCommand());
         map.put(DESCRIPTION, getDescription());
         map.put(REQUIRES_PLAYER, requiresPlayer());
-        map.put(REQUIRES_OP, requiresOp());
         map.put(ARG_TRUE, getArgs().get(true));
         map.put(ARG_FALSE, getArgs().get(false));
         map.put(MESSAGE, getMessages());
+        map.put(REQUIRED_PERMISSIONS, getPermissions());
         return map;
     }
 
-    public boolean hasPermission(CommandSender sender) {
-        for (CommandPermission perm : CommandPermission.values()) {
-            if (!hasPermission(sender, perm)) {
-                return false;
-            }
-        }
-        return true;
+    /**
+     * Adds a required permissions for this command usage
+     *
+     * @param permissions the permissions
+     * @see git.doomshade.professions.utils.Permissions
+     */
+    public final void addPermission(String... permissions) {
+        requiredPermissions.addAll(Arrays.asList(permissions));
     }
 
     /**
-     * @param sender the sender of command
-     * @param perm   the permission
-     * @return {@code true} if the {@code sender} has the {@code perm}
+     * @return required permissions
      */
-    public boolean hasPermission(CommandSender sender, CommandPermission perm) {
-        switch (perm) {
-            case PLAYER_ONLY:
-                return sender instanceof Player;
-            case BUILDER:
-            case ADMIN:
-                if (!Bukkit.getPluginManager().isPluginEnabled("PermissionsEx")) {
-                    return false;
-                }
-                PermissionUser permUser = PermissionsEx.getUser((Player) sender);
-                final String s = perm.toString();
-                return permUser.inGroup(s.charAt(0) + s.toLowerCase().substring(1));
-            case OP:
-                return sender.isOp();
-        }
-        return false;
+    public Collection<String> getPermissions() {
+        return requiredPermissions;
     }
-
 
     /**
-     * Lists of permissions
+     * Sets the required permissions
+     *
+     * @param permissions the permissions
      */
-    public enum CommandPermission {
-        PLAYER_ONLY, BUILDER, ADMIN, OP
+    public final void setPermissions(Collection<String> permissions) {
+        this.requiredPermissions = permissions;
     }
-
 }

@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
  */
 public final class Utils {
 
-
     public static final String YML_EXTENSION = ".yml";
 
     /**
