@@ -1,6 +1,7 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -21,7 +22,7 @@ import java.util.List;
  * @param <T> an item type
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.Profession#onEvent(ProfessionEventWrapper)
+ * @see Profession#onEvent(ProfessionEventWrapper)
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
     private static HandlerList handlerList = new HandlerList();

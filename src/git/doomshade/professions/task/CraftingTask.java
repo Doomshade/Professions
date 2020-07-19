@@ -2,12 +2,12 @@ package git.doomshade.professions.task;
 
 import git.doomshade.guiapi.CraftingItem;
 import git.doomshade.guiapi.GUI;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -29,7 +29,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     private static final int UPDATE_INTERVAL = 1;
     private final UserProfessionData upd;
     private final User user;
-    private final Profession<?> prof;
+    private final Profession prof;
     private final int slot;
     private final GUI gui;
     private ItemStack currentItem;
@@ -144,7 +144,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             }
             final ProfessionEvent<ItemType<?>> event = em.callEvent(pe);
             if (!event.isCancelled()) {
-                craftable.removeCraftingRequirements(player);
+                craftable.consumeCraftingRequirements(player);
                 player.getInventory().addItem(craftable.getResult());
             }
             player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);

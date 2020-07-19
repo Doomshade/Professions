@@ -74,9 +74,9 @@ public class GatherTask extends BukkitRunnable {
 
     /**
      * Calls the event for the gatherer's current task if there's one
+     * <p>Note that We let the argument be an {@link EntityDamageEvent} so that the predicate has more options</p>
      *
      * @param damageEvent the damage event
-     * @apiNote We let the argument be an {@link EntityDamageEvent} so that the predicate has more options
      */
     public static void onGathererDamaged(EntityDamageEvent damageEvent) {
 
@@ -152,9 +152,9 @@ public class GatherTask extends BukkitRunnable {
     /**
      * Sets the action to be performed when the gatherer moves.<br>
      * The predicate should return {@code true} should the event be cancelled, {@code false} otherwise.
+     * <p>Note that the parameter could be a double, but for the API's reasons it shall remain a {@link Predicate}</p>
      *
      * @param movePredicate the acceptable distance
-     * @apiNote The parameter could be a double, but for the API's reasons it shall remain a {@link Predicate}
      */
     public void setOnMoved(Predicate<Double> movePredicate) {
         this.movePredicate = movePredicate;

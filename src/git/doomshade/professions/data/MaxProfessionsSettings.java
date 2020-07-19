@@ -1,15 +1,15 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.profession.Profession;
 import org.bukkit.configuration.ConfigurationSection;
 
 /**
  * Settings for max amount of primary/secondary professions
+ * <p>Will be moved later to {@link Settings}</p>
  *
  * @author Doomshade
  * @version 1.0
- * @apiNote will be moved later to {@link Settings}
  */
 public class MaxProfessionsSettings extends AbstractProfessionSettings {
 

@@ -5,12 +5,12 @@ import git.doomshade.guiapi.GUIClickEvent;
 import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.guiapi.GUIItem;
 import git.doomshade.guiapi.GUIManager;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.listeners.PluginProfessionListener;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.CraftingTask;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class ProfessionGUI extends GUI {
     static final String POSITION_GUI = "position";
     private final int levelThreshold;
-    private Profession<?> prof;
+    private Profession prof;
 
     protected ProfessionGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);

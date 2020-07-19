@@ -1,8 +1,9 @@
-package git.doomshade.professions;
+package git.doomshade.professions.profession;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
@@ -68,8 +69,8 @@ public final class ProfessionManager implements ISetup {
     private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
-    private Map<String, Profession<? extends IProfessionType>> PROFESSIONS_ID = new HashMap<>();
-    private Map<String, Profession<? extends IProfessionType>> PROFESSIONS_NAME = new HashMap<>();
+    private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
+    private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
 
     private ProfessionManager() {
     }
@@ -121,14 +122,14 @@ public final class ProfessionManager implements ISetup {
     /**
      * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getID()}
      */
-    public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsById() {
+    public ImmutableMap<String, Profession> getProfessionsById() {
         return ImmutableMap.copyOf(PROFESSIONS_ID);
     }
 
     /**
      * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getName()}
      */
-    public ImmutableMap<String, Profession<? extends IProfessionType>> getProfessionsByName() {
+    public ImmutableMap<String, Profession> getProfessionsByName() {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
@@ -147,11 +148,11 @@ public final class ProfessionManager implements ISetup {
      * @return the {@link Profession} if found, {@code null} otherwise
      */
     @Nullable
-    public Profession<?> getProfession(String name) {
+    public Profession getProfession(String name) {
         if (name.isEmpty()) {
             return null;
         }
-        Profession<?> prof = PROFESSIONS_ID.get(name.toLowerCase());
+        Profession prof = PROFESSIONS_ID.get(name.toLowerCase());
         if (prof == null) {
             prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
         }
@@ -171,8 +172,8 @@ public final class ProfessionManager implements ISetup {
      * @return the {@link Profession} if found, {@code null} otherwise
      */
     @Nullable
-    public Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profession) {
-        for (Profession<? extends IProfessionType> prof : PROFESSIONS_ID.values()) {
+    public Profession getProfession(Class<? extends Profession> profession) {
+        for (Profession prof : PROFESSIONS_ID.values()) {
             if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
                 return prof;
             }
@@ -387,7 +388,7 @@ public final class ProfessionManager implements ISetup {
      * @param prof       the profession to register
      * @param sayMessage whether or not to announce the registration
      */
-    private void registerProfession(Profession<? extends IProfessionType> prof, boolean sayMessage) {
+    private void registerProfession(Profession prof, boolean sayMessage) {
 
         // required plugins of the profession
         Set<String> requiredPlugins = new HashSet<>();
@@ -436,21 +437,20 @@ public final class ProfessionManager implements ISetup {
 
     /**
      * Registers a profession
+     * <p>IMPORTANT! Make sure you only create a SINGLE instance of the profession, multiple instances are disallowed and WILL throw an exception!</p>
      *
      * @param prof the profession to register
-     * @apiNote IMPORTANT! Make sure you only create a SINGLE instance of the profession, multiple instances are disallowed and WILL throw an exception!
      */
-    public void registerProfession(Profession<? extends IProfessionType> prof) {
+    public void registerProfession(Profession prof) {
         registerProfession(prof, true);
     }
 
     /**
      * Sorts the professions ID and professions name maps for better visuals in chat
-     *
-     * @apiNote this is not a necessary method, but adds something extra to it
+     * <p>Note that this is not a necessary method, but adds something extra to it</p>
      */
     private void sortProfessions() {
-        Map<String, Profession<? extends IProfessionType>> MAP_COPY = new HashMap<>(PROFESSIONS_ID);
+        Map<String, Profession> MAP_COPY = new HashMap<>(PROFESSIONS_ID);
         PROFESSIONS_ID = sortByValue(MAP_COPY);
         MAP_COPY = new HashMap<>(PROFESSIONS_NAME);
         PROFESSIONS_NAME = sortByValue(MAP_COPY);
@@ -462,13 +462,13 @@ public final class ProfessionManager implements ISetup {
      * @param unsortMap the map to sort
      * @return sorted map
      */
-    private Map<String, Profession<? extends IProfessionType>> sortByValue(Map<String, Profession<? extends IProfessionType>> unsortMap) {
+    private Map<String, Profession> sortByValue(Map<String, Profession> unsortMap) {
 
-        List<Entry<String, Profession<? extends IProfessionType>>> list = new LinkedList<>(unsortMap.entrySet());
+        List<Entry<String, Profession>> list = new LinkedList<>(unsortMap.entrySet());
 
         list.sort(Comparator.comparing(o -> o.getValue().getName()));
-        Map<String, Profession<? extends IProfessionType>> sortedMap = new LinkedHashMap<>();
-        for (Entry<String, Profession<? extends IProfessionType>> entry : list) {
+        Map<String, Profession> sortedMap = new LinkedHashMap<>();
+        for (Entry<String, Profession> entry : list) {
             sortedMap.put(entry.getKey(), entry.getValue());
         }
 

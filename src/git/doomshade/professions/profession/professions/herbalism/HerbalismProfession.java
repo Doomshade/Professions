@@ -1,11 +1,10 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.types.IGathering;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
@@ -14,11 +13,10 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
-public class HerbalismProfession extends Profession<IGathering> {
+public class HerbalismProfession extends Profession {
     @Override
     public String getID() {
         return "herbalism";
@@ -31,10 +29,8 @@ public class HerbalismProfession extends Profession<IGathering> {
 
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
-        final Optional<ProfessionEvent<HerbItemType>> opt = getEvent(e, HerbItemType.class);
-        if (!opt.isPresent()) return;
 
-        final ProfessionEvent<HerbItemType> event = opt.get();
+        final ProfessionEvent<HerbItemType> event = getEventUnsafe(e, HerbItemType.class);
 
         // check for level requirements
         final User user = event.getPlayer();

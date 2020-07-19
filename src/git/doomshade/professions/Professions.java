@@ -21,6 +21,8 @@ import git.doomshade.professions.gui.playerguis.TestThreeGui;
 import git.doomshade.professions.gui.trainergui.TrainerChooserGUI;
 import git.doomshade.professions.gui.trainergui.TrainerGUI;
 import git.doomshade.professions.listeners.*;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
 import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
@@ -175,7 +177,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @return the profession
      * @see ProfessionManager#getProfession(String)
      */
-    public static Profession<?> getProfession(String name) {
+    public static Profession getProfession(String name) {
         return profMan.getProfession(name);
     }
 
@@ -186,7 +188,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @return the profession
      * @see #getProfession(String)
      */
-    public static Profession<?> getProfession(ItemStack item) {
+    public static Profession getProfession(ItemStack item) {
         if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) {
             return null;
         }
@@ -278,7 +280,7 @@ public final class Professions extends JavaPlugin implements ISetup {
 
             if (fos == null) {
                 try {
-                    fos = new PrintStream(getInstance().LOG_FILE);
+                    fos = new PrintStream(getInstance().getLogFile());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                     return;

@@ -1,6 +1,6 @@
-package git.doomshade.professions;
+package git.doomshade.professions.profession;
 
-import com.google.common.reflect.TypeToken;
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
@@ -26,7 +26,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +34,6 @@ import java.util.Set;
 /**
  * The class for custom profession.
  *
- * @param <T> the profession type
  * @author Doomshade
  * @version 1.0
  * @see IProfessionType
@@ -46,13 +44,9 @@ import java.util.Set;
  * @see git.doomshade.professions.profession.professions.alchemy.AlchemyProfession
  * @see git.doomshade.professions.profession.professions.smelting.SmeltingProfession
  */
-public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>> {
+public abstract class Profession implements Listener, Comparable<Profession> {
 
     static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
-    @SuppressWarnings("serial")
-    private final TypeToken<T> typeToken = new TypeToken<T>(getClass()) {
-    };
-    private final Type type = typeToken.getType();
     private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
@@ -121,6 +115,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
+     * @param clazz the generic argument class
      * @return the casted event
      */
     @SuppressWarnings({"unchecked"})
@@ -137,17 +132,19 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
+     * @param clazz the generic argument class
      * @return the casted event
      */
     protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
         return getEvent(event.event, clazz);
     }
 
-    /**
-     * @return the {@link IProfessionType} Type token
-     */
-    public Type getType() {
-        return type;
+    protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEvent<?> event, Class<A> clazz) throws ClassCastException {
+        return getEvent(event, clazz).get();
+    }
+
+    protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
+        return getEvent(event, clazz).get();
     }
 
     /**
@@ -242,7 +239,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * The colored name of this profession. Use this instead of {@link #getName()} as the {@link #getName()} method does not translate '&'.
+     * The colored name of this profession. Use this instead of getName() as that method does not translate the colour.
      *
      * @return the colored name of this profession
      */
@@ -251,7 +248,9 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * @param e event to check for
+     * @param e               event to check for
+     * @param <ItemTypeClass> the item type
+     * @param errorMessage    whether or not to log error message
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
     protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e, boolean errorMessage) {
@@ -270,7 +269,8 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * @param e event to check for
+     * @param e               event to check for
+     * @param <ItemTypeClass> the item type
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
     protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
@@ -301,7 +301,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      * @return {@inheritDoc}
      */
     @Override
-    public int compareTo(Profession<?> o) {
+    public int compareTo(Profession o) {
         int compare = getProfessionType().compareTo(o.getProfessionType());
         if (compare == 0) {
             return ChatColor.stripColor(getColoredName()).compareTo(ChatColor.stripColor(o.getColoredName()));

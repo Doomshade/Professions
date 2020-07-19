@@ -1,12 +1,12 @@
 package git.doomshade.professions.gui.trainergui;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.professions.Profession;
-import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.profession.ITrainable;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.trait.TrainerTrait;
@@ -34,11 +34,11 @@ import java.util.logging.Level;
 public class TrainerGUI extends GUI implements ISetup {
 
     private static final HashMap<String, List<ItemType<?>>> CACHE = new HashMap<>();
-    private static final HashMap<String, Profession<?>> CACHE_PROFESSIONS = new HashMap<>();
+    private static final HashMap<String, Profession> CACHE_PROFESSIONS = new HashMap<>();
     private static boolean inited = false;
     private String trainerId;
     private List<ItemType<?>> trainableItems = new ArrayList<>();
-    private Profession<?> eligibleProfession;
+    private Profession eligibleProfession;
 
     protected TrainerGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);

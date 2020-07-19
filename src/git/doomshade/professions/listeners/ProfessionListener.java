@@ -1,11 +1,11 @@
 package git.doomshade.professions.listeners;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
@@ -57,10 +57,10 @@ import java.util.UUID;
 
 /**
  * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEventWrapper)}.
+ * <p>Note that this will most likely be separated for each profession later on if this class gets too big</p>
  *
  * @author Doomshade
  * @version 1.0
- * @apiNote Will most likely be separated for each profession later on if this class gets too big
  */
 public class ProfessionListener extends AbstractProfessionListener {
 

@@ -1,16 +1,13 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ICrafting;
-import git.doomshade.professions.profession.types.IEnchanting;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 
-import java.util.Optional;
-
-public final class EnchantingProfession extends Profession<IEnchanting> implements ICrafting {
+public final class EnchantingProfession extends Profession implements ICrafting {
 
     @Override
     public void onLoad() {
@@ -25,10 +22,8 @@ public final class EnchantingProfession extends Profession<IEnchanting> implemen
 
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
-        final Optional<ProfessionEvent<EnchantedItemItemType>> opt = getEvent(e, EnchantedItemItemType.class);
-        if (!opt.isPresent()) return;
 
-        final ProfessionEvent<EnchantedItemItemType> event = opt.get();
+        final ProfessionEvent<EnchantedItemItemType> event = getEventUnsafe(e, EnchantedItemItemType.class);
 
         User user = event.getPlayer();
         if (!playerMeetsLevelRequirements(event)) {

@@ -1,6 +1,5 @@
 package git.doomshade.professions.profession;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
@@ -22,7 +21,7 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
  * Interface for craft-able {@link ItemType}s
  *
  * @author Doomshade
- * @see <a href="https://github.com/Doomshade/Professions/blob/test_branch/src/git/doomshade/professions/profession/types/enchanting/EnchantedItemItemType.java">Github</a> for an example
+ * @see git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType for an example
  */
 public interface ICraftable extends ICustomType {
 
@@ -167,8 +166,8 @@ public interface ICraftable extends ICustomType {
      *
      * @param player the player to remove the items from
      */
-    default void removeCraftingRequirements(Player player) {
-        getCraftingRequirements().removeRequiredItems(player);
+    default void consumeCraftingRequirements(Player player) {
+        getCraftingRequirements().consumeRequiredItems(player);
     }
 
     /**

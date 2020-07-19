@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 /**
  * This hashset ensures that the elements can be only added and/or read, not removed
  *
- * @param <E>
+ * @param <E> the element type
  */
 public class IrremovableSet<E> extends HashSet<E> {
     public IrremovableSet() {

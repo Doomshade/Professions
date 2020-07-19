@@ -1,8 +1,8 @@
 package git.doomshade.professions.gui.adminguis;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -20,7 +20,7 @@ public class AdminProfessionsGUI extends GUI {
         GUIInventory.Builder builder = getInventoryBuilder().size(9);
 
         int i = -1;
-        for (Profession<?> prof : Professions.getProfessionManager().getProfessionsById().values()) {
+        for (Profession prof : Professions.getProfessionManager().getProfessionsById().values()) {
             ItemStack icon = prof.getIcon();
             GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
             item.changeItem(this, icon::getItemMeta);

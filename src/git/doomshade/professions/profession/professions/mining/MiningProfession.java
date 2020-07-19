@@ -1,11 +1,10 @@
 package git.doomshade.professions.profession.professions.mining;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.types.IMining;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -17,10 +16,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 
-public final class MiningProfession extends Profession<IMining> {
+public final class MiningProfession extends Profession {
 
 
     @Override
@@ -36,10 +34,8 @@ public final class MiningProfession extends Profession<IMining> {
 
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
-        final Optional<ProfessionEvent<OreItemType>> opt = getEvent(event, OreItemType.class);
-        if (!opt.isPresent()) return;
 
-        final ProfessionEvent<OreItemType> e = opt.get();
+        final ProfessionEvent<OreItemType> e = getEventUnsafe(event, OreItemType.class);
 
         final User user = e.getPlayer();
         final Player player = user.getPlayer();

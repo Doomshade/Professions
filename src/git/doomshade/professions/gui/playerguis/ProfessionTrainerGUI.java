@@ -2,11 +2,11 @@ package git.doomshade.professions.gui.playerguis;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.profession.ITrainable;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class ProfessionTrainerGUI extends GUI {
     public static final String KEY_PROFESSION = "profession";
-    private Profession<?> prof;
+    private Profession prof;
     private List<ITrainable> items;
 
     protected ProfessionTrainerGUI(Player guiHolder, GUIManager manager) {

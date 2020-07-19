@@ -1,12 +1,11 @@
 package git.doomshade.professions.profession.professions.jewelcrafting;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.types.ICrafting;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 
-public final class JewelcraftingProfession extends Profession<ICrafting> {
+public final class JewelcraftingProfession extends Profession {
 
     @Override
     public void onLoad() {
