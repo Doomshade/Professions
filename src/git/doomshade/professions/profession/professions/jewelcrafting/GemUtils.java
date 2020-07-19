@@ -39,7 +39,7 @@ public final class GemUtils {
                     git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
 
                     if (laAttribute != null) {
-                        //git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
+                        git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
                     } else {
                         com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);
                         if (sapiAttribute != null) {

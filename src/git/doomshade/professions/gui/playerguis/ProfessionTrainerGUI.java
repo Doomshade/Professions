@@ -6,7 +6,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
-import git.doomshade.professions.profession.types.ITrainable;
+import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
@@ -51,7 +51,7 @@ public class ProfessionTrainerGUI extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
-        this.prof = (Profession<?>) getContext().getContext(KEY_PROFESSION);
+        this.prof = getContext().getContext(KEY_PROFESSION);
         if (prof == null) {
             throw new GUIInitializationException();
         }
@@ -71,7 +71,8 @@ public class ProfessionTrainerGUI extends GUI {
                 if (itemType instanceof ITrainable) {
                     ITrainable trainable = (ITrainable) itemType;
                     if (trainable.isTrainable()) {
-                        GUIItem item = new GUIItem(itemType.getGuiMaterial(), position++);
+                        final short durability = itemType.getGuiMaterial().getDurability();
+                        GUIItem item = new GUIItem(itemType.getGuiMaterial().getType(), position++, 1, durability);
                         item.changeItem(this, () -> {
                             ItemMeta meta = itemType.getIcon(upd).getItemMeta();
                             List<String> lore;

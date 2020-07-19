@@ -2,16 +2,16 @@ package git.doomshade.professions.gui.adminguis;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Profession;
+import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.utils.Strings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.List;
 
 public class AdminProfessionGUI extends GUI {
     private Profession<?> prof;
@@ -21,15 +21,15 @@ public class AdminProfessionGUI extends GUI {
     }
 
     @Override
-    public void init() throws GUIInitializationException {
-        this.prof = (Profession<?>) getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
+    public void init() {
+        this.prof = getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
         GUIInventory.Builder builder = getInventoryBuilder().size(18).title(prof.getColoredName());
 
         int i = -1;
         for (Strings.ItemTypeEnum e : Strings.ItemTypeEnum.values()) {
             ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.CHEST);
             meta.setDisplayName(e.s);
-            GUIItem item = new GUIItem(Material.CHEST, ++i);
+            GUIItem item = new GUIItem(Material.CHEST, ++i, 1, (short) 0);
             item.changeItem(this, () -> meta);
 
             builder = builder.withItem(item);
@@ -46,29 +46,26 @@ public class AdminProfessionGUI extends GUI {
             return;
         }
 
+        HumanEntity he = event.getWhoClicked();
+        if (!(he instanceof Player)) {
+            return;
+        }
+        Player player = (Player) he;
+
         String name = ChatColor.stripColor(currentItem.getItemMeta().getDisplayName());
         for (Strings.ItemTypeEnum s : Strings.ItemTypeEnum.values()) {
             if (name.equals(s.s)) {
                 Object obj = s.getDefaultValues().get(s);
 
-                if (obj instanceof String) {
-                    // ...
-                } else if (obj instanceof Integer) {
-                    // ...
-                } else if (obj instanceof Double) {
-                    // ...
-                } else if (obj instanceof ItemStack) {
-                    // ...
-                } else if (obj instanceof Boolean) {
-                    // ...
-                } else if (obj instanceof Material) {
-                    // ...
-                } else if (obj instanceof List) {
-                    // ...
-                } else {
-                    continue;
+                String className = obj.getClass().getSimpleName().toUpperCase();
+
+                try {
+                    UserListener.ValidInputType vit = UserListener.ValidInputType.valueOf(className);
+                    UserListener.askUser(player, "INPUT BOI", vit, this);
+                    event.getWhoClicked().closeInventory();
+                } catch (IllegalArgumentException ex) {
+                    return;
                 }
-                event.getWhoClicked().closeInventory();
             }
         }
     }
@@ -80,5 +77,8 @@ public class AdminProfessionGUI extends GUI {
         }
 
         String input = (String) obj;
+
+        // write to file
+        getManager().openGui(this);
     }
 }

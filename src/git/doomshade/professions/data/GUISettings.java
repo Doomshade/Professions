@@ -4,9 +4,17 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * GUI settings
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.professions.commands.PlayerGuiCommand
+ */
 public class GUISettings extends AbstractSettings {
-    private static final String SECTION = "gui", PROFESSIONS_GUI_NAME = "professions-gui-name";
+    private static final String SECTION = "gui", PROFESSIONS_GUI_NAME = "professions-gui-name", LEVEL_THRESHOLD = "show-level-threshold";
     private String professionsGuiName = "Professions";
+    private int levelThreshold = 3;
 
     GUISettings() {
         super();
@@ -43,10 +51,21 @@ public class GUISettings extends AbstractSettings {
         if (!this.professionsGuiName.isEmpty()) {
             this.professionsGuiName = ChatColor.translateAlternateColorCodes('&', this.professionsGuiName);
         }
+
+        if (!section.isInt(LEVEL_THRESHOLD)) {
+            printError(LEVEL_THRESHOLD, 3);
+        } else {
+            this.levelThreshold = section.getInt(LEVEL_THRESHOLD);
+        }
     }
+
 
     public String getProfessionsGuiName() {
         return professionsGuiName;
+    }
+
+    public int getLevelThreshold() {
+        return levelThreshold;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -9,21 +10,25 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Allows a player to bypass level requirement restrictions
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class BypassCommand extends AbstractCommand {
 
     public BypassCommand() {
-        // TODO Auto-generated constructor stub
         setArg(false, Arrays.asList("player", "suppress exp event (true/false)"));
         setArg(true, Arrays.asList("true/false"));
         setCommand("bypass");
         setDescription("Allows user to bypass level restrictions");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         Player target;
         if (args.length >= 3) {
             target = Bukkit.getPlayer(args[2]);
@@ -47,13 +52,11 @@ public class BypassCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "bypass";
     }
 

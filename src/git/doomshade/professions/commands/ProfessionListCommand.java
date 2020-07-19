@@ -4,24 +4,30 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
 
+/**
+ * Prints the list of all professions
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionListCommand extends AbstractCommand {
 
     public ProfessionListCommand() {
         setCommand("list");
         setDescription("Shows a list of professions");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         ProfessionManager profMan = Professions.getProfessionManager();
         Map<ProfessionType, Integer> profTypes = new TreeMap<>();
         List<Profession<?>> profs = new ArrayList<>(profMan.getProfessionsById().values());
@@ -40,13 +46,11 @@ public class ProfessionListCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "professionslist";
     }
 

@@ -1,12 +1,13 @@
 package git.doomshade.professions.utils;
 
 import com.avaje.ebean.validation.NotNull;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,15 @@ import java.util.stream.Collectors;
 public final class Utils {
 
     public static final String YML_EXTENSION = ".yml";
+
+    public static String getReceiveXp(int xp) {
+        return String.format(" and received %d XP", xp);
+    }
+
+    public static Location getLookingAt(Player player) {
+        return player.getTargetBlock((Set<Material>) null, 5).getLocation();
+    }
+
 
     /**
      * @param iterable  the iterable (e.g. {@link Collection})
@@ -47,10 +57,14 @@ public final class Utils {
      * @param <A>       the generic type
      * @return an {@code <A>} with given {@code condition}
      * @throws SearchNotFoundException when nothing is found under the given condition
-     * @see #findAllInIterable(Iterable, Predicate)
      */
     public static <A> A findInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
-        return findAllInIterable(iterable, condition).iterator().next();
+        for (A a : iterable) {
+            if (condition.test(a)) {
+                return a;
+            }
+        }
+        throw new SearchNotFoundException();
     }
 
     /**
@@ -74,6 +88,20 @@ public final class Utils {
         }
 
         return list;
+    }
+
+    public static List<String> translateLore(List<String> lore) {
+        if (lore == null) return new ArrayList<>();
+        List<String> newLore = new ArrayList<>(lore);
+        for (int i = 0; i < newLore.size(); i++) {
+            final String s = newLore.get(i);
+            newLore.set(i, translateName(s));
+        }
+        return newLore;
+    }
+
+    public static String translateName(String name) {
+        return name.isEmpty() ? name : ChatColor.translateAlternateColorCodes('&', name);
     }
 
     /**

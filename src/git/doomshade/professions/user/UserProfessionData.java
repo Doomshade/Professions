@@ -11,8 +11,8 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
+import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.types.IProfessionType;
-import git.doomshade.professions.profession.types.ITrainable;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.utils.Utils;
@@ -28,6 +28,7 @@ import java.util.List;
  * Class responsible for storing and manipulating {@link User}'s {@link Profession} data.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class UserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";
@@ -112,13 +113,20 @@ public class UserProfessionData {
      * @param level the level to set to
      */
     public void setLevel(int level) {
+        int temp = this.level;
         this.level = Math.min(level, getLevelCap());
+        if (temp == this.level) {
+            return;
+        }
+
         if (!isMaxLevel()) {
             user.sendMessage(builder.setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
         } else {
             user.sendMessage(builder.setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
         }
 
+
+        profession.onLevelUp(this);
         // prints new possible items
         for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
             try {

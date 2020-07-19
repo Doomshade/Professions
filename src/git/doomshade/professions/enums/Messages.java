@@ -1,8 +1,10 @@
 package git.doomshade.professions.enums;
 
+import com.google.common.collect.Sets;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
@@ -10,26 +12,31 @@ import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
+/**
+ * The messages manager that loads and retrieves messages from a lang file
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class Messages implements ISetup {
 
     private static Messages instance;
-    private static FileConfiguration loader;
+    private static FileConfiguration lang;
 
     static {
         instance = new Messages();
     }
-
-    private File languageFile;
 
     private Messages() {
     }
@@ -39,22 +46,22 @@ public class Messages implements ISetup {
     }
 
     @Override
-    public void setup() throws Exception {
-        languageFile = new File(Professions.getInstance().getDataFolder(), "messages.yml");
-        if (!languageFile.exists()) {
-            languageFile.createNewFile();
+    public void setup() {
+        lang = Settings.getLang();
+        final Set<String> propertyNames = lang.getKeys(false);
+        final Sets.SetView<String> missing = Sets.difference(Arrays.stream(Message.values()).map(x -> x.key).collect(Collectors.toSet()), propertyNames);
+        if (!missing.isEmpty()) {
+            try {
+                Professions.log("Your language file is outdated!", Level.WARNING);
+                Professions.log("Adding missing properties to your file. (" + missing + ")");
+                missing.forEach(x -> lang.addDefault(x, ""));
+                lang.options().copyDefaults(true);
+                lang.save(Settings.getLangFile());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        loader = YamlConfiguration.loadConfiguration(languageFile);
-        for (Message m : Message.values()) {
-            loader.addDefault(m.fileId, "");
-        }
-        loader.options().copyDefaults(true);
-        List<String> patterns = new ArrayList<>();
-        for (Pattern p : Pattern.values()) {
-            patterns.add("{" + p.pattern + "}");
-        }
-        loader.set("patterns", patterns);
-        loader.save(languageFile);
     }
 
     public enum Message {
@@ -73,16 +80,44 @@ public class Messages implements ISetup {
         NO_INVENTORY_SPACE("no-inventory-space"),
         SUCCESSFULLY_TRAINED("successfully-trained"),
         NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
-        NEW_ITEM_AVAILABLE("new-item-available");
+        POTION_ALREADY_ACTIVE("potion-already-active"),
+        NOT_PROFESSED("not-professed"),
+        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
+        GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement"),
+        PROFTYPE_PRIMARY("proftype-primary"),
+        PROFTYPE_SECONDARY("proftype-secondary"),
+        PROFESSION_REQUIRED_FOR_THIS_ACTION("profession-required-for-this-action");
 
-        private final String fileId;
 
-        Message(String fileId) {
-            this.fileId = fileId;
+        private final String key;
+
+        Message(String key) {
+            this.key = key;
         }
 
         public String getMessage() {
-            return loader.getString(fileId);
+            return lang.getString(key);
+        }
+
+        public String getColoredMessage() {
+            String msg = getMessage();
+            if (msg.isEmpty()) {
+                return msg;
+            }
+            return ChatColor.translateAlternateColorCodes('&', msg);
+        }
+
+        public String getMessage(String defaultMessage) {
+            final String msg = lang.getString(key);
+            if (msg.isEmpty()) {
+                return defaultMessage;
+            }
+            return msg;
+        }
+
+        public String getColoredMessage(String defaultMessage) {
+            String msg = getMessage(defaultMessage);
+            return ChatColor.translateAlternateColorCodes('&', msg);
         }
     }
 
@@ -162,7 +197,7 @@ public class Messages implements ISetup {
 
         public String build() {
             if (message.isEmpty()) {
-                return message;
+                return "No message set";
             }
             for (Entry<Pattern, String> e : replacements.entrySet()) {
                 message = message.replaceAll("\\{" + e.getKey().pattern + "\\}", e.getValue());

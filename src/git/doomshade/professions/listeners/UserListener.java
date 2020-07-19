@@ -70,11 +70,17 @@ public class UserListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
+        final Player player = e.getPlayer();
         try {
-            Professions.loadUser(e.getPlayer());
+            Professions.loadUser(player);
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+
+        //
+        // TODO
+        // ((CraftPlayer) player).getHandle().addEffect(new MobEffect(MobEffects.FASTER_DIG, 60, 0, false, false));
+
     }
 
     private static final HashMap<UUID, HashMap<ValidInputType, GUI>> PLAYER_INPUT = new HashMap<>();

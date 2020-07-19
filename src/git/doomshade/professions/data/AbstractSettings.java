@@ -9,10 +9,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import java.io.Serializable;
 import java.util.logging.Level;
 
+/**
+ * Plugin specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public abstract class AbstractSettings implements ISetup, Serializable {
-    private transient static final Level LEVEL = Level.WARNING;
+    transient static final Level LEVEL = Level.WARNING;
     protected transient static FileConfiguration config;
     private transient static Professions plugin = Professions.getInstance();
+    transient static boolean outdated = false;
 
     static {
         loadConfig();
@@ -27,7 +34,10 @@ public abstract class AbstractSettings implements ISetup, Serializable {
     }
 
     protected void printError(String section, Object value) {
-        Professions.log("Your configuration file is outdated!", LEVEL);
+        if (!outdated) {
+            Professions.log("Your configuration file is outdated!", LEVEL);
+            outdated = true;
+        }
         Professions.log(String.format("Missing \"%s\" section!", section), LEVEL);
         if (value == null)
             Professions.log("Using default values.", LEVEL);
@@ -43,7 +53,7 @@ public abstract class AbstractSettings implements ISetup, Serializable {
         return isSection;
     }
 
-    private final void assertSectionExists() throws ConfigurationException {
+    private void assertSectionExists() throws ConfigurationException {
         if (getDefaultSection() == null) {
             throw new ConfigurationException();
         }

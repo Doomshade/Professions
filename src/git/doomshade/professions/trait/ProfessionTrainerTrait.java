@@ -17,14 +17,15 @@ import java.util.Optional;
  *
  * @author Doomshade
  */
-@TraitName(value = "professiontrainer")
+@Deprecated
+@TraitName(value = "profession_trainer")
 public class ProfessionTrainerTrait extends Trait {
     private static final String KEY_PROFESSION = "profession";
 
     private Profession<?> profession;
 
     public ProfessionTrainerTrait() {
-        super("professiontrainer");
+        super("profession_trainer");
 
     }
 
@@ -34,12 +35,11 @@ public class ProfessionTrainerTrait extends Trait {
             return;
         }
 
-
         if (profession == null) {
             throw new IllegalStateException("Could not find a profession!");
         }
 
-        Optional<? extends GUI> opt = Professions.getManager().getGui(ProfessionTrainerGUI.class, e.getClicker());
+        Optional<? extends GUI> opt = Professions.getGUIManager().getGui(ProfessionTrainerGUI.class, e.getClicker());
         if (opt.isPresent()) {
             GUI gui = opt.get();
             gui.getContext().addContext(ProfessionTrainerGUI.KEY_PROFESSION, profession);
@@ -47,7 +47,7 @@ public class ProfessionTrainerTrait extends Trait {
                 gui.getInventory().setTitle(e.getNPC().getName());
                 return null;
             });
-            Professions.getManager().openGui(gui);
+            Professions.getGUIManager().openGui(gui);
         }
     }
 
@@ -55,7 +55,6 @@ public class ProfessionTrainerTrait extends Trait {
     @Override
     public void load(DataKey key) {
         this.profession = Professions.getProfession(key.getString(KEY_PROFESSION));
-
     }
 
     @Override

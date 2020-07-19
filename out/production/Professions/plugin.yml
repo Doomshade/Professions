@@ -1,13 +1,39 @@
 name: Professions
 main: git.doomshade.professions.Professions
 author: Doomshade
-version: 1.0
+version: 1.1
 description: Best plugin EU
 depend: [GUIApi, ProtocolLib]
-softdepend: [Citizens, Vault, PermissionsEx, SkillAPI]
+softdepend: [Citizens, Vault, PermissionsEx, SkillAPI, Sinister_LoreAttributes, dynmap]
+
+permissions:
+  prof.commands:
+    default: op
+    description: A permission to use ANY command at all
+  prof.helper:
+    default: op
+    description: A permission to use commands such as /prof profess
+    children:
+      prof.commands: true
+  prof.builder:
+    default: op
+    description: A permission to modify blocks such as ore or herb
+    children:
+      prof.helper: true
+  prof.*:
+    default: op
+    description: Permission for EVERYTHING
+    children:
+      prof.builder: true
 
 commands:
   prof:
     description: default cmd
   prof-mining:
     description: mining cmd
+  prof-herbalism:
+    description: herbalism cmd
+  prof-alchemy:
+    description: alchemy cmd
+  prof-jc:
+    description: jewelcrafting cmd

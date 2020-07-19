@@ -7,6 +7,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Settings of defaults in item types
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class DefaultsSettings extends AbstractProfessionSettings {
 
     private static final String DEFAULTS = "defaults", SORTED_BY = "sorted-by";

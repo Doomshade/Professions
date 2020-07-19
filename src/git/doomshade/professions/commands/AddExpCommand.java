@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,18 +14,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Adds profession exp to a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class AddExpCommand extends AbstractCommand {
 
     public AddExpCommand() {
-        // TODO Auto-generated constructor stub
         args = new HashMap<>();
         args.put(true, Arrays.asList("profession", "add/set", "exp"));
         args.put(false, Arrays.asList("player"));
         setArgs(args);
         setCommand("exp");
         setDescription("Gives exp to the player or sets it");
-        setRequiresOp(true);
-        setRequiresPlayer(false);
+        addPermission(Permissions.HELPER);
     }
 
     @Override
@@ -60,13 +65,11 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "addexp";
     }
 

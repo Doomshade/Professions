@@ -1,7 +1,12 @@
 package git.doomshade.professions.commands;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Permissions;
+import git.doomshade.professions.utils.SortedList;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -11,21 +16,26 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
- * A command handler
+ * A command handler and executor/tab completer
  *
  * @author Doomshade
+ * @version 1.0
  */
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
-    static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
+    private static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
     protected final Professions plugin = Professions.getInstance();
-    private final ArrayList<AbstractCommand> INSTANCE_COMMANDS = new ArrayList<>();
+    protected final SortedList<AbstractCommand> INSTANCE_COMMANDS = new SortedList<>(Comparator.comparing(AbstractCommand::getCommand));
     private final File FOLDER = new File(plugin.getDataFolder(), "commands");
     private PluginCommand cmd = null;
     private File file;
+
+    public static ImmutableCollection<AbstractCommandHandler> getInstances() {
+        return ImmutableSet.copyOf(INSTANCES.values());
+    }
 
     {
         if (!FOLDER.isDirectory()) {
@@ -33,16 +43,35 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
     }
 
+    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
+
+        if (acmd.requiresPlayer() && !(sender instanceof Player)) {
+            return false;
+        }
+
+        if (sender.isOp()) {
+            return true;
+        }
+
+        final Player player = (Player) sender;
+        for (String perm : acmd.getPermissions()) {
+            if (!Permissions.has(player, perm)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void register(AbstractCommandHandler commandHandler) {
+        INSTANCES.putIfAbsent(commandHandler.getClass(), commandHandler);
+    }
+
     public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass) {
         try {
-            Constructor<T> constructor = commandHandlerClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
             if (INSTANCES.containsKey(commandHandlerClass)) {
                 return (T) INSTANCES.get(commandHandlerClass);
             } else {
-                T t = constructor.newInstance();
-                INSTANCES.put(commandHandlerClass, t);
-                return t;
+                throw new RuntimeException(commandHandlerClass.getSimpleName() + " is not a registered command handler!");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,8 +79,8 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         return null;
     }
 
-    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
-        return (!acmd.requiresOp() || sender.isOp()) && (!acmd.requiresPlayer() || sender instanceof Player);
+    public final ImmutableSortedSet<AbstractCommand> getCommands() {
+        return ImmutableSortedSet.copyOf(INSTANCE_COMMANDS);
     }
 
     protected abstract String getCommandName();
@@ -60,11 +89,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
     private void postRegisterCommands() {
         updateCommands();
-        sortCommands();
-    }
-
-    private void sortCommands() {
-        INSTANCE_COMMANDS.sort(Comparator.comparing(AbstractCommand::getCommand));
     }
 
     protected final void registerCommand(AbstractCommand cmd) {
@@ -84,9 +108,9 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                 cmd.setCommand(fileCommand.getCommand());
                 cmd.setArgs(fileCommand.getArgs());
                 cmd.setDescription(fileCommand.getDescription());
-                cmd.setRequiresOp(fileCommand.requiresOp());
                 cmd.setRequiresPlayer(fileCommand.requiresPlayer());
                 cmd.setMessages(fileCommand.getMessages());
+                cmd.setPermissions(fileCommand.getPermissions());
             }
         }
     }
@@ -102,7 +126,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         loader.save(file);
     }
 
-    private String infoMessage(AbstractCommand acmd) {
+    public String infoMessage(AbstractCommand acmd) {
         StringBuilder args = new StringBuilder();
         final Map<Boolean, List<String>> args1 = acmd.getArgs();
         if (args1 != null) {
@@ -135,7 +159,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     @Override
     public final void setup() throws IOException {
         if (cmd == null) {
-
             String commandName = getCommandName();
             try {
                 file = new File(FOLDER, String.format("%s.yml", commandName));
@@ -152,12 +175,10 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         registerCommands();
         postRegisterCommands();
         setupCommandFile();
-        sortCommands();
     }
 
     @Override
     public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         List<String> tab = new ArrayList<>();
         if (args.length == 0) {
             INSTANCE_COMMANDS.forEach(x -> {
@@ -184,17 +205,24 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     }
 
     @Override
-    public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
             sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" + ChatColor.RED
                     + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
 
-            for (AbstractCommand icmd : INSTANCE_COMMANDS) {
-                if (!isValid(sender, icmd)) {
-                    continue;
-                }
-                sender.sendMessage(infoMessage(icmd));
+            //int amnt = 0;
 
+            // TODO add pages
+            for (AbstractCommand acmd : INSTANCE_COMMANDS) {
+                if (isValid(sender, acmd)) {
+                    sender.sendMessage(infoMessage(acmd));
+                }
+                /*amnt++;
+                if (amnt % 6 == 0) {
+                    int page = amnt / 6;
+                    break;
+                }
+                 */
             }
             return true;
         }
@@ -210,10 +238,13 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                     sender.sendMessage(infoMessage(acmd));
                     return true;
                 }
-                return acmd.onCommand(sender, cmd, label, args);
+                final boolean result = acmd.onCommand(sender, cmd, label, args);
+                if ((acmd.getPermissions().contains(Permissions.HELPER) || acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
+                    Professions.log(String.format("%s issued %s command with arguments: %s and result %s", sender.getName(), acmd.getCommand(), Arrays.toString(args), result), Level.CONFIG);
+                }
+                return result;
             }
         }
-        // TODO Auto-generated method stub
         return false;
     }
 }

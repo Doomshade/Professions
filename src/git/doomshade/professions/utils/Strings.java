@@ -1,12 +1,12 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.ITrainable;
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.EnumMap;
 
 /**
  * A class of {@code public static final} {@link String}s divided into enums for queries.
@@ -16,7 +16,7 @@ import java.util.Map;
 public final class Strings {
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.types.ITrainable}.
+     * The enum for {@link ITrainable}.
      */
     public enum ITrainableEnum implements FileEnum {
         TRAINABLE("trainable"), COST("trainable-cost"), TRAINABLE_ID("trainable-id"), VAR_TRAINABLE_COST("\\{trainable-cost\\}");
@@ -28,12 +28,13 @@ public final class Strings {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ITrainableEnum, Object> getDefaultValues() {
+            return new EnumMap<ITrainableEnum, Object>(ITrainableEnum.class) {
                 {
                     put(TRAINABLE, true);
                     put(COST, 0);
                     put(TRAINABLE_ID, "some_id");
+
                 }
             };
         }
@@ -45,13 +46,15 @@ public final class Strings {
     }
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.types.ICraftable}
+     * The enum for {@link ICraftable}
      */
     public enum ICraftableEnum implements FileEnum {
         ITEM_REQUIREMENTS("item-requirements"),
         RESULT("result"),
         CRAFTING_TIME("crafting-time"),
-        INVENTORY_REQUIREMENTS("inventory-requirements");
+        INVENTORY_REQUIREMENTS("inventory-requirements"),
+        SOUND_CRAFTING("crafting-sound"),
+        SOUND_CRAFTED("crafted-sound");
 
         public final String s;
 
@@ -61,13 +64,15 @@ public final class Strings {
 
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ICraftableEnum, Object> getDefaultValues() {
+            return new EnumMap<ICraftableEnum, Object>(ICraftableEnum.class) {
                 {
-                    put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(new ItemStack(Material.GLASS))).serialize());
-                    put(RESULT, new ItemStack(Material.GLASS).serialize());
+                    put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(CRAFTING_TIME, 5d);
-                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(new ItemStack(Material.GLASS))).serialize());
+                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(SOUND_CRAFTING, "block.fire.ambient");
+                    put(SOUND_CRAFTED, "block.fire.extinguish");
                 }
             };
         }
@@ -101,8 +106,8 @@ public final class Strings {
         }
 
         @Override
-        public Map<Enum, Object> getDefaultValues() {
-            return new HashMap<Enum, Object>() {
+        public EnumMap<ItemTypeEnum, Object> getDefaultValues() {
+            return new EnumMap<ItemTypeEnum, Object>(ItemTypeEnum.class) {
                 {
                     put(LEVEL_REQ, 0);
                     put(PROFTYPE, "crafting");

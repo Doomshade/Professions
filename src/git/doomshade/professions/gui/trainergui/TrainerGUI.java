@@ -79,7 +79,7 @@ public class TrainerGUI extends GUI implements ISetup {
         for (ItemType<?> trainableItem : trainableItems) {
             ITrainable trainable = (ITrainable) trainableItem;
             final ItemStack guiMaterial = trainableItem.getIcon(upd);
-            GUIItem item = new GUIItem(guiMaterial);
+            GUIItem item = new GUIItem(guiMaterial.getType(), pos++, guiMaterial.getAmount(), guiMaterial.getDurability());
             item.changeItem(this, () -> {
                 ItemMeta meta = guiMaterial.getItemMeta();
                 List<String> lore;

@@ -2,38 +2,44 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/**
+ * Opens profession GUI with help of GUIApi framework
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see git.doomshade.guiapi.GUI
+ * @see git.doomshade.guiapi.GUIApi
+ */
 public class PlayerGuiCommand extends AbstractCommand {
 
     public PlayerGuiCommand() {
-        // TODO Auto-generated constructor stub
         setCommand("gui");
         setDescription("Opens the professions GUI");
-        setRequiresOp(false);
         setRequiresPlayer(true);
+        addPermission(Permissions.DEFAULT_COMMAND_USAGE);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 //		GUI.getGui((Player) sender, MainGui.class).openGui();
-        Professions.getManager().openGui(PlayerProfessionsGUI.class, (Player) sender);
+        Professions.getGUIManager().openGui(PlayerProfessionsGUI.class, (Player) sender);
         return true;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "playergui";
     }
 

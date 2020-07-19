@@ -115,9 +115,9 @@ public class YourPlugin extends JavaPlugin {
     ProfessionManager.getInstance().registerItemTypeHolder(new ItemTypeHolder<Prey>() {
             @Override
             public Prey getItemType() {
-                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
-                prey.setName(ChatColor.YELLOW + "Skeleton");
-                return prey;
+                Prey preyItemType = new Prey(new Mob(EntityType.SKELETON), 10);
+                preyItemType.setName(ChatColor.YELLOW + "Skeleton");
+                return preyItemType;
             }
         });
   }
@@ -193,9 +193,9 @@ public class YourPlugin extends JavaPlugin {
     profMan.registerItemTypeHolder(new ItemTypeHolder<Prey>() {
             @Override
             public Prey getItemType() {
-                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
-                prey.setName(ChatColor.YELLOW + "Skeleton");
-                return prey;
+                Prey preyItemType = new Prey(new Mob(EntityType.SKELETON), 10);
+                preyItemType.setName(ChatColor.YELLOW + "Skeleton");
+                return preyItemType;
             }
         });
     }
@@ -216,9 +216,9 @@ public class YourPlugin extends JavaPlugin {
     profMan.registerItemTypeHolder(new ItemTypeHolder<Prey>() {
             @Override
             public Prey getItemType() {
-                Prey prey = new Prey(new Mob(EntityType.SKELETON), 10);
-                prey.setName(ChatColor.YELLOW + "Skeleton");
-                return prey;
+                Prey preyItemType = new Prey(new Mob(EntityType.SKELETON), 10);
+                preyItemType.setName(ChatColor.YELLOW + "Skeleton");
+                return preyItemType;
             }
         });
     }

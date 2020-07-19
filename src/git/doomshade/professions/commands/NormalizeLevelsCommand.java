@@ -1,11 +1,16 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version NOT_YET_IMPLEMENTED
+ */
 public class NormalizeLevelsCommand extends AbstractCommand {
 
     public NormalizeLevelsCommand() {
@@ -13,9 +18,9 @@ public class NormalizeLevelsCommand extends AbstractCommand {
         setCommand("normalize");
         setDescription(
                 "(DOESN'T WORK YET) Normalizes levels based on XP this curve (use with caution, save users before using this command!)");
-        setRequiresOp(true);
         setMessages(Arrays.asList("Normalized %d users."));
         setRequiresPlayer(false);
+        addPermission(Permissions.ADMIN);
     }
 
     @Override
@@ -56,13 +61,11 @@ public class NormalizeLevelsCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "normalizelevels";
     }
 

@@ -15,7 +15,15 @@ public class ProfessionObjectInitializationException extends Exception {
      * @param keys  the keys of missing keys
      */
     public ProfessionObjectInitializationException(Class<? extends ItemType> clazz, Collection<String> keys) {
-        this(clazz, keys, NO_ID);
+        this(clazz, keys, NO_ID, ExceptionReason.MISSING_KEYS);
+    }
+
+    public ProfessionObjectInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, ExceptionReason reason) {
+        this(clazz, keys, NO_ID, reason);
+    }
+
+    public ProfessionObjectInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id, ExceptionReason reason) {
+        this(clazz, keys, id, "", reason);
     }
 
     /**
@@ -49,6 +57,25 @@ public class ProfessionObjectInitializationException extends Exception {
      * @param additionalMessage the additional message to add at the end of exception
      */
     public ProfessionObjectInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id, String additionalMessage) {
-        super("Could not fully deserialize object of " + clazz.getSimpleName() + (id != NO_ID ? " with id " + id : "") + " as some of the keys are missing! - " + keys + ". " + additionalMessage);
+        this(clazz, keys, id, additionalMessage, ExceptionReason.MISSING_KEYS);
     }
+
+    public ProfessionObjectInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id, String additionalMessage, ExceptionReason reason) {
+        super("Could not fully deserialize object of " + clazz.getSimpleName() + (id != NO_ID ? " with id " + id : "") + " " + reason.s + " - " + keys + ". " + additionalMessage);
+    }
+
+    public enum ExceptionReason {
+        MISSING_KEYS("as some of the keys are missing!"), KEY_ERROR("as a key has been assigned wrong value!");
+
+        final String s;
+
+        ExceptionReason(String s) {
+            this.s = s;
+        }
+    }
+
+    public ProfessionObjectInitializationException(String message) {
+        super(message);
+    }
+
 }

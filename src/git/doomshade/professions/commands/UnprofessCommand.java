@@ -5,6 +5,7 @@ import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,17 +13,24 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
+/**
+ * Unprofesses a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class UnprofessCommand extends AbstractCommand {
 
     public UnprofessCommand() {
         args = new HashMap<>();
-        args.put(true, Arrays.asList("profession"));
-        args.put(false, Arrays.asList("player"));
+        args.put(true, Collections.singletonList("profession"));
+        args.put(false, Collections.singletonList("player"));
         setArgs(args);
         setCommand("unprofess");
         setDescription("Unprofesses a player");
-        setRequiresOp(true);
         setRequiresPlayer(false);
+
+        addPermission(Permissions.HELPER);
     }
 
     @Override
@@ -38,7 +46,7 @@ public class UnprofessCommand extends AbstractCommand {
         if (user.unprofess(prof)) {
             user.sendMessage(builder.setMessage(Messages.Message.SUCCESSFULLY_UNPROFESSED).build());
         } else {
-            user.sendMessage(builder.setMessage(Messages.Message.ALREADY_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Messages.Message.NOT_PROFESSED).build());
         }
         return true;
     }
@@ -70,7 +78,6 @@ public class UnprofessCommand extends AbstractCommand {
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "unprofess";
     }
 

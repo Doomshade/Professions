@@ -49,7 +49,7 @@ public class PluginProfessionListener implements Listener {
                 int amount = Integer.parseInt(e.getMessage());
                 task.setRepeatAmount(amount);
                 task.setRepeat(true);
-                Professions.getManager().openGui(task.getGui());
+                Professions.getGUIManager().openGui(task.getGui());
                 task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
                 task.runTask(Professions.getInstance());
             } catch (NumberFormatException e1) {
@@ -60,4 +60,6 @@ public class PluginProfessionListener implements Listener {
             }
         }
     }
+
+
 }

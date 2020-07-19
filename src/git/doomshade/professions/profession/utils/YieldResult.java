@@ -4,6 +4,7 @@ import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class YieldResult implements ConfigurationSerializable, Comparable<YieldR
     }
 
     @Override
-    public int compareTo(YieldResult o) {
+    public int compareTo(@NotNull YieldResult o) {
         return Double.compare(chance, o.chance);
     }
 }

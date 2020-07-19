@@ -6,6 +6,12 @@ import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 
+/**
+ * Called when a player receives exp
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessionExpGainEvent extends AbstractProfessionEvent implements Cancellable {
     private static HandlerList handlerList = new HandlerList();
     private ItemType<?> source;

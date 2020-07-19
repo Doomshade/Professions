@@ -7,29 +7,50 @@ import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Message;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
 import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
+/**
+ * Professes a player
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class ProfessCommand extends AbstractCommand {
 
     public ProfessCommand() {
-        args = new HashMap<>();
-        args.put(true, Arrays.asList("profession"));
-        args.put(false, Arrays.asList("player"));
+        setArg(true, Collections.singletonList("profession"));
+        setArg(false, Collections.singletonList("player"));
         setCommand("profess");
         setDescription("Professes a player");
-        setRequiresOp(true);
         setRequiresPlayer(false);
-
+        addPermission(Permissions.HELPER);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        User user = User.getUser((Player) sender);
+        User user;
+        if (args.length >= 3) {
+            final Player player = Bukkit.getPlayer(args[2]);
+            if (player == null) {
+                sender.sendMessage("Invalid user name");
+                return true;
+            }
+            user = User.getUser(player);
+        } else if (sender instanceof Player) {
+            user = User.getUser((Player) sender);
+        } else {
+            sender.sendMessage("Enter user's name please");
+            return true;
+        }
         Profession<?> prof = Professions.getProfessionManager().getProfession(args[1]);
         MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
@@ -50,7 +71,6 @@ public class ProfessCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        // TODO Auto-generated method stub
         final List<String> profs = new ArrayList<>();
         User user;
         ProfessionManager profMan = Professions.getProfessionManager();
@@ -76,7 +96,6 @@ public class ProfessCommand extends AbstractCommand {
 
     @Override
     public String getID() {
-        // TODO Auto-generated method stub
         return "profess";
     }
 

@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Profession;
 import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.MaxProfessionsSettings;
+import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.profession.professions.alchemy.Potion;
+import git.doomshade.professions.profession.professions.alchemy.PotionTask;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Utils;
@@ -26,20 +30,21 @@ import java.util.logging.Level;
  * Class representing a user
  *
  * @author Doomshade
+ * @version 1.0
  */
 public final class User {
 
     private static final String KEY_NAME = "name";
     private static final String KEY_PROFESSIONS = "professions";
     private static final Map<UUID, User> USERS = new HashMap<>();
-    private static User noUser;
     private final Player player;
     private FileConfiguration loader;
     private File file;
     private ConfigurationSection profSection;
     private Map<Class<?>, UserProfessionData> professions;
-    private Map<ProfessionType, Boolean> usedProfessionTypes;
+    private Map<ProfessionType, Integer> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
+    private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
 
     private User(Player player) throws IOException {
         this.player = player;
@@ -55,12 +60,6 @@ public final class User {
         loadProfessions();
         this.setBypass(false);
         this.setSuppressExpEvent(false);
-    }
-
-    private User() {
-        this.player = null;
-        this.professions = new HashMap<>();
-        usedProfessionTypes = new HashMap<>();
     }
 
     /**
@@ -82,18 +81,6 @@ public final class User {
     public static void unloadUser(User user) throws IOException {
         user.save();
         user.unloadUser();
-    }
-
-    /**
-     * Used to get an instance of this class with no user
-     *
-     * @return no user
-     */
-    public static User getNoUser() {
-        if (noUser == null) {
-            noUser = new User();
-        }
-        return noUser;
     }
 
     /**
@@ -177,6 +164,7 @@ public final class User {
      * Unloads the player (used when player is logging off)
      */
     public void unloadUser() {
+        ACTIVE_POTIONS.forEach((x, y) -> y.cancel());
         USERS.remove(player.getUniqueId());
     }
 
@@ -196,7 +184,7 @@ public final class User {
      * @return true if this user has already a profession of that type
      */
     private boolean hasProfessionType(ProfessionType type) {
-        return usedProfessionTypes.get(type);
+        return usedProfessionTypes.get(type) == Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
     /**
@@ -226,7 +214,8 @@ public final class User {
             return false;
         }
         professions.put(prof.getClass(), new UserProfessionData(this, prof));
-        usedProfessionTypes.put(prof.getProfessionType(), true);
+        final ProfessionType professionType = prof.getProfessionType();
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
         return true;
     }
 
@@ -241,7 +230,8 @@ public final class User {
             return false;
         }
         professions.remove(prof.getClass());
-        usedProfessionTypes.put(prof.getProfessionType(), false);
+        final ProfessionType professionType = prof.getProfessionType();
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) - 1);
         profSection.set(prof.getID(), null);
         return true;
     }
@@ -399,6 +389,26 @@ public final class User {
         this.suppressExpEvent = suppressExpEvent;
     }
 
+    public void applyPotion(Potion potion) {
+        if (isActivePotion(potion)) {
+            return;
+        }
+        PotionTask potionTask = new PotionTask(potion, player);
+        potionTask.runTask();
+        ACTIVE_POTIONS.put(potion.getPotionId(), potionTask);
+    }
+
+    public boolean isActivePotion(Potion potion) {
+        return ACTIVE_POTIONS.containsKey(potion.getPotionId());
+    }
+
+    public void unApplyPotion(Potion potion) {
+        if (!isActivePotion(potion)) {
+            return;
+        }
+        ACTIVE_POTIONS.remove(potion.getPotionId()).cancel();
+    }
+
     ConfigurationSection getProfessionsSection() {
         return profSection;
     }
@@ -419,15 +429,20 @@ public final class User {
         });
         usedProfessionTypes = new HashMap<>();
         for (ProfessionType type : ProfessionType.values()) {
-            usedProfessionTypes.put(type, false);
+            usedProfessionTypes.put(type, 0);
         }
 
         for (UserProfessionData upd : professions.values()) {
-            usedProfessionTypes.put(upd.getProfession().getProfessionType(), true);
+            final ProfessionType professionType = upd.getProfession().getProfessionType();
+            usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
         }
 
-        if (professions.size() > 2) {
-            Professions.log(player.getName() + " has more than 2 professions! This should not happen!", Level.SEVERE);
+        final MaxProfessionsSettings settings = Settings.getSettings(MaxProfessionsSettings.class);
+        final int maxProfessions = settings.getMaxProfessions(ProfessionType.PRIMARY) + settings.getMaxProfessions(ProfessionType.SECONDARY);
+        if (professions.size() > maxProfessions) {
+            final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
+            Professions.log(message, Level.SEVERE);
+            Professions.log(message, Level.CONFIG);
         }
     }
 }

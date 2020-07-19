@@ -22,14 +22,14 @@ public class AdminProfessionsGUI extends GUI {
         int i = -1;
         for (Profession<?> prof : Professions.getProfessionManager().getProfessionsById().values()) {
             ItemStack icon = prof.getIcon();
-            GUIItem item = new GUIItem(icon.getType(), ++i);
+            GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
             item.changeItem(this, icon::getItemMeta);
 
             builder = builder.withItem(item);
         }
 
         setInventory(builder.build());
-        setNextGui(AdminProfessionGUI.class, Professions.getManager());
+        setNextGui(AdminProfessionGUI.class, Professions.getGUIManager());
     }
 
     @Override
@@ -42,6 +42,6 @@ public class AdminProfessionsGUI extends GUI {
         }
         GUI gui = getNextGui();
         gui.getContext().addContext(ID_PROFESSION, Professions.getProfession(currentItem));
-        Professions.getManager().openGui(gui);
+        Professions.getGUIManager().openGui(gui);
     }
 }

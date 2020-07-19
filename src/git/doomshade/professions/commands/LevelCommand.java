@@ -4,6 +4,7 @@ import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -12,15 +13,21 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Adds levels or sets the level or player's profession
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public class LevelCommand extends AbstractCommand {
 
     public LevelCommand() {
         setArg(true, Arrays.asList("profession", "add/set", "level"));
         setArg(false, Arrays.asList("player"));
-        setRequiresOp(true);
         setCommand("level");
         setRequiresPlayer(false);
         setDescription("Adds levels or sets the level of the player");
+        addPermission(Permissions.HELPER);
     }
 
     @Override
@@ -44,8 +51,14 @@ public class LevelCommand extends AbstractCommand {
             return false;
         }
         UserProfessionData upd = user.getProfessionData(prof);
+
+        // can't happen, but IDE won't stfu
+        if (upd == null) {
+            return false;
+        }
+
         int level = Integer.parseInt(args[3]);
-        switch (args[2]) {
+        switch (args[2].toLowerCase()) {
             case "set":
                 upd.setLevel(level);
                 break;

@@ -7,12 +7,13 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.profession.professions.EnchantingProfession;
-import git.doomshade.professions.profession.types.ICraftable;
+import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -86,6 +87,18 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         return null;
     }
 
+    private boolean hasInventorySpace() {
+        if (user.getPlayer().getInventory().firstEmpty() == -1) {
+            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
+                    .setPlayer(user).setProfession(upd.getProfession())
+                    .setProfessionType(upd.getProfession().getProfessionType())
+                    .build());
+            cancel();
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void run() {
         final ICraftable craftable = getCraftable();
@@ -93,12 +106,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             return;
         }
 
-        if (user.getPlayer().getInventory().firstEmpty() == -1) {
-            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
-                    .setPlayer(user).setProfession(upd.getProfession())
-                    .setProfessionType(upd.getProfession().getProfessionType())
-                    .build());
-            cancel();
+        if (!hasInventorySpace()) {
             return;
         }
         EventManager em = EventManager.getInstance();
@@ -107,7 +115,8 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         if (!item.getIcon(upd).isSimilar(currentItem)) {
             return;
         }
-        if (!craftable.meetsCraftingRequirements(user.getPlayer())) {
+        final Player player = user.getPlayer();
+        if (!craftable.meetsCraftingRequirements(player)) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Message.REQUIREMENTS_NOT_MET)
                     .setPlayer(user)
                     .setProfession(prof)
@@ -129,12 +138,17 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             pe.addExtra(func.apply(currentItem));
         pe.addExtra(EnchantingProfession.ProfessionEventType.CRAFT);
 
-        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, arg0 -> {
-            craftable.removeCraftingRequirements(user.getPlayer());
-            user.getPlayer().getInventory().addItem(craftable.getResult());
-            em.callEvent(pe);
+        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, (CraftingItem.Progress x) -> {
+            if (!hasInventorySpace()) {
+                return;
+            }
+            final ProfessionEvent<ItemType<?>> event = em.callEvent(pe);
+            if (!event.isCancelled()) {
+                craftable.removeCraftingRequirements(player);
+                player.getInventory().addItem(craftable.getResult());
+            }
+            player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
-            // TODO fix repeat amount
             if (repeat && repeatAmount != 0) {
                 CraftingTask clone = clone();
                 clone.setRepeatAmount(repeatAmount - 1);
@@ -143,6 +157,9 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         });
         craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
                 craftable.getCraftingTime(), gui, UPDATE_INTERVAL));
+
+        player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
+
     }
 
     @Override

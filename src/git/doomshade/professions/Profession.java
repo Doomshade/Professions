@@ -3,16 +3,24 @@ package git.doomshade.professions;
 import com.google.common.reflect.TypeToken;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.profession.types.IProfessionEventable;
+import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
+import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
+import git.doomshade.professions.profession.professions.mining.MiningProfession;
+import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
@@ -20,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -27,19 +37,23 @@ import java.util.Set;
  *
  * @param <T> the profession type
  * @author Doomshade
+ * @version 1.0
  * @see IProfessionType
- * @see git.doomshade.professions.profession.professions.EnchantingProfession
- * @see git.doomshade.professions.profession.professions.JewelcraftingProfession
- * @see git.doomshade.professions.profession.professions.MiningProfession
- * @see git.doomshade.professions.profession.professions.SkinningProfession
+ * @see EnchantingProfession
+ * @see JewelcraftingProfession
+ * @see MiningProfession
+ * @see SkinningProfession
+ * @see git.doomshade.professions.profession.professions.alchemy.AlchemyProfession
+ * @see git.doomshade.professions.profession.professions.smelting.SmeltingProfession
  */
-public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>>, IProfessionEventable {
+public abstract class Profession<T extends IProfessionType> implements Listener, Comparable<Profession<?>> {
 
     static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     @SuppressWarnings("serial")
     private final TypeToken<T> typeToken = new TypeToken<T>(getClass()) {
     };
     private final Type type = typeToken.getType();
+    private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
     private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
@@ -51,10 +65,10 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         this(false);
     }
 
-    Profession(boolean ignoreInitializationError) {
+    private Profession(boolean ignoreInitializationError) {
         ensureNotInitialized(ignoreInitializationError);
 
-        String fileName = getClass().getSimpleName().toLowerCase();
+        String fileName = getClass().getSimpleName().toLowerCase().replace("profession", "");
         this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
         if (!file.exists() && !fileName.isEmpty()) {
             try {
@@ -68,7 +82,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
         ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
         try {
             settings.setup();
-        } catch (ConfigurationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         this.professionSettings = settings;
@@ -106,14 +120,27 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
      * Casts desired event to another one.
      *
      * @param event the profession event to cast
-     * @param clazz the class to cast to
      * @param <A>   the generic argument of the event
      * @return the casted event
      */
-    @SuppressWarnings({"unchecked", "unused"})
-    protected static <A extends ItemType<?>> ProfessionEvent<A> getEvent(ProfessionEvent<?> event,
-                                                                         Class<A> clazz) {
-        return (ProfessionEvent<A>) event;
+    @SuppressWarnings({"unchecked"})
+    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event, Class<A> clazz) throws ClassCastException {
+        try {
+            return Optional.of((ProfessionEvent<A>) event);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Casts desired event to another one.
+     *
+     * @param event the profession event to cast
+     * @param <A>   the generic argument of the event
+     * @return the casted event
+     */
+    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
+        return getEvent(event.event, clazz);
     }
 
     /**
@@ -144,12 +171,12 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * Adds {@link ItemType}s to this profession to handle in {@link #onEvent(ProfessionEvent)}
+     * Adds {@link ItemType}s to this profession to handle in
      *
      * @param items the items
      */
     protected final void addItems(Class<? extends ItemType<?>> items) {
-        this.items.add(Professions.getItemTypeHolder(items));
+        this.items.add(Professions.getProfessionManager().getItemTypeHolder(items));
     }
 
     /**
@@ -224,23 +251,33 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * @param e    event to check for
-     * @param item the event type
+     * @param e event to check for
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
-    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<?> e, Class<ItemTypeClass> item) {
-        ItemType<?> obj = e.getItemType();
-        for (ItemTypeHolder<?> ith : items) {
-            for (ItemType<?> it : ith) {
-                if (it.getClass().equals(obj.getClass())) {
-                    return playerHasProfession(e) && obj.getClass().getSimpleName().equalsIgnoreCase(item.getSimpleName());
-                }
+    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e, boolean errorMessage) {
+        final boolean playerHasProf = playerHasProfession(e);
+        if (!playerHasProf) {
+            e.setCancelled(true);
+            if (errorMessage) {
+                final User player = e.getPlayer();
+                player.sendMessage(new Messages.MessageBuilder(Messages.Message.PROFESSION_REQUIRED_FOR_THIS_ACTION)
+                        .setPlayer(player)
+                        .setProfession(this)
+                        .build());
             }
         }
-        return false;
+        return playerHasProf;
     }
 
-    private <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
+    /**
+     * @param e event to check for
+     * @return {@code true} if event has registered an object of item type, {@code false} otherwise
+     */
+    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
+        return isValidEvent(e, true);
+    }
+
+    protected final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
         return e.getPlayer().hasProfession(this);
     }
 
@@ -279,13 +316,63 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
     }
 
     /**
-     * The profession types. Translated to czech
+     * Called when a user level ups
      */
-    public enum ProfessionType {
-        PRIMARY("primární"),
-        SECONDARY("sekundární");
+    public void onLevelUp(UserProfessionData upd) {
 
-        private final String name;
+    }
+
+    public final Set<String> getRequiredPlugins() {
+        return requiredPlugins;
+    }
+
+    protected void addRequiredPlugin(String plugin) {
+        requiredPlugins.add(plugin);
+    }
+
+    /**
+     * Handles the called profession event from {@link git.doomshade.professions.listeners.ProfessionListener} <br>
+     * Cancels the event if the player does not have this profession and is a rank lower than builder <br>
+     * If the player has this profession and the profession event is correct, {@link #onEvent(ProfessionEventWrapper)} is called
+     *
+     * @param event   the profession event
+     * @param <IType> the item type argument of the event (this prevents wildcards)
+     */
+    @EventHandler
+    public <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
+
+        // the player has no profession but has a rank builder+ -> do not cancel the event
+        if (!playerHasProfession(event)) {
+
+            // cancels the event if the player is a rank lower than builder
+            event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
+            return;
+        }
+        for (ItemTypeHolder<?> ith : items) {
+            for (ItemType<?> it : ith) {
+                if (it.getClass().equals(event.getItemType().getClass())) {
+                    onEvent(new ProfessionEventWrapper<>(event));
+                    return;
+                }
+            }
+        }
+    }
+
+    public abstract <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> e);
+
+    @Nullable
+    public List<String> getProfessionInformation(UserProfessionData upd) {
+        return null;
+    }
+
+    /**
+     * The profession types
+     */
+    public enum ProfessionType implements ISetup {
+        PRIMARY("Primary"),
+        SECONDARY("Secondary");
+
+        private String name;
 
         ProfessionType(String name) {
             this.name = name;
@@ -303,7 +390,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             }
             StringBuilder sb = new StringBuilder(professionType + " is not a valid profession type! (");
             for (ProfessionType type : values()) {
-                sb.append(type.ordinal() + "=" + type.toString());
+                sb.append(type.ordinal()).append("=").append(type.toString());
             }
             sb.append(")");
             throw new IllegalArgumentException(sb.toString());
@@ -321,7 +408,7 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             }
             StringBuilder sb = new StringBuilder(id + " is not a valid profession id type! (");
             for (ProfessionType type : values()) {
-                sb.append(type.ordinal() + "=" + type.toString());
+                sb.append(type.ordinal()).append("=").append(type.toString());
             }
             sb.append(")");
             throw new IllegalArgumentException(sb.toString());
@@ -332,5 +419,10 @@ public abstract class Profession<T extends IProfessionType> implements Listener,
             return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
 
+        @Override
+        public void setup() {
+            PRIMARY.name = Messages.Message.PROFTYPE_PRIMARY.getColoredMessage("Primary");
+            SECONDARY.name = Messages.Message.PROFTYPE_SECONDARY.getColoredMessage("Secondary");
+        }
     }
 }

@@ -3,6 +3,13 @@ package git.doomshade.professions.data;
 import git.doomshade.professions.utils.ExpFormula;
 import org.bukkit.configuration.ConfigurationSection;
 
+/**
+ * Exp settings of professions and SkillAPI
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @see com.sucy.skill.SkillAPI
+ */
 public class ExpSettings extends AbstractSettings {
 
     private static final String

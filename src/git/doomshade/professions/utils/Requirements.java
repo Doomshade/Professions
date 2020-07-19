@@ -1,5 +1,6 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.profession.ICraftable;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -13,7 +14,7 @@ import java.util.*;
  * A class managing requirements of a player.
  *
  * @author Doomshade
- * @see git.doomshade.professions.profession.types.ICraftable
+ * @see ICraftable
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
     private final List<ItemStack> items;
@@ -41,10 +42,9 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      */
     public static Requirements deserialize(Map<String, Object> map) {
         List<ItemStack> items = new ArrayList<>();
-        Iterator<Object> iterator = map.values().iterator();
-        while (iterator.hasNext()) {
-            Object next = iterator.next();
-            items.add(ItemStack.deserialize(((MemorySection) next).getValues(true)));
+        for (Object next : map.values()) {
+            if (next instanceof MemorySection)
+                items.add(ItemUtils.deserialize(((MemorySection) next).getValues(true)));
         }
         return new Requirements(items);
     }
@@ -53,7 +53,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < items.size(); i++) {
-            map.put(String.valueOf(i), items.get(i).serialize());
+            map.put(String.valueOf(i), ItemUtils.serialize(items.get(i)));
         }
         return map;
     }
@@ -93,7 +93,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
                 continue;
             }
             for (ItemStack item : items) {
-                if (item.isSimilar(itemContent)) {
+                if (item.isSimilar(itemContent) && itemContent.getAmount() >= item.getAmount()) {
                     itemz.add(item);
                 }
             }

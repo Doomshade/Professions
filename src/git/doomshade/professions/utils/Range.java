@@ -1,6 +1,10 @@
 package git.doomshade.professions.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A utility class containing of two {@link Integer}s.
@@ -8,6 +12,7 @@ import java.util.Random;
  * @author Doomshade
  */
 public class Range {
+    public static final Pattern RANGE_PATTERN = Pattern.compile("([\\d]+)(-([\\d]+))?");
     private final int min, max;
     private final Random random = new Random();
 
@@ -50,5 +55,41 @@ public class Range {
      */
     public int getMax() {
         return max;
+    }
+
+    @NotNull
+    public static Range fromString(String s) throws Exception {
+        Matcher m = RANGE_PATTERN.matcher(s);
+        if (m.find()) {
+            final String group = m.group(3);
+            final int min = Integer.parseInt(m.group(1));
+            if (group != null)
+                try {
+                    return new Range(min, Integer.parseInt(group));
+                } catch (NumberFormatException e) {
+                    throw new Exception("Could not get range from \"" + s + "\"");
+                }
+            else
+                return new Range(min);
+        } else {
+            try {
+                return new Range(Integer.parseInt(s.trim()));
+            } catch (NumberFormatException e) {
+                throw new Exception("Could not get range from \"" + s + "\"");
+            }
+        }
+    }
+
+    public boolean isInRange(int num, boolean includeRange) {
+        if (includeRange) {
+            return num >= min && num <= max;
+        } else {
+            return num > min && num < max;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return min == max ? String.valueOf(min) : String.format("%d-%d", min, max);
     }
 }

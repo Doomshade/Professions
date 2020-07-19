@@ -3,29 +3,34 @@ package git.doomshade.professions;
 
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
+import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.gui.adminguis.AdminProfessionGUI;
 import git.doomshade.professions.gui.adminguis.AdminProfessionsGUI;
+import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
 import git.doomshade.professions.gui.playerguis.TestThreeGui;
-import git.doomshade.professions.listeners.PluginProfessionListener;
-import git.doomshade.professions.listeners.ProfessionListener;
-import git.doomshade.professions.listeners.SkillAPIListener;
-import git.doomshade.professions.listeners.UserListener;
-import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.gui.trainergui.TrainerChooserGUI;
+import git.doomshade.professions.gui.trainergui.TrainerGUI;
+import git.doomshade.professions.listeners.*;
+import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
+import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
+import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
+import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
+import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.types.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
-import git.doomshade.professions.trait.ProfessionTrainerTrait;
+import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
 import net.citizensnpcs.Citizens;
@@ -33,6 +38,7 @@ import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -40,45 +46,70 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.dynmap.bukkit.DynmapPlugin;
 import org.fusesource.jansi.Ansi;
+import ru.tehkode.permissions.PermissionManager;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 
 /**
  * The Main API class as well as the {@link JavaPlugin} class.
- * Professions is an API for plugin developers that want to create their own customizable professions. This plugin also includes a set of examples of custom professions that's function can be disabled in config.
  *
  * @author Doomshade
+ * @version 1.0
  */
 public final class Professions extends JavaPlugin implements ISetup {
 
+    // managers
     private static Professions instance;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
+    private static PermissionManager permMan;
     private static Economy econ;
 
     // 5 minutes
-    private final int SAVE_DELAY = 5 * 60;
+    private static final int SAVE_DELAY = 5 * 60;
 
     // 1 hr
-    private final int BACKUP_DELAY = 60 * 60;
+    private static final int BACKUP_DELAY = 60 * 60;
 
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
-    private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
+    private static PrintStream fos;
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
+    private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
+    // files
+    // TODO: 23.04.2020 perhaps make some IOManager for this someday?
+    private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
+    private final File LOGS_FOLDER;
+    private final File LOG_FILE;
+
+    private final File FILTERED_LOGS_FOLDER = new File(getDataFolder(), "filtered logs");
     private final File ITEM_FOLDER = new File(getDataFolder(), "itemtypes");
     private final File PROFESSION_FOLDER = new File(getDataFolder(), "professions");
+    private final File TRAINER_FOLDER = new File(getDataFolder(), "trainer gui");
 
+    public static final String LANG_PATH = "lang/";
+    private final File LANG_FOLDER = new File(getDataFolder(), "lang");
     private FileConfiguration configLoader;
+    private static boolean FIRST_BACKUP = true;
 
+    // put it in an initialization block so the order is obvious
+    {
+        LOGS_FOLDER = new File(getDataFolder(), "logs");
+        LOG_FILE = new File(getLogsFolder(), String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy H_m"))));
+    }
 
     /**
      * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
@@ -94,8 +125,18 @@ public final class Professions extends JavaPlugin implements ISetup {
      *
      * @return the {@link GUIManager} instance
      */
-    public static GUIManager getManager() {
+    public static GUIManager getGUIManager() {
         return guiManager;
+    }
+
+    @Nullable
+    public static MarkerManager getMarkerManager() {
+        return MarkerManager.getInstance();
+    }
+
+    @Nullable
+    public static PermissionManager getPermissionManager() {
+        return permMan;
     }
 
     /**
@@ -178,53 +219,8 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * @param clazz the {@link ItemTypeHolder} class to look for
-     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
-     * @return instance of {@link ItemTypeHolder}
-     * @see ProfessionManager#getItemTypeHolder(Class)
-     */
-    public static <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) {
-        return profMan.getItemTypeHolder(clazz);
-    }
-
-    /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @see ProfessionManager#registerItemTypeHolder(ItemTypeHolder)
-     */
-    public static <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
-        profMan.registerItemTypeHolder(itemTypeHolder);
-    }
-
-
-    /**
-     * @param profession the {@link Profession} class
-     * @return instance of {@link Profession}
-     * @see ProfessionManager#getProfession(Class)
-     */
-    public static Profession<? extends IProfessionType> getProfession(Class<? extends Profession<?>> profession) {
-        return profMan.getProfession(profession);
-    }
-
-    /**
-     * @param clazz ProfessionType class
-     * @see ProfessionManager#registerProfessionType(Class)
-     */
-    public static void registerProfessionType(Class<? extends IProfessionType> clazz) {
-        profMan.registerProfessionType(clazz);
-    }
-
-    /**
-     * @param profession Profession to register
-     * @see ProfessionManager#registerProfession(Class)
-     */
-    public static void registerProfession(Class<Profession<? extends IProfessionType>> profession) {
-        profMan.registerProfession(profession);
-    }
-
-
-    /**
      * @param user the user to unload
-     * @throws IOException
+     * @throws IOException if the unload was unsuccessful
      * @see User#unloadUser(User)
      */
     public static void unloadUser(User user) throws IOException {
@@ -240,59 +236,80 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * Logs an error message to console
+     * Logs an object using {@link Object#toString()} method. Use {@link Level#CONFIG} to log into log file.
      *
-     * @param message the message to log
-     * @param level   the log level
+     * @param object the object to log
+     * @param level  the level
      */
-    public static void log(String message, Level level) {
-        Ansi.Color color = Ansi.Color.WHITE;
-
-        final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
-        final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.CONFIG.intValue(), Level.FINER.intValue());
-
-        if (RED.contains(level.intValue())) {
-            color = Ansi.Color.RED;
-        }
-
-
-        if (GREEN.contains(level.intValue())) {
-            color = Ansi.Color.GREEN;
-        }
-
-        Ansi ansi = Ansi.ansi().boldOff();
-
-
-        getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+    public static void log(Object object, Level level) {
+        log(object == null ? "null" : object.toString(), level);
     }
 
     /**
-     * Sets the instance of this plugin, attempts to hook {@link GUIApi}, {@link Citizens}, and {@link net.milkbowl.vault.Vault}, sets up instances of managers, sets up files, schedules tasks, and registers events of listeners.
+     * Logs an object using {@link Object#toString()} method to console with {@link Level#INFO} level.
+     *
+     * @param object the object to log
      */
-    @Override
-    public void onEnable() {
-        setInstance(this);
-        hookGuiApi();
-        hookCitizens();
-        hookSkillAPI();
-        setupEconomy();
+    public static void log(Object object) {
+        log(object == null ? "null" : object.toString());
+    }
 
-        profMan = ProfessionManager.getInstance();
-        eventMan = EventManager.getInstance();
+    /**
+     * Logs a message to console with {@link Level#INFO} level.
+     *
+     * @param message the message to display
+     */
+    public static void log(String message) {
+        log(message, Level.INFO);
+    }
 
-        // any class with setup() method contains a file
-        try {
-            setupFiles();
-        } catch (ConfigurationException e) {
-            e.printStackTrace();
+    /**
+     * Logs a message. Use {@link Level#CONFIG} to log into log file.
+     *
+     * @param message the message to display
+     * @param level   the log level
+     */
+    public static void log(String message, Level level) {
+        if (message.isEmpty()) {
+            return;
+        }
+        if (level == Level.CONFIG) {
+            String time = String.format("[%s] ", LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.GERMAN)));
+
+            if (fos == null) {
+                try {
+                    fos = new PrintStream(getInstance().LOG_FILE);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            fos.println(time.concat(ChatColor.stripColor(message)));
+
+            // TODO delete on plugin release!
+            fos.flush();
+        } else {
+            Ansi.Color color = Ansi.Color.WHITE;
+
+            final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
+            final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.FINER.intValue());
+
+            if (RED.contains(level.intValue())) {
+                color = Ansi.Color.RED;
+            }
+            if (GREEN.contains(level.intValue())) {
+                color = Ansi.Color.GREEN;
+            }
+
+            Ansi ansi = Ansi.ansi().boldOff();
+
+            getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
         }
 
-        scheduleTasks();
+    }
 
-        PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(new UserListener(), this);
-        pm.registerEvents(new ProfessionListener(), this);
-        pm.registerEvents(new PluginProfessionListener(), this);
+    public static void createResource(String resource, boolean replace) {
+        instance.saveResource(resource, replace);
     }
 
     /**
@@ -300,9 +317,15 @@ public final class Professions extends JavaPlugin implements ISetup {
      */
     @Override
     public void onDisable() {
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onDisable();
+            }
+        }
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
+            fos.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -315,6 +338,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      */
     public void saveFiles() throws IOException {
         saveUsers();
+        fos.flush();
     }
 
 
@@ -332,42 +356,178 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
+     * Sets the instance of this plugin, attempts to hook {@link GUIApi}, {@link Citizens}, and {@link net.milkbowl.vault.Vault}, sets up instances of managers, sets up files, schedules tasks, and registers events of listeners.
+     */
+    @Override
+    public void onEnable() {
+        setInstance(this);
+        hookPlugins();
+
+        profMan = ProfessionManager.getInstance();
+        eventMan = EventManager.getInstance();
+
+        try {
+            setupFiles();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Hook dynmap after setups as it uses config
+        hookPlugin("dynmap", x -> {
+            // sets the dynmap plugin to marker manager
+            MarkerManager.getInstance(DynmapPlugin.plugin);
+            return true;
+        });
+        scheduleTasks();
+
+        registerListeners();
+
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onLoad();
+            }
+        }
+    }
+
+    private void hookPlugins() {
+        hookPlugin("GUIApi", x -> {
+            guiManager = GUIApi.getGuiManager(this);
+            guiManager.registerGui(PlayerProfessionsGUI.class);
+            guiManager.registerGui(ProfessionGUI.class);
+            guiManager.registerGui(TestThreeGui.class);
+            guiManager.registerGui(ProfessionTrainerGUI.class);
+            guiManager.registerGui(AdminProfessionsGUI.class);
+            guiManager.registerGui(AdminProfessionGUI.class);
+            guiManager.registerGui(OreGUI.class);
+            guiManager.registerGui(TrainerGUI.class);
+            guiManager.registerGui(TrainerChooserGUI.class);
+
+            // could be unsafe, idk
+            registerSetup((ISetup) guiManager.getGui(TrainerGUI.class, null).get());
+            return true;
+        });
+        hookPlugin("Citizens", x -> {
+            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(TrainerTrait.class));
+            return true;
+        });
+        hookPlugin("SkillAPI", x -> {
+            Bukkit.getPluginManager().registerEvents(new SkillAPIListener(), this);
+            return true;
+        });
+        hookPlugin("Vault", x -> {
+            RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+            if (rsp == null) {
+                return false;
+            }
+
+            econ = rsp.getProvider();
+            return true;
+        });
+        hookPlugin("PermissionsEx", x -> {
+            permMan = PermissionsEx.getPermissionManager();
+            return true;
+        });
+    }
+
+    private void hookPlugin(String plugin, Predicate<Void> func) {
+        if (Bukkit.getPluginManager().getPlugin(plugin) == null) {
+            return;
+        }
+
+        final boolean bool;
+        try {
+            bool = func.test(null);
+        } catch (Exception e) {
+            log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
+            e.printStackTrace();
+            return;
+        }
+        if (bool) {
+            log(String.format("Successfully hooked with %s plugin", plugin), Level.INFO);
+        } else {
+            log(String.format("Could not hook with %s plugin", plugin), Level.INFO);
+        }
+    }
+
+    private void registerListeners() {
+        PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(new UserListener(), this);
+        pm.registerEvents(new ProfessionListener(), this);
+        pm.registerEvents(new PluginProfessionListener(), this);
+        pm.registerEvents(new OreEditListener(), this);
+        pm.registerEvents(new JewelcraftingListener(), this);
+    }
+
+
+    /**
      * @return the backup folder directory
      */
     public File getBackupFolder() {
-        if (!BACKUP_FOLDER.isDirectory()) {
-            BACKUP_FOLDER.mkdirs();
-        }
-        return BACKUP_FOLDER;
+        return getFolder(BACKUP_FOLDER);
     }
 
     /**
      * @return the {@link User} folder directory
      */
     public File getPlayerFolder() {
-        if (!PLAYER_FOLDER.isDirectory()) {
-            PLAYER_FOLDER.mkdirs();
-        }
-        return PLAYER_FOLDER;
+        return getFolder(PLAYER_FOLDER);
     }
 
     /**
      * @return the {@link ItemType} folder directory
      */
     public File getItemsFolder() {
-        if (!ITEM_FOLDER.isDirectory()) {
-            ITEM_FOLDER.mkdirs();
-        }
-        return ITEM_FOLDER;
+        return getFolder(ITEM_FOLDER);
     }
 
+    /**
+     * @return the {@link Profession} folder directory
+     */
     public File getProfessionFolder() {
-        if (!PROFESSION_FOLDER.isDirectory()) {
-            PROFESSION_FOLDER.mkdirs();
-        }
-        return PROFESSION_FOLDER;
+        return getFolder(PROFESSION_FOLDER);
     }
 
+    /**
+     * @return the {@link User} cache folder directory
+     */
+    public File getCacheFolder() {
+        return getFolder(CACHE_FOLDER);
+    }
+
+    /**
+     * @return the logs folder directory
+     */
+    public File getLogsFolder() {
+        return getFolder(LOGS_FOLDER);
+    }
+
+    /**
+     * @return the filtered logs folder directory
+     */
+    public File getFilteredLogsFolder() {
+        return getFolder(FILTERED_LOGS_FOLDER);
+    }
+
+    /**
+     * @return the lang folder directory
+     */
+    public File getLangFolder() {
+        return getFolder(LANG_FOLDER);
+    }
+
+    /**
+     * @return the folder with trainer GUI
+     */
+    public File getTrainerFolder() {
+        return getFolder(TRAINER_FOLDER);
+    }
+
+    /**
+     * @return the current log file
+     */
+    public File getLogFile() {
+        return LOG_FILE;
+    }
 
     @Override
     public void setup() {
@@ -399,17 +559,75 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
     }
 
-    public void reload() throws IOException {
-        cleanup();
-        User.saveUsers();
+    /**
+     * Reloads the plugin
+     */
+    public boolean reload() {
 
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            User.unloadUser(p);
+        boolean successful = true;
+
+        // Calls on pre reload on all item types
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                try {
+                    itemType.onPreReload();
+                } catch (Exception e) {
+                    String errormsg = "Failed to reload itemtype " + itemType.getName() + ".";
+                    log(errormsg.concat(" Check log file for exception message."));
+                    log(new Exception(errormsg), Level.CONFIG);
+                    successful = false;
+                }
+            }
         }
+
+        // Calls cleanup methods on all classes implementing ISetup
+        cleanup();
+
+        // Saves and unloads users
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            try {
+                User.unloadUser(p);
+            } catch (IOException e) {
+                String errormsg = "Failed to unload user " + p.getName() + ".";
+                log(errormsg.concat(" Check log file for exception message."));
+                log(new IOException(errormsg), Level.CONFIG);
+                successful = false;
+            }
+        }
+
+
+        // Sets up all classes again
         setup();
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            User.loadUser(p);
+
+
+        // Calls on reload on all item types
+        for (ItemTypeHolder<?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                try {
+                    itemType.onReload();
+                } catch (Exception e) {
+                    String errormsg = "Failed to reload itemtype " + itemType.getName() + ".";
+                    log(errormsg.concat(" Check log file for exception message."));
+                    log(new Exception(errormsg), Level.CONFIG);
+                    e.printStackTrace();
+                    successful = false;
+                }
+            }
         }
+
+        // Finally loads users again
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            try {
+                User.loadUser(p);
+            } catch (IOException e) {
+                String errormsg = "Failed to load user " + p.getName() + ".";
+                log(errormsg.concat(" Check log file for exception message."));
+                log(new IOException(errormsg), Level.CONFIG);
+                successful = false;
+            }
+        }
+
+        return successful;
     }
 
     /**
@@ -423,7 +641,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
-     * Backs up all data into a zip file.
+     * Forces the backup of plugin.
      *
      * @return the result of backup
      */
@@ -433,18 +651,64 @@ public final class Professions extends JavaPlugin implements ISetup {
         return task.getResult();
     }
 
-    private void registerSetups() {
-        registerSetup(Settings.getInstance());
-        for (AbstractSettings s : Settings.SETTINGS) {
-            registerSetup(s);
+    /**
+     * Creates a folder if possible
+     *
+     * @param file the folder to create
+     * @return the same file
+     */
+    private File getFolder(File file) {
+        if (!file.isDirectory()) {
+            file.mkdirs();
         }
-        registerSetup(Messages.getInstance());
-        registerSetup(CommandHandler.getInstance(CommandHandler.class));
-        registerSetup(CommandHandler.getInstance(MiningCommandHandler.class));
+        return file;
+    }
+
+    /**
+     * Registers all setups
+     */
+    private void registerSetups() {
+
+        // register main settings first
+        try {
+            registerSetup(Settings.getInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // then other settings
+        for (AbstractSettings s : Settings.SETTINGS) {
+            try {
+                registerSetup(s);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // then messages
+        try {
+            registerSetup(Messages.getInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // then the rest
+        registerSetup(Profession.ProfessionType.PRIMARY);
+
+        registerCommandHandler(new CommandHandler());
+        registerCommandHandler(new MiningCommandHandler());
+        registerCommandHandler(new HerbalismCommandHandler());
+        registerCommandHandler(new AlchemyCommandHandler());
+        registerCommandHandler(new JewelcraftingCommandHandler());
+
         registerSetup(ProfessionManager.getInstance());
     }
 
-    private void setupFiles() throws ConfigurationException {
+    private void registerCommandHandler(AbstractCommandHandler commandHandler) {
+        AbstractCommandHandler.register(commandHandler);
+        registerSetup(commandHandler);
+    }
+
+    private void setupFiles() throws IllegalArgumentException {
         if (!getDataFolder().isDirectory()) {
             getDataFolder().mkdir();
         }
@@ -454,6 +718,23 @@ public final class Professions extends JavaPlugin implements ISetup {
         getPlayerFolder();
         getItemsFolder();
         getProfessionFolder();
+        getCacheFolder();
+        getFilteredLogsFolder();
+        // getLogsFolder();
+        if (!LOG_FILE.exists()) {
+            try {
+                LOG_FILE.createNewFile();
+                fos = new PrintStream(LOG_FILE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        saveResource(LANG_PATH.concat("patterns.properties"), true);
+
+        saveResource(LANG_PATH.concat("lang_cs.yml"), false);
+        saveResource(LANG_PATH.concat("lang_cs_D.yml"), false);
+        saveResource(LANG_PATH.concat("lang_en.yml"), false);
 
         saveDefaultConfig();
         reloadConfig();
@@ -467,44 +748,77 @@ public final class Professions extends JavaPlugin implements ISetup {
         new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
     }
 
-    private void hookGuiApi() {
-        guiManager = GUIApi.getGuiManager(this);
-        guiManager.registerGui(PlayerProfessionsGUI.class);
-        guiManager.registerGui(ProfessionGUI.class);
-        guiManager.registerGui(TestThreeGui.class);
-        guiManager.registerGui(ProfessionTrainerGUI.class);
-        guiManager.registerGui(AdminProfessionsGUI.class);
-        guiManager.registerGui(AdminProfessionGUI.class);
+
+    /**
+     * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of resource
+     * @param replace      whether or not to replace if the file already exists
+     * @param fileName     the file name
+     */
+    public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
+        if (resourcePath != null && !resourcePath.equals("")) {
+            resourcePath = resourcePath.replace('\\', '/');
+            Reader in = this.getTextResource(resourcePath);
+            if (in == null) {
+                throw new IllegalArgumentException("The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
+            } else {
+                File outFile = new File(this.getDataFolder(), fileName);
+                int lastIndex = resourcePath.lastIndexOf(47);
+                File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
+                if (!outDir.exists()) {
+                    outDir.mkdirs();
+                }
+
+                try {
+                    if (!outFile.exists() || replace) {
+
+                        // NOPES: UTF-16, ISO, UTF-16BE
+                        OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
+                        char[] buf = new char[1024];
+
+                        int len;
+
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+
+                        out.close();
+                        in.close();
+                    }
+                } catch (IOException var10) {
+                    var10.printStackTrace();
+                    log("Could not save " + outFile.getName() + " to " + outFile);
+                }
+
+            }
+        } else {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
     }
 
-    private void hookCitizens() {
-        if (Bukkit.getPluginManager().getPlugin("Citizens") == null) {
-            return;
-        }
-        log("Successfully hooked with Citizens plugin", Level.INFO);
-        CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(ProfessionTrainerTrait.class));
-        log("Registered " + ProfessionTrainerTrait.class.getSimpleName() + " trait.", Level.INFO);
 
+    /**
+     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of file
+     * @param replace      whether or not to replace if the file already exists
+     */
+    @Override
+    public void saveResource(String resourcePath, boolean replace) throws IllegalArgumentException {
+        saveResource(resourcePath, resourcePath, replace);
     }
 
-    private void setupEconomy() {
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
-            return;
+    public BackupTask.Result backupFirst() {
+        if (FIRST_BACKUP) {
+            try {
+                FIRST_BACKUP = false;
+                return backup();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return BackupTask.Result.FAILURE;
+            }
         }
-        RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            return;
-        }
-
-        log("Successfully hooked with Vault plugin", Level.INFO);
-        econ = rsp.getProvider();
-    }
-
-    private void hookSkillAPI() {
-        PluginManager pm = Bukkit.getPluginManager();
-        if (pm.getPlugin("SkillAPI") == null) {
-            return;
-        }
-        pm.registerEvents(new SkillAPIListener(), this);
+        return null;
     }
 }

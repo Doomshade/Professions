@@ -1,14 +1,20 @@
 package git.doomshade.professions.commands;
 
 /**
+ * An implementation of command handler for command "prof"
+ *
  * @author Doomshade
+ * @version 1.0
  */
 public class CommandHandler extends AbstractCommandHandler {
+
+    public static final String COMMAND = "prof";
+    public static final String EXTENDED_COMMAND = COMMAND.concat("-");
 
 
     @Override
     protected String getCommandName() {
-        return "prof";
+        return COMMAND;
     }
 
     @Override
@@ -29,5 +35,10 @@ public class CommandHandler extends AbstractCommandHandler {
         registerCommand(new LevelCommand());
         registerCommand(new CommandsCommand());
         registerCommand(new GenerateDefaultsCommand());
+        registerCommand(new LogFilterCommand());
+        registerCommand(new EditItemTypeCommand());
+        registerCommand(new UndoEditCommand());
+        registerCommand(new TestCommand());
+        registerCommand(new GenerateDefaultConfigCommand());
     }
 }

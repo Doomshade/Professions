@@ -3,6 +3,7 @@ package git.doomshade.professions.commands;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -41,7 +42,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         return new AbstractCommand() {
 
             @Override
-            public int compareTo(AbstractCommand o) {
+            public int compareTo(@NotNull AbstractCommand o) {
                 return getCommand().compareTo(o.getCommand());
             }
 
@@ -107,7 +108,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * @return a comparison of command names
      */
     @Override
-    public int compareTo(AbstractCommand o) {
+    public int compareTo(@NotNull AbstractCommand o) {
         return getCommand().compareTo(o.getCommand());
     }
 

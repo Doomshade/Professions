@@ -14,10 +14,11 @@ import java.util.Arrays;
  * Class for {@link Profession} defaults
  *
  * @author Doomshade
+ * @version 1.0
  */
 public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecificSettings implements Cloneable {
     private static final String SECTION = "defaults", NAME = "name", ICON = "icon", TYPE = "type";
-    private String name = "Profession name";
+    private String name;
     private ItemStack icon = ItemUtils.itemStackBuilder(Material.CHEST).withLore(Arrays.asList("The", "Lore")).withDisplayName("&aThe display name").build();
     private Profession.ProfessionType professionType = Profession.ProfessionType.PRIMARY;
 
@@ -28,6 +29,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
      */
     ProfessionSpecificDefaultsSettings(Profession<?> profession) {
         super(profession);
+        this.name = profession.getClass().getSimpleName().replace("profession", "");
     }
 
     @Override
@@ -44,7 +46,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
 
         ConfigurationSection actualSection = section.createSection(SECTION);
         actualSection.set(NAME, name);
-        actualSection.set(ICON, icon);
+        actualSection.set(ICON, ItemUtils.serialize(icon));
         actualSection.set(TYPE, professionType.name());
         return actualSection;
 
@@ -56,7 +58,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         ConfigurationSection section = getDefaultSection();
 
         this.name = section.getString(NAME);
-        this.icon = section.getItemStack(ICON);
+        this.icon = ItemUtils.deserialize(section.getConfigurationSection(ICON).getValues(false));
         this.professionType = Profession.ProfessionType.fromString(section.getString(TYPE));
     }
 
