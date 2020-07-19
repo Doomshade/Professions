@@ -108,7 +108,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * @return a comparison of command names
      */
     @Override
-    public int compareTo(@NotNull AbstractCommand o) {
+    public int compareTo(AbstractCommand o) {
         return getCommand().compareTo(o.getCommand());
     }
 

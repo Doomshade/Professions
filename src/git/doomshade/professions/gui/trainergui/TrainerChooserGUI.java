@@ -23,7 +23,9 @@ import java.util.Map;
 
 public class TrainerChooserGUI extends GUI {
     private static final String KEY_NAME = "name";
+    public static final String KEY_NPC = "npc";
     private Map<String, String> NAME_ID_MAP = new HashMap<>();
+    private NPC selectedNpc;
 
     protected TrainerChooserGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -31,6 +33,7 @@ public class TrainerChooserGUI extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
+        this.selectedNpc = getContext().getContext(KEY_NPC);
         final Professions plugin = Professions.getInstance();
         File[] files = plugin.getTrainerFolder().listFiles();
 

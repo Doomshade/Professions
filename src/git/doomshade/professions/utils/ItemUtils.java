@@ -29,6 +29,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.DESCRIPTION;
@@ -46,6 +49,8 @@ public final class ItemUtils {
     private static final String LORE = "lore";
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
+
+    private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
 
     public static ItemStack deserializeMaterial(String material) {
         String[] split = material.split(":");
@@ -290,6 +295,88 @@ public final class ItemUtils {
                 }
                 desc.set(i, ChatColor.translateAlternateColorCodes('&', (s.replaceAll(regex, replacement))));
             }
+        }
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(itemType.getFile());
+
+        // gem.yml -> items.1
+        final String itemSection = ItemType.KEY + "." + itemType.getFileId() + ".";
+        for (int i = 0; i < desc.size(); i++) {
+            String s = desc.get(i);
+            if (s.isEmpty()) continue;
+            Matcher m = GENERIC_REGEX.matcher(s);
+            if (!m.find()) {
+                continue;
+            }
+            String section = itemSection + m.group(1);
+            final Object obj = loader.get(section);
+
+            // TODO log some error
+            if (obj == null) {
+                Professions.log("FU " + section, Level.SEVERE);
+                continue;
+            }
+
+            // special case for list of strings
+            if (obj instanceof List) {
+                List list = (List) obj;
+                // first we must save the strings below the list
+                List<String> stringsBelow = new ArrayList<>();
+                for (int j = i + 1; j < desc.size(); j++) {
+                    stringsBelow.add(desc.get(j));
+                }
+
+                // then we set the list
+                for (int j = 0; j < list.size(); j++) {
+                    final String ss = (String) list.get(j);
+                    final String element = ss.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', ss);
+
+                    // - aa
+                    // - bb
+                    // - {desc} (size = 2)
+                    // - ff
+                    // - zz
+                    // - kk
+                    // ->
+                    // - aa
+                    // - bb
+                    // - desc1 (i + 0)
+                    // - desc2 (i + 1)
+                    // - zz
+                    // - kk
+                    try {
+                        desc.set(i + j, element);
+                    } catch (IndexOutOfBoundsException e) {
+                        desc.add(element);
+                    }
+                }
+
+                for (int j = 0; j < stringsBelow.size(); j++) {
+                    final String element = stringsBelow.get(j);
+                    try {
+                        // - aa
+                        // - bb
+                        // - desc1 (i + 0)
+                        // - desc2 (i + 1)
+                        // - zz
+                        // - kk
+                        // ->
+                        // - aa
+                        // - bb
+                        // - desc1 (i + 0)
+                        // - desc2 (i + 1)
+                        // - ff (i + list size (2) + 0) (stringsBelow size = 3)
+                        // - zz (i + list size (2) + 1)
+                        // - kk (i + list size (2) + 2)
+                        desc.set(i + list.size() + j, element);
+                    } catch (IndexOutOfBoundsException e) {
+                        desc.add(element);
+                    }
+                }
+            } else {
+                s = s.replaceAll(GENERIC_REGEX.pattern(), obj.toString().isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', obj.toString()));
+                desc.set(i, s);
+            }
+
         }
         return desc;
     }

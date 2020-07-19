@@ -1,7 +1,5 @@
 package git.doomshade.professions.utils;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,7 +55,6 @@ public class Range {
         return max;
     }
 
-    @NotNull
     public static Range fromString(String s) throws Exception {
         Matcher m = RANGE_PATTERN.matcher(s);
         if (m.find()) {

@@ -312,7 +312,7 @@ public class Gem implements ConfigurationSerializable {
             {
                 put(ID.s, id);
                 put(GEM_EFFECT.s, gemEffect.toString());
-                put(GEM_EFFECT_CONTEXT.s, null);
+                put(GEM_EFFECT_CONTEXT.s, context);
                 put(GEM.s, ItemUtils.serialize(gem));
                 put(DISPLAY_NAME.s, displayName);
                 put(EQUIPMENT_SLOT.s, equipmentSlot.name());
@@ -366,11 +366,11 @@ public class Gem implements ConfigurationSerializable {
 
         @Override
         public EnumMap<?, Object> getDefaultValues() {
-            return new EnumMap<GemEnum, Object>(GemEnum.class) {
+            return new EnumMap<>(GemEnum.class) {
                 {
                     put(ID, "some-id");
                     put(GEM_EFFECT, "add");
-                    put(GEM_EFFECT_CONTEXT, new ArrayList<String>());
+                    put(GEM_EFFECT_CONTEXT, Arrays.asList("poskozeni:5", "inteligence:4"));
                     put(GEM, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(DISPLAY_NAME, "&cNejhorší gem I");
                     put(EQUIPMENT_SLOT, GemEquipmentSlot.MAINHAND.name());

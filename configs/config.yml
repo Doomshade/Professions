@@ -16,6 +16,7 @@ handle-mine-events: true
 ## edit item material for stuff such as ore editing
 edit-item: GOLD_NUGGET
 
+
 ## auto saves the plugin before editing files in-game (e.g. adding a new Ore)
 auto-save-before-edit: true
 
@@ -70,6 +71,8 @@ profession:
     not-trained:
       - '&aCan be trained'
       - '&aPrice: &6{trainable-cost}'
+    cannot-train:
+      - '&cYou cannot train that.'
 
   ## 4 types of colors - red, yellow, green and gray (still optional for colors)
   ##
