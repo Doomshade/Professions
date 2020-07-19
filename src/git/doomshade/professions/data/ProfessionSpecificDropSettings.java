@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
@@ -26,7 +26,7 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
      *
      * @param profession the profession
      */
-    ProfessionSpecificDropSettings(Profession<?> profession) {
+    ProfessionSpecificDropSettings(Profession profession) {
         super(profession);
     }
 

@@ -1,8 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
@@ -34,7 +33,7 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Profession<? extends IProfessionType> prof = Professions.getProfession(args[1]);
+        Profession prof = Professions.getProfession(args[1]);
         if (prof == null) {
             return true;
         }

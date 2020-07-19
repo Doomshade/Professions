@@ -1,6 +1,5 @@
 package git.doomshade.professions.profession.types;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
@@ -12,6 +11,7 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 import git.doomshade.professions.profession.ICraftable;
 import git.doomshade.professions.profession.ICustomType;
 import git.doomshade.professions.profession.ITrainable;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
@@ -35,11 +35,11 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
 /**
- * <li>{@link ProfessionEvent} returns an object of this to handle in a {@link Profession}</li>
- * <li>If you want to make your own type, make a class extend this and override all constructors!</li>
- * <li>To make a specialized item type (e.g. making this item craft-able - yields a result in a time with
+ * <p>{@link ProfessionEvent} returns an object of this to handle in a {@link Profession}</p>
+ * <p>If you want to make your own type, make a class extend this and override all constructors!</p>
+ * <p>To make a specialized item type (e.g. making this item craft-able - yields a result in a time with
  * given prerequisites or train-able from an NPC with {@link git.doomshade.professions.trait.TrainerTrait}) trait,
- * see {@link ICustomType} extensions</li>
+ * see {@link ICustomType} extensions</p>
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
  * @author Doomshade
@@ -208,9 +208,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * Represents the config name of this item type in a "filename.fileId" format (filename without the .yml extension).
+     * <p>Note that this method was created for consistent ID's of item types, this is only a generated ID from the file.</p>
      *
      * @return the config name
-     * @apiNote This method was created for consistent ID's of item types, this is only a generated ID from the file.
      */
     public final String getConfigName() {
         if (configName.isEmpty())

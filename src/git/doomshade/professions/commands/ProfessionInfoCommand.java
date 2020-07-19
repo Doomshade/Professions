@@ -22,7 +22,7 @@ import java.util.*;
  *     <li>profession</li>
  *     <li>profession-type</li>
  *     <li>user</li>
- * <p>
+ *     <li></li>
  *     <li>level-bold</li>
  *     <li>max-level-bold</li>
  *     <li>exp-bold</li>

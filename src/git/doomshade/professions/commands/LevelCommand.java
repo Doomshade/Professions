@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
@@ -45,7 +45,7 @@ public class LevelCommand extends AbstractCommand {
                 target = (Player) sender;
             }
         }
-        Profession<?> prof = Professions.getProfession(args[1]);
+        Profession prof = Professions.getProfession(args[1]);
         User user = User.getUser(target);
         if (!user.hasProfession(prof)) {
             return false;

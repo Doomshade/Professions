@@ -1,8 +1,8 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.utils.Utils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.bukkit.ChatColor;
@@ -23,9 +23,9 @@ import java.util.logging.Level;
  */
 public final class ProfessionSettingsManager extends AbstractSettings {
     private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
-    private transient final Profession<?> profession;
+    private transient final Profession profession;
 
-    public ProfessionSettingsManager(Profession<?> profession) {
+    public ProfessionSettingsManager(Profession profession) {
         this.profession = profession;
     }
 

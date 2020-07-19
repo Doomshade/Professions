@@ -62,8 +62,8 @@ public final class ItemUtils {
      * Deserializes an ItemStack from a map. <br>
      * Do not overuse this method as it may not be the fastest in deserializing Potions
      *
-     * @param map
-     * @return
+     * @param map the map
+     * @return deserialized ItemStack
      */
     @SuppressWarnings("unchecked")
     public static ItemStack deserialize(Map<String, Object> map) {
@@ -324,10 +324,10 @@ public final class ItemUtils {
     }
 
     /**
-     * Calls the {@link ItemStackBuilder#ItemStackBuilder(Material)} constructor
+     * Calls the ItemStackBuilder constructor constructor
      *
      * @param mat the material
-     * @return an {@link ItemStackBuilder} object
+     * @return an ItemStackBuilder object
      */
     public static ItemStackBuilder itemStackBuilder(Material mat) {
         return new ItemStackBuilder(mat);

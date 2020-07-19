@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -27,7 +27,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
      *
      * @param profession the profession
      */
-    ProfessionSpecificDefaultsSettings(Profession<?> profession) {
+    ProfessionSpecificDefaultsSettings(Profession profession) {
         super(profession);
         this.name = profession.getClass().getSimpleName().replace("profession", "");
     }

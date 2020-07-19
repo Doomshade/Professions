@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.logging.Level;
 
 /**
- * Plugin specific settings. This class implements {@link Serializable} -> all fields and inner classes MUST be {@link Serializable}, too!
+ * Plugin specific settings. This class implements {@link Serializable} - all fields and inner classes MUST be {@link Serializable}, too!
  *
  * @author Doomshade
  * @version 1.0

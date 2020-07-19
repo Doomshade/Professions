@@ -1,9 +1,9 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Profession;
-import git.doomshade.professions.Profession.ProfessionType;
-import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.Profession.ProfessionType;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -30,7 +30,7 @@ public class ProfessionListCommand extends AbstractCommand {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         ProfessionManager profMan = Professions.getProfessionManager();
         Map<ProfessionType, Integer> profTypes = new TreeMap<>();
-        List<Profession<?>> profs = new ArrayList<>(profMan.getProfessionsById().values());
+        List<Profession> profs = new ArrayList<>(profMan.getProfessionsById().values());
         profs.sort(Comparator.naturalOrder());
         List<ProfessionType> pt = Arrays.asList(ProfessionType.values());
         pt.sort(Comparator.naturalOrder());

@@ -23,11 +23,6 @@ import static git.doomshade.professions.profession.professions.skinning.PreyItem
  */
 public class PreyItemType extends ItemType<Mob> {
 
-    /**
-     * Constructor for creation of the item type object
-     *
-     * @param object
-     */
     public PreyItemType(Mob object) {
         super(object);
     }

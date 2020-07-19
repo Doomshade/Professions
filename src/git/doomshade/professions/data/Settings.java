@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
@@ -83,11 +83,11 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
         return getProfessionSettings(Professions.getProfessionManager().getProfession(clazz));
     }
 
-    public static <A extends Profession<?>> AbstractProfessionSpecificSettings getProfessionSettings(Profession<?> profession) {
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Profession profession) {
         try {
             return (AbstractProfessionSpecificSettings) Utils.findInIterable(SETTINGS, x -> {
                 if (x instanceof AbstractProfessionSpecificSettings) {

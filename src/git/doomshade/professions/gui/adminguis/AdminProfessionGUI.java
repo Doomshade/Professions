@@ -1,8 +1,8 @@
 package git.doomshade.professions.gui.adminguis;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.listeners.UserListener;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.utils.Strings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class AdminProfessionGUI extends GUI {
-    private Profession<?> prof;
+    private Profession prof;
 
     protected AdminProfessionGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);

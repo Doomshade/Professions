@@ -1,6 +1,5 @@
 package git.doomshade.professions.user;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
@@ -12,7 +11,7 @@ import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
 import git.doomshade.professions.profession.ITrainable;
-import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.utils.Utils;
@@ -33,14 +32,14 @@ import java.util.List;
 public class UserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";
     private User user;
-    private Profession<? extends IProfessionType> profession;
+    private Profession profession;
     private double exp;
     private int level;
     private final List<String> extras;
     private ConfigurationSection s;
     private MessageBuilder builder;
 
-    UserProfessionData(User user, Profession<? extends IProfessionType> profession) {
+    UserProfessionData(User user, Profession profession) {
         s = user.getProfessionSection(profession);
         if (s == null) {
             s = user.getProfessionsSection().createSection(profession.getID());
@@ -69,7 +68,7 @@ public class UserProfessionData {
     /**
      * @return the profession
      */
-    public Profession<? extends IProfessionType> getProfession() {
+    public Profession getProfession() {
         return profession;
     }
 
@@ -217,7 +216,7 @@ public class UserProfessionData {
     }
 
     /**
-     * This method also ensures that, if in any case the {@link #getLevel()} > {@link #getLevelCap()}, the level is set to the level cap.
+     * This method also ensures that, if in any case the {@link #getLevel()} is greater than {@link #getLevelCap()}, the level is set to the level cap.
      *
      * @return {@code true} if current level == {@link #getLevelCap()}.
      */

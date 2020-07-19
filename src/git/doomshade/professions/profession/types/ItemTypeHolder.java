@@ -1,7 +1,6 @@
 package git.doomshade.professions.profession.types;
 
 import com.google.common.collect.ImmutableList;
-import git.doomshade.professions.ProfessionManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
@@ -9,6 +8,7 @@ import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Holder for {@link ItemType}. To register this holder call {@link git.doomshade.professions.ProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
+ * Holder for {@link ItemType}. To register this holder call {@link ProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
  *
  * @param <Type> the ItemType
  * @author Doomshade
@@ -63,9 +63,9 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
 
     /**
      * The main constructor of a holder of ItemType
+     * <p>Note that the ItemType should have an ID of -1 (i.e. not deserialized from file) !</p>
      *
      * @param itemType the ItemType to create a holder for
-     * @apiNote the ItemType should have an ID of -1 (i.e. not deserialized from file) !
      */
     public ItemTypeHolder(Type itemType) {
         this.itemType = itemType;

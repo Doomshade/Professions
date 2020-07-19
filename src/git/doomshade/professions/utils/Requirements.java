@@ -116,7 +116,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      *
      * @param player the player to remove the requirements from
      */
-    public void removeRequiredItems(Player player) {
+    public void consumeRequiredItems(Player player) {
         PlayerInventory inv = player.getInventory();
         items.forEach(inv::removeItem);
     }

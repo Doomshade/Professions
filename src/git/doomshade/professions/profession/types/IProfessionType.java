@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.types;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.profession.Profession;
 import org.bukkit.event.Listener;
 
 /**

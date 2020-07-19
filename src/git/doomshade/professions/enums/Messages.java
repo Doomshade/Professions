@@ -1,11 +1,10 @@
 package git.doomshade.professions.enums;
 
 import com.google.common.collect.Sets;
-import git.doomshade.professions.Profession;
-import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.profession.types.IProfessionType;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.Profession.ProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -155,7 +154,7 @@ public class Messages implements ISetup {
             return this;
         }
 
-        public MessageBuilder setProfession(Profession<? extends IProfessionType> prof) {
+        public MessageBuilder setProfession(Profession prof) {
             setProfessionType(prof.getProfessionType());
             replace(Pattern.P_PROFESSION_NO_COLOR, ChatColor.stripColor(prof.getColoredName()));
             return replace(Pattern.P_PROFESSION, prof.getColoredName());

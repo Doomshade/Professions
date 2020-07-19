@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
@@ -33,7 +33,7 @@ public class AddExtraCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         User user = User.getUser(Bukkit.getPlayer(args[1]));
-        Profession<?> prof = Professions.getProfession(args[2]);
+        Profession prof = Professions.getProfession(args[2]);
         HashSet<String> extras = new HashSet<>(Arrays.asList(args).subList(3, args.length));
 
         UserProfessionData upd = user.getProfessionData(prof);

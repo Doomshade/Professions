@@ -1,9 +1,9 @@
 package git.doomshade.professions.trait;
 
 import git.doomshade.guiapi.GUI;
-import git.doomshade.professions.Profession;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
+import git.doomshade.professions.profession.Profession;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.citizensnpcs.api.trait.Trait;
 import net.citizensnpcs.api.trait.TraitName;
@@ -22,7 +22,7 @@ import java.util.Optional;
 public class ProfessionTrainerTrait extends Trait {
     private static final String KEY_PROFESSION = "profession";
 
-    private Profession<?> profession;
+    private Profession profession;
 
     public ProfessionTrainerTrait() {
         super("profession_trainer");

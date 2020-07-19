@@ -1,14 +1,13 @@
 package git.doomshade.professions.user;
 
 import com.google.common.collect.ImmutableSet;
-import git.doomshade.professions.Profession;
-import git.doomshade.professions.Profession.ProfessionType;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.MaxProfessionsSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.Profession.ProfessionType;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
@@ -175,7 +174,7 @@ public final class User {
      *
      * @param prof the profession to check
      */
-    public boolean canProfess(Profession<? extends IProfessionType> prof) {
+    public boolean canProfess(Profession prof) {
         return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType());
     }
 
@@ -191,7 +190,7 @@ public final class User {
      * @param prof the profession to look for
      * @return true if this user has already that profession
      */
-    public boolean hasProfession(Profession<? extends IProfessionType> prof) {
+    public boolean hasProfession(Profession prof) {
         try {
             Utils.findInIterable(professions.values(), x -> x.getProfession().getID().equalsIgnoreCase(prof.getID()));
             return true;
@@ -209,7 +208,7 @@ public final class User {
      * @param prof profession to profess
      * @return true if professed successfully, false otherwise
      */
-    public boolean profess(Profession<? extends IProfessionType> prof) {
+    public boolean profess(Profession prof) {
         if (!canProfess(prof)) {
             return false;
         }
@@ -225,7 +224,7 @@ public final class User {
      * @param prof profession to profess
      * @return true if unprofessed successfully, false otherwise
      */
-    public boolean unprofess(Profession<? extends IProfessionType> prof) {
+    public boolean unprofess(Profession prof) {
         if (!hasProfession(prof)) {
             return false;
         }
@@ -269,7 +268,7 @@ public final class User {
      * @param source the item source
      * @return {@link UserProfessionData#addExp(double, ItemType)}
      */
-    public boolean addExp(double exp, Profession<? extends IProfessionType> prof, ItemType<?> source) {
+    public boolean addExp(double exp, Profession prof, ItemType<?> source) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             return upd.addExp(exp, source);
@@ -283,7 +282,7 @@ public final class User {
      * @param prof  the profession to add the level to
      * @return {@link UserProfessionData#addLevel(int)}
      */
-    public boolean addLevel(int level, Profession<? extends IProfessionType> prof) {
+    public boolean addLevel(int level, Profession prof) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             return upd.addLevel(level);
@@ -297,7 +296,7 @@ public final class User {
      * @param prof the profession to set the exp for
      * @see UserProfessionData#setExp(double)
      */
-    public void setExp(double exp, Profession<? extends IProfessionType> prof) {
+    public void setExp(double exp, Profession prof) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             upd.setExp(exp);
@@ -310,7 +309,7 @@ public final class User {
      * @param prof  the profession to set the level for
      * @see UserProfessionData#setLevel(int)
      */
-    public void setLevel(int level, Profession<? extends IProfessionType> prof) {
+    public void setLevel(int level, Profession prof) {
         UserProfessionData upd = getProfessionData(prof);
         if (upd != null)
             upd.setLevel(level);
@@ -323,7 +322,7 @@ public final class User {
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
      */
     @Nullable
-    public UserProfessionData getProfessionData(Profession<? extends IProfessionType> prof) {
+    public UserProfessionData getProfessionData(Profession prof) {
         return professions.get(prof.getClass());
     }
 
@@ -334,7 +333,7 @@ public final class User {
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
      */
     @Nullable
-    public UserProfessionData getProfessionData(Class<? extends Profession<? extends IProfessionType>> profClass) {
+    public UserProfessionData getProfessionData(Class<? extends Profession> profClass) {
         return professions.get(profClass);
     }
 
@@ -413,7 +412,7 @@ public final class User {
         return profSection;
     }
 
-    ConfigurationSection getProfessionSection(Profession<? extends IProfessionType> prof) {
+    ConfigurationSection getProfessionSection(Profession prof) {
         if (!profSection.isConfigurationSection(prof.getID())) {
             return null;
         }
@@ -423,7 +422,7 @@ public final class User {
     private void loadProfessions() {
         this.professions = new HashMap<>();
         profSection.getKeys(false).forEach(x -> {
-            Profession<? extends IProfessionType> prof = Professions.getProfessionManager().getProfession(x);
+            Profession prof = Professions.getProfessionManager().getProfession(x);
             if (prof != null)
                 professions.put(prof.getClass(), new UserProfessionData(this, prof));
         });
