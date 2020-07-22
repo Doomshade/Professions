@@ -158,6 +158,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             e1.printStackTrace();
         }
 
+        // This could possibly look better but since we are using only 2 types it's not needed
         if (this instanceof ICustomType) {
             if (this instanceof ITrainable)
                 invokeDeserialize(ITrainable.class, map);
@@ -176,10 +177,12 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                     && parameters[1].getType().equals(ICustomType.class)) {
                 try {
                     m.invoke(this, map, this);
-                } catch (IllegalAccessException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
-                } catch (InvocationTargetException ex) {
-                    Professions.log(ex.getCause().getMessage(), Level.WARNING);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Professions.log("An error occurred during the deserialization of " + clazz.getName() + " by invoking " + m.getName() + " method.");
+                    //"\nThe method must return void and have arguments Map<String, Object> and ICustomType in this order.\nThe class must implement ICustomType.");
                 }
             }
         }
@@ -425,9 +428,14 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                     return (Map<String, Object>) m.invoke(this);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Professions.log("An error occured during the serialization of " + clazz.getName() + " by invoking " + m.getName() + " method.");
+                    //"\nThe method must return an instance of Map<String, Object>.");
                 }
             }
         }
+        // no serialization method, return empty
         return new HashMap<>();
     }
 
@@ -464,8 +472,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     public final void setLevelReq(int levelReq) {
         int cap = Settings.getSettings(ExpSettings.class).getLevelCap();
 
-        // nastaví na cap, pokud je levelReq větší než cap
-        this.levelReq = Math.min(/* nastaví na 0, pokud je levelReq menší než 0*/Math.max(levelReq, 0), cap);
+        // sets the level req to 0 <= req <= global level cap
+        this.levelReq = Math.min(Math.max(levelReq, 0), cap);
     }
 
     @Override
@@ -525,7 +533,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Called after plugin is reloaded. Useful for cleanups and reassigning objects to memory. Calls {@link #onLoad()} by default.
+     * Called after plugin is reloaded. Useful for reassigning objects to memory. Calls {@link #onLoad()} by default.
      */
     public void onReload() {
         onLoad();
@@ -533,7 +541,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
 
     /**
-     * Called before plugin is reloaded. Useful for cleanups and reassigning objects to memory. Calls {@link #onDisable()} by default.
+     * Called before plugin is reloaded. Useful for cleanups. Calls {@link #onDisable()} by default.
      */
     public void onPreReload() {
         onDisable();
@@ -547,7 +555,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Called when plugin is being disabled.
+     * Called once plugin is being disabled
      */
     public void onDisable() {
 

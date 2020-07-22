@@ -61,7 +61,6 @@ public final class ProfessionManager implements ISetup {
     /**
      * Using IrremovableSet here so that the registered professions never get deleted (they are intended not to!)
      */
-    @SuppressWarnings("rawtypes")
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
     private final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
 
