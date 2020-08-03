@@ -308,11 +308,13 @@ public final class ItemUtils {
                 continue;
             }
             String section = itemSection + m.group(1);
+            if (section.equals(itemSection.concat(LEVEL_REQ_COLOR.s))) continue;
+
             final Object obj = loader.get(section);
 
             // TODO log some error
             if (obj == null) {
-                Professions.log("FU " + section, Level.SEVERE);
+                Professions.log("Could not find section " + section + " in " + itemType.getFile().getName() + " file.", Level.SEVERE);
                 continue;
             }
 

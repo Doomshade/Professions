@@ -10,7 +10,6 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
-import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -231,11 +230,11 @@ public class UserProfessionData {
      * Trains a user something new. This is saved as {@code extras} in user data file.
      *
      * @param trainable the trainable to train
-     * @return {@code true} if the user has successfully trained an {@link ITrainable} (has enough money and {@link #hasTrained(ITrainable)} returns {@code false}), false otherwise
-     * @see #addExtra(String)
+     * @return {@code true} if the user has successfully trained the item (has enough money and {@link UserProfessionData#hasTrained(ItemType)} returns {@code false}), false otherwise
+     * @see UserProfessionData#addExtra(String)
      */
-    public boolean train(ITrainable trainable) {
-        EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getCost());
+    public boolean train(ItemType<?> trainable) {
+        EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getTrainableCost());
         if (!response.transactionSuccess() || hasTrained(trainable)) {
             return false;
         }
@@ -248,7 +247,7 @@ public class UserProfessionData {
      * @return {@code true} if the user has already trained this, {@code false} otherwise
      * @see #hasExtra(String)
      */
-    public boolean hasTrained(ITrainable trainable) {
+    public boolean hasTrained(ItemType<?> trainable) {
         return hasExtra(trainable.getTrainableId());
     }
 
@@ -261,7 +260,7 @@ public class UserProfessionData {
     }
 
     /**
-     * Adds something extra to the user for later usage. Used in {@link #train(ITrainable)}.
+     * Adds something extra to the user for later usage. Used in {@link UserProfessionData#train(ItemType)}.
      *
      * @param extra the extra to add
      */
@@ -271,7 +270,7 @@ public class UserProfessionData {
     }
 
     /**
-     * Used in {@link #hasTrained(ITrainable)}.
+     * Used in {@link UserProfessionData#hasTrained(ItemType)}.
      *
      * @param extra the extra to look for
      * @return {@code true} if the user has this extra, {@code false} otherwise

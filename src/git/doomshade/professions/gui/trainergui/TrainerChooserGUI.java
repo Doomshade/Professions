@@ -7,6 +7,7 @@ import git.doomshade.professions.utils.Utils;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -25,7 +26,6 @@ public class TrainerChooserGUI extends GUI {
     private static final String KEY_NAME = "name";
     public static final String KEY_NPC = "npc";
     private Map<String, String> NAME_ID_MAP = new HashMap<>();
-    private NPC selectedNpc;
 
     protected TrainerChooserGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -33,7 +33,11 @@ public class TrainerChooserGUI extends GUI {
 
     @Override
     public void init() throws GUIInitializationException {
-        this.selectedNpc = getContext().getContext(KEY_NPC);
+        NPC selectedNpc = getContext().getContext(KEY_NPC);
+        if (!selectedNpc.hasTrait(TrainerTrait.class)) {
+            getHolder().sendMessage(selectedNpc.getName() + ChatColor.RESET + " does not have Trainer Trait!");
+            throw new GUIInitializationException();
+        }
         final Professions plugin = Professions.getInstance();
         File[] files = plugin.getTrainerFolder().listFiles();
 
@@ -74,16 +78,20 @@ public class TrainerChooserGUI extends GUI {
             return;
         }
 
-        /*if (npc.hasTrait(TrainerTrait.class)) {
-            he.sendMessage("This NPC has already been given Trainer Trait. If you wish to change the type of trainer, remove the trait and add it again.");
+        if (!npc.hasTrait(TrainerTrait.class)) {
+            he.sendMessage("This NPC (" + npc.getName() + ChatColor.RESET + ") does not have Trainer Trait.");
             return;
-        }*/
+        }
 
         String name = item.getItemMeta().getDisplayName();
         String id = NAME_ID_MAP.get(name);
-        if (id == null) return;
+        if (id == null) {
+            he.sendMessage("Could not retrieve trainer ID with the trainer name " + name);
+            return;
+        }
 
-        npc.data().setPersistent(TrainerTrait.KEY_TRAINER_ID, id);
+        TrainerTrait trait = npc.getTrait(TrainerTrait.class);
+        trait.setTrainerId(id);
 
         he.sendMessage("Successfully set to a " + id + " trainer.");
     }

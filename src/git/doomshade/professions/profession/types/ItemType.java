@@ -10,7 +10,6 @@ import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.ICraftable;
 import git.doomshade.professions.profession.ICustomType;
-import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.*;
@@ -55,7 +54,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private List<String> description, restrictedWorlds;
     private ItemStack guiMaterial = new ItemStack(Material.CHEST);
     private int fileId = -1;
-    private boolean hiddenWhenUnavailable, ignoreSkillupColor;
+    private boolean ignoreSkillupColor;
+    private int cost = -1;
+    private boolean trainable = false;
 
 
     /**
@@ -77,7 +78,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.setObject(object);
         this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
-        this.setHiddenWhenUnavailable(false);
+        //this.setHiddenWhenUnavailable(false);
         this.setIgnoreSkillupColor(false);
     }
 
@@ -122,7 +123,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Deserializes the ItemType including its potential implementations of {@link ICraftable} and {@link ITrainable}.
+     * Deserializes the ItemType including its potential implementation of {@link ICraftable}.
      *
      * @param id  the id of this itemtype
      * @param map the map
@@ -138,9 +139,11 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             setName(ChatColor.translateAlternateColorCodes('&', getName()));
         }
         setGuiMaterial(ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s)));
-        setHiddenWhenUnavailable((boolean) map.getOrDefault(HIDDEN.s, true));
+        //setHiddenWhenUnavailable((boolean) map.getOrDefault(HIDDEN.s, true));
         setIgnoreSkillupColor((boolean) map.getOrDefault(IGNORE_SKILLUP_COLOR.s, true));
         setDescription(ItemUtils.getItemTypeLore(this));
+        setTrainable((boolean) map.getOrDefault(TRAINABLE.s, false));
+        setTrainableCost((int) map.getOrDefault(TRAINABLE_COST.s, -1));
 
         Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s)).collect(Collectors.toSet());
 
@@ -158,17 +161,19 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             e1.printStackTrace();
         }
 
-        // This could possibly look better but since we are using only 2 types it's not needed
-        if (this instanceof ICustomType) {
-            if (this instanceof ITrainable)
-                invokeDeserialize(ITrainable.class, map);
+        //invokeDeserialize(ITrainable.class, map);
 
-            if (this instanceof ICraftable)
-                invokeDeserialize(ICraftable.class, map);
-        }
+        if (this instanceof ICraftable)
+            deserializeCraftable(ICraftable.class, map);
     }
 
-    private void invokeDeserialize(Class<? extends ICustomType> clazz, Map<String, Object> map) {
+    /**
+     * Used to be invokeDeserialize because of ITrainable
+     *
+     * @param map   the map
+     * @param clazz leave the class parameter due to some error in invocation (IDK)
+     */
+    private void deserializeCraftable(Class<? extends ICustomType> clazz, Map<String, Object> map) {
         for (Method m : clazz.getDeclaredMethods()) {
             final Parameter[] parameters = m.getParameters();
             if (parameters.length > 1
@@ -181,7 +186,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Professions.log("An error occurred during the deserialization of " + clazz.getName() + " by invoking " + m.getName() + " method.");
+                    Professions.log("An error occurred during the deserialization of " + ICraftable.class.getName() + " by invoking " + m.getName() + " method.");
                     //"\nThe method must return void and have arguments Map<String, Object> and ICustomType in this order.\nThe class must implement ICustomType.");
                 }
             }
@@ -321,7 +326,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @return {@code true} if this item type ignores the skillup color exp modifications
      * @see git.doomshade.professions.data.ProfessionExpSettings
      */
-    public boolean isIgnoreSkillupColor() {
+    public final boolean isIgnoreSkillupColor() {
         return ignoreSkillupColor;
     }
 
@@ -346,6 +351,42 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         iconMeta.setLore(ItemUtils.getDescription(this, getDescription(), upd));
         icon.setItemMeta(iconMeta);
         return icon;
+    }
+
+    /**
+     * @return the cost for training this item
+     */
+    public final int getTrainableCost() {
+        return cost;
+    }
+
+    /**
+     * Sets the cost of training this item
+     *
+     * @param cost the cost
+     */
+    public final void setTrainableCost(int cost) {
+        this.cost = cost;
+    }
+
+    /**
+     * @return {@code} true, if this item needs to be trained
+     */
+    public final boolean isTrainable() {
+        return trainable;
+    }
+
+    /**
+     * Sets the training requirement of this item
+     *
+     * @param trainable the requirement
+     */
+    public final void setTrainable(boolean trainable) {
+        this.trainable = trainable;
+    }
+
+    public final String getTrainableId() {
+        return getConfigName();
     }
 
     /**
@@ -393,7 +434,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Serializes the ItemType. You may override this method in order to serialize the {@link ITrainable} and {@link ICraftable} interfaces.
+     * Serializes the ItemType
      *
      * @return serialized item type
      */
@@ -408,29 +449,39 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(DESCRIPTION.s, description);
         map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
         map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
-        map.put(HIDDEN.s, hiddenWhenUnavailable);
+        // map.put(HIDDEN.s, hiddenWhenUnavailable);
         map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
-        if (this instanceof ICustomType) {
-            if (this instanceof ITrainable)
-                map.putAll(invokeSerialize(ITrainable.class));
-            if (this instanceof ICraftable)
-                map.putAll(invokeSerialize(ICraftable.class));
-        }
+        map.put(TRAINABLE.s, isTrainable());
+        map.put(TRAINABLE_COST.s, getTrainableCost());
+
+        if (this instanceof ICraftable)
+            map.putAll(serializeCraftable(ICraftable.class));
         return map;
     }
 
+
+    /**
+     * Used to be invokeSerialize when Trainable was available
+     *
+     * @param clazz leave the class parameter due to some error in invocation (IDK)
+     * @return the serialization of craftable item
+     */
     @SuppressWarnings("all")
-    private Map<String, Object> invokeSerialize(Class<? extends ICustomType> clazz) {
+    private Map<String, Object> serializeCraftable(Class<? extends ICustomType> clazz) {
         for (Method m : clazz.getDeclaredMethods()) {
             if (m.isAnnotationPresent(SerializeMethod.class)
                     && m.getReturnType().equals(Map.class)) {
                 try {
+                    m.setAccessible(true);
                     return (Map<String, Object>) m.invoke(this);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Professions.log("An error occured during the serialization of " + clazz.getName() + " by invoking " + m.getName() + " method.");
+                    final String msg = "An error occured during the serialization of " + ICraftable.class.getName() + " by invoking " + m.getName() + " method.";
+                    Professions.log(msg);
+                    Professions.log(e.getMessage(), Level.CONFIG);
+                    Professions.log(msg);
                     //"\nThe method must return an instance of Map<String, Object>.");
                 }
             }
@@ -518,18 +569,21 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * Whether or not to hide the item type in a GUI if it doesn't meet requirements
      *
      * @return {@code true} if it is hidden when unavailable, {@code false} otherwise
+     * @deprecated no longer used, defaults to true
      */
+    @Deprecated
     public boolean isHiddenWhenUnavailable() {
-        return hiddenWhenUnavailable;
+        return true;
     }
 
     /**
      * Sets the item type to be or not to be hidden when the requirements are not met
      *
      * @param hiddenWhenUnavailable whether or not the item type should be hidden when unavailable
+     * @deprecated no longer used, does nothing
      */
+    @Deprecated
     public final void setHiddenWhenUnavailable(boolean hiddenWhenUnavailable) {
-        this.hiddenWhenUnavailable = hiddenWhenUnavailable;
     }
 
     /**

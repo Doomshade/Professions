@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * <p> Prints information to the sender about a profession. The "message" list must not be an empty array in prof.yml, otherwise this prints nothing.
@@ -59,7 +60,10 @@ public class ProfessionInfoCommand extends AbstractCommand {
             return false;
         }
 
-
+        if (user == null) {
+            sender.sendMessage("No user named " + args[1] + " is currently on the server.");
+            return true;
+        }
         if (user.getProfessions().isEmpty()) {
             sender.sendMessage(user.getPlayer().getName() + " has no professions");
             return true;
@@ -78,48 +82,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
         for (UserProfessionData prof : profs) {
             for (int i = 1; i < messages.size(); i++) {
                 String s = messages.get(i);
-                if (i == messages.size() - 1 && s.isEmpty()) {
-                    continue;
-                }
-
-                for (Regex regex : Regex.values()) {
-                    if (s.isEmpty()) {
-                        break;
-                    }
-                    String reg = regex.name().toLowerCase().replaceAll("[_]", "-");
-                    String replacement = "";
-                    switch (regex) {
-                        case EXP:
-                            double exp = prof.getExp();
-                            if (exp == ((int) exp))
-                                replacement = String.valueOf((int) exp);
-                            else
-                                replacement = String.valueOf(exp);
-                            break;
-                        case LEVEL:
-                            replacement = String.valueOf(prof.getLevel());
-                            break;
-                        case MAX_LEVEL:
-                            replacement = String.valueOf(prof.getLevelCap());
-                            break;
-                        case PROFESSION:
-                            replacement = prof.getProfession().getColoredName();
-                            break;
-                        case REQ_EXP:
-                            replacement = String.valueOf(prof.getRequiredExp());
-                            break;
-                        case PROFESSION_TYPE:
-                            replacement = prof.getProfession().getProfessionType().toString();
-                            replacement = replacement.charAt(0) + replacement.toLowerCase().substring(1);
-                            break;
-                        case USER:
-                            replacement = user.getPlayer().getDisplayName();
-                            break;
-                    }
-                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "}", replacement));
-                    s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
-                }
-                sender.sendMessage(s);
+                sender.sendMessage(Regex.replaceAll(s, prof));
             }
         }
         return true;
@@ -136,13 +99,36 @@ public class ProfessionInfoCommand extends AbstractCommand {
     }
 
     public enum Regex {
-        LEVEL,
-        MAX_LEVEL,
-        EXP,
-        REQ_EXP,
-        PROFESSION,
-        PROFESSION_TYPE,
-        USER
+        LEVEL(UserProfessionData::getLevel),
+        MAX_LEVEL(UserProfessionData::getLevelCap),
+        EXP(x -> (int) x.getExp()),
+        REQ_EXP(UserProfessionData::getRequiredExp),
+        PROFESSION(x -> x.getProfession().getColoredName()),
+        PROFESSION_TYPE(x -> x.getProfession().getProfessionType().toString()),
+        USER(x -> x.getUser().getPlayer().getDisplayName());
+
+        private final Function<UserProfessionData, Object> fun;
+
+        Regex(Function<UserProfessionData, Object> fun) {
+            this.fun = fun;
+        }
+
+        static String replaceAll(String s, UserProfessionData prof) {
+            for (Regex regex : values()) {
+                if (s.isEmpty()) {
+                    break;
+                }
+                String reg = regex.name().toLowerCase().replaceAll("[_]", "-");
+                String replacement = regex.getReplacement(prof);
+                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "}", replacement));
+                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
+            }
+            return s;
+        }
+
+        private String getReplacement(UserProfessionData prof) {
+            return fun.apply(prof).toString();
+        }
     }
 
 }

@@ -7,7 +7,6 @@ import git.doomshade.professions.profession.types.ItemType;
  * @author Doomshade
  * @version 1.0
  * @see ICraftable
- * @see ITrainable
  */
 public interface ICustomType {
 }

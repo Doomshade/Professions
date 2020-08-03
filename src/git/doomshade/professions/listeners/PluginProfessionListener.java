@@ -43,22 +43,24 @@ public class PluginProfessionListener implements Listener {
     public void onChat(AsyncPlayerChatEvent e) {
         final Player player = e.getPlayer();
         CraftingTask task = PENDING_REPEAT_AMOUNT.remove(player.getUniqueId());
-        if (task != null) {
-            e.setCancelled(true);
-            try {
-                int amount = Integer.parseInt(e.getMessage());
-                task.setRepeatAmount(amount);
-                task.setRepeat(true);
-                Professions.getGUIManager().openGui(task.getGui());
-                task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
-                task.runTask(Professions.getInstance());
-            } catch (NumberFormatException e1) {
-                player.sendMessage(new Messages.MessageBuilder(Messages.Message.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
-            } catch (Exception e2) {
-                player.sendMessage(ChatColor.RED + "Nastala neočekávaná chyba. Kontaktuj prosím admina, napiš mu čas, kdy se stala, a pokus se popsat situaci, která nastala.");
-                e2.printStackTrace();
-            }
+        if (task == null) {
+            return;
         }
+        e.setCancelled(true);
+        try {
+            int amount = Integer.parseInt(e.getMessage());
+            task.setRepeatAmount(amount);
+            task.setRepeat(true);
+            Professions.getGUIManager().openGui(task.getGui());
+            task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
+            task.runTask(Professions.getInstance());
+        } catch (NumberFormatException e1) {
+            player.sendMessage(new Messages.MessageBuilder(Messages.Message.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
+        } catch (Exception e2) {
+            player.sendMessage(ChatColor.RED + "Nastala neočekávaná chyba. Kontaktuj prosím admina, napiš mu čas, kdy se stala, a pokus se popsat situaci, která nastala.");
+            e2.printStackTrace();
+        }
+
     }
 
 

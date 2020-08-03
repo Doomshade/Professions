@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.MaxProfessionsSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.Profession.ProfessionType;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
@@ -16,7 +17,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -268,11 +268,9 @@ public final class User {
      * @param source the item source
      * @return {@link UserProfessionData#addExp(double, ItemType)}
      */
-    public boolean addExp(double exp, Profession prof, ItemType<?> source) {
+    public boolean addExp(double exp, Profession prof, ItemType<?> source) throws PlayerHasNoProfessionException {
         UserProfessionData upd = getProfessionData(prof);
-        if (upd != null)
-            return upd.addExp(exp, source);
-        return false;
+        return upd.addExp(exp, source);
     }
 
     /**
@@ -282,11 +280,9 @@ public final class User {
      * @param prof  the profession to add the level to
      * @return {@link UserProfessionData#addLevel(int)}
      */
-    public boolean addLevel(int level, Profession prof) {
+    public boolean addLevel(int level, Profession prof) throws PlayerHasNoProfessionException {
         UserProfessionData upd = getProfessionData(prof);
-        if (upd != null)
-            return upd.addLevel(level);
-        return false;
+        return upd.addLevel(level);
     }
 
     /**
@@ -296,10 +292,9 @@ public final class User {
      * @param prof the profession to set the exp for
      * @see UserProfessionData#setExp(double)
      */
-    public void setExp(double exp, Profession prof) {
+    public void setExp(double exp, Profession prof) throws PlayerHasNoProfessionException {
         UserProfessionData upd = getProfessionData(prof);
-        if (upd != null)
-            upd.setExp(exp);
+        upd.setExp(exp);
     }
 
     /**
@@ -311,8 +306,7 @@ public final class User {
      */
     public void setLevel(int level, Profession prof) {
         UserProfessionData upd = getProfessionData(prof);
-        if (upd != null)
-            upd.setLevel(level);
+        upd.setLevel(level);
     }
 
     /**
@@ -321,9 +315,8 @@ public final class User {
      * @param prof the profession
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
      */
-    @Nullable
-    public UserProfessionData getProfessionData(Profession prof) {
-        return professions.get(prof.getClass());
+    public UserProfessionData getProfessionData(Profession prof) throws PlayerHasNoProfessionException {
+        return getProfessionData(prof.getClass());
     }
 
     /**
@@ -331,10 +324,12 @@ public final class User {
      *
      * @param profClass the profession's class
      * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
+     * @throws PlayerHasNoProfessionException if player does not have the profession
      */
-    @Nullable
-    public UserProfessionData getProfessionData(Class<? extends Profession> profClass) {
-        return professions.get(profClass);
+    public UserProfessionData getProfessionData(Class<? extends Profession> profClass) throws PlayerHasNoProfessionException {
+        final UserProfessionData upd = professions.get(profClass);
+        if (upd == null) throw new PlayerHasNoProfessionException(this, profClass.getSimpleName());
+        return upd;
     }
 
     /**

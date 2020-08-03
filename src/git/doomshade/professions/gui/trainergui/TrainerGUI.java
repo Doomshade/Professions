@@ -4,7 +4,7 @@ import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
-import git.doomshade.professions.profession.ITrainable;
+import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.types.ItemType;
@@ -15,6 +15,7 @@ import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -76,9 +77,8 @@ public class TrainerGUI extends GUI implements ISetup {
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(eligibleProfession);
         TrainableSettings settings = Settings.getSettings(TrainableSettings.class);
-        for (ItemType<?> trainableItem : trainableItems) {
-            ITrainable trainable = (ITrainable) trainableItem;
-            final ItemStack guiMaterial = trainableItem.getIcon(upd);
+        for (ItemType<?> trainable : trainableItems) {
+            final ItemStack guiMaterial = trainable.getIcon(upd);
             GUIItem item = new GUIItem(guiMaterial.getType(), pos++, guiMaterial.getAmount(), guiMaterial.getDurability());
             item.changeItem(this, () -> {
                 ItemMeta meta = guiMaterial.getItemMeta();
@@ -89,13 +89,7 @@ public class TrainerGUI extends GUI implements ISetup {
                     lore = new ArrayList<>();
                 }
 
-                if (!user.hasProfession(eligibleProfession) || upd == null) {
-                    lore.addAll(settings.getUnableToTrainLore(trainable));
-                } else if (upd.hasTrained(trainable)) {
-                    lore.addAll(settings.getTrainedLore(trainable));
-                } else {
-                    lore.addAll(settings.getNotTrainedLore(trainable));
-                }
+                lore.addAll(settings.calculateAdditionalLore(trainable, user, eligibleProfession));
                 meta.setLore(lore);
                 return meta;
             });
@@ -121,24 +115,37 @@ public class TrainerGUI extends GUI implements ISetup {
         Player player = (Player) he;
 
         User user = User.getUser(player);
-        UserProfessionData upd = user.getProfessionData(eligibleProfession);
-        ItemType<?> itemType;
-        try {
-            itemType = Utils.findInIterable(trainableItems, x -> x.getIcon(upd).equals(currentItem));
-        } catch (Utils.SearchNotFoundException ex) {
-            return;
-        }
-
-
         if (!user.hasProfession(eligibleProfession)) {
             // TODO send message
             return;
         }
 
-        user.getProfessionData(eligibleProfession).addExtra(itemType.getConfigName());
+        UserProfessionData upd = user.getProfessionData(eligibleProfession);
+        ItemType<?> itemType;
+        try {
+            String displayName = ChatColor.stripColor(currentItem.getItemMeta().getDisplayName());
+            Material mat = currentItem.getType();
+            itemType = Utils.findInIterable(trainableItems, x ->
+            {
+                final ItemStack icon = x.getIcon(upd);
+                return ChatColor.stripColor(icon.getItemMeta().getDisplayName()).equals(displayName)
+                        && icon.getType() == mat;
+            });
+        } catch (Utils.SearchNotFoundException ex) {
+            return;
+        }
+        if (upd.hasTrained(itemType)) {
+            // TODO send message
+            return;
+        }
+
+        upd.train(itemType);
 
         // log
-        user.sendMessage("POG");
+        user.sendMessage(new Messages.MessageBuilder(Messages.Message.SUCCESSFULLY_TRAINED)
+                .setUserProfessionData(upd)
+                .setItemType(itemType)
+                .build());
 
     }
 
@@ -147,7 +154,7 @@ public class TrainerGUI extends GUI implements ISetup {
     // 1) split ":"
     // 2) getId - herb -> get item type holder
     // 3) add and filter
-    private void loadFromFile() {
+    private void loadFromFile() throws GUIInitializationException {
         trainableItems.clear();
         eligibleProfession = null;
 
@@ -188,16 +195,14 @@ public class TrainerGUI extends GUI implements ISetup {
             // 3) add and filter
             if (range.getMin() == -1) {
                 for (ItemType<?> itemType : holder) {
-                    if (itemType instanceof ITrainable) {
-                        trainableItems.add(itemType);
-                    }
+                    trainableItems.add(itemType);
+
                 }
             } else {
                 for (ItemType<?> itemType : holder) {
-                    if (itemType instanceof ITrainable) {
-                        if (range.isInRange(itemType.getFileId(), true))
-                            trainableItems.add(itemType);
-                    }
+                    if (range.isInRange(itemType.getFileId(), true))
+                        trainableItems.add(itemType);
+
                 }
             }
             holder.sortItems(trainableItems);
@@ -205,18 +210,23 @@ public class TrainerGUI extends GUI implements ISetup {
 
 
         // now professions
-        this.eligibleProfession = Professions.getProfession(loader.getString("profession"));
+        final String profession = loader.getString("profession");
+        if (profession == null) {
+            Professions.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)", Level.WARNING);
+            throw new GUIInitializationException();
+        }
+        this.eligibleProfession = Professions.getProfession(profession);
         CACHE.put(trainerId, trainableItems);
         CACHE_PROFESSIONS.put(trainerId, eligibleProfession);
     }
 
     @Override
-    public void setup() throws Exception {
+    public void setup() {
 
     }
 
     @Override
-    public void cleanup() throws Exception {
+    public void cleanup() {
         CACHE.clear();
         CACHE_PROFESSIONS.clear();
     }

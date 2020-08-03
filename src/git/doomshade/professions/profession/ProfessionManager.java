@@ -148,7 +148,7 @@ public final class ProfessionManager implements ISetup {
      */
     @Nullable
     public Profession getProfession(String name) {
-        if (name.isEmpty()) {
+        if (name == null || name.isEmpty()) {
             return null;
         }
         Profession prof = PROFESSIONS_ID.get(name.toLowerCase());

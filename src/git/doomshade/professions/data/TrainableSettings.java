@@ -1,15 +1,16 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.profession.ITrainable;
+import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static git.doomshade.professions.utils.Strings.ITrainableEnum.VAR_TRAINABLE_COST;
 
 /**
  * Settings for trainable item types
@@ -62,24 +63,32 @@ public class TrainableSettings extends AbstractProfessionSettings {
         notTrainedLore.clear();
     }
 
-    public List<String> getNotTrainedLore(ITrainable trainable) {
-        return replaceStrings(trainable, notTrainedLore);
+    public List<String> calculateAdditionalLore(ItemType<?> itemType, User user, Profession profession) {
+        if (!user.hasProfession(profession)) {
+            return getUnableToTrainLore(itemType);
+        } else if (user.getProfessionData(profession).hasTrained(itemType)) {
+            return getTrainedLore(itemType);
+        } else {
+            return getNotTrainedLore(itemType);
+        }
+
     }
 
-    public List<String> getTrainedLore(ITrainable trainable) {
-        return replaceStrings(trainable, trainedLore);
+    private List<String> getNotTrainedLore(ItemType<?> itemType) {
+        return replaceStrings(itemType, notTrainedLore);
+    }
+
+    private List<String> getTrainedLore(ItemType<?> itemType) {
+        return replaceStrings(itemType, trainedLore);
     }
 
 
-    public List<String> getUnableToTrainLore(ITrainable trainable) {
-        return replaceStrings(trainable, unableToTrainLore);
+    private List<String> getUnableToTrainLore(ItemType<?> itemType) {
+        return replaceStrings(itemType, unableToTrainLore);
     }
 
     @NotNull
-    private List<String> replaceStrings(ITrainable trainable, ArrayList<String> lore) {
-        for (int i = 0; i < lore.size(); i++) {
-            lore.set(i, lore.get(i).replaceAll(VAR_TRAINABLE_COST.s, String.valueOf(trainable.getCost())));
-        }
-        return lore;
+    private List<String> replaceStrings(ItemType<?> itemType, List<String> lore) {
+        return ItemUtils.getDescription(itemType, lore);
     }
 }

@@ -16,7 +16,6 @@ import git.doomshade.professions.gui.adminguis.AdminProfessionsGUI;
 import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.gui.playerguis.ProfessionGUI;
-import git.doomshade.professions.gui.playerguis.ProfessionTrainerGUI;
 import git.doomshade.professions.gui.playerguis.TestThreeGui;
 import git.doomshade.professions.gui.trainergui.TrainerChooserGUI;
 import git.doomshade.professions.gui.trainergui.TrainerGUI;
@@ -32,6 +31,7 @@ import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.SaveTask;
+import git.doomshade.professions.trait.TrainerListener;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
@@ -45,6 +45,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -72,13 +73,13 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup {
 
-    // managers
-    private static Professions instance;
+    private static final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
     private static PermissionManager permMan;
     private static Economy econ;
+    private static final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.FINER.intValue());
 
     // 5 minutes
     private static final int SAVE_DELAY = 5 * 60;
@@ -265,6 +266,10 @@ public final class Professions extends JavaPlugin implements ISetup {
         log(message, Level.INFO);
     }
 
+    // hooks
+    private static Professions instance;
+    private static boolean diabloLike = false;
+
     /**
      * Logs a message. Use {@link Level#CONFIG} to log into log file.
      *
@@ -275,7 +280,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         if (message.isEmpty()) {
             return;
         }
-        if (level == Level.CONFIG) {
+        if (level == Level.CONFIG || level == Level.WARNING) {
             String time = String.format("[%s] ", LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.GERMAN)));
 
             if (fos == null) {
@@ -290,23 +295,23 @@ public final class Professions extends JavaPlugin implements ISetup {
 
             // TODO delete on plugin release!
             fos.flush();
-        } else {
-            Ansi.Color color = Ansi.Color.WHITE;
 
-            final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
-            final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.FINER.intValue());
-
-            if (RED.contains(level.intValue())) {
-                color = Ansi.Color.RED;
-            }
-            if (GREEN.contains(level.intValue())) {
-                color = Ansi.Color.GREEN;
-            }
-
-            Ansi ansi = Ansi.ansi().boldOff();
-
-            getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+            if (level == Level.CONFIG)
+                return;
         }
+        Ansi.Color color = Ansi.Color.WHITE;
+
+        if (RED.contains(level.intValue())) {
+            color = Ansi.Color.RED;
+        }
+        if (GREEN.contains(level.intValue())) {
+            color = Ansi.Color.GREEN;
+        }
+
+        Ansi ansi = Ansi.ansi().boldOff();
+
+        getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+
 
     }
 
@@ -397,7 +402,6 @@ public final class Professions extends JavaPlugin implements ISetup {
             guiManager.registerGui(PlayerProfessionsGUI.class);
             guiManager.registerGui(ProfessionGUI.class);
             guiManager.registerGui(TestThreeGui.class);
-            guiManager.registerGui(ProfessionTrainerGUI.class);
             guiManager.registerGui(AdminProfessionsGUI.class);
             guiManager.registerGui(AdminProfessionGUI.class);
             guiManager.registerGui(OreGUI.class);
@@ -429,16 +433,22 @@ public final class Professions extends JavaPlugin implements ISetup {
             permMan = PermissionsEx.getPermissionManager();
             return true;
         });
+
+        hookPlugin("DiabloLike", x -> {
+            diabloLike = true;
+            return true;
+        });
     }
 
-    private void hookPlugin(String plugin, Predicate<Void> func) {
-        if (Bukkit.getPluginManager().getPlugin(plugin) == null) {
+    private void hookPlugin(String plugin, Predicate<Plugin> func) {
+        final Plugin plug = Bukkit.getPluginManager().getPlugin(plugin);
+        if (plug == null) {
             return;
         }
 
         final boolean bool;
         try {
-            bool = func.test(null);
+            bool = func.test(plug);
         } catch (Exception e) {
             log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
             e.printStackTrace();
@@ -458,6 +468,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         pm.registerEvents(new PluginProfessionListener(), this);
         pm.registerEvents(new OreEditListener(), this);
         pm.registerEvents(new JewelcraftingListener(), this);
+        pm.registerEvents(new TrainerListener(), this);
     }
 
 
@@ -529,6 +540,10 @@ public final class Professions extends JavaPlugin implements ISetup {
      */
     public File getLogFile() {
         return LOG_FILE;
+    }
+
+    public boolean isDiabloLikeHook() {
+        return diabloLike;
     }
 
     @Override

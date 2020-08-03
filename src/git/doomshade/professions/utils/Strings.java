@@ -1,7 +1,6 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ITrainable;
 import org.bukkit.Material;
 
 import java.util.Arrays;
@@ -14,36 +13,6 @@ import java.util.EnumMap;
  * @author Doomshade
  */
 public final class Strings {
-
-    /**
-     * The enum for {@link ITrainable}.
-     */
-    public enum ITrainableEnum implements FileEnum {
-        TRAINABLE("trainable"), COST("trainable-cost"), TRAINABLE_ID("trainable-id"), VAR_TRAINABLE_COST("\\{trainable-cost\\}");
-
-        public final String s;
-
-        ITrainableEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public EnumMap<ITrainableEnum, Object> getDefaultValues() {
-            return new EnumMap<ITrainableEnum, Object>(ITrainableEnum.class) {
-                {
-                    put(TRAINABLE, true);
-                    put(COST, 0);
-                    put(TRAINABLE_ID, "some_id");
-
-                }
-            };
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-    }
 
     /**
      * The enum for {@link ICraftable}
@@ -95,9 +64,10 @@ public final class Strings {
         DESCRIPTION("description"),
         MATERIAL("gui-material"),
         RESTRICTED_WORLDS("restricted-worlds"),
-        HIDDEN("hidden-when-unavailable"),
         LEVEL_REQ_COLOR("level-req-color"),
-        IGNORE_SKILLUP_COLOR("ignore-skillup-color");
+        IGNORE_SKILLUP_COLOR("ignore-skillup-color"),
+        TRAINABLE("trainable"),
+        TRAINABLE_COST("trainable-cost");
 
         public final String s;
 
@@ -116,8 +86,9 @@ public final class Strings {
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));
                     put(MATERIAL, Material.CHEST);
                     put(RESTRICTED_WORLDS, Arrays.asList("some_world", "some_other_world"));
-                    put(HIDDEN, true);
                     put(IGNORE_SKILLUP_COLOR, true);
+                    put(TRAINABLE, false);
+                    put(TRAINABLE_COST, 0);
                 }
             };
         }

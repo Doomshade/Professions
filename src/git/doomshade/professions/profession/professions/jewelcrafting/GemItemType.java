@@ -3,7 +3,6 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 import com.google.common.collect.Maps;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.types.ICrafting;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -14,21 +13,13 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GemItemType extends ItemType<Gem> implements ICraftable, ITrainable {
+public class GemItemType extends ItemType<Gem> implements ICraftable {
     private double craftingTime = 0d;
     private ItemStack result = ItemUtils.EXAMPLE_RESULT;
     private Requirements inventoryRequirements = new Requirements();
     private Requirements craftingRequirements = new Requirements();
     private Map<Sound, String> sounds = new HashMap<>();
-    private String trainableId;
-    private boolean trainable = true;
-    private int cost = 0;
 
-    /**
-     * Constructor for creation of the item type object
-     *
-     * @param object
-     */
     public GemItemType(Gem object) {
         super(object);
     }
@@ -81,42 +72,6 @@ public class GemItemType extends ItemType<Gem> implements ICraftable, ITrainable
     @Override
     public void setSounds(Map<Sound, String> sounds) {
         this.sounds = sounds;
-    }
-
-    @Override
-    public String getTrainableId() {
-        if (trainableId == null) {
-            if (getObject() == null) {
-                throw new IllegalStateException("Both trainable id and object for " + this + " is null, cannot get a trainable id!");
-            }
-            trainableId = getObject().getClass().getSimpleName();
-        }
-        return trainableId;
-    }
-
-    @Override
-    public void setTrainableId(String trainableId) {
-        this.trainableId = trainableId;
-    }
-
-    @Override
-    public boolean isTrainable() {
-        return trainable;
-    }
-
-    @Override
-    public void setTrainable(boolean trainable) {
-        this.trainable = trainable;
-    }
-
-    @Override
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public void setCost(int cost) {
-        this.cost = cost;
     }
 
     @Override

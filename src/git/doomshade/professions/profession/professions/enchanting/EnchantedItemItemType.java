@@ -1,7 +1,6 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
 import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ITrainable;
 import git.doomshade.professions.profession.types.IEnchanting;
 import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
@@ -20,11 +19,8 @@ import java.util.function.Function;
  *
  * @author Doomshade
  */
-public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainable, ICraftable {
+public class EnchantedItemItemType extends ItemType<Enchant> implements ICraftable {
     private static String ENCHANT = "enchant";
-    private boolean trainable = true;
-    private int cost = 0;
-    private String trainableStringId;
 
     private double craftingTime = 3d;
     private ItemStack result = new ItemStack(Material.GLASS);
@@ -71,44 +67,8 @@ public class EnchantedItemItemType extends ItemType<Enchant> implements ITrainab
     }
 
     @Override
-    public String getTrainableId() {
-        if (trainableStringId == null) {
-            if (getObject() == null) {
-                throw new IllegalStateException("Both trainable id and object for " + this + " is null, cannot get a trainable id!");
-            }
-            trainableStringId = getObject().getClass().getSimpleName();
-        }
-        return trainableStringId;
-    }
-
-    @Override
     public ItemStack getIcon(UserProfessionData upd) {
         return getIcon(super.getIcon(upd), upd);
-    }
-
-    @Override
-    public boolean isTrainable() {
-        return trainable;
-    }
-
-    @Override
-    public int getCost() {
-        return cost;
-    }
-
-    @Override
-    public void setCost(int cost) {
-        this.cost = cost;
-    }
-
-    @Override
-    public void setTrainable(boolean trainable) {
-        this.trainable = trainable;
-    }
-
-    @Override
-    public void setTrainableId(String trainableStringId) {
-        this.trainableStringId = trainableStringId;
     }
 
     @Override

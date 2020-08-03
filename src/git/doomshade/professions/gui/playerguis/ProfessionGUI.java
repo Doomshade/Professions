@@ -68,14 +68,15 @@ public class ProfessionGUI extends GUI {
                 }
                 ItemStack icon = item.getIcon(upd);
                 GUIItem guiItem = new GUIItem(icon.getType(), pos, icon.getAmount(), icon.getDurability());
-                boolean hasRecipe = upd.hasExtra(icon.getItemMeta().getDisplayName());
+                boolean hasRecipe = upd.hasTrained(item);
                 boolean meetsLevel = item.meetsLevelReq(upd.getLevel() + levelThreshold);
-                if (item.isHiddenWhenUnavailable())
-                    guiItem.setHidden(!(hasRecipe && meetsLevel));
-                else if (hasRecipe)
+
+                //if (item.isHiddenWhenUnavailable())
+                guiItem.setHidden(!(hasRecipe && meetsLevel));
+                /*else if (hasRecipe)
                     guiItem.setHidden(false);
                 else
-                    guiItem.setHidden(!meetsLevel);
+                    guiItem.setHidden(!meetsLevel);*/
                 guiItem.changeItem(this, icon::getItemMeta);
 
                 if (!guiItem.isHidden()) {
@@ -97,10 +98,6 @@ public class ProfessionGUI extends GUI {
         ItemStack currentItem = event.getCurrentItem();
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
-        if (upd == null) {
-            getHolder().closeInventory();
-            throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
-        }
         if (currentItem == null || currentItem.getType() == Material.AIR) {
             return;
         }

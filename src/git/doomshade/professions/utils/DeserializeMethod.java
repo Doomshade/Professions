@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
  *
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.profession.ITrainable
  * @see git.doomshade.professions.profession.ICraftable
  */
 @Retention(RetentionPolicy.RUNTIME)

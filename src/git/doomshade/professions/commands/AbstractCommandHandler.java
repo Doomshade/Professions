@@ -7,6 +7,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.SortedList;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
@@ -35,6 +36,10 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
     public static ImmutableCollection<AbstractCommandHandler> getInstances() {
         return ImmutableSet.copyOf(INSTANCES.values());
+    }
+
+    public <T extends AbstractCommand> T getCommand(Class<T> clazz) throws Utils.SearchNotFoundException {
+        return (T) Utils.findInIterable(getCommands(), x -> x.getClass().equals(clazz));
     }
 
     {
