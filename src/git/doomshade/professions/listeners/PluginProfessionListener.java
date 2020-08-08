@@ -50,7 +50,7 @@ public class PluginProfessionListener implements Listener {
         try {
             int amount = Integer.parseInt(e.getMessage());
             task.setRepeatAmount(amount);
-            task.setRepeat(true);
+            task.setRepeat(false);
             Professions.getGUIManager().openGui(task.getGui());
             task.setCurrentItem(task.getGui().getInventory().getContents().get(task.getSlot()).getItemStackCopy());
             task.runTask(Professions.getInstance());

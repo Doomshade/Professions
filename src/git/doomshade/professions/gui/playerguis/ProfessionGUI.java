@@ -46,9 +46,6 @@ public class ProfessionGUI extends GUI {
         int pos = 0;
         User user = User.getUser(getHolder());
         UserProfessionData upd = user.getProfessionData(prof);
-        if (upd == null) {
-            throw new IllegalStateException("A player accessed this GUI without having the profession somehow");
-        }
         List<String> lore = prof.getProfessionInformation(upd);
         final boolean profHasLore = lore != null && !lore.isEmpty();
 
@@ -134,7 +131,7 @@ public class ProfessionGUI extends GUI {
                 }.runTaskLater(plugin, 60 * 20L);
                 break;
             case SHIFT_RIGHT:
-                task.setRepeat(true);
+                task.setRepeat(false);
                 task.setRepeatAmount(64);
                 task.runTask(plugin);
                 break;

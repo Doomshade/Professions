@@ -38,33 +38,47 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     private ICraftable craftable;
 
     public CraftingTask(UserProfessionData upd, ItemStack currentItem, int slot, GUI gui) {
+        this(upd, currentItem, slot, gui, true);
+    }
+
+    private CraftingTask(UserProfessionData upd, ItemStack currentItem, int slot, GUI gui, boolean update) {
         this.upd = upd;
-        this.setCurrentItem(currentItem);
         this.slot = slot;
         this.gui = gui;
         this.user = upd.getUser();
         this.prof = upd.getProfession();
         this.repeatAmount = -1;
+        this.setCurrentItem(currentItem, update);
     }
 
     public void setCurrentItem(ItemStack currentItem) {
+        setCurrentItem(currentItem, true);
+    }
+
+    private void setCurrentItem(ItemStack currentItem, boolean update) {
         this.currentItem = currentItem;
-        updateCraftable();
+
+        if (update)
+            updateCraftable();
+    }
+
+    private void setCraftable(ICraftable craftable) {
+        this.craftable = craftable;
     }
 
     private void updateCraftable() {
         this.craftable = null;
-        if (prof == null) return;
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (!(item instanceof ICraftable)) {
                     continue;
                 }
                 final ICraftable craftable = (ICraftable) item;
-                if (!item.getIcon(upd).isSimilar(currentItem)) {
-                    continue;
+                if (item.getIcon(upd).isSimilar(currentItem)) {
+                    this.craftable = craftable;
+                    break;
                 }
-                this.craftable = craftable;
+
             }
         }
     }
@@ -108,20 +122,18 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     @Override
     public void run() {
-        final ICraftable craftable = getCraftable();
         if (craftable == null) {
+            System.out.println("A");
             return;
         }
 
         if (!hasInventorySpace()) {
+            System.out.println("B");
             return;
         }
         EventManager em = EventManager.getInstance();
 
         final ItemType<?> item = (ItemType<?>) craftable;
-        if (!item.getIcon(upd).isSimilar(currentItem)) {
-            return;
-        }
         final Player player = user.getPlayer();
         if (!craftable.meetsCraftingRequirements(player)) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Message.REQUIREMENTS_NOT_MET)
@@ -150,21 +162,21 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
                 return;
             }
             final ProfessionEvent<ItemType<?>> event = em.callEvent(pe);
-            if (!event.isCancelled()) {
-                craftable.consumeCraftingRequirements(player);
-                player.getInventory().addItem(craftable.getResult());
+            if (event.isCancelled()) {
+                return;
             }
+            craftable.consumeCraftingRequirements(player);
+            player.getInventory().addItem(craftable.getResult());
+
             player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
-            if (repeat && repeatAmount != 0) {
-                try {
-                    CraftingTask clone = clone();
-                    clone.setRepeatAmount(repeatAmount - 1);
-                    clone.runTask(Professions.getInstance());
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-
+            if (repeat || repeatAmount > 0) {
+                System.out.println("Running anoda one");
+                CraftingTask newTask = new CraftingTask(upd, currentItem, slot, gui, false);
+                newTask.setRepeat(repeat);
+                newTask.setRepeatAmount(repeatAmount - 1);
+                newTask.setCraftable(craftable);
+                newTask.runTask(Professions.getInstance());
             }
         });
         craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
@@ -172,13 +184,5 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
         player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
 
-    }
-
-    @Override
-    protected CraftingTask clone() throws CloneNotSupportedException {
-        CraftingTask task = new CraftingTask(upd, currentItem, slot, gui);
-        task.setRepeat(repeat);
-        task.setRepeatAmount(repeatAmount);
-        return task;
     }
 }

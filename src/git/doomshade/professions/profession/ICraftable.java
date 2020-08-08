@@ -200,7 +200,7 @@ public interface ICraftable extends ICustomType {
         List<String> lore = meta.getLore();
 
         for (Strings.ICraftableEnum key : Arrays.asList(ITEM_REQUIREMENTS, INVENTORY_REQUIREMENTS)) {
-            Pattern regex = Pattern.compile("\\{" + key.s + "\\}");
+            Pattern regex = Pattern.compile("\\{" + key.s + "}");
             for (int i = 0; i < lore.size(); i++) {
                 String s = lore.get(i);
                 Matcher m = regex.matcher(s);

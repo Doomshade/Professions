@@ -53,7 +53,6 @@ public class Potion implements ConfigurationSerializable {
         this.potionType = potionType;
         this.potionEffects.addAll(potionEffects);
         this.potion = potion;
-
         if (!potionId.equals(TEST_POTION_ID))
             POTIONS.add(this);
     }
@@ -164,6 +163,7 @@ public class Potion implements ConfigurationSerializable {
         PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
         MemorySection mem = (MemorySection) map.get(POTION.s);
         ItemStack potion = ItemUtils.deserialize(mem.getValues(false));
+
         return new Potion(potionEffects, duration, potionId, potionType, potion);
     }
 
@@ -198,7 +198,7 @@ public class Potion implements ConfigurationSerializable {
     }
 
     public Optional<ItemStack> getPotionItem(ItemStack item) {
-        if (item.getType() != Material.POTION || !item.hasItemMeta()) {
+        if (item == null || item.getType() != Material.POTION || !item.hasItemMeta()) {
             return Optional.empty();
         }
         ItemStack clone = item.clone();

@@ -103,10 +103,9 @@ public final class ItemUtils {
         if (meta instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) meta;
             final Object potentialPotionType = map.get(POTION_TYPE);
-            if (potentialPotionType == null) {
-                return null;
+            if (potentialPotionType != null) {
+                potionMeta.setBasePotionData(CraftPotionUtil.toBukkit((String) potentialPotionType));
             }
-            potionMeta.setBasePotionData(CraftPotionUtil.toBukkit((String) potentialPotionType));
         }
 
         final Object potentialInternal = map.get("internal");

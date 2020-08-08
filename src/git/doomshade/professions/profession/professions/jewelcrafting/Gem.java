@@ -365,8 +365,8 @@ public class Gem implements ConfigurationSerializable {
         }
 
         @Override
-        public EnumMap<?, Object> getDefaultValues() {
-            return new EnumMap<>(GemEnum.class) {
+        public EnumMap<GemEnum, Object> getDefaultValues() {
+            return new EnumMap<GemEnum, Object>(GemEnum.class) {
                 {
                     put(ID, "some-id");
                     put(GEM_EFFECT, "add");
