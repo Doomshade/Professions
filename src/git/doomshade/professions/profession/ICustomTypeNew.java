@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public abstract class ICustomTypeNew<T> {
     private ItemType<T> itemType;
 
@@ -14,6 +15,7 @@ public abstract class ICustomTypeNew<T> {
         this.itemType = itemType;
     }
 
+    @Deprecated
     public final void deserialize(Map<String, Object> map) throws Exception {
         for (Field field : getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(SerializeField.class)) {
@@ -28,6 +30,7 @@ public abstract class ICustomTypeNew<T> {
         }
     }
 
+    @Deprecated
     public final Map<String, Object> serialize() throws Exception {
         Map<String, Object> map = new HashMap<>();
         for (Field field : getClass().getDeclaredFields()) {

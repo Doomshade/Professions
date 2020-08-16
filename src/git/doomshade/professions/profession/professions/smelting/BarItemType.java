@@ -2,8 +2,6 @@ package git.doomshade.professions.profession.professions.smelting;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.ICrafting;
-import git.doomshade.professions.profession.types.IProfessionType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -29,11 +27,6 @@ public class BarItemType extends CraftableItemType<ItemStack> {
     @Override
     protected ItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return null;
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return ICrafting.class;
     }
 
     @Override

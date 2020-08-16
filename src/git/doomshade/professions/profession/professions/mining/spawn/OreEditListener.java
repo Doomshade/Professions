@@ -32,7 +32,8 @@ public class OreEditListener implements Listener {
         final UUID uuid = player.getUniqueId();
         if (CHAT.containsKey(uuid)) {
             event.setCancelled(true);
-            player.sendMessage("Musíš prvně napsat range (buď číslo nebo číslo-číslo) (např. 5 nebo 8-11)");
+            player.sendMessage("You must first write range (either number or number-number) (e.g. 5 or 8-11)");
+            return;
         }
         try {
             final ItemTypeHolder<OreItemType> itemTypeHolder = Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);

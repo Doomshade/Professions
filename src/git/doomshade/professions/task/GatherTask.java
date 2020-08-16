@@ -34,7 +34,6 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.profession.types.IGathering
  */
 public class GatherTask extends BukkitRunnable {
 

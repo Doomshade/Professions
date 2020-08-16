@@ -4,7 +4,6 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.LocationElement;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
@@ -27,7 +26,7 @@ import static git.doomshade.professions.profession.professions.mining.Ore.OreEnu
  *
  * @author Doomshade
  */
-public class Ore extends SpawnableElement<OreLocationOptions> implements ConfigurationSerializable, LocationElement {
+public class Ore extends SpawnableElement<OreLocationOptions> implements ConfigurationSerializable {
 
     public static final HashMap<String, Ore> ORES = new HashMap<>();
     private static final String EXAMPLE_ORE_ID = "example-ore";
@@ -129,13 +128,6 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
             }
 
         };
-    }
-
-    /**
-     * @return the ore material
-     */
-    public Material getOreMaterial() {
-        return oreMaterial;
     }
 
     /**

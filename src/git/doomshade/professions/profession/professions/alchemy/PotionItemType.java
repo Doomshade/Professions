@@ -3,8 +3,6 @@ package git.doomshade.professions.profession.professions.alchemy;
 import com.sucy.skill.SkillAPI;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.ICrafting;
-import git.doomshade.professions.profession.types.IProfessionType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -42,11 +40,6 @@ public class PotionItemType extends CraftableItemType<Potion> {
         final Optional<ItemStack> potionItem = potion.getPotionItem(potion.getItem());
         potionItem.ifPresent(this::setResult);
         return potion;
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return ICrafting.class;
     }
 
 
@@ -90,7 +83,6 @@ public class PotionItemType extends CraftableItemType<Potion> {
             git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
 
             if (laAttribute != null) {
-                // TODO UNCOMMENT!!!!!!!!!!
                 git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
             } else {
                 com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = SkillAPI.getAttributeManager().getAttribute(attribute);

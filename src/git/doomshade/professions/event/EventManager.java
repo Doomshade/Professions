@@ -18,9 +18,8 @@ import java.util.Arrays;
  */
 public final class EventManager {
 
-    // singleton
-    private static EventManager em = new EventManager();
-    private static PluginManager pm = Bukkit.getPluginManager();
+    private static final EventManager em = new EventManager();
+    private static final PluginManager pm = Bukkit.getPluginManager();
 
     private EventManager() {
     }
@@ -42,10 +41,16 @@ public final class EventManager {
         if (object == null) {
             return null;
         }
+
+        // search in item type holders
         for (ItemTypeHolder<?> itemHolder : Professions.getProfessionManager().getItemTypeHolders()) {
+
+            // make sure we got the right item type
             if (!itemHolder.getItemType().getClass().equals(itemTypeClass)) {
                 continue;
             }
+
+            // loop through item types and search for one that equals to the
             for (ItemType<?> item : itemHolder.getRegisteredItemTypes()) {
                 Item itemReturn = (Item) item;
                 T itemReturnObject = itemReturn.getObject();

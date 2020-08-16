@@ -1,6 +1,11 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.diablolike.DiabloLike;
+import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.commands.AbstractCommandHandler;
+import git.doomshade.professions.commands.CommandHandler;
+import git.doomshade.professions.commands.SaveCommand;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
@@ -49,6 +54,7 @@ public final class ItemUtils {
     private static final String LORE = "lore";
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
+    static final String DIABLO_ITEM = "diabloitem";
 
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
 
@@ -63,6 +69,13 @@ public final class ItemUtils {
         return new ItemStack(Material.valueOf(split[0]), 1, damage);
     }
 
+
+    public static ItemStack deserialize(Map<String, Object> map) {
+        return deserialize(map, true);
+    }
+
+    private static boolean loggedDiablo = false;
+
     /**
      * Deserializes an ItemStack from a map. <br>
      * Do not overuse this method as it may not be the fastest in deserializing Potions
@@ -71,10 +84,45 @@ public final class ItemUtils {
      * @return deserialized ItemStack
      */
     @SuppressWarnings("unchecked")
-    public static ItemStack deserialize(Map<String, Object> map) {
+    public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook) {
         if (map == null) {
             return null;
         }
+
+        diablo:
+        if (Professions.isDiabloLikeHook()) {
+            Object potentialId = map.get(DIABLO_ITEM);
+
+            if (!(potentialId instanceof String)) {
+                if (potentialId == null) {
+                    Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
+                    if (!loggedDiablo) {
+                        Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
+                        Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
+
+                        loggedDiablo = true;
+                    }
+                    Professions.log("The serialized form:\n" + map, Level.CONFIG);
+                }
+                break diablo;
+            }
+
+            final String id = (String) potentialId;
+            final DiabloItem diabloItem = DiabloLike.getItemFromConfigName(id);
+            if (diabloItem == null) {
+                Professions.log("No Diablo Item with id " + id + " found!", Level.WARNING);
+                break diablo;
+            }
+
+            final ItemStack item = diabloItem.getItemUtils().getDropItem();
+            final Object potentialAmount = map.get(AMOUNT);
+            if (potentialAmount instanceof Integer) {
+                item.setAmount((int) potentialAmount);
+            }
+            return item;
+        }
+
+
         final Object potentialMaterial = map.get(MATERIAL);
         if (potentialMaterial == null) {
             return null;
@@ -164,15 +212,32 @@ public final class ItemUtils {
             return null;
         }
 
+
+        // TODO THIS COULD BE A PROBLEM WITH DIABLOITEMS (SAVING THEIR CONFIG NAME !BASED ON DISPLAY NAME!) !!!
         Map<String, Object> map = new HashMap<>();
-        map.put(ItemUtils.MATERIAL, item.getType().name());
-        map.put(AMOUNT, item.getAmount());
+
         if (item.hasItemMeta()) {
             ItemMeta meta = item.getItemMeta();
-            if (meta.hasDisplayName())
-                map.put(ItemUtils.DISPLAY_NAME, meta.getDisplayName().replaceAll("§", "&"));
+            if (meta.hasDisplayName()) {
+                final String displayName = meta.getDisplayName();
+
+                if (Professions.isDiabloLikeHook()) {
+                    final List<DiabloItem> items = DiabloLike.getItemFromDisplayName(displayName);
+
+                    if (items != null) {
+                        if (items.size() != 1) {
+                            Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
+                            Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
+                        } else {
+                            map.put(DIABLO_ITEM, items.get(0).getConfigName());
+                            return map;
+                        }
+                    }
+                }
+                map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
+            }
             if (meta.hasLore()) {
-                map.put(ItemUtils.LORE, meta.getLore().stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
+                map.put(LORE, meta.getLore().stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
             }
 
 
@@ -182,7 +247,7 @@ public final class ItemUtils {
             }
             if (meta instanceof PotionMeta) {
                 PotionMeta potionMeta = (PotionMeta) meta;
-                map.put(ItemUtils.POTION_TYPE, CraftPotionUtil.fromBukkit(potionMeta.getBasePotionData()));
+                map.put(POTION_TYPE, CraftPotionUtil.fromBukkit(potionMeta.getBasePotionData()));
             }
 
             Map<String, NBTBase> unhandledTags;
@@ -221,6 +286,9 @@ public final class ItemUtils {
                 }
             }
         }
+
+        map.put(MATERIAL, item.getType().name());
+        map.put(AMOUNT, item.getAmount());
         return map;
     }
 
@@ -313,7 +381,8 @@ public final class ItemUtils {
 
             // TODO log some error
             if (obj == null) {
-                Professions.log("Could not find section " + section + " in " + itemType.getFile().getName() + " file.", Level.SEVERE);
+                Professions.log("Could not replace patterns in item type lore because no section " + section + " was found in " + itemType.getFile().getName() + " file.", Level.SEVERE);
+                Professions.log("\"" + s + "\"", Level.INFO);
                 continue;
             }
 

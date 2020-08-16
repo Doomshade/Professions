@@ -252,4 +252,15 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
         return false;
     }
+
+    public static String infoMessage(Class<? extends AbstractCommandHandler> ch, Class<? extends AbstractCommand> ac) {
+        try {
+            final AbstractCommandHandler ach = getInstance(ch);
+            if (ach != null) {
+                return ach.infoMessage(ach.getCommand(ac));
+            }
+        } catch (Utils.SearchNotFoundException ignored) {
+        }
+        return "";
+    }
 }

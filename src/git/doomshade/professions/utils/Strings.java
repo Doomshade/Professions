@@ -57,7 +57,6 @@ public final class Strings {
      */
     public enum ItemTypeEnum implements FileEnum {
         LEVEL_REQ("level-req"),
-        PROFTYPE("type-unchangable"),
         EXP("exp"),
         OBJECT("object"),
         NAME("name"),
@@ -80,7 +79,6 @@ public final class Strings {
             return new EnumMap<ItemTypeEnum, Object>(ItemTypeEnum.class) {
                 {
                     put(LEVEL_REQ, 0);
-                    put(PROFTYPE, "crafting");
                     put(EXP, 0);
                     put(NAME, "&eNO_NAME");
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));

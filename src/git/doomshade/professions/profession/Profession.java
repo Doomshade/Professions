@@ -10,7 +10,6 @@ import git.doomshade.professions.profession.professions.enchanting.EnchantingPro
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
@@ -36,7 +35,6 @@ import java.util.Set;
  *
  * @author Doomshade
  * @version 1.0
- * @see IProfessionType
  * @see EnchantingProfession
  * @see JewelcraftingProfession
  * @see MiningProfession
@@ -185,7 +183,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
 
 
     /**
-     * @return the profession type (don't mistake it for {@link IProfessionType})
+     * @return the profession type
      */
     public ProfessionType getProfessionType() {
         return pt;
@@ -339,7 +337,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      * @param <IType> the item type argument of the event (this prevents wildcards)
      */
     @EventHandler
-    public <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
+    public final <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
 
         // the player has no profession but has a rank builder+ -> do not cancel the event
         if (!playerHasProfession(event)) {

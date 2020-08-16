@@ -1,10 +1,10 @@
 name: Professions
 main: git.doomshade.professions.Professions
 author: Doomshade
-version: 1.1
+version: v1.0
 description: Best plugin EU
 depend: [GUIApi, ProtocolLib]
-softdepend: [Citizens, Vault, PermissionsEx, SkillAPI, Sinister_LoreAttributes, dynmap, DiabloLike]
+softdepend: [Citizens, Vault, PermissionsEx, SkillAPI, Sinister_LoreAttributes, dynmap, DiabloLike, PlaceholderAPI]
 
 permissions:
   prof.commands:

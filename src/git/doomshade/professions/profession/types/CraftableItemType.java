@@ -77,7 +77,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     }
 
     /**
-     * Removes crafting requirements from a player's inventory
+     * Consumes crafting requirements from a player's inventory
      *
      * @param player the player to remove the items from
      */

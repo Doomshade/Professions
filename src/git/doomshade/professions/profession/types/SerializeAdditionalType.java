@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Deprecated
 public @interface SerializeAdditionalType {
+
+    @Deprecated
     Class<? extends ICustomTypeNew<?>>[] value();
 }

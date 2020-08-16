@@ -4,8 +4,6 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.IGathering;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 import org.bukkit.ChatColor;
@@ -36,11 +34,6 @@ public class HerbItemType extends ItemType<Herb> {
     @Override
     protected Herb deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Herb.deserialize(map);
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return IGathering.class;
     }
 
     @Override

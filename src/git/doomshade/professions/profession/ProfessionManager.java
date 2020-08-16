@@ -26,7 +26,8 @@ import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.profession.types.*;
+import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.IrremovableSet;
 import git.doomshade.professions.utils.ItemUtils;
@@ -50,7 +51,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 
 /**
- * A manager regarding registration and queries of a {@link Profession}, {@link IProfessionType}, {@link ItemType} and {@link ItemTypeHolder}.
+ * A manager regarding registration and queries of a {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
  *
  * @author Doomshade
  * @version 1.0
@@ -62,7 +63,6 @@ public final class ProfessionManager implements ISetup {
      * Using IrremovableSet here so that the registered professions never get deleted (they are intended not to!)
      */
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
-    private final HashSet<Class<? extends IProfessionType>> PROFESSION_TYPES = new HashSet<>();
 
     @SuppressWarnings("rawtypes")
     private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
@@ -101,13 +101,6 @@ public final class ProfessionManager implements ISetup {
             }
         }
         throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
-    }
-
-    /**
-     * @return all registered {@link IProfessionType}s
-     */
-    public ImmutableSet<Class<? extends IProfessionType>> getProfessionTypes() {
-        return ImmutableSet.copyOf(PROFESSION_TYPES);
     }
 
     /**
@@ -180,15 +173,6 @@ public final class ProfessionManager implements ISetup {
         return null;
     }
 
-    /**
-     * @param clazz the {@link IProfessionType} class
-     * @see IProfessionType for already registered profession types.
-     * Registers a custom {@link IProfessionType}.
-     */
-    private void registerProfessionType(Class<? extends IProfessionType> clazz) {
-        PROFESSION_TYPES.add(clazz);
-    }
-
     @Override
     public void setup() throws IOException {
         register();
@@ -237,7 +221,6 @@ public final class ProfessionManager implements ISetup {
 
     @Override
     public void cleanup() {
-        PROFESSION_TYPES.clear();
         PROFESSIONS_ID.clear();
         PROFESSIONS_NAME.clear();
         ITEMS.clear();
@@ -250,7 +233,6 @@ public final class ProfessionManager implements ISetup {
      * @throws IOException if an IO error occurs
      */
     private void register() throws IOException {
-        registerProfessionTypes();
         registerItemTypeHolders();
     }
 
@@ -350,19 +332,6 @@ public final class ProfessionManager implements ISetup {
             final GemItemType gemItemType = ItemType.getExampleItemType(GemItemType.class, Gem.EXAMPLE_GEM);
             registerItemTypeHolder(new ItemTypeHolder<>(gemItemType));
         }
-    }
-
-    /**
-     * Registers current profession types
-     *
-     * @see #registerProfessionType(Class)
-     */
-    private void registerProfessionTypes() {
-        registerProfessionType(IMining.class);
-        registerProfessionType(IHunting.class);
-        registerProfessionType(IGathering.class);
-        registerProfessionType(IEnchanting.class);
-        registerProfessionType(ICrafting.class);
     }
 
     /**

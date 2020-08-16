@@ -11,7 +11,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Level;
 
@@ -45,13 +45,12 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 theSettings.setup();
                 Professions.getInstance().registerSetup(theSettings);
                 SETTINGS.add(theSettings);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                ex.printStackTrace();
             } catch (ConfigurationException ex) {
-                Professions.log("Could not load " + settingsClass.getSimpleName() + " settings!", Level.WARNING);
+                Professions.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" + Arrays.toString(ex.getStackTrace()), Level.WARNING);
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

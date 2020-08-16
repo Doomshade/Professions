@@ -8,9 +8,13 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.*;
+import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.profession.ICustomType;
+import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -21,14 +25,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -59,7 +58,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private boolean ignoreSkillupColor;
     private int cost = -1;
     private boolean trainable = false;
-
 
     /**
      * Constructor for creation of the item type object
@@ -189,7 +187,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(OBJECT.s, getSerializedObject());
         map.put(EXP.s, exp);
         map.put(LEVEL_REQ.s, levelReq);
-        map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
         map.put(NAME.s, name);
         map.put(DESCRIPTION.s, description);
         map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
@@ -250,12 +247,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @throws ProfessionObjectInitializationException if the object deserialization was unsuccessful
      */
     protected abstract T deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException;
-
-    /**
-     * @return The {@link IProfessionType} that this item type can be assigned to.
-     * @see IProfessionType
-     */
-    public abstract Class<? extends IProfessionType> getDeclaredProfessionType();
 
     /**
      * @return the description of this item type (used mainly for visual representation in an item)
@@ -322,14 +313,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @param upd the user profession data
-     * @return the color based on {@link git.doomshade.professions.user.User}'s {@link Profession} data
-     */
-    public final SkillupColor getSkillupColor(UserProfessionData upd) {
-        return upd.getSkillupColor(this);
-    }
-
-    /**
      * @return {@code true} if this item type ignores the skillup color exp modifications
      * @see git.doomshade.professions.data.ProfessionExpSettings
      */
@@ -392,10 +375,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.trainable = trainable;
     }
 
-    public final String getTrainableId() {
-        return getConfigName();
-    }
-
     /**
      * @return the file of this item type
      */
@@ -443,6 +422,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * You may override this method for more complex logic.
+     * This method is called during events, ensures that we got the correct item type
+     * that gets further passed to profession
      *
      * @param object the object
      * @return {@code true} if the object equals to this class' object
@@ -487,8 +468,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                 .append(EXP + ": " + exp)
                 .append("\n")
                 .append(LEVEL_REQ + ": " + levelReq)
-                .append("\n")
-                .append(PROFTYPE + ": " + getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase())
                 .append("\n")
                 .append(NAME + ": " + name)
                 .append("\n")

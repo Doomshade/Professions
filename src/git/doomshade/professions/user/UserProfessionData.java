@@ -238,7 +238,7 @@ public class UserProfessionData {
         if (!response.transactionSuccess() || hasTrained(trainable)) {
             return false;
         }
-        addExtra(trainable.getTrainableId());
+        addExtra(trainable.getConfigName());
         return true;
     }
 
@@ -248,7 +248,7 @@ public class UserProfessionData {
      * @see #hasExtra(String)
      */
     public boolean hasTrained(ItemType<?> trainable) {
-        return hasExtra(trainable.getTrainableId());
+        return hasExtra(trainable.getConfigName());
     }
 
     /**

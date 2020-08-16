@@ -1,8 +1,6 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
 import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.IEnchanting;
-import git.doomshade.professions.profession.types.IProfessionType;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
 
@@ -48,11 +46,6 @@ public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     @Override
     protected Enchant deserializeObject(Map<String, Object> map) {
         return Enchant.deserialize(((MemorySection) map.get(ENCHANT)).getValues(true));
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return IEnchanting.class;
     }
 
     @Override

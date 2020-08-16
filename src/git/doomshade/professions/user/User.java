@@ -436,7 +436,11 @@ public final class User {
         if (professions.size() > maxProfessions) {
             final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
             Professions.log(message, Level.SEVERE);
-            Professions.log(message, Level.CONFIG);
         }
+    }
+
+    @Override
+    public String toString() {
+        return player.getDisplayName();
     }
 }

@@ -1,8 +1,6 @@
 package git.doomshade.professions.profession.professions.skinning;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.IHunting;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Utils;
@@ -81,11 +79,6 @@ public class PreyItemType extends ItemType<Mob> {
         public String toString() {
             return s;
         }
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return IHunting.class;
     }
 
 }

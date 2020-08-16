@@ -2,16 +2,8 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import com.google.common.collect.Maps;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.ICraftable;
 import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.ICrafting;
-import git.doomshade.professions.profession.types.IProfessionType;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.Requirements;
-import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class GemItemType extends CraftableItemType<Gem> {
@@ -34,11 +26,6 @@ public class GemItemType extends CraftableItemType<Gem> {
     @Override
     protected Gem deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Gem.deserialize(map);
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return ICrafting.class;
     }
 
     @Override

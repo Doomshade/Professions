@@ -1,7 +1,5 @@
 package git.doomshade.professions.profession.professions.crafting;
 
-import git.doomshade.professions.profession.types.ICrafting;
-import git.doomshade.professions.profession.types.IProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
@@ -120,11 +118,6 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         // must register the recipe
         Bukkit.addRecipe(recipe);
         return CraftShapedRecipe.fromBukkitRecipe(recipe);
-    }
-
-    @Override
-    public Class<? extends IProfessionType> getDeclaredProfessionType() {
-        return ICrafting.class;
     }
 
 }

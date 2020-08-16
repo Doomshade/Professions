@@ -3,11 +3,10 @@ package git.doomshade.professions.profession.professions.enchanting;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.types.ICrafting;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 
-public final class EnchantingProfession extends Profession implements ICrafting {
+public final class EnchantingProfession extends Profession {
 
     @Override
     public void onLoad() {

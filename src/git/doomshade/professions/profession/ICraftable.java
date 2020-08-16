@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession;
 
+import git.doomshade.professions.profession.types.CraftableItemType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.inventory.ItemStack;
@@ -10,9 +11,10 @@ import java.util.Map;
  * Interface for craft-able {@link ItemType}s
  *
  * @author Doomshade
- * @see git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType for an example
+ * @version 1.0
+ * @see CraftableItemType
  */
-public interface ICraftable extends ICustomType {
+public interface ICraftable {
 
     /**
      * @return the crafting time of the item type

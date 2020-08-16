@@ -20,6 +20,7 @@ import git.doomshade.professions.gui.playerguis.TestThreeGui;
 import git.doomshade.professions.gui.trainergui.TrainerChooserGUI;
 import git.doomshade.professions.gui.trainergui.TrainerGUI;
 import git.doomshade.professions.listeners.*;
+import git.doomshade.professions.placeholder.PlaceholderManager;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
@@ -30,6 +31,7 @@ import git.doomshade.professions.profession.professions.mining.spawn.OreEditList
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
+import git.doomshade.professions.task.LogTask;
 import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.TrainerListener;
 import git.doomshade.professions.trait.TrainerTrait;
@@ -73,13 +75,13 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup {
 
-    private static final List<Integer> RED = Arrays.asList(Level.WARNING.intValue(), Level.SEVERE.intValue());
+    private static final int RED = 900;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
     private static PermissionManager permMan;
     private static Economy econ;
-    private static final List<Integer> GREEN = Arrays.asList(Level.FINE.intValue(), Level.FINER.intValue());
+    private static final int GREEN = 500;
 
     // 5 minutes
     private static final int SAVE_DELAY = 5 * 60;
@@ -87,8 +89,11 @@ public final class Professions extends JavaPlugin implements ISetup {
     // 1 hr
     private static final int BACKUP_DELAY = 60 * 60;
 
+    // 10 minutes
+    private static final int LOG_DELAY = 10 * 60;
+
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
-    private static PrintStream fos;
+    public static PrintStream fos = null;
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
     private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
@@ -280,7 +285,9 @@ public final class Professions extends JavaPlugin implements ISetup {
         if (message.isEmpty()) {
             return;
         }
-        if (level == Level.CONFIG || level == Level.WARNING) {
+
+        final int leveli = level.intValue();
+        if (leveli >= Level.CONFIG.intValue() && level != Level.INFO) {
             String time = String.format("[%s] ", LocalTime.now().format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM).withLocale(Locale.GERMAN)));
 
             if (fos == null) {
@@ -291,27 +298,24 @@ public final class Professions extends JavaPlugin implements ISetup {
                     return;
                 }
             }
-            fos.println(time.concat(ChatColor.stripColor(message)));
 
-            // TODO delete on plugin release!
-            fos.flush();
+            fos.println(time.concat(ChatColor.stripColor(message)));
 
             if (level == Level.CONFIG)
                 return;
         }
         Ansi.Color color = Ansi.Color.WHITE;
 
-        if (RED.contains(level.intValue())) {
+        if (leveli >= RED) {
             color = Ansi.Color.RED;
         }
-        if (GREEN.contains(level.intValue())) {
+        else if (leveli <= GREEN) {
             color = Ansi.Color.GREEN;
         }
 
         Ansi ansi = Ansi.ansi().boldOff();
 
-        getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
-
+        instance.getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
 
     }
 
@@ -438,6 +442,12 @@ public final class Professions extends JavaPlugin implements ISetup {
             diabloLike = true;
             return true;
         });
+
+        hookPlugin("PlaceholderAPI", x -> {
+            registerSetup(PlaceholderManager.getInstance());
+            return true;
+        });
+
     }
 
     private void hookPlugin(String plugin, Predicate<Plugin> func) {
@@ -542,7 +552,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         return LOG_FILE;
     }
 
-    public boolean isDiabloLikeHook() {
+    public static boolean isDiabloLikeHook() {
         return diabloLike;
     }
 
@@ -748,6 +758,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
 
         saveResource(LANG_PATH.concat("patterns.properties"), true);
+        saveResource(LANG_PATH.concat("placeholders.properties"), true);
 
         saveResource(LANG_PATH.concat("lang_cs.yml"), false);
         saveResource(LANG_PATH.concat("lang_cs_D.yml"), false);
@@ -763,6 +774,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     private void scheduleTasks() {
         new SaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
         new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
+        new LogTask().runTaskTimer(this, LOG_DELAY * 20L, LOG_DELAY * 20L);
     }
 
 
