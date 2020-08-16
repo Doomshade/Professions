@@ -2,7 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
-import git.doomshade.professions.enums.Messages.Message;
+import git.doomshade.professions.enums.Messages.Global;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.ProfessionManager;
@@ -54,16 +54,16 @@ public class ProfessCommand extends AbstractCommand {
         Profession prof = Professions.getProfessionManager().getProfession(args[1]);
         MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
-            user.sendMessage(builder.setMessage(Message.PROFESSION_DOESNT_EXIST).build());
+            user.sendMessage(builder.setMessage(Global.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
         builder = builder.setProfession(prof);
         if (user.profess(prof)) {
-            user.sendMessage(builder.setMessage(Message.SUCCESSFULLY_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Global.SUCCESSFULLY_PROFESSED).build());
         } else if (user.hasProfession(prof)) {
-            user.sendMessage(builder.setMessage(Message.ALREADY_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Global.ALREADY_PROFESSED).build());
         } else {
-            user.sendMessage(builder.setMessage(Message.ALREADY_PROFESSED_TYPE).build());
+            user.sendMessage(builder.setMessage(Global.ALREADY_PROFESSED_TYPE).build());
         }
 
         return true;

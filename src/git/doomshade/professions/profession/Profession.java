@@ -259,7 +259,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
             e.setCancelled(true);
             if (errorMessage) {
                 final User player = e.getPlayer();
-                player.sendMessage(new Messages.MessageBuilder(Messages.Message.PROFESSION_REQUIRED_FOR_THIS_ACTION)
+                player.sendMessage(new Messages.MessageBuilder(Messages.Global.PROFESSION_REQUIRED_FOR_THIS_ACTION)
                         .setPlayer(player)
                         .setProfession(this)
                         .build());
@@ -291,7 +291,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         }
         ItemTypeClass obj = e.getItemType();
         UserProfessionData upd = getUserProfessionData(e.getPlayer());
-        return upd != null && (obj.meetsLevelReq(upd.getLevel()) || upd.getUser().isBypass());
+        return obj.meetsLevelReq(upd.getLevel()) || upd.getUser().isBypass();
     }
 
     /**
@@ -421,8 +421,8 @@ public abstract class Profession implements Listener, Comparable<Profession> {
 
         @Override
         public void setup() {
-            PRIMARY.name = Messages.Message.PROFTYPE_PRIMARY.getColoredMessage("Primary");
-            SECONDARY.name = Messages.Message.PROFTYPE_SECONDARY.getColoredMessage("Secondary");
+            PRIMARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_PRIMARY).build();
+            SECONDARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_SECONDARY).build();
         }
     }
 }

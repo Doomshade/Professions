@@ -142,7 +142,7 @@ public class TrainerGUI extends GUI implements ISetup {
         upd.train(itemType);
 
         // log
-        user.sendMessage(new Messages.MessageBuilder(Messages.Message.SUCCESSFULLY_TRAINED)
+        user.sendMessage(new Messages.MessageBuilder(Messages.Global.SUCCESSFULLY_TRAINED)
                 .setUserProfessionData(upd)
                 .setItemType(itemType)
                 .build());

@@ -14,11 +14,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -32,6 +29,7 @@ public class Messages implements ISetup {
 
     private static Messages instance;
     private static FileConfiguration lang;
+    static final HashSet<MessagesHolder> MESSAGE_HOLDERS = new HashSet<>();
 
     static {
         instance = new Messages();
@@ -44,11 +42,40 @@ public class Messages implements ISetup {
         return instance;
     }
 
+
+    private static class CollectionBuilder<T> {
+        private Collection<T> collection;
+
+        private CollectionBuilder(Collection<T> defaultCollection) {
+            this.collection = defaultCollection;
+        }
+
+        private CollectionBuilder<T> add(Collection<T> another) {
+            this.collection.addAll(another);
+            return this;
+        }
+
+        private CollectionBuilder<T> add(T[] array) {
+            return add(Arrays.asList(array));
+        }
+
+
+        private Collection<T> build() {
+            return collection;
+        }
+    }
+
     @Override
     public void setup() {
         lang = Settings.getLang();
         final Set<String> propertyNames = lang.getKeys(false);
-        final Sets.SetView<String> missing = Sets.difference(Arrays.stream(Message.values()).map(x -> x.key).collect(Collectors.toSet()), propertyNames);
+        final Collection<MessagesHolder> allKeys = new CollectionBuilder<MessagesHolder>(new HashSet<>())
+                .add(HerbalismMessages.values())
+                .add(EnchantingMessages.values())
+                .add(AlchemyMessages.values())
+                .add(Global.values())
+                .build();
+        final Sets.SetView<String> missing = Sets.difference(allKeys.stream().map(MessagesHolder::getKey).collect(Collectors.toSet()), propertyNames);
         if (!missing.isEmpty()) {
             try {
                 Professions.log("Your language file is outdated!", Level.WARNING);
@@ -56,14 +83,61 @@ public class Messages implements ISetup {
                 missing.forEach(x -> lang.addDefault(x, ""));
                 lang.options().copyDefaults(true);
                 lang.save(Settings.getLangFile());
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public enum Message {
+    public enum EnchantingMessages implements MessagesHolder {
+        LOW_ITEM_LEVEL("item-level-too-low");
+
+        private final String key;
+
+        EnchantingMessages(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+    }
+
+    public enum AlchemyMessages implements MessagesHolder {
+        POTION_ALREADY_ACTIVE("potion-already-active");
+
+        private final String key;
+
+        AlchemyMessages(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+    }
+
+    public enum HerbalismMessages implements MessagesHolder {
+        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
+        GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement");
+
+        private final String key;
+
+        HerbalismMessages(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
+        }
+
+    }
+
+    public enum Global implements MessagesHolder {
         EXP_GAIN("exp-gain"),
         EXP_LOSE("exp-lose"),
         LEVEL_UP("level-up"),
@@ -79,10 +153,7 @@ public class Messages implements ISetup {
         NO_INVENTORY_SPACE("no-inventory-space"),
         SUCCESSFULLY_TRAINED("successfully-trained"),
         NOT_ENOUGH_MONEY_TO_TRAIN("not-enough-money-to-train"),
-        POTION_ALREADY_ACTIVE("potion-already-active"),
         NOT_PROFESSED("not-professed"),
-        GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
-        GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement"),
         PROFTYPE_PRIMARY("proftype-primary"),
         PROFTYPE_SECONDARY("proftype-secondary"),
         PROFESSION_REQUIRED_FOR_THIS_ACTION("profession-required-for-this-action");
@@ -90,33 +161,13 @@ public class Messages implements ISetup {
 
         private final String key;
 
-        Message(String key) {
+        Global(String key) {
             this.key = key;
         }
 
-        public String getMessage() {
-            return lang.getString(key);
-        }
-
-        public String getColoredMessage() {
-            String msg = getMessage();
-            if (msg.isEmpty()) {
-                return msg;
-            }
-            return ChatColor.translateAlternateColorCodes('&', msg);
-        }
-
-        public String getMessage(String defaultMessage) {
-            final String msg = lang.getString(key);
-            if (msg.isEmpty()) {
-                return defaultMessage;
-            }
-            return msg;
-        }
-
-        public String getColoredMessage(String defaultMessage) {
-            String msg = getMessage(defaultMessage);
-            return ChatColor.translateAlternateColorCodes('&', msg);
+        @Override
+        public String getKey() {
+            return key;
         }
     }
 
@@ -132,16 +183,14 @@ public class Messages implements ISetup {
 
     public static class MessageBuilder {
         private String message;
-        private Map<Pattern, String> replacements;
+        private Map<Pattern, String> replacements = new HashMap<>();
 
         public MessageBuilder() {
             this.message = "";
-            this.replacements = new HashMap<>();
         }
 
-        public MessageBuilder(Message message) {
-            this.message = message.getMessage();
-            replacements = new HashMap<>();
+        public MessageBuilder(MessagesHolder message) {
+            setMessage(message);
         }
 
         private MessageBuilder replace(Pattern regex, String replacement) {
@@ -149,8 +198,8 @@ public class Messages implements ISetup {
             return this;
         }
 
-        public MessageBuilder setMessage(Message m) {
-            this.message = m.getMessage();
+        public MessageBuilder setMessage(MessagesHolder m) {
+            this.message = Messages.lang.getString(m.getKey());
             return this;
         }
 
@@ -164,6 +213,7 @@ public class Messages implements ISetup {
             return replace(Pattern.P_PROFESSION_TYPE, type.toString());
         }
 
+        // can be redone via Function class, but that would make it unnecessarily hard
         public MessageBuilder setPlayer(User user) {
             return setPlayer(user.getPlayer());
         }
@@ -199,7 +249,7 @@ public class Messages implements ISetup {
                 return "No message set";
             }
             for (Entry<Pattern, String> e : replacements.entrySet()) {
-                message = message.replaceAll("\\{" + e.getKey().pattern + "\\}", e.getValue());
+                message = message.replaceAll("\\{" + e.getKey().pattern + "}", e.getValue());
             }
             return ChatColor.translateAlternateColorCodes('&', message);
         }

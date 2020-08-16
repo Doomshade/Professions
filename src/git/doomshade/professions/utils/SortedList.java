@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 /**
- * Sorts {@link ArrayList} based on comparator given
+ * Sorts {@link ArrayList} based on given comparator
  *
  * @param <E> the type
  * @author Doomshade

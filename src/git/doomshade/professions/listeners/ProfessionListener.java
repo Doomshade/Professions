@@ -379,7 +379,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             if (!user.isActivePotion(potion)) {
                 user.applyPotion(potion);
             } else {
-                user.sendMessage(new Messages.MessageBuilder(Messages.Message.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(ItemType.getExampleItemType(PotionItemType.class, potion)).build());
+                user.sendMessage(new Messages.MessageBuilder(Messages.AlchemyMessages.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(ItemType.getExampleItemType(PotionItemType.class, potion)).build());
                 e.setCancelled(true);
             }
         }

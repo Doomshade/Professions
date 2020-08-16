@@ -4,7 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
-import git.doomshade.professions.enums.Messages.Message;
+import git.doomshade.professions.enums.Messages.Global;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
@@ -118,9 +118,9 @@ public class UserProfessionData {
         }
 
         if (!isMaxLevel()) {
-            user.sendMessage(builder.setMessage(Message.LEVEL_UP).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.setMessage(Global.LEVEL_UP).setExp(exp).setLevel(level).build());
         } else {
-            user.sendMessage(builder.setMessage(Message.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.setMessage(Global.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
         }
 
 
@@ -172,7 +172,7 @@ public class UserProfessionData {
             return true;
         }
         this.exp += expGained;
-        user.sendMessage(builder.setMessage(Message.EXP_GAIN).setExp(expGained).setLevel(level).build());
+        user.sendMessage(builder.setMessage(Global.EXP_GAIN).setExp(expGained).setLevel(level).build());
         checkForLevel();
         return true;
     }
@@ -306,7 +306,7 @@ public class UserProfessionData {
             return;
         }
         this.exp -= Math.abs(event.getExp());
-        user.sendMessage(builder.setMessage(Message.EXP_LOSE).setExp(exp).setLevel(level).build());
+        user.sendMessage(builder.setMessage(Global.EXP_LOSE).setExp(exp).setLevel(level).build());
         if (this.exp < 0) {
             this.exp = 0;
         }

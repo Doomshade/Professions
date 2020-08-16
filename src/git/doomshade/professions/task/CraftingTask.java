@@ -9,6 +9,7 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.profession.ICraftable;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
+import git.doomshade.professions.profession.types.CraftableItemType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.user.User;
@@ -35,7 +36,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     private ItemStack currentItem;
     private boolean repeat = false;
     private int repeatAmount;
-    private ICraftable craftable;
+    private CraftableItemType<?> item;
 
     public CraftingTask(UserProfessionData upd, ItemStack currentItem, int slot, GUI gui) {
         this(upd, currentItem, slot, gui, true);
@@ -62,20 +63,20 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             updateCraftable();
     }
 
-    private void setCraftable(ICraftable craftable) {
-        this.craftable = craftable;
+    private void setCraftable(CraftableItemType<?> craftable) {
+        this.item = craftable;
     }
 
     private void updateCraftable() {
-        this.craftable = null;
+        this.item = null;
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
-                if (!(item instanceof ICraftable)) {
+                if (!(item instanceof CraftableItemType)) {
                     continue;
                 }
-                final ICraftable craftable = (ICraftable) item;
+                final CraftableItemType<?> craftable = (CraftableItemType<?>) item;
                 if (item.getIcon(upd).isSimilar(currentItem)) {
-                    this.craftable = craftable;
+                    this.item = craftable;
                     break;
                 }
 
@@ -105,12 +106,12 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     @Nullable
     public ICraftable getCraftable() {
-        return craftable;
+        return item;
     }
 
     private boolean hasInventorySpace() {
         if (user.getPlayer().getInventory().firstEmpty() == -1) {
-            user.sendMessage(new Messages.MessageBuilder(Messages.Message.NO_INVENTORY_SPACE)
+            user.sendMessage(new Messages.MessageBuilder(Messages.Global.NO_INVENTORY_SPACE)
                     .setPlayer(user).setProfession(upd.getProfession())
                     .setProfessionType(upd.getProfession().getProfessionType())
                     .build());
@@ -122,7 +123,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     @Override
     public void run() {
-        if (craftable == null) {
+        if (item == null) {
             System.out.println("A");
             return;
         }
@@ -133,10 +134,9 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         }
         EventManager em = EventManager.getInstance();
 
-        final ItemType<?> item = (ItemType<?>) craftable;
         final Player player = user.getPlayer();
-        if (!craftable.meetsCraftingRequirements(player)) {
-            user.sendMessage(new Messages.MessageBuilder(Messages.Message.REQUIREMENTS_NOT_MET)
+        if (!item.meetsCraftingRequirements(player)) {
+            user.sendMessage(new Messages.MessageBuilder(Messages.Global.REQUIREMENTS_NOT_MET)
                     .setPlayer(user)
                     .setProfession(prof)
                     .build());
@@ -152,7 +152,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
         final CraftingItem craftingItem = new CraftingItem(currentItem, slot);
 
-        Function<ItemStack, ?> func = craftable.getExtra();
+        Function<ItemStack, ?> func = item.getExtraInEvent();
         if (func != null)
             pe.addExtra(func.apply(currentItem));
         pe.addExtra(EnchantingProfession.ProfessionEventType.CRAFT);
@@ -165,24 +165,24 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             if (event.isCancelled()) {
                 return;
             }
-            craftable.consumeCraftingRequirements(player);
-            player.getInventory().addItem(craftable.getResult());
+            item.consumeCraftingRequirements(player);
+            player.getInventory().addItem(item.getResult());
 
-            player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
+            player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
             if (repeat || repeatAmount > 0) {
                 System.out.println("Running anoda one");
                 CraftingTask newTask = new CraftingTask(upd, currentItem, slot, gui, false);
                 newTask.setRepeat(repeat);
                 newTask.setRepeatAmount(repeatAmount - 1);
-                newTask.setCraftable(craftable);
+                newTask.setCraftable(item);
                 newTask.runTask(Professions.getInstance());
             }
         });
         craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
-                craftable.getCraftingTime(), gui, UPDATE_INTERVAL));
+                item.getCraftingTime(), gui, UPDATE_INTERVAL));
 
-        player.getWorld().playSound(player.getLocation(), craftable.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
+        player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
 
     }
 }

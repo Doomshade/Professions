@@ -8,9 +8,7 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ICustomType;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.*;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
@@ -23,11 +21,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 public abstract class ItemType<T> implements ConfigurationSerializable, Comparable<ItemType<T>> {
 
     public static final String KEY = "items";
+
     private int exp, levelReq;
     private T item;
     private File itemFile;
@@ -80,6 +82,20 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.restrictedWorlds = new ArrayList<>();
         //this.setHiddenWhenUnavailable(false);
         this.setIgnoreSkillupColor(false);
+
+        /*if (getClass().isAnnotationPresent(SerializeAdditionalType.class)) {
+            SerializeAdditionalType annotation = getClass().getAnnotation(SerializeAdditionalType.class);
+            for (Class<? extends ICustomTypeNew<?>> ictn : annotation.value()) {
+                try {
+                    final Constructor<? extends ICustomTypeNew<?>> declaredConstructor = ictn.getDeclaredConstructor(ItemType.class);
+                    declaredConstructor.setAccessible(true);
+                    ICustomTypeNew<?> iCustomTypeNew = declaredConstructor.newInstance(this);
+                    addAdditionalData(iCustomTypeNew);
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    e.printStackTrace();
+                }
+            }
+        }*/
     }
 
     @SuppressWarnings("all")
@@ -160,37 +176,28 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             Professions.log("Failed to load object from " + getFile().getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
             e1.printStackTrace();
         }
-
-        //invokeDeserialize(ITrainable.class, map);
-
-        if (this instanceof ICraftable)
-            deserializeCraftable(ICraftable.class, map);
     }
 
     /**
-     * Used to be invokeDeserialize because of ITrainable
+     * Serializes the ItemType
      *
-     * @param map   the map
-     * @param clazz leave the class parameter due to some error in invocation (IDK)
+     * @return serialized item type
      */
-    private void deserializeCraftable(Class<? extends ICustomType> clazz, Map<String, Object> map) {
-        for (Method m : clazz.getDeclaredMethods()) {
-            final Parameter[] parameters = m.getParameters();
-            if (parameters.length > 1
-                    && m.isAnnotationPresent(DeserializeMethod.class)
-                    && parameters[0].getType().equals(Map.class)
-                    && parameters[1].getType().equals(ICustomType.class)) {
-                try {
-                    m.invoke(this, map, this);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Professions.log("An error occurred during the deserialization of " + ICraftable.class.getName() + " by invoking " + m.getName() + " method.");
-                    //"\nThe method must return void and have arguments Map<String, Object> and ICustomType in this order.\nThe class must implement ICustomType.");
-                }
-            }
-        }
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(OBJECT.s, getSerializedObject());
+        map.put(EXP.s, exp);
+        map.put(LEVEL_REQ.s, levelReq);
+        map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
+        map.put(NAME.s, name);
+        map.put(DESCRIPTION.s, description);
+        map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
+        map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
+        map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
+        map.put(TRAINABLE.s, isTrainable());
+        map.put(TRAINABLE_COST.s, getTrainableCost());
+        return map;
     }
 
     /**
@@ -433,62 +440,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.exp = exp;
     }
 
-    /**
-     * Serializes the ItemType
-     *
-     * @return serialized item type
-     */
-    @Override
-    public final Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(OBJECT.s, getSerializedObject());
-        map.put(EXP.s, exp);
-        map.put(LEVEL_REQ.s, levelReq);
-        map.put(PROFTYPE.s, getDeclaredProfessionType().getSimpleName().substring(1).toLowerCase());
-        map.put(NAME.s, name);
-        map.put(DESCRIPTION.s, description);
-        map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
-        map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
-        // map.put(HIDDEN.s, hiddenWhenUnavailable);
-        map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
-        map.put(TRAINABLE.s, isTrainable());
-        map.put(TRAINABLE_COST.s, getTrainableCost());
-
-        if (this instanceof ICraftable)
-            map.putAll(serializeCraftable(ICraftable.class));
-        return map;
-    }
-
-
-    /**
-     * Used to be invokeSerialize when Trainable was available
-     *
-     * @param clazz leave the class parameter due to some error in invocation (IDK)
-     * @return the serialization of craftable item
-     */
-    @SuppressWarnings("all")
-    private Map<String, Object> serializeCraftable(Class<? extends ICustomType> clazz) {
-        for (Method m : clazz.getDeclaredMethods()) {
-            if (m.isAnnotationPresent(SerializeMethod.class)
-                    && m.getReturnType().equals(Map.class)) {
-                try {
-                    m.setAccessible(true);
-                    return (Map<String, Object>) m.invoke(this);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    final String msg = "An error occured during the serialization of " + ICraftable.class.getName() + " by invoking " + m.getName() + " method.";
-                    Professions.log(msg);
-                    Professions.log(e.getMessage(), Level.CONFIG);
-                    Professions.log(msg);
-                    //"\nThe method must return an instance of Map<String, Object>.");
-                }
-            }
-        }
-        // no serialization method, return empty
-        return new HashMap<>();
-    }
 
     /**
      * You may override this method for more complex logic.
@@ -563,27 +514,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @Override
     public int compareTo(ItemType<T> o) {
         return Integer.compare(getLevelReq(), o.getLevelReq());
-    }
-
-    /**
-     * Whether or not to hide the item type in a GUI if it doesn't meet requirements
-     *
-     * @return {@code true} if it is hidden when unavailable, {@code false} otherwise
-     * @deprecated no longer used, defaults to true
-     */
-    @Deprecated
-    public boolean isHiddenWhenUnavailable() {
-        return true;
-    }
-
-    /**
-     * Sets the item type to be or not to be hidden when the requirements are not met
-     *
-     * @param hiddenWhenUnavailable whether or not the item type should be hidden when unavailable
-     * @deprecated no longer used, does nothing
-     */
-    @Deprecated
-    public final void setHiddenWhenUnavailable(boolean hiddenWhenUnavailable) {
     }
 
     /**

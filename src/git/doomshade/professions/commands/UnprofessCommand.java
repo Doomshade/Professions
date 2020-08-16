@@ -39,14 +39,14 @@ public class UnprofessCommand extends AbstractCommand {
         Profession prof = Professions.getProfessionManager().getProfession(args[1]);
         Messages.MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
         if (prof == null) {
-            user.sendMessage(builder.setMessage(Messages.Message.PROFESSION_DOESNT_EXIST).build());
+            user.sendMessage(builder.setMessage(Messages.Global.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
         builder = builder.setProfession(prof);
         if (user.unprofess(prof)) {
-            user.sendMessage(builder.setMessage(Messages.Message.SUCCESSFULLY_UNPROFESSED).build());
+            user.sendMessage(builder.setMessage(Messages.Global.SUCCESSFULLY_UNPROFESSED).build());
         } else {
-            user.sendMessage(builder.setMessage(Messages.Message.NOT_PROFESSED).build());
+            user.sendMessage(builder.setMessage(Messages.Global.NOT_PROFESSED).build());
         }
         return true;
     }

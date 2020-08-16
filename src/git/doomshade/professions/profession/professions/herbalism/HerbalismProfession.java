@@ -73,12 +73,12 @@ public class HerbalismProfession extends Profession {
                     break;
                 case CANCELLED_BY_DAMAGE:
                     player.sendMessage(messageBuilder
-                            .setMessage(Messages.Message.GATHERING_CANCELLED_BY_DAMAGE)
+                            .setMessage(Messages.HerbalismMessages.GATHERING_CANCELLED_BY_DAMAGE)
                             .build());
                     break;
                 case CANCELLED_BY_MOVE:
                     player.sendMessage(messageBuilder
-                            .setMessage(Messages.Message.GATHERING_CANCELLED_BY_MOVEMENT)
+                            .setMessage(Messages.HerbalismMessages.GATHERING_CANCELLED_BY_MOVEMENT)
                             .build());
                     break;
                 case UNKNOWN:
