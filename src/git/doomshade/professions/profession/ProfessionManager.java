@@ -7,6 +7,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
+import git.doomshade.professions.profession.professions.blacksmithing.BSItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
 import git.doomshade.professions.profession.professions.enchanting.EnchantManager;
 import git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType;
@@ -248,7 +249,16 @@ public final class ProfessionManager implements ISetup {
         {
             OreItemType ore = ItemType.getExampleItemType(OreItemType.class, Ore.EXAMPLE_ORE);
             ore.setName(ChatColor.GRAY + "Obsidian");
+            ore.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             registerItemTypeHolder(new ItemTypeHolder<>(ore));
+        }
+
+        // BLACKSMITHING
+        {
+            BSItemType bs = ItemType.getExampleItemType(BSItemType.class, ItemUtils.EXAMPLE_RESULT);
+            bs.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+            bs.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+            registerItemTypeHolder(new ItemTypeHolder<>(bs));
         }
 
         // HUNTING (no longer used)
@@ -275,12 +285,7 @@ public final class ProfessionManager implements ISetup {
             }
             RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
             EnchantedItemItemType eit = ItemType.getExampleItemType(EnchantedItemItemType.class, ench);
-            ItemStack craftRequirement = new ItemStack(Material.GLASS);
-            ItemMeta craftRequirementMeta = craftRequirement.getItemMeta();
-            craftRequirementMeta.setDisplayName(ChatColor.WHITE + "Sklo");
-            craftRequirementMeta.setLore(ImmutableList.of("Japato"));
-            craftRequirement.setItemMeta(craftRequirementMeta);
-            eit.addCraftingRequirement(craftRequirement);
+            eit.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             eit.setName(ChatColor.RED + "Test random attribute enchantment");
             registerItemTypeHolder(new ItemTypeHolder<>(eit));
         }

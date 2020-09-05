@@ -13,7 +13,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +27,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
 
     private double craftingTime = 5d;
     private ItemStack result = ItemUtils.EXAMPLE_RESULT;
-    private Requirements inventoryRequirements = new Requirements();
     private Requirements craftingRequirements = new Requirements();
     private Map<Sound, String> sounds = new HashMap<>();
 
@@ -40,9 +42,8 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     @Override
     public Map<String, Object> serialize() {
         final Map<String, Object> map = super.serialize();
-        map.put(ITEM_REQUIREMENTS.s, getCraftingRequirements().serialize());
+        map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
         map.put(RESULT.s, getResult().serialize());
-        map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
         map.put(CRAFTING_TIME.s, getCraftingTime());
         map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
         map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
@@ -66,11 +67,8 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
             throw new ProfessionInitializationException(getClass(), list);
         }
 
-        MemorySection itemReqSection = (MemorySection) map.get(ITEM_REQUIREMENTS.s);
+        MemorySection itemReqSection = (MemorySection) map.get(CRAFTABLE_ITEM_REQ.s);
         setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
-
-        MemorySection invReqSection = (MemorySection) map.get(INVENTORY_REQUIREMENTS.s);
-        setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
 
         MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
         setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
@@ -94,14 +92,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         getCraftingRequirements().addRequirement(item);
     }
 
-    /**
-     * Adds an additional inventory requirement for this item type
-     *
-     * @param item the inventory requirement to add
-     */
-    public void addInventoryRequirement(ItemStack item) {
-        getInventoryRequirements().addRequirement(item);
-    }
 
     /**
      * Determines whether or not the player meets crafting requirements
@@ -109,8 +99,9 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
      * @param player the player to check for
      * @return {@code true} if the player meets crafting requirements, {@code false} otherwise
      */
-    public boolean meetsCraftingRequirements(Player player) {
-        return getCraftingRequirements().meetsRequirements(player);
+    @Override
+    public boolean meetsRequirements(Player player) {
+        return super.meetsRequirements(player) && getCraftingRequirements().meetsRequirements(player);
     }
 
 
@@ -120,19 +111,19 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         ItemMeta meta = icon.getItemMeta();
         List<String> lore = meta.getLore();
 
-        for (Strings.ICraftableEnum key : Arrays.asList(ITEM_REQUIREMENTS, INVENTORY_REQUIREMENTS)) {
-            Pattern regex = Pattern.compile("\\{" + key.s + "}");
-            for (int i = 0; i < lore.size(); i++) {
-                String s = lore.get(i);
-                Matcher m = regex.matcher(s);
-                if (!m.find()) {
-                    continue;
-                }
-                s = s.replaceAll(regex.pattern(),
-                        getCraftingRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN, ChatColor.RED));
-                lore.set(i, s);
+
+        Pattern regex = Pattern.compile("\\{" + CRAFTABLE_ITEM_REQ.s + "}");
+        for (int i = 0; i < lore.size(); i++) {
+            String s = lore.get(i);
+            Matcher m = regex.matcher(s);
+            if (!m.find()) {
+                continue;
             }
+            s = s.replaceAll(regex.pattern(),
+                    getCraftingRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN, ChatColor.RED));
+            lore.set(i, s);
         }
+
         meta.setLore(lore);
         icon.setItemMeta(meta);
         return icon;
@@ -167,15 +158,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         this.result = result;
     }
 
-    @Override
-    public final Requirements getInventoryRequirements() {
-        return inventoryRequirements;
-    }
-
-    @Override
-    public final void setInventoryRequirements(Requirements inventoryRequirements) {
-        this.inventoryRequirements = inventoryRequirements;
-    }
 
     @Override
     public final Requirements getCraftingRequirements() {

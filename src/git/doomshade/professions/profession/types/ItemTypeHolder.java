@@ -15,7 +15,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -260,7 +259,6 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         return newItemsMessage;
     }
 
-    @NotNull
     @Override
     public Iterator<Type> iterator() {
         return itemTypes.iterator();

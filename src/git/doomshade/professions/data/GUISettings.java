@@ -12,8 +12,11 @@ import org.bukkit.configuration.ConfigurationSection;
  * @see git.doomshade.professions.commands.PlayerGuiCommand
  */
 public class GUISettings extends AbstractSettings {
-    private static final String SECTION = "gui", PROFESSIONS_GUI_NAME = "professions-gui-name", LEVEL_THRESHOLD = "show-level-threshold";
-    private String professionsGuiName = "Professions";
+    private static final String SECTION = "gui",
+            PROFESSIONS_GUI_NAME = "professions-gui-name",
+            LEVEL_THRESHOLD = "show-level-threshold",
+            INFORMATION_SIGN_NAME = "information-sign-name";
+    private String professionsGuiName = "Professions", signName = "Information";
     private int levelThreshold = 3;
 
     GUISettings() {
@@ -43,20 +46,29 @@ public class GUISettings extends AbstractSettings {
     public void setup() throws ConfigurationException {
         super.setup();
         ConfigurationSection section = getDefaultSection();
-        if (!section.isString(PROFESSIONS_GUI_NAME)) {
-            printError(PROFESSIONS_GUI_NAME, professionsGuiName);
-        } else {
-            this.professionsGuiName = section.getString(PROFESSIONS_GUI_NAME);
-        }
-        if (!this.professionsGuiName.isEmpty()) {
-            this.professionsGuiName = ChatColor.translateAlternateColorCodes('&', this.professionsGuiName);
-        }
+
+        professionsGuiName = setupString(section, PROFESSIONS_GUI_NAME, professionsGuiName);
+        signName = setupString(section, INFORMATION_SIGN_NAME, signName);
 
         if (!section.isInt(LEVEL_THRESHOLD)) {
             printError(LEVEL_THRESHOLD, 3);
         } else {
             this.levelThreshold = section.getInt(LEVEL_THRESHOLD);
         }
+    }
+
+    private String setupString(ConfigurationSection section, String path, String defaultName) {
+
+        String str = "";
+        if (!section.isString(path)) {
+            printError(path, defaultName);
+        } else {
+            str = section.getString(path);
+        }
+        if (!str.isEmpty()) {
+            str = ChatColor.translateAlternateColorCodes('&', str);
+        }
+        return str;
     }
 
 
@@ -66,6 +78,10 @@ public class GUISettings extends AbstractSettings {
 
     public int getLevelThreshold() {
         return levelThreshold;
+    }
+
+    public String getSignName() {
+        return signName;
     }
 
     @Override

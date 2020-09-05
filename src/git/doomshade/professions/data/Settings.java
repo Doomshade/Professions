@@ -169,6 +169,7 @@ public final class Settings implements ISetup {
         miningWorlds = setupVariable("mining-worlds",
                 // using Collections#checkedSet to get a Set<String> (not a HashSet)
                 Collections.checkedList(new ArrayList<>(), String.class),
+                // makes the worlds lower case
                 x -> x.stream().map(String::toLowerCase).collect(Collectors.toList()));
         handleMineEvents = setupVariable("handle-mine-events", false);
 

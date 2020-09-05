@@ -4,14 +4,12 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
-import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import java.lang.reflect.Method;
-import java.util.logging.Level;
 
 /**
  * Placeholder expansion of PlaceholderAPI
@@ -19,7 +17,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
-public class ProfessionPlaceholders extends PlaceholderExpansion implements ISetup {
+public class ProfessionPlaceholders extends PlaceholderExpansion {
 
     private static final String SECONDARY = "secondary";
     private static final String PRIMARY = "primary";
@@ -32,23 +30,7 @@ public class ProfessionPlaceholders extends PlaceholderExpansion implements ISet
         if (registered) {
             throw new RuntimeException("Cannot make more than one instance of " + getClass().getSimpleName());
         }
-    }
-
-
-    @Override
-    public void setup() {
-
-        // already successfully registered
-        if (registered) return;
-
-        // try to register
-        if (!(registered = register())) {
-
-            // register returned false
-            String msg = "Failed to register placeholders";
-            Professions.log(msg, Level.CONFIG);
-            Professions.log(msg, Level.WARNING);
-        }
+        registered = true;
     }
 
     // must persist
@@ -113,6 +95,13 @@ public class ProfessionPlaceholders extends PlaceholderExpansion implements ISet
         return resolveRequest(upd, sub);
     }
 
+    /**
+     * Resolves the placeholder based on profession data and the variable (request)
+     *
+     * @param upd     the user profession data
+     * @param request the variable request
+     * @return replaced placeholder
+     */
     private String resolveRequest(UserProfessionData upd, String request) {
 
 
@@ -127,7 +116,7 @@ public class ProfessionPlaceholders extends PlaceholderExpansion implements ISet
 
 
         // next resolve user specific placeholders
-        // levelCap -> LevelCap
+        // this does in a string: levelCap -> LevelCap
         final String methodName = ((Character) request.charAt(0)).toString().toUpperCase() + request.substring(1);
 
         try {

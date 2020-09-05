@@ -49,14 +49,17 @@ public class ProfessionGUI extends GUI {
         List<String> lore = prof.getProfessionInformation(upd);
         final boolean profHasLore = lore != null && !lore.isEmpty();
 
+        GUISettings settings = Settings.getSettings(GUISettings.class);
+
+        String signName = settings.getSignName();
+
         for (ItemTypeHolder<?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (pos == 5 && profHasLore) {
                     GUIItem infoItem = new GUIItem(Material.SIGN, pos, 1, (short) 0);
                     final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.SIGN);
 
-                    // TODO add to config
-                    itemMeta.setDisplayName(ChatColor.DARK_GREEN + "Informace");
+                    itemMeta.setDisplayName(signName);
                     itemMeta.setLore(lore);
                     infoItem.changeItem(this, () -> itemMeta);
                     builder = builder.withItem(infoItem);

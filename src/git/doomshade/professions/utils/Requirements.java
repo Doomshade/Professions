@@ -17,6 +17,8 @@ import java.util.*;
  * @see ICraftable
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
+
+    // keep it as a list due to indexing in file
     private final List<ItemStack> items;
 
     /**
@@ -27,7 +29,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     }
 
     /**
-     * Calls {@link Requirements#Requirements(List)} with an empty {@link List}.
+     * Calls {@link Requirements#Requirements(List)} with an empty {@link ArrayList}.
      */
     public Requirements() {
         this(new ArrayList<>());
@@ -52,6 +54,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
+
         for (int i = 0; i < items.size(); i++) {
             map.put(String.valueOf(i), ItemUtils.serialize(items.get(i)));
         }
@@ -59,10 +62,10 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     }
 
     /**
-     * @return a copy of the list of requirements
+     * @return the list of requirements
      */
     public List<ItemStack> getRequirements() {
-        return new ArrayList<>(items);
+        return items;
     }
 
     /**
@@ -105,7 +108,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @param player the player to check the requirements for
      * @return the missing requirements of player
      */
-    public HashSet<ItemStack> getMissingRequirements(Player player) {
+    public Collection<ItemStack> getMissingRequirements(Player player) {
         HashSet<ItemStack> items = new HashSet<>(this.items);
         items.removeAll(getMetRequirements(player));
         return items;

@@ -2,6 +2,7 @@ package git.doomshade.professions.task;
 
 import git.doomshade.guiapi.CraftingItem;
 import git.doomshade.guiapi.GUI;
+import git.doomshade.guiapi.event.CraftingEvent;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
@@ -19,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.function.Function;
 
 /**
@@ -123,19 +125,32 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     @Override
     public void run() {
+
+        // item somehow no longer available
         if (item == null) {
-            System.out.println("A");
+            Professions.log("A");
             return;
         }
 
+        // player has no inventory space
         if (!hasInventorySpace()) {
-            System.out.println("B");
+            Professions.log("B");
             return;
         }
-        EventManager em = EventManager.getInstance();
 
+        EventManager em = EventManager.getInstance();
         final Player player = user.getPlayer();
-        if (!item.meetsCraftingRequirements(player)) {
+        final ProfessionEvent<ItemType<?>> pe = em.getEvent(item, user);
+
+        // now check for level
+        if (!item.meetsLevelReq(upd.getLevel())) {
+            pe.printErrorMessage(upd);
+            return;
+        }
+
+
+        // item available and has space -> check for requirements
+        if (!item.meetsRequirements(player)) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Global.REQUIREMENTS_NOT_MET)
                     .setPlayer(user)
                     .setProfession(prof)
@@ -144,20 +159,25 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         }
 
         //final EnchantedItemType eit = em.getItemType(EnchantManager.getInstance().getEnchant(RandomAttributeEnchant.class), EnchantedItemType.class);
-        final ProfessionEvent<ItemType<?>> pe = em.getEvent(item, user);
-        if (!item.meetsLevelReq(upd.getLevel())) {
-            pe.printErrorMessage(upd);
-            return;
-        }
 
+
+        // everything seems valid, start the crafting process
         final CraftingItem craftingItem = new CraftingItem(currentItem, slot);
 
+        // the ItemType could require some extra function during crafting
         Function<ItemStack, ?> func = item.getExtraInEvent();
-        if (func != null)
-            pe.addExtra(func.apply(currentItem));
-        pe.addExtra(EnchantingProfession.ProfessionEventType.CRAFT);
+        if (func != null) {
+            final Object appliedFunc = func.apply(currentItem);
+            if (appliedFunc instanceof Collection) {
+                pe.addExtras((Collection<?>) appliedFunc);
+            } else {
+                pe.addExtra(appliedFunc);
+            }
+        }
 
-        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, (CraftingItem.Progress x) -> {
+
+        // CraftingEvent is a functional interface with a CraftingItem.Progress class as an argument
+        craftingItem.setEvent(CraftingItem.GUIEventType.CRAFTING_END_EVENT, x -> {
             if (!hasInventorySpace()) {
                 return;
             }
@@ -171,7 +191,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
             if (repeat || repeatAmount > 0) {
-                System.out.println("Running anoda one");
+                Professions.log("Running anoda one");
                 CraftingTask newTask = new CraftingTask(upd, currentItem, slot, gui, false);
                 newTask.setRepeat(repeat);
                 newTask.setRepeatAmount(repeatAmount - 1);

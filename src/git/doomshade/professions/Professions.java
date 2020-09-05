@@ -76,12 +76,12 @@ import java.util.logging.Level;
 public final class Professions extends JavaPlugin implements ISetup {
 
     private static final int RED = 900;
+    private static final int GREEN = 500;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
     private static PermissionManager permMan;
     private static Economy econ;
-    private static final int GREEN = 500;
 
     // 5 minutes
     private static final int SAVE_DELAY = 5 * 60;

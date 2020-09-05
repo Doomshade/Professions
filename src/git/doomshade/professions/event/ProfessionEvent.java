@@ -13,7 +13,6 @@ import org.bukkit.event.HandlerList;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -68,37 +67,46 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         extras.add(extra);
     }
 
-    public Collection<Object> getExtras() {
+    public void addExtras(Collection<?> extraObjects) {
+        extras.addAll(extraObjects);
+    }
+
+    public void addExtras(Iterable<?> iterable) {
+        for (Object obj : iterable) {
+            addExtra(obj);
+        }
+    }
+
+    public Collection<?> getExtras() {
         return extras;
     }
 
 
-    public void setExtras(Collection<Object> extras) {
+    public void setExtras(Collection<?> extras) {
         this.extras.clear();
-        this.extras.addAll(extras);
+        addExtras(extras);
     }
 
     @SuppressWarnings("unchecked")
-    public <A> Collection<A> getExtras(Class<A> clazz) {
+    public <A> Iterable<A> getExtras(Class<A> clazz) {
         Collection<A> coll = new ArrayList<>();
-        Iterator<Object> it = extras.iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
+        for (Object o : extras) {
             if (o.getClass().getName().equals(clazz.getName())) {
                 coll.add((A) o);
             }
         }
-
         return coll;
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <A> A getExtra(Class<A> clazz) {
-        Collection<A> collectionExtras = getExtras(clazz);
-        if (collectionExtras.isEmpty()) {
-            return null;
+        for (Object o : extras) {
+            if (o.getClass().getName().equals(clazz.getName())) {
+                return (A) o;
+            }
         }
-        return collectionExtras.iterator().next();
+        return null;
     }
 
     public boolean hasExtra(Class<?> clazz) {

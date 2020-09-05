@@ -41,18 +41,6 @@ public interface ICraftable {
     void setResult(ItemStack result);
 
     /**
-     * @return the inventory requirements
-     */
-    Requirements getInventoryRequirements();
-
-    /**
-     * Sets the inventory requirements
-     *
-     * @param inventoryRequirements the inventory requirements to set
-     */
-    void setInventoryRequirements(Requirements inventoryRequirements);
-
-    /**
      * @return the crafting requirements
      */
     Requirements getCraftingRequirements();

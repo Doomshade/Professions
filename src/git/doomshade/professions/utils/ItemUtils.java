@@ -90,23 +90,23 @@ public final class ItemUtils {
         }
 
         diablo:
-        if (Professions.isDiabloLikeHook()) {
+        if (checkForDiabloHook && Professions.isDiabloLikeHook()) {
             Object potentialId = map.get(DIABLO_ITEM);
 
             if (!(potentialId instanceof String)) {
-                if (potentialId == null) {
-                    Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
-                    if (!loggedDiablo) {
-                        Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
-                        Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
+                Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
+                if (!loggedDiablo) {
+                    Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
+                    Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
 
-                        loggedDiablo = true;
-                    }
-                    Professions.log("The serialized form:\n" + map, Level.CONFIG);
+                    loggedDiablo = true;
                 }
+                Professions.log("The serialized form:\n" + map, Level.CONFIG);
+
                 break diablo;
             }
 
+            // the potentialId is instanceof String and also not null -> continue
             final String id = (String) potentialId;
             final DiabloItem diabloItem = DiabloLike.getItemFromConfigName(id);
             if (diabloItem == null) {
@@ -206,7 +206,7 @@ public final class ItemUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static Map<String, Object> serialize(ItemStack item) {
+    public static Map<String, Object> serialize(final ItemStack item) {
 
         if (item == null) {
             return null;
@@ -221,19 +221,27 @@ public final class ItemUtils {
             if (meta.hasDisplayName()) {
                 final String displayName = meta.getDisplayName();
 
+                // we look for DiabloLike first
                 if (Professions.isDiabloLikeHook()) {
-                    final List<DiabloItem> items = DiabloLike.getItemFromDisplayName(displayName);
+                    final List<DiabloItem> items = DiabloLike.getItemFromDisplayName(displayName)
+                            .stream()
+                            .filter(x -> x.getItem().getType() == item.getType())
+                            .collect(Collectors.toList());
 
-                    if (items != null) {
-                        if (items.size() != 1) {
-                            Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
-                            Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
-                        } else {
-                            map.put(DIABLO_ITEM, items.get(0).getConfigName());
-                            return map;
-                        }
+                    if (items.size() > 1) {
+                        // log that we found the diablo item but there were duplicates
+                        Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
+                        Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
+                    } else {
+                        // there was only one of a kind diabloitem
+                        map.put(DIABLO_ITEM, items.get(0).getConfigName());
+                        return map;
+
                     }
                 }
+
+                // DiabloLike item not found, continue in serialization
+
                 map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
             }
             if (meta.hasLore()) {

@@ -12,6 +12,7 @@ import java.util.logging.Level;
 public class PlaceholderManager implements ISetup {
     private static final PlaceholderManager instance = new PlaceholderManager();
     private ProfessionPlaceholders placeholders = null;
+    private static boolean registered = false;
 
     private PlaceholderManager() {
     }
@@ -20,12 +21,17 @@ public class PlaceholderManager implements ISetup {
         return instance;
     }
 
+    public static boolean usesPlaceholders() {
+        return registered;
+    }
+
     @Override
     public void setup() {
-        if (placeholders != null) return;
+        if (placeholders != null && registered) return;
 
         placeholders = new ProfessionPlaceholders();
-        if (!placeholders.register()) {
+
+        if (!(registered = placeholders.register())) {
             String msg = "Failed to register placeholders";
             Professions.log(msg, Level.CONFIG);
             Professions.log(msg, Level.WARNING);

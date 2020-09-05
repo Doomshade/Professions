@@ -13,12 +13,14 @@ import git.doomshade.professions.profession.ICustomType;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -29,6 +31,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
@@ -58,6 +62,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     private boolean ignoreSkillupColor;
     private int cost = -1;
     private boolean trainable = false;
+    private Requirements inventoryRequirements = new Requirements();
 
     /**
      * Constructor for creation of the item type object
@@ -164,6 +169,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         if (!list.isEmpty()) {
             throw new ProfessionInitializationException(getClass(), list, getFileId());
         }
+
+        MemorySection invReqSection = (MemorySection) map.get(INVENTORY_REQUIREMENTS.s);
+        setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+
         MemorySection mem = (MemorySection) map.get(OBJECT.s);
 
         try {
@@ -194,6 +203,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
         map.put(TRAINABLE.s, isTrainable());
         map.put(TRAINABLE_COST.s, getTrainableCost());
+        map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
         return map;
     }
 
@@ -338,7 +348,22 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         ItemStack icon = new ItemStack(getGuiMaterial());
         ItemMeta iconMeta = icon.getItemMeta();
         iconMeta.setDisplayName(getName());
-        iconMeta.setLore(ItemUtils.getDescription(this, getDescription(), upd));
+        final List<String> lore = ItemUtils.getDescription(this, getDescription(), upd);
+
+        if (upd != null) {
+            Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
+            for (int i = 0; i < lore.size(); i++) {
+                String s = lore.get(i);
+                Matcher m = regex.matcher(s);
+                if (!m.find()) {
+                    continue;
+                }
+                s = s.replaceAll(regex.pattern(),
+                        getInventoryRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN, ChatColor.RED));
+                lore.set(i, s);
+            }
+        }
+        iconMeta.setLore(lore);
         icon.setItemMeta(iconMeta);
         return icon;
     }
@@ -426,7 +451,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * that gets further passed to profession
      *
      * @param object the object
-     * @return {@code true} if the object equals to this class' object
+     * @return {@code true} if the object equals to this generic argument object
      */
     public boolean equalsObject(T object) {
         return item.equals(object);
@@ -484,6 +509,39 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                 .append("config-id: " + configName)
                 .append("}");
         return sb.toString();
+    }
+
+    /**
+     * Adds an additional inventory requirement for this item type
+     *
+     * @param item the inventory requirement to add
+     */
+    public final void addInventoryRequirement(ItemStack item) {
+        inventoryRequirements.addRequirement(item);
+    }
+
+    /**
+     * @return the inventory requirements
+     */
+    public final Requirements getInventoryRequirements() {
+        return inventoryRequirements;
+    }
+
+    /**
+     * Sets the inventory requirements, overriding existing ones
+     *
+     * @param inventoryRequirements the inventory requirements
+     */
+    public final void setInventoryRequirements(Requirements inventoryRequirements) {
+        this.inventoryRequirements = inventoryRequirements;
+    }
+
+    /**
+     * @param player the player to check for
+     * @return {@code true} if the player meets requirements to proceed with the event, {@code false} otherwise. Does not check for level requirements!
+     */
+    public boolean meetsRequirements(Player player) {
+        return inventoryRequirements.meetsRequirements(player);
     }
 
     /**

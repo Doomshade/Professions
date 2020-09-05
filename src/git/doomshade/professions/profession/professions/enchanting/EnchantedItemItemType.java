@@ -4,8 +4,7 @@ import git.doomshade.professions.profession.types.CraftableItemType;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -54,7 +53,11 @@ public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     }
 
     @Override
-    public Function<ItemStack, PreEnchantedItem> getExtraInEvent() {
-        return x -> new PreEnchantedItem(getObject(), x);
+    public Function<ItemStack, Collection<?>> getExtraInEvent() {
+
+        // we can add a collection as an argument
+        return x -> Arrays.asList(
+                new PreEnchantedItem(getObject(), x),
+                EnchantingProfession.ProfessionEventType.CRAFT);
     }
 }

@@ -18,10 +18,9 @@ public final class Strings {
      * The enum for {@link ICraftable}
      */
     public enum ICraftableEnum implements FileEnum {
-        ITEM_REQUIREMENTS("item-requirements"),
+        CRAFTABLE_ITEM_REQ("item-requirements"),
         RESULT("result"),
         CRAFTING_TIME("crafting-time"),
-        INVENTORY_REQUIREMENTS("inventory-requirements"),
         SOUND_CRAFTING("crafting-sound"),
         SOUND_CRAFTED("crafted-sound");
 
@@ -36,10 +35,9 @@ public final class Strings {
         public EnumMap<ICraftableEnum, Object> getDefaultValues() {
             return new EnumMap<ICraftableEnum, Object>(ICraftableEnum.class) {
                 {
-                    put(ITEM_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(CRAFTABLE_ITEM_REQ, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(CRAFTING_TIME, 5d);
-                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(SOUND_CRAFTING, "block.fire.ambient");
                     put(SOUND_CRAFTED, "block.fire.extinguish");
                 }
@@ -66,7 +64,8 @@ public final class Strings {
         LEVEL_REQ_COLOR("level-req-color"),
         IGNORE_SKILLUP_COLOR("ignore-skillup-color"),
         TRAINABLE("trainable"),
-        TRAINABLE_COST("trainable-cost");
+        TRAINABLE_COST("trainable-cost"),
+        INVENTORY_REQUIREMENTS("inventory-requirements");
 
         public final String s;
 
@@ -84,6 +83,7 @@ public final class Strings {
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));
                     put(MATERIAL, Material.CHEST);
                     put(RESTRICTED_WORLDS, Arrays.asList("some_world", "some_other_world"));
+                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(IGNORE_SKILLUP_COLOR, true);
                     put(TRAINABLE, false);
                     put(TRAINABLE_COST, 0);

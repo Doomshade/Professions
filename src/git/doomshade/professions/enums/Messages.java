@@ -3,12 +3,14 @@ package git.doomshade.professions.enums;
 import com.google.common.collect.Sets;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.placeholder.PlaceholderManager;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.Profession.ProfessionType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -73,6 +75,7 @@ public class Messages implements ISetup {
                 .add(HerbalismMessages.values())
                 .add(EnchantingMessages.values())
                 .add(AlchemyMessages.values())
+                .add(JewelcraftingMessages.values())
                 .add(Global.values())
                 .build();
         final Sets.SetView<String> missing = Sets.difference(allKeys.stream().map(MessagesHolder::getKey).collect(Collectors.toSet()), propertyNames);
@@ -86,6 +89,24 @@ public class Messages implements ISetup {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public enum JewelcraftingMessages implements MessagesHolder {
+        INVALID_ITEM("invalid-item"),
+        NO_GEM_SPACE("no-space-for-gem"),
+        ADDED_GEM_SUCCESSFUL("added-gem-successful"),
+        CLICK_ON_ITEM_WITH_GEM_SLOT("click-on-gem-with-gem-slot");
+
+        private final String key;
+
+        JewelcraftingMessages(String key) {
+            this.key = key;
+        }
+
+        @Override
+        public String getKey() {
+            return key;
         }
     }
 
@@ -156,7 +177,8 @@ public class Messages implements ISetup {
         NOT_PROFESSED("not-professed"),
         PROFTYPE_PRIMARY("proftype-primary"),
         PROFTYPE_SECONDARY("proftype-secondary"),
-        PROFESSION_REQUIRED_FOR_THIS_ACTION("profession-required-for-this-action");
+        PROFESSION_REQUIRED_FOR_THIS_ACTION("profession-required-for-this-action"),
+        NO_ITEM_IN_HAND("no-item-in-hand");
 
 
         private final String key;
@@ -184,6 +206,7 @@ public class Messages implements ISetup {
     public static class MessageBuilder {
         private String message;
         private Map<Pattern, String> replacements = new HashMap<>();
+        private Player player = null;
 
         public MessageBuilder() {
             this.message = "";
@@ -219,6 +242,7 @@ public class Messages implements ISetup {
         }
 
         public MessageBuilder setPlayer(Player player) {
+            this.player = player;
             return replace(Pattern.P_PLAYER, player.getDisplayName());
         }
 
@@ -248,6 +272,12 @@ public class Messages implements ISetup {
             if (message.isEmpty()) {
                 return "No message set";
             }
+
+            if (PlaceholderManager.usesPlaceholders()) {
+                PlaceholderAPI.setPlaceholders(player, message);
+            }
+
+            // don't delete this as the PlaceholderAPI extension does not have to be necessarily available
             for (Entry<Pattern, String> e : replacements.entrySet()) {
                 message = message.replaceAll("\\{" + e.getKey().pattern + "}", e.getValue());
             }
