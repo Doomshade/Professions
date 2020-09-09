@@ -7,6 +7,8 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.Profession.ProfessionType;
+import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.profession.Subprofession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
 import git.doomshade.professions.profession.types.ItemType;
@@ -19,10 +21,7 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -212,10 +211,21 @@ public final class User {
         if (!canProfess(prof)) {
             return false;
         }
-        professions.put(prof.getClass(), new UserProfessionData(this, prof));
-        final ProfessionType professionType = prof.getProfessionType();
-        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
+        registerProfession(prof);
+        updateUsedProfessionTypes(prof.getProfessionType(), true);
+
+        final Collection<Class<? extends Subprofession>> subProfs = prof.getSubprofessions();
+        if (subProfs != null) {
+            final ProfessionManager profMan = ProfessionManager.getInstance();
+            for (Class<? extends Subprofession> subProf : subProfs) {
+                registerProfession(profMan.getProfession(subProf));
+            }
+        }
         return true;
+    }
+
+    private void registerProfession(Profession prof) {
+        professions.put(prof.getClass(), new UserProfessionData(this, prof));
     }
 
     /**
@@ -228,11 +238,26 @@ public final class User {
         if (!hasProfession(prof)) {
             return false;
         }
-        professions.remove(prof.getClass());
-        final ProfessionType professionType = prof.getProfessionType();
-        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) - 1);
-        profSection.set(prof.getID(), null);
+        unregisterProfession(prof);
+        updateUsedProfessionTypes(prof.getProfessionType(), false);
+
+        final Collection<Class<? extends Subprofession>> subprofessions = prof.getSubprofessions();
+        if (subprofessions != null) {
+            final ProfessionManager profMan = ProfessionManager.getInstance();
+            for (Class<? extends Subprofession> subProfClass : subprofessions) {
+                unregisterProfession(profMan.getProfession(subProfClass));
+            }
+        }
         return true;
+    }
+
+    private void updateUsedProfessionTypes(ProfessionType professionType, boolean add) {
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + (add ? 1 : -1));
+    }
+
+    private void unregisterProfession(Profession prof) {
+        professions.remove(prof.getClass());
+        profSection.set(prof.getID(), null);
     }
 
     /**

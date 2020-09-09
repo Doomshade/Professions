@@ -1,6 +1,5 @@
 package git.doomshade.professions.profession;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
@@ -42,7 +41,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import javax.annotation.Nullable;
@@ -162,16 +160,16 @@ public final class ProfessionManager implements ISetup {
 
     /**
      * @param profession the {@link Profession} class
-     * @return the {@link Profession} if found, {@code null} otherwise
+     * @return the {@link Profession} if found
+     * @throws RuntimeException if the profession is not registered
      */
-    @Nullable
-    public Profession getProfession(Class<? extends Profession> profession) {
+    public Profession getProfession(Class<? extends Profession> profession) throws RuntimeException {
         for (Profession prof : PROFESSIONS_ID.values()) {
             if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
                 return prof;
             }
         }
-        return null;
+        throw new RuntimeException("Profession not registered!");
     }
 
     @Override

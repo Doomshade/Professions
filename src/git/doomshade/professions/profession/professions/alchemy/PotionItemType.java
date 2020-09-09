@@ -44,7 +44,7 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
 
     @Override
-    public Function<ItemStack, ItemStack> getExtraInEvent() {
+    public Function<ItemStack, ItemStack> getExtraToEvent() {
         return itemStack -> itemStack;
     }
 

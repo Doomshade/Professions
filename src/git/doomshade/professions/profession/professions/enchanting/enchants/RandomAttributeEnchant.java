@@ -54,6 +54,7 @@ public class RandomAttributeEnchant extends Enchant {
                 case 1:
                     break;
             }
+            return null;
         });
     }
 

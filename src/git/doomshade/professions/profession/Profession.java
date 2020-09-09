@@ -25,10 +25,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The class for custom profession.
@@ -422,5 +419,10 @@ public abstract class Profession implements Listener, Comparable<Profession> {
             PRIMARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_PRIMARY).build();
             SECONDARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_SECONDARY).build();
         }
+    }
+
+
+    public Collection<Class<? extends Subprofession>> getSubprofessions() {
+        return null;
     }
 }

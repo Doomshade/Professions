@@ -5,6 +5,8 @@ import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.profession.Subprofession;
+import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -15,6 +17,8 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -109,5 +113,11 @@ public final class MiningProfession extends Profession {
         AttributeInstance ai;
         AttributeBase base;*/
         return null;
+    }
+
+
+    @Override
+    public Collection<Class<? extends Subprofession>> getSubprofessions() {
+        return Collections.singletonList(SmeltingProfession.class);
     }
 }

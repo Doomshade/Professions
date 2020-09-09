@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
 /**
@@ -23,7 +23,7 @@ public abstract class Enchant implements ConfigurationSerializable {
     private static final List<Pattern> attributePatterns = new ArrayList<>();
     static final HashMap<Class<? extends Enchant>, Enchant> ENCHANTS = new HashMap<>();
     private static final String ITEMSTACK = "itemstack", CLASS = "class", CRAFT_EXP_YIELD = "craft-exp-yield";
-    private BiConsumer<ItemStack, Integer> function = null;
+    private BiFunction<ItemStack, Integer, ItemStack> function = null;
 
     static {
 
@@ -202,16 +202,16 @@ public abstract class Enchant implements ConfigurationSerializable {
         this.craftExpYield = craftExpYield;
     }
 
-    public void setEnchantFunction(BiConsumer<ItemStack, Integer> func) {
+    public void setEnchantFunction(BiFunction<ItemStack, Integer, ItemStack> func) {
         this.function = func;
     }
 
-    public final void use(ItemStack item, int intensity) {
-        function.accept(item, intensity);
+    public final ItemStack use(ItemStack item, int intensity) {
+        return function.apply(item, intensity);
     }
 
-    public final void use(ItemStack item) {
-        use(item, DEFAULT_INTENSITY);
+    public final ItemStack use(ItemStack item) {
+        return use(item, DEFAULT_INTENSITY);
     }
 
 
