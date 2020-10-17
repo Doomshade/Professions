@@ -68,21 +68,41 @@ public final class Utils {
     }
 
     /**
+     * Casts an object to desired class.
+     * Note that this method has no way of telling whether the object is instanceof the class it is being cast to,
+     * thus a {@link ClassCastException} will be thrown if object cannot be casted to the class
+     *
+     * @param obj the object to class
+     * @param <T> the class to cast to
+     * @return the casted class
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object obj) throws ClassCastException {
+        return (T) obj;
+    }
+
+    /**
      * @param map    the {@link ConfigurationSerializable#serialize()} map
      * @param values the {@link Enum} values ({@code Enum.values()})
      * @return a {@link Set} of {@link String}s
      */
     @NotNull
-    public static Set<String> getMissingKeys(Map<String, Object> map, FileEnum[] values) {
-        return getMissingKeysEnum(map, values).stream().map(Object::toString).collect(Collectors.toSet());
+    public static Set<String> getMissingKeys(Map<String, Object> map, FileEnum[] values, FileEnum... filtered) {
+        return getMissingKeysEnum(map, values, filtered).stream().map(Object::toString).collect(Collectors.toSet());
     }
 
-    public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values) {
+    public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values, FileEnum... filtered) {
         Set<FileEnum> list = new HashSet<>();
 
+        _loop:
         for (FileEnum value : values) {
             final String key = value.toString();
             if (!map.containsKey(key)) {
+                for (FileEnum filter : filtered) {
+                    if (value == filter) {
+                        continue _loop;
+                    }
+                }
                 list.add(value);
             }
         }

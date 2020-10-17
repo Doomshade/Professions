@@ -15,7 +15,7 @@ public class ProfessionInitializationException extends Exception {
      * @param clazz the item type class in which the error occurred
      * @param keys  the keys of missing keys
      */
-    public ProfessionInitializationException(Class<? extends ItemType> clazz, Collection<String> keys) {
+    public ProfessionInitializationException(Class<?> clazz, Collection<String> keys) {
         this(clazz, keys, NO_ID);
     }
 
@@ -26,7 +26,7 @@ public class ProfessionInitializationException extends Exception {
      * @param keys              the keys of missing keys
      * @param additionalMessage the additional message to add at the end of exception
      */
-    public ProfessionInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, String additionalMessage) {
+    public ProfessionInitializationException(Class<?> clazz, Collection<String> keys, String additionalMessage) {
         this(clazz, keys, NO_ID, additionalMessage);
     }
 
@@ -38,7 +38,7 @@ public class ProfessionInitializationException extends Exception {
      * @param keys  the keys of missing keys
      * @param id    the ID of {@code ItemType}
      */
-    public ProfessionInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id) {
+    public ProfessionInitializationException(Class<?> clazz, Collection<String> keys, int id) {
         this(clazz, keys, id, "");
     }
 
@@ -51,7 +51,7 @@ public class ProfessionInitializationException extends Exception {
      * @param id                the ID of {@link ItemType}
      * @param additionalMessage the additional message to add at the end of exception
      */
-    public ProfessionInitializationException(Class<? extends ItemType> clazz, Collection<String> keys, int id, String additionalMessage) {
+    public ProfessionInitializationException(Class<?> clazz, Collection<String> keys, int id, String additionalMessage) {
         super("Could not fully deserialize " + clazz.getSimpleName().replace("itemtype", "") + (id != NO_ID ? " with id " + id : "") + " as some of the keys are missing! - " + keys + ". " + additionalMessage);
     }
 }

@@ -149,6 +149,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @throws ProfessionInitializationException if the initialization of this class is unsuccessful
      */
     public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+
+        // sets the config name aswell
         setFileId(id);
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));

@@ -7,7 +7,10 @@ import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.FileEnum;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.ParticleData;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -17,8 +20,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.BiFunction;
 
-import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.*;
+import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.RESULT;
 
 /**
  * Custom class for {@link git.doomshade.professions.profession.types.ItemType}.
@@ -30,22 +34,19 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
 
     public static final HashMap<String, Ore> ORES = new HashMap<>();
     private static final String EXAMPLE_ORE_ID = "example-ore";
-    public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, new SortedList<>(Comparator.naturalOrder()), new ArrayList<>(), new ParticleData());
-    private Material oreMaterial;
-    private SortedList<YieldResult> results;
-    private final String id;
-    private ParticleData particleData;
-    private String name;
+    public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, Collections.emptySortedSet(), new ArrayList<>(), new ParticleData());
+    private SortedSet<YieldResult> results;
 
-    private Ore(String id, String name, Material oreMaterial, SortedList<YieldResult> results, List<SpawnPoint> spawnPoints, ParticleData particleData) {
-        super(spawnPoints);
-        this.id = id;
-        this.name = name;
-        this.oreMaterial = oreMaterial;
-        this.particleData = particleData;
+    private Ore(String id, String name, Material oreMaterial, SortedSet<YieldResult> results, List<SpawnPoint> spawnPoints, ParticleData particleData) {
+        super(id, name, oreMaterial, (byte) 0, spawnPoints, particleData);
         this.results = results;
-        if (!id.equals(EXAMPLE_ORE_ID))
+        if (!rejectedIds().contains(id))
             ORES.put(id, this);
+    }
+
+    @Override
+    protected Set<String> rejectedIds() {
+        return Collections.singleton(EXAMPLE_ORE_ID);
     }
 
     @Nullable
@@ -60,18 +61,37 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
      * @return deserialized Ore
      * @throws ProfessionObjectInitializationException when Ore is not initialized correctly
      */
-    public static Ore deserialize(Map<String, Object> map, String name) throws ProfessionObjectInitializationException {
-        Set<String> list = Utils.getMissingKeys(map,
-                Arrays.stream(OreEnum.values())
-                        .filter(x -> x != SPAWN_POINT && x != RESULT)
-                        .toArray(OreEnum[]::new));
-        if (!list.isEmpty()) {
-            throw new ProfessionObjectInitializationException(OreItemType.class, list);
-        }
+    public static Ore deserialize(Map<String, Object> map, final String name) throws ProfessionObjectInitializationException {
 
+        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(OreItemType.class, new HashSet<>());
+
+
+        final BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, Ore> func = (x, y) -> {
+            // if there are missing keys, add it to exception
+            if (y != null) {
+                ex.add(y);
+            }
+            SortedSet<YieldResult> results = new TreeSet<>();
+
+            MemorySection dropSection;
+
+            int i = 0;
+            while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
+                results.add(YieldResult.deserialize(dropSection.getValues(false)));
+                i++;
+            }
+            return new Ore(x.getId(), name, x.getMaterial(), results, x.getSpawnPoints(), x.getParticleData());
+        };
+
+        // if there are missing keys, throw ex
+        if (!ex.getKeys().isEmpty()) {
+            throw ex;
+        }
+        return SpawnableElement.deserialize(map, Ore.class, func);
+    }
+    /*
         String id = (String) map.get(ID.s);
         Material mat = Material.getMaterial((String) map.get(MATERIAL.s));
-
 
         SortedList<YieldResult> results = new SortedList<>(Comparator.naturalOrder());
 
@@ -94,7 +114,7 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
 
         return new Ore(id, name, mat, results, spawnPoints, ParticleData.deserialize(particleSection.getValues(true)));
-    }
+    }*/
 
     @Override
     protected OreLocationOptions createLocationOptions(Location location) {
@@ -110,24 +130,14 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
     @Override
     public Map<String, Object> serialize() {
 
-        return new HashMap<String, Object>() {
-            {
-                put(ID.s, id);
-                put(MATERIAL.s, oreMaterial.name());
-                for (int i = 0; i < results.size(); i++) {
-                    put(RESULT.s.concat("-" + i), results.get(i).serialize());
-                }
+        final Map<String, Object> map = super.serialize();
 
-                int i = 0;
+        int i = 0;
+        for (YieldResult result : results) {
+            map.put(RESULT.s.concat("-" + i++), result.serialize());
+        }
 
-                for (SpawnPoint spawnPoint : getSpawnPoints()) {
-                    put(SPAWN_POINT.s.concat("-" + i), spawnPoint.serialize());
-                    i++;
-                }
-                put(PARTICLE.s, particleData.serialize());
-            }
-
-        };
+        return map;
     }
 
     /**
@@ -146,39 +156,10 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
         return null;
     }
 
-    @Override
-    public ParticleData getParticleData() {
-        return particleData;
-    }
-
-    @Override
-    public Material getMaterial() {
-        return oreMaterial;
-    }
-
-    @Override
-    public byte getMaterialData() {
-        return 0;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
     /**
      * Enum for keys in file
      */
     enum OreEnum implements FileEnum {
-        SPAWN_POINT("spawnpoint"),
-        ID("id"),
-        MATERIAL("material"),
-        PARTICLE("particle"),
         RESULT("drop");
 
         final String s;
@@ -191,10 +172,6 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
         public EnumMap<OreEnum, Object> getDefaultValues() {
             return new EnumMap<OreEnum, Object>(OreEnum.class) {
                 {
-                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
-                    put(ID, "some_id");
-                    put(MATERIAL, Material.GLASS);
-                    put(PARTICLE, new ParticleData());
                     put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT));
                 }
             };
@@ -204,5 +181,10 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
         public String toString() {
             return s;
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Ore{ID=%s\nName=%s\nMaterial=%s\nSpawnPoints=%s}", getId(), getName(), getMaterial(), getSpawnPoints());
     }
 }

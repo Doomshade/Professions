@@ -8,7 +8,6 @@ import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.profession.Profession.ProfessionType;
 import git.doomshade.professions.profession.ProfessionManager;
-import git.doomshade.professions.profession.Subprofession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
 import git.doomshade.professions.profession.types.ItemType;
@@ -168,13 +167,15 @@ public final class User {
 
     /**
      * Whether or not this user can profess profession Calls
-     * {@link #hasProfession(Profession)} and
-     * {@link #hasProfessionType(ProfessionType)}
+     * {@link User#hasProfession(Profession)} and
+     * {@link User#hasProfessionType(ProfessionType)}
+     * {@link Profession#isSubprofession()}
+     *
      *
      * @param prof the profession to check
      */
     public boolean canProfess(Profession prof) {
-        return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType());
+        return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType()) && !prof.isSubprofession();
     }
 
     /**
@@ -182,7 +183,7 @@ public final class User {
      * @return true if this user has already a profession of that type
      */
     private boolean hasProfessionType(ProfessionType type) {
-        return usedProfessionTypes.get(type) == Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
+        return usedProfessionTypes.get(type) >= Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
     /**
@@ -191,7 +192,7 @@ public final class User {
      */
     public boolean hasProfession(Profession prof) {
         try {
-            Utils.findInIterable(professions.values(), x -> x.getProfession().getID().equalsIgnoreCase(prof.getID()));
+            Utils.findInIterable(professions.values(), x -> x.getProfession().getID().equals(prof.getID()));
             return true;
         } catch (Utils.SearchNotFoundException e) {
             if (profSection.isConfigurationSection(prof.getID())) {
@@ -214,11 +215,15 @@ public final class User {
         registerProfession(prof);
         updateUsedProfessionTypes(prof.getProfessionType(), true);
 
-        final Collection<Class<? extends Subprofession>> subProfs = prof.getSubprofessions();
+        final Collection<Class<? extends Profession>> subProfs = prof.getSubprofessions();
         if (subProfs != null) {
             final ProfessionManager profMan = ProfessionManager.getInstance();
-            for (Class<? extends Subprofession> subProf : subProfs) {
-                registerProfession(profMan.getProfession(subProf));
+            for (Class<? extends Profession> subProf : subProfs) {
+                final Profession profession = profMan.getProfession(subProf);
+
+                // making sure, not needed likely
+                if (profession.isSubprofession())
+                    registerProfession(profession);
             }
         }
         return true;
@@ -241,10 +246,10 @@ public final class User {
         unregisterProfession(prof);
         updateUsedProfessionTypes(prof.getProfessionType(), false);
 
-        final Collection<Class<? extends Subprofession>> subprofessions = prof.getSubprofessions();
+        final Collection<Class<? extends Profession>> subprofessions = prof.getSubprofessions();
         if (subprofessions != null) {
             final ProfessionManager profMan = ProfessionManager.getInstance();
-            for (Class<? extends Subprofession> subProfClass : subprofessions) {
+            for (Class<? extends Profession> subProfClass : subprofessions) {
                 unregisterProfession(profMan.getProfession(subProfClass));
             }
         }
@@ -452,13 +457,20 @@ public final class User {
         }
 
         for (UserProfessionData upd : professions.values()) {
-            final ProfessionType professionType = upd.getProfession().getProfessionType();
-            usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + 1);
+            final Profession profession = upd.getProfession();
+
+            // don't register as used type if subprofession
+            if (profession.isSubprofession()) continue;
+
+            final ProfessionType professionType = profession.getProfessionType();
+            updateUsedProfessionTypes(professionType, true);
         }
 
         final MaxProfessionsSettings settings = Settings.getSettings(MaxProfessionsSettings.class);
         final int maxProfessions = settings.getMaxProfessions(ProfessionType.PRIMARY) + settings.getMaxProfessions(ProfessionType.SECONDARY);
-        if (professions.size() > maxProfessions) {
+
+        // filter out subprofessions
+        if (professions.values().stream().filter(x -> !(x.getProfession().isSubprofession())).count() > maxProfessions) {
             final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
             Professions.log(message, Level.SEVERE);
         }

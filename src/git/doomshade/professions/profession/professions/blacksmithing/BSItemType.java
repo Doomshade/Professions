@@ -5,6 +5,7 @@ import git.doomshade.professions.profession.types.CraftableItemType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class BSItemType extends CraftableItemType<ItemStack> {
@@ -19,7 +20,10 @@ public class BSItemType extends CraftableItemType<ItemStack> {
 
     @Override
     public Map<String, Object> getSerializedObject() {
-        return null;
+        if (getObject() != null) {
+            return ItemUtils.serialize(getObject());
+        }
+        return new HashMap<>();
     }
 
     @Override

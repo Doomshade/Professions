@@ -421,8 +421,10 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         }
     }
 
+    public abstract boolean isSubprofession();
 
-    public Collection<Class<? extends Subprofession>> getSubprofessions() {
+
+    public Collection<Class<? extends Profession>> getSubprofessions() {
         return null;
     }
 }

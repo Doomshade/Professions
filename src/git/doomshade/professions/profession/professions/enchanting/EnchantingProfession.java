@@ -57,4 +57,8 @@ public final class EnchantingProfession extends Profession {
         CRAFT, ENCHANT
     }
 
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 }

@@ -41,7 +41,7 @@ public class LocationOptions {
         this.location = location;
         this.element = element;
         if (!element.getSpawnPoints().contains(new SpawnPoint(location))) {
-            throw new IllegalArgumentException("No spawn point with that location exists for " + element.getName());
+            throw new IllegalArgumentException("No spawn point with " + location + " exists for " + element.getName() + "(" + element.getSpawnPoints() + ")");
         }
         particleTask = new ParticleTask(element.getParticleData(), location);
         spawnTask = new SpawnTask(this);

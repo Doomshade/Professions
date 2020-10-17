@@ -43,7 +43,7 @@ public class SpawnCommand extends AbstractCommand {
         Location loc = null;
         try {
             if (spId instanceof Integer)
-                loc = herb.getSpawnPoints().get((Integer) spId).location;
+                loc = herb.getSpawnPoints().get((Integer) spId);
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
             return true;

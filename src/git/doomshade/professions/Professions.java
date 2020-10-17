@@ -37,6 +37,7 @@ import git.doomshade.professions.trait.TrainerListener;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.ItemUtils;
 import net.citizensnpcs.Citizens;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
@@ -63,7 +64,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 
@@ -97,6 +101,7 @@ public final class Professions extends JavaPlugin implements ISetup {
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
     private final File CACHE_FOLDER = new File(getDataFolder(), "cache");
+    private final File DATA_FOLDER = new File(getDataFolder(), "data");
     // files
     // TODO: 23.04.2020 perhaps make some IOManager for this someday?
     private final File BACKUP_FOLDER = new File(getDataFolder(), "backup");
@@ -271,12 +276,18 @@ public final class Professions extends JavaPlugin implements ISetup {
         log(message, Level.INFO);
     }
 
+    public static void logError(Exception e) {
+        log("Internal plugin error, contact author with the stack trace from your log file.", Level.WARNING);
+        log(Arrays.toString(e.getStackTrace()), Level.CONFIG);
+    }
+
     // hooks
     private static Professions instance;
     private static boolean diabloLike = false;
 
     /**
-     * Logs a message. Use {@link Level#CONFIG} to log into log file.
+     * Logs a message. Levels >= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file.
+     * Levels >=900 will be displayed in red. Levels <=500 will be displayed in green.
      *
      * @param message the message to display
      * @param level   the log level
@@ -308,8 +319,7 @@ public final class Professions extends JavaPlugin implements ISetup {
 
         if (leveli >= RED) {
             color = Ansi.Color.RED;
-        }
-        else if (leveli <= GREEN) {
+        } else if (leveli <= GREEN) {
             color = Ansi.Color.GREEN;
         }
 
@@ -333,6 +343,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 itemType.onDisable();
             }
         }
+        cleanup();
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
@@ -351,7 +362,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         saveUsers();
         fos.flush();
     }
-
 
     /**
      * Reloads the config
@@ -546,6 +556,13 @@ public final class Professions extends JavaPlugin implements ISetup {
     }
 
     /**
+     * @return the folder with additional data that does not belong to any other file (user, itemtype, ...)
+     */
+    public File getAdditionalDataFolder() {
+        return getFolder(DATA_FOLDER);
+    }
+
+    /**
      * @return the current log file
      */
     public File getLogFile() {
@@ -719,6 +736,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             e.printStackTrace();
         }
         // then the rest
+        registerSetup(ItemUtils.instance);
         registerSetup(Profession.ProfessionType.PRIMARY);
 
         registerCommandHandler(new CommandHandler());
@@ -727,6 +745,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         registerCommandHandler(new AlchemyCommandHandler());
         registerCommandHandler(new JewelcraftingCommandHandler());
 
+        // and lastly professions
         registerSetup(ProfessionManager.getInstance());
     }
 

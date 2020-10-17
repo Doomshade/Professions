@@ -90,7 +90,10 @@ public class HerbalismProfession extends Profession {
         // create and run the task
         HerbGatherTask herbGatherTask = new HerbGatherTask(herbLocationOptions, upd, herb.getGatherItem(), endResultAction, itemType.getName());
         herbGatherTask.runTaskLater(Professions.getInstance(), herb.getGatherTime() * 20);
+    }
 
-
+    @Override
+    public boolean isSubprofession() {
+        return false;
     }
 }

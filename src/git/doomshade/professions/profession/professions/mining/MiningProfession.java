@@ -5,7 +5,6 @@ import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.Subprofession;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.User;
@@ -17,6 +16,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +76,7 @@ public final class MiningProfession extends Profession {
             String message = player.getName() + " mined " + ore.getName();
 
             if (loc == null) {
-                Professions.log("Somehow mined an ore with a null location, this should not happen!", Level.WARNING);
+                Professions.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" + new RuntimeException().getLocalizedMessage(), Level.WARNING);
                 return;
             }
 
@@ -115,9 +115,13 @@ public final class MiningProfession extends Profession {
         return null;
     }
 
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 
     @Override
-    public Collection<Class<? extends Subprofession>> getSubprofessions() {
+    public Collection<Class<? extends Profession>> getSubprofessions() {
         return Collections.singletonList(SmeltingProfession.class);
     }
 }

@@ -30,4 +30,8 @@ public final class JewelcraftingProfession extends Profession {
         addExp(e);
     }
 
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 }

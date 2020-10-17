@@ -207,7 +207,7 @@ public class EditItemTypeCommand extends AbstractCommand {
             final CommandHandler handler = CommandHandler.getInstance(CommandHandler.class);
             try {
                 if (handler != null) {
-                    AbstractCommand acmd = Utils.findInIterable(handler.getCommands(), x -> x.getClass().equals(UndoEditCommand.class));
+                    final UndoEditCommand acmd = handler.getCommand(UndoEditCommand.class);
                     String msg = handler.infoMessage(acmd).replaceAll("<" + acmd.args.get(true).get(0) + ">", "\"" + fileName + "\"");
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }

@@ -256,14 +256,14 @@ public final class ProfessionManager implements ISetup {
             BSItemType bs = ItemType.getExampleItemType(BSItemType.class, ItemUtils.EXAMPLE_RESULT);
             bs.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             bs.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            registerItemTypeHolder(new ItemTypeHolder<>(bs));
+            //registerItemTypeHolder(new ItemTypeHolder<>(bs));
         }
 
         // HUNTING (no longer used)
         {
             PreyItemType preyItemType = ItemType.getExampleItemType(PreyItemType.class, new Mob(EntityType.SKELETON));
             preyItemType.setName(ChatColor.YELLOW + "Kostlivec");
-            registerItemTypeHolder(new ItemTypeHolder<>(preyItemType));
+            //registerItemTypeHolder(new ItemTypeHolder<>(preyItemType));
         }
 
         // HERBALISM
@@ -313,7 +313,7 @@ public final class ProfessionManager implements ISetup {
                     }
                 }
             }
-            registerItemTypeHolder(itemTypeHolder);
+            //registerItemTypeHolder(itemTypeHolder);
         }
 
         // SMELTING
@@ -345,8 +345,8 @@ public final class ProfessionManager implements ISetup {
     private void registerProfessions() {
         registerProfession(new MiningProfession(), false);
         registerProfession(new JewelcraftingProfession(), false);
-        registerProfession(new EnchantingProfession(), false);
-        registerProfession(new SkinningProfession(), false);
+        //registerProfession(new EnchantingProfession(), false);
+        //registerProfession(new SkinningProfession(), false);
         registerProfession(new SmeltingProfession(), false);
         registerProfession(new HerbalismProfession(), false);
         registerProfession(new AlchemyProfession(), false);

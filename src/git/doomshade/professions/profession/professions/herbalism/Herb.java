@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.logging.Level;
 
 import static git.doomshade.professions.profession.professions.herbalism.Herb.HerbEnum.*;
 
@@ -35,31 +34,28 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
-    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5);
+    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(), ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5);
 
     private final ItemStack gatherItem;
-    private final Material herbMaterial;
-    private final String id;
     private final boolean enableSpawn;
-    private final ParticleData particleData;
-    private final byte materialData;
-    private final int gatherTime;
+    private final int timeGather;
 
     // TODO: 26.01.2020 make implementation of custom marker icons
     private final String markerIcon;
 
-    private Herb(String id, ItemStack gatherItem, Material herbMaterial, byte materialData, ArrayList<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData, int gatherTime) {
-        super(spawnPoints);
-        this.id = id;
-        this.materialData = materialData;
+    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData, int gatherTime) {
+        super(id, name, herbMaterial, materialData, spawnPoints, particleData);
         this.gatherItem = gatherItem;
-        this.herbMaterial = herbMaterial;
         this.enableSpawn = enableSpawn;
-        this.particleData = particleData;
-        this.gatherTime = gatherTime;
+        this.timeGather = gatherTime;
         this.markerIcon = "flower";
-        if (!id.equals(EXAMPLE_HERB_ID))
+        if (!rejectedIds().contains(id))
             HERBS.put(getId(), this);
+    }
+
+    @Override
+    protected Set<String> rejectedIds() {
+        return Collections.singleton(EXAMPLE_HERB_ID);
     }
 
     public static Herb getHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
@@ -77,11 +73,25 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     }
 
     public static Herb deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        final Set<String> missingKeys = Utils.getMissingKeys(map, Arrays.stream(values()).filter(x -> x != SPAWN_POINT).toArray(HerbEnum[]::new));
+        final Set<String> missingKeys = Utils.getMissingKeys(map, HerbEnum.values());
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
-
+        return SpawnableElement.deserialize(map, Herb.class, x -> {
+            int gatherTime = (int) map.get(TIME_GATHER.s);
+            MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
+            ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
+            String displayName = gatherItem.getType().name();
+            if (gatherItem.hasItemMeta()) {
+                ItemMeta meta = gatherItem.getItemMeta();
+                if (meta.hasDisplayName()) {
+                    displayName = meta.getDisplayName();
+                }
+            }
+            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), x.getSpawnPoints(), (boolean) map.get(ENABLE_SPAWN.s), x.getParticleData(), gatherTime);
+        });
+    }
+        /*
         // gather item
         MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
         ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
@@ -102,7 +112,6 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
                 final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a block below the herb!", i, herbId);
                 Professions.log(message, Level.INFO);
                 Professions.log(message, Level.CONFIG);
-
             }
             spawnPoints.add(sp);
             i++;
@@ -115,8 +124,16 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
         // gather time
         int gatherTime = (int) map.get(GATHER_TIME.s);
 
-        return new Herb(herbId, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
-    }
+        String displayName = gatherItem.getType().name();
+        if (gatherItem.hasItemMeta()) {
+            ItemMeta meta = gatherItem.getItemMeta();
+            if (meta.hasDisplayName()) {
+                displayName = meta.getDisplayName();
+            }
+        }
+
+        return new Herb(herbId, displayName, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
+    }*/
 
     @SuppressWarnings("unused")
     public static Map<Herb, Location> getSpawnedHerbs(World world) {
@@ -151,8 +168,8 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Herb herb : HERBS.values()) {
             for (SpawnPoint spawnPoint : herb.getSpawnPoints()) {
-                if (spawnPoint.location.getWorld().equals(world)) {
-                    herbs.put(herb, spawnPoint.location);
+                if (spawnPoint.getWorld().equals(world)) {
+                    herbs.put(herb, spawnPoint);
                 }
             }
         }
@@ -165,36 +182,23 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Herb herb = (Herb) o;
-        return gatherItem.equals(herb.gatherItem) &&
-                herbMaterial == herb.herbMaterial &&
-                id.equals(herb.id);
+        return super.equals(o) && gatherItem != null && gatherItem.equals(((Herb) o).gatherItem);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gatherItem, herbMaterial, id);
+        return Objects.hash(gatherItem, getMaterial(), getId());
     }
 
     @Override
     public Map<String, Object> serialize() {
-        return new HashMap<String, Object>() {
-            {
-                put(GATHER_ITEM.s, ItemUtils.serialize(gatherItem));
+        final Map<String, Object> map = super.serialize();
 
-                // adds ":[0-9]+" to the material
-                put(HERB_MATERIAL.s, herbMaterial.name() + (materialData != 0 ? ":" + materialData : ""));
-                for (int i = 0; i < getSpawnPoints().size(); i++) {
-                    put(SPAWN_POINT.s.concat("-" + i), getSpawnPoints().get(i).serialize());
-                }
-                put(ENABLE_SPAWN.s, enableSpawn);
-                put(ID.s, id);
-                put(PARTICLE.s, particleData.serialize());
-                put(GATHER_TIME.s, gatherTime);
-            }
-        };
+        map.put(GATHER_ITEM.s, ItemUtils.serialize(gatherItem));
+        map.put(ENABLE_SPAWN.s, enableSpawn);
+        map.put(TIME_GATHER.s, timeGather);
+        return map;
+        // adds ":[0-9]+" to the material
     }
 
     @Override
@@ -213,65 +217,23 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     }
 
     @Override
-    public Material getMaterial() {
-        return herbMaterial;
-    }
-
-    @Override
-    public byte getMaterialData() {
-        return materialData;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public ParticleData getParticleData() {
-        return particleData;
-    }
-
-    @Override
     public String getMarkerIcon() {
         return markerIcon;
     }
 
     @Override
     public String toString() {
-        return String.format("Herb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(), this.getMaterial().name());
-    }
-
-    /**
-     * This method checks whether or not the item has meta every time it's called.
-     *
-     * @return the name of this herb
-     */
-    @Override
-    public String getName() {
-        final String material = gatherItem.getType().name();
-        if (!gatherItem.hasItemMeta()) {
-            return material;
-        }
-        ItemMeta meta = gatherItem.getItemMeta();
-        if (!meta.hasDisplayName()) {
-            return material;
-        }
-        return meta.getDisplayName();
+        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(), this.getMaterial().name());
     }
 
     public int getGatherTime() {
-        return gatherTime;
+        return timeGather;
     }
 
     enum HerbEnum implements FileEnum {
         GATHER_ITEM("gather-item"),
-        HERB_MATERIAL("herb-material"),
-        SPAWN_POINT("spawnpoint"),
         ENABLE_SPAWN("enable-spawn"),
-        ID("id"),
-        PARTICLE("particle"),
-        GATHER_TIME("gather-duration");
+        TIME_GATHER("gather-duration");
 
         private final String s;
 
@@ -290,12 +252,8 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
                 {
                     ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
                     put(GATHER_ITEM, exampleResult.serialize());
-                    put(HERB_MATERIAL, exampleResult.getType().name() + ":0");
-                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
                     put(ENABLE_SPAWN, false);
-                    put(ID, "herb_id");
-                    put(PARTICLE, new ParticleData());
-                    put(GATHER_TIME, 5);
+                    put(TIME_GATHER, 5);
                 }
             };
         }

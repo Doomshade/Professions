@@ -43,7 +43,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     public Map<String, Object> serialize() {
         final Map<String, Object> map = super.serialize();
         map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
-        map.put(RESULT.s, getResult().serialize());
+        map.put(RESULT.s, ItemUtils.serialize(getResult()));
         map.put(CRAFTING_TIME.s, getCraftingTime());
         map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
         map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));

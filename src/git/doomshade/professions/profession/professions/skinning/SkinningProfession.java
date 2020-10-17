@@ -26,4 +26,8 @@ public final class SkinningProfession extends Profession {
         addExp(e);
     }
 
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 }

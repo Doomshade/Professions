@@ -21,4 +21,9 @@ public class AlchemyProfession extends Profession {
 
         addExp(ev.event);
     }
+
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 }

@@ -14,7 +14,6 @@ import git.doomshade.professions.profession.professions.enchanting.EnchantedItem
 import git.doomshade.professions.profession.professions.enchanting.PreEnchantedItem;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
-import git.doomshade.professions.profession.professions.herbalism.HerbLocationOptions;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
@@ -22,7 +21,9 @@ import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.utils.LocationOptions;
+import git.doomshade.professions.profession.utils.MarkableLocationOptions;
 import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
@@ -37,6 +38,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -103,7 +105,10 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
 
         if (oneMeta.hasLore() && twoMeta.hasLore()) {
-            lore = oneMeta.getLore().containsAll(twoMeta.getLore()) && twoMeta.getLore().containsAll(oneMeta.getLore());
+            final List<String> lore1 = oneMeta.getLore();
+            final List<String> lore2 = twoMeta.getLore();
+
+            lore = lore1.size() == lore2.size() && lore1.equals(lore2);
         }
 
         return displayName && lore;
@@ -258,34 +263,44 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     /**
-     * Herb destroy event for admins due to possible breaking of the herb - need to remove particles from the location
+     * Spawnable destroy event for admins due to possible breaking of the herb - need to remove particles from the location
      *
      * @param e the block break event
      */
-    @EventHandler(ignoreCancelled = true)
-    public void onHerbDestroy(BlockBreakEvent e) {
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onSpawnableDestroy(BlockBreakEvent e) {
+
+        if (e.getPlayer().getGameMode() != GameMode.CREATIVE) return;
+
         try {
             final Block block = e.getBlock();
             final Location location = block.getLocation();
-            Herb herb = Herb.getHerb(block.getType(), location);
-            final HerbLocationOptions herbLocationOptions = herb.getLocationOptions(location);
-            herbLocationOptions.despawn(true);
-            final List<SpawnPoint> spawnPoints = herb.getSpawnPoints();
-            String message = String.format("You have destroyed a %s%s herb.", herb.getId(), ChatColor.RESET);
+
+            // log
+            Professions.log(SpawnableElement.getSpawnableElements());
+            SpawnableElement<? extends LocationOptions> spawnableElement = SpawnableElement.of(block);
+            final LocationOptions locationOptions = spawnableElement.getLocationOptions(location);
+
+            if (locationOptions instanceof MarkableLocationOptions) {
+                ((MarkableLocationOptions) locationOptions).despawn(true);
+            } else {
+                locationOptions.despawn();
+            }
+            final List<SpawnPoint> spawnPoints = spawnableElement.getSpawnPoints();
+            String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
             for (int i = 0; i < spawnPoints.size(); i++) {
                 final SpawnPoint spawnPoint = spawnPoints.get(i);
-                if (spawnPoint.location.equals(location)) {
+                if (spawnPoint.equals(location)) {
                     player.sendMessage(message.concat(String.format(" Spawn location ID: %d. Removed spawn point.", i)));
-                    herb.removeSpawnPoint(spawnPoint);
+                    spawnableElement.removeSpawnPoint(spawnPoint);
                     return;
                 }
             }
             player.sendMessage(message);
         } catch (Utils.SearchNotFoundException ignored) {
         }
-
     }
 
     /**
@@ -354,7 +369,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         try {
 
             // Checks whether or not the right clicked block is a herb
-            herb = Herb.getHerb(block.getType(), block.getLocation());
+            herb = SpawnableElement.of(block, Herb.class);
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }

@@ -1,11 +1,14 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Class representing all the commands. This is not a {@link org.bukkit.command.CommandExecutor}, the executor is the command handler registering this command!
@@ -41,6 +44,18 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
         return new AbstractCommand() {
 
+            /**
+             * This uses {@link #getCommand()} method, so be careful not to call it in that!
+             * @param type the method the error occurred in
+             */
+            private void logDeserializationError(String type) {
+                Professions.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
+            }
+
+            private String getDeserializationError(String type) {
+                return "Failed to deserialize " + type;
+            }
+
             @Override
             public int compareTo(@NotNull AbstractCommand o) {
                 return getCommand().compareTo(o.getCommand());
@@ -61,25 +76,58 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 Map<Boolean, List<String>> args = new HashMap<>();
                 final CommandHandler instance = AbstractCommandHandler.getInstance(CommandHandler.class);
                 if (instance != null) {
-                    args.put(true, instance.cast(map.get(ARG_TRUE)));
-                    args.put(false, instance.cast(map.get(ARG_FALSE)));
+                    List<String> argTrue = new ArrayList<>();
+                    try {
+                        argTrue = Utils.cast(map.get(ARG_TRUE));
+                    } catch (ClassCastException e) {
+                        logDeserializationError("true arguments");
+                        e.printStackTrace();
+                    }
+                    args.put(true, argTrue);
+
+                    List<String> argFalse = new ArrayList<>();
+                    try {
+                        argFalse = Utils.cast(map.get(ARG_FALSE));
+                    } catch (ClassCastException e) {
+                        logDeserializationError("false arguments");
+                    }
+
+                    args.put(false, argFalse);
                 }
                 return args;
             }
 
             @Override
             public String getCommand() {
-                return map.get(COMMAND).toString();
+                String st = "";
+                try {
+                    st = Utils.cast(map.get(COMMAND));
+                } catch (ClassCastException e) {
+                    Professions.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
+                }
+                return st;
             }
 
             @Override
             public String getDescription() {
-                return map.get(DESCRIPTION).toString();
+                String st = "";
+                try {
+                    st = Utils.cast(map.get(DESCRIPTION));
+                } catch (ClassCastException e) {
+                    logDeserializationError("description");
+                }
+                return st;
             }
 
             @Override
             public boolean requiresPlayer() {
-                return (boolean) map.get(REQUIRES_PLAYER);
+                boolean b = false;
+                try {
+                    b = Utils.cast(map.get(REQUIRES_PLAYER));
+                } catch (ClassCastException e) {
+                    logDeserializationError("requires player");
+                }
+                return b;
             }
 
             @Override
@@ -116,6 +164,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         AbstractCommand that = (AbstractCommand) o;
         return requiresPlayer == that.requiresPlayer &&
                 command.equals(that.command) &&

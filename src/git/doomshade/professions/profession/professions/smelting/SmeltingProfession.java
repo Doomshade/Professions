@@ -4,15 +4,13 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.Subprofession;
-import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.logging.Level;
 
-public class SmeltingProfession extends Subprofession {
+public class SmeltingProfession extends Profession {
 
     @Override
     public void onLoad() {
@@ -38,7 +36,7 @@ public class SmeltingProfession extends Subprofession {
     }
 
     @Override
-    public Class<? extends Profession> getMainprofession() {
-        return MiningProfession.class;
+    public boolean isSubprofession() {
+        return true;
     }
 }

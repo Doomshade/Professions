@@ -12,8 +12,9 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import java.util.*;
 
 import static git.doomshade.professions.profession.utils.SpawnPoint.SpawnPointEnum.*;
+import static git.doomshade.professions.profession.utils.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
 
-public class SpawnPoint implements ConfigurationSerializable {
+public class SpawnPoint extends Location implements ConfigurationSerializable {
 
     public static final HashSet<SpawnPoint> SPAWN_POINTS;
     public static final SpawnPoint EXAMPLE;
@@ -23,7 +24,6 @@ public class SpawnPoint implements ConfigurationSerializable {
         EXAMPLE = new SpawnPoint(ItemUtils.EXAMPLE_LOCATION, new Range(5));
     }
 
-    public final Location location;
     final Range respawnTime;
 
     /**
@@ -33,7 +33,7 @@ public class SpawnPoint implements ConfigurationSerializable {
      * @param respawnTime
      */
     public SpawnPoint(Location location, Range respawnTime) {
-        this.location = location;
+        super(location.getWorld(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         this.respawnTime = respawnTime;
         if (respawnTime.getMin() != -1)
             SPAWN_POINTS.add(this);
@@ -48,13 +48,28 @@ public class SpawnPoint implements ConfigurationSerializable {
         this(location, new Range(-1));
     }
 
-    public static SpawnPoint deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static List<SpawnPoint> deserializeAll(Map<String, Object> map) {
+        List<SpawnPoint> spawnPoints = new ArrayList<>();
+        for (int i = 0; i < map.size(); i++) {
+            final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
+            if (o instanceof MemorySection) {
+                try {
+                    spawnPoints.add(SpawnPoint.deserializeSpawnPoint(((MemorySection) o).getValues(false)));
+                } catch (ProfessionObjectInitializationException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return spawnPoints;
+    }
+
+    public static SpawnPoint deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
             throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of missing keys");
         }
         MemorySection mem = (MemorySection) map.get(LOCATION.s);
-        Location loc = Location.deserialize(mem.getValues(false));
+        Location loc = deserialize(mem.getValues(false));
         Range range = null;
         Object obj = map.get(RESPAWN_TIME.s);
         if (obj instanceof String) {
@@ -75,21 +90,22 @@ public class SpawnPoint implements ConfigurationSerializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SpawnPoint that = (SpawnPoint) o;
-        return location.equals(that.location);
+        return super.equals(o);
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(location);
+    public String toString() {
+        return "SpawnPoint{" +
+                "location=" + super.toString() +
+                ", respawnTime=" + respawnTime +
+                '}';
     }
 
     @Override
     public Map<String, Object> serialize() {
         return new HashMap<String, Object>() {
             {
-                put(LOCATION.s, location.serialize());
+                put(LOCATION.s, SpawnPoint.super.serialize());
                 put(RESPAWN_TIME.s, respawnTime.toString());
             }
         };

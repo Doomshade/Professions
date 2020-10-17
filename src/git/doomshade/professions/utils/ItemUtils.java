@@ -5,6 +5,7 @@ import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
+import git.doomshade.professions.commands.ReloadCommand;
 import git.doomshade.professions.commands.SaveCommand;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.profession.types.ItemType;
@@ -26,10 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,7 +45,12 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  *
  * @author Doomshade
  */
-public final class ItemUtils {
+public final class ItemUtils implements ISetup {
+
+    public static final ItemUtils instance = new ItemUtils();
+
+    private ItemUtils() {
+    }
 
     private static final String MATERIAL = "material";
     private static final String DISPLAY_NAME = "display-name";
@@ -56,7 +59,18 @@ public final class ItemUtils {
     private static final String AMOUNT = "amount";
     static final String DIABLO_ITEM = "diabloitem";
 
+    private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
+    private static final File ITEMS_LOGGED_FILE = new File(Professions.getInstance().getCacheFolder(), "itemutilscache.bin");
+
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
+
+    public static String serializeMaterial(ItemStack item) {
+        return serializeMaterial(item.getType(), (byte) item.getDurability());
+    }
+
+    public static String serializeMaterial(Material material, byte materialData) {
+        return materialData == 0 ? material.name() : material.name() + ":" + materialData;
+    }
 
     public static ItemStack deserializeMaterial(String material) {
         String[] split = material.split(":");
@@ -92,17 +106,18 @@ public final class ItemUtils {
         diablo:
         if (checkForDiabloHook && Professions.isDiabloLikeHook()) {
             Object potentialId = map.get(DIABLO_ITEM);
-
             if (!(potentialId instanceof String)) {
-                Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
                 if (!loggedDiablo) {
+                    Professions.log("Found items that are not a DiabloItem.");
                     Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
                     Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
-
                     loggedDiablo = true;
                 }
-                Professions.log("The serialized form:\n" + map, Level.CONFIG);
+                if (ITEMS_LOGGED.contains(map)) break diablo;
+                Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
 
+                Professions.log("The serialized form:\n" + map, Level.CONFIG);
+                ITEMS_LOGGED.add(map);
                 break diablo;
             }
 
@@ -125,7 +140,9 @@ public final class ItemUtils {
 
         final Object potentialMaterial = map.get(MATERIAL);
         if (potentialMaterial == null) {
-            return null;
+            final RuntimeException ex = new NullPointerException("Null material");
+            Professions.log(ex, Level.CONFIG);
+            throw ex;
         }
 
         ItemStack item = deserializeMaterial((String) potentialMaterial);
@@ -222,8 +239,11 @@ public final class ItemUtils {
                 final String displayName = meta.getDisplayName();
 
                 // we look for DiabloLike first
+                diablolike:
                 if (Professions.isDiabloLikeHook()) {
-                    final List<DiabloItem> items = DiabloLike.getItemFromDisplayName(displayName)
+                    final List<DiabloItem> itemFromDisplayName = DiabloLike.getItemFromDisplayName(displayName);
+                    if (itemFromDisplayName == null) break diablolike;
+                    final List<DiabloItem> items = itemFromDisplayName
                             .stream()
                             .filter(x -> x.getItem().getType() == item.getType())
                             .collect(Collectors.toList());
@@ -295,7 +315,7 @@ public final class ItemUtils {
             }
         }
 
-        map.put(MATERIAL, item.getType().name());
+        map.put(MATERIAL, serializeMaterial(item));
         map.put(AMOUNT, item.getAmount());
         return map;
     }
@@ -496,6 +516,51 @@ public final class ItemUtils {
      */
     public static ItemStackBuilder itemStackBuilder(Material mat) {
         return new ItemStackBuilder(mat);
+    }
+
+    @Override
+    public void setup() throws Exception {
+
+        // reset logging of diablo, this will only print message if 1+ items were not a diabloitem
+        loggedDiablo = false;
+
+        // clear logged files, read them from file
+        ITEMS_LOGGED.clear();
+        if (!ITEMS_LOGGED_FILE.exists()) {
+            ITEMS_LOGGED_FILE.createNewFile();
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ITEMS_LOGGED_FILE))) {
+
+            // if clear cache, don't read
+            if (!ReloadCommand.isClearCache()) {
+                Object read;
+                try {
+                    while ((read = ois.readObject()) != null) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> map = (Map<String, Object>) read;
+                        ITEMS_LOGGED.add(map);
+                    }
+                } catch (EOFException ignored) {
+                }
+            }
+        }
+    }
+
+    @Override
+    public void cleanup() throws Exception {
+        if (!ITEMS_LOGGED_FILE.exists()) {
+            ITEMS_LOGGED_FILE.createNewFile();
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(ITEMS_LOGGED_FILE))) {
+            ITEMS_LOGGED.forEach(x -> {
+                try {
+                    oos.writeObject(x);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 
     /**

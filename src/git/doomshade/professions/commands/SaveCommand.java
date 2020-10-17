@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Saves current player data from memory to file
@@ -28,12 +29,12 @@ public class SaveCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         try {
-            sender.sendMessage("[Professions] Saving files...");
+            sender.sendMessage("Saving files...");
             Professions.getInstance().saveFiles();
-            sender.sendMessage(ChatColor.GREEN + "[Professions] Files saved successfully");
+            sender.sendMessage(ChatColor.GREEN + "Files saved successfully");
         } catch (IOException e) {
             e.printStackTrace();
-            sender.sendMessage(ChatColor.RED + "[Professions] Error! Check console for error stack trace.");
+            sender.sendMessage(ChatColor.RED + "Error! Check console for error stack trace.");
         }
         return true;
     }

@@ -13,7 +13,7 @@ public class CommandHandler extends AbstractCommandHandler {
 
 
     @Override
-    protected String getCommandName() {
+    protected String getCommandExecutorName() {
         return COMMAND;
     }
 

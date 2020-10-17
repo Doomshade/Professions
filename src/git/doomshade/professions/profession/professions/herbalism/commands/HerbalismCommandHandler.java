@@ -5,7 +5,7 @@ import git.doomshade.professions.commands.CommandHandler;
 
 public class HerbalismCommandHandler extends AbstractCommandHandler {
     @Override
-    protected String getCommandName() {
+    protected String getCommandExecutorName() {
         return CommandHandler.EXTENDED_COMMAND.concat("herbalism");
     }
 

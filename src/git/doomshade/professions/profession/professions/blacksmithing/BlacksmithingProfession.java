@@ -35,4 +35,9 @@ public class BlacksmithingProfession extends Profession {
         String itemName = item != null ? item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
         Professions.log(String.format("%s smithed %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
     }
+
+    @Override
+    public boolean isSubprofession() {
+        return false;
+    }
 }

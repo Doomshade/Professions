@@ -196,6 +196,10 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
                 Professions.log(e.getMessage(), Level.WARNING);
                 successInit = false;
                 continue;
+            } catch (Exception e) {
+                Professions.logError(e);
+                successInit = false;
+                continue;
             }
             if (deserializedItemType != null) {
                 if (!itemTypes.isEmpty() && itemTypes.size() > i) {
@@ -210,7 +214,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             try {
                 final CommandHandler instance = CommandHandler.getInstance(CommandHandler.class);
                 if (instance != null)
-                    Professions.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(Utils.findInIterable(instance.getCommands(), x -> x.getClass().equals(GenerateDefaultsCommand.class)))) + " is advised.");
+                    Professions.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(instance.getCommand(GenerateDefaultsCommand.class))) + " is advised.");
             } catch (Utils.SearchNotFoundException ignored) {
             }
         }

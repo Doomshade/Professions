@@ -38,6 +38,8 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfessionManager().getItemTypeHolders()) {
             ItemType<?> itemType = itemTypeHolder.getItemType();
+
+
             Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
 
             // get the missing keys
@@ -78,11 +80,16 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 // "items: '1': object:"
                 ConfigurationSection objectSection = itemSection.isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
 
-                for (Map.Entry<String, Object> entry : itemType.getSerializedObject().entrySet()) {
-                    if (!objectSection.isSet(entry.getKey())) {
-                        Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
+                final Map<String, Object> serializedObject = itemType.getSerializedObject();
+                if (serializedObject == null) {
+                    Professions.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
+                } else {
+                    for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
+                        if (!objectSection.isSet(entry.getKey())) {
+                            Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
+                        }
+                        objectSection.addDefault(entry.getKey(), entry.getValue());
                     }
-                    objectSection.addDefault(entry.getKey(), entry.getValue());
                 }
             }
 

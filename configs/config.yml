@@ -149,3 +149,4 @@ gui:
   ## player is level 6
   ## show-level-threshold is greater than or equal to 4 -> the gui shows the gui item to the player
   show-level-threshold: 3
+  information-sign-name: '&2Information'

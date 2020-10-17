@@ -51,7 +51,7 @@ public class OreEditListener implements Listener {
                     final SpawnPoint sp = new SpawnPoint(location, new Range(0));
                     ore.addSpawnPoint(sp);
                     try {
-                        ore.getLocationOptions(sp.location).spawn();
+                        ore.getLocationOptions(sp).spawn();
                     } catch (SpawnException e) {
                         e.printStackTrace();
                     }
@@ -90,7 +90,7 @@ public class OreEditListener implements Listener {
                 final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime);
                 ore.addSpawnPoint(sp);
                 try {
-                    ore.getLocationOptions(sp.location).spawn();
+                    ore.getLocationOptions(sp).spawn();
                 } catch (SpawnException e) {
                     e.printStackTrace();
                 }

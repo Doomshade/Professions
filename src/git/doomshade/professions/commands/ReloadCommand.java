@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,9 +17,16 @@ import java.util.List;
  */
 public class ReloadCommand extends AbstractCommand {
 
+    private static boolean clear_cache = true;
+
+    public static boolean isClearCache() {
+        return clear_cache;
+    }
+
     public ReloadCommand() {
         setCommand("reload");
         setDescription("Reloads plugin");
+        setArg(false, Collections.singletonList("clear cache (true/false)"));
         setRequiresPlayer(false);
 
         // TODO take into consideration
@@ -27,7 +35,15 @@ public class ReloadCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        clear_cache = false;
         Professions plugin = Professions.getInstance();
+        if (args.length > 1) {
+            try {
+                clear_cache = Boolean.parseBoolean(args[1]);
+            } catch (Exception e) {
+                sender.sendMessage(ChatColor.BLUE + "Invalid argument. Valid args: (true/false)");
+            }
+        }
         if (plugin.reload()) {
             sender.sendMessage(ChatColor.GREEN + "Plugin reloaded.");
         } else {

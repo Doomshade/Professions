@@ -18,7 +18,7 @@ public class MiningCommandHandler extends AbstractCommandHandler {
     private static boolean isBackedUp = !Settings.isAutoSave();
 
     @Override
-    protected String getCommandName() {
+    protected String getCommandExecutorName() {
         return CommandHandler.EXTENDED_COMMAND.concat("mining");
     }
 
@@ -36,12 +36,10 @@ public class MiningCommandHandler extends AbstractCommandHandler {
             return super.onCommand(sender, cmd, label, args);
         }
 
-        for (AbstractCommand acmd : INSTANCE_COMMANDS) {
-            if (acmd instanceof AbstractEditCommand && acmd.getCommand().equalsIgnoreCase(args[0]) && !isBackedUp) {
-                Professions.getInstance().backup();
-                isBackedUp = true;
-                break;
-            }
+        AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
+        if (acmd instanceof AbstractEditCommand && !isBackedUp) {
+            Professions.getInstance().backup();
+            isBackedUp = true;
         }
 
         return super.onCommand(sender, cmd, label, args);
