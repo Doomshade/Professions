@@ -90,10 +90,20 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * @throws Utils.SearchNotFoundException if the block is not a spawnable element
      */
     public static <T extends SpawnableElement<? extends LocationOptions>> T of(Block block, Class<T> elementClass) throws Utils.SearchNotFoundException {
+
+        final SpawnableElement<? extends LocationOptions> el = iterate(block, SPAWNABLE_ELEMENTS.get(elementClass).values());
+
+        if (el != null){
+            return (T) el;
+        }
+
+        /*
         for (SpawnableElement<? extends LocationOptions> el : SPAWNABLE_ELEMENTS.get(elementClass).values()) {
-            final Function<Block, ? extends SpawnableElement<? extends LocationOptions>> func = el.get();
-            if (func != null) {
-                final SpawnableElement<? extends LocationOptions> spawn = func.apply(block);
+
+
+            // el.get() = function, that transforms a spawnable element instance into elementClass instance
+            if (el.get() != null) {
+                final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
 
                 if (spawn != null && spawn.getClass().equals(elementClass)) {
 
@@ -102,16 +112,24 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
                     return (T) spawn;
                 }
             }
-        }
+        }*/
         throw new Utils.SearchNotFoundException();
     }
 
     public static SpawnableElement<? extends LocationOptions> of(Block block) throws Utils.SearchNotFoundException {
         for (HashMap<String, SpawnableElement<? extends LocationOptions>> e : SPAWNABLE_ELEMENTS.values()) {
+
+            final SpawnableElement<? extends LocationOptions> el = iterate(block, e.values());
+
+            if (el != null){
+                return el;
+            }
+            /*
             for (SpawnableElement<? extends LocationOptions> el : e.values()) {
-                final Function<Block, ? extends SpawnableElement<? extends LocationOptions>> func = el.get();
-                if (func != null) {
-                    final SpawnableElement<? extends LocationOptions> spawn = func.apply(block);
+
+                // el.get() = function, that transforms a spawnable element instance into elementClass instance
+                if (el.get() != null) {
+                    final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
 
                     if (spawn != null) {
 
@@ -120,9 +138,27 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
                         return spawn;
                     }
                 }
-            }
+            }*/
         }
         throw new Utils.SearchNotFoundException();
+    }
+
+    private static <T extends SpawnableElement<? extends LocationOptions>> T iterate(Block block, Iterable<T> iterable) {
+        for (T el : iterable) {
+
+            // el.get() = function, that transforms a spawnable element instance into elementClass instance
+            if (el.get() != null) {
+                final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
+
+                if (spawn != null) {
+
+                    // log
+                    Professions.log(spawn);
+                    return (T) spawn;
+                }
+            }
+        }
+        return null;
     }
 
 
@@ -331,7 +367,8 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         final Set<String> missingKeys = getMissingKeys(map);
         ProfessionObjectInitializationException ex = null;
         if (!missingKeys.isEmpty()) {
-            ex = new ProfessionObjectInitializationException(clazz, missingKeys);;
+            ex = new ProfessionObjectInitializationException(clazz, missingKeys);
+            ;
         }
 
         String id = (String) map.get(ID.s);
@@ -351,9 +388,9 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
 
-        /**
-         * Enum for keys in file
-         */
+    /**
+     * Enum for keys in file
+     */
     public enum SpawnableElementEnum implements FileEnum {
         SPAWN_POINT("spawnpoint"),
         ID("id"),

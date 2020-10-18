@@ -132,7 +132,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         try {
 
             // yes, continue
-            ore = Utils.findInIterable(Ore.ORES.values(), x -> x != null && x.isSpawnPoint(location));
+            ore = SpawnableElement.of(block, Ore.class);
         } catch (Utils.SearchNotFoundException ex) {
 
             // no, if the world is a mining world AND also if the plugin should handle the event, cancel the event if the player is not ranked >=builder
@@ -169,7 +169,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             locationOptions.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
-            if (!(Permissions.has(player, Permissions.BUILDER) && player.getGameMode() == GameMode.CREATIVE)) {
+            if (!Permissions.has(player, Permissions.BUILDER) && player.getGameMode() != GameMode.CREATIVE) {
                 locationOptions.scheduleSpawn();
             }
         }
