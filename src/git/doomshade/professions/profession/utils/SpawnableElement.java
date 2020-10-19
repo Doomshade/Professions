@@ -93,7 +93,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
 
         final SpawnableElement<? extends LocationOptions> el = iterate(block, SPAWNABLE_ELEMENTS.get(elementClass).values());
 
-        if (el != null){
+        if (el != null) {
             return (T) el;
         }
 
@@ -121,7 +121,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
 
             final SpawnableElement<? extends LocationOptions> el = iterate(block, e.values());
 
-            if (el != null){
+            if (el != null) {
                 return el;
             }
             /*
@@ -143,7 +143,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         throw new Utils.SearchNotFoundException();
     }
 
-    private static <T extends SpawnableElement<? extends LocationOptions>> T iterate(Block block, Iterable<T> iterable) {
+    private static <T extends SpawnableElement<? extends LocationOptions>> SpawnableElement<? extends LocationOptions> iterate(Block block, Iterable<T> iterable) {
         for (T el : iterable) {
 
             // el.get() = function, that transforms a spawnable element instance into elementClass instance
@@ -152,9 +152,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
 
                 if (spawn != null) {
 
-                    // log
-                    Professions.log(spawn);
-                    return (T) spawn;
+                    return spawn;
                 }
             }
         }

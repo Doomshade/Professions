@@ -267,7 +267,7 @@ public class ProfessionListener extends AbstractProfessionListener {
      *
      * @param e the block break event
      */
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onSpawnableDestroy(BlockBreakEvent e) {
 
         if (e.getPlayer().getGameMode() != GameMode.CREATIVE) return;
@@ -276,30 +276,37 @@ public class ProfessionListener extends AbstractProfessionListener {
             final Block block = e.getBlock();
             final Location location = block.getLocation();
 
-            // log
-            Professions.log(SpawnableElement.getSpawnableElements());
             SpawnableElement<? extends LocationOptions> spawnableElement = SpawnableElement.of(block);
+
             final LocationOptions locationOptions = spawnableElement.getLocationOptions(location);
 
-            if (locationOptions instanceof MarkableLocationOptions) {
-                ((MarkableLocationOptions) locationOptions).despawn(true);
-            } else {
-                locationOptions.despawn();
-            }
+            // log
+            Professions.log(locationOptions);
+
             final List<SpawnPoint> spawnPoints = spawnableElement.getSpawnPoints();
+
+            // log
+            Professions.log(spawnPoints.contains(new SpawnPoint(location)));
             String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
-            for (int i = 0; i < spawnPoints.size(); i++) {
-                final SpawnPoint spawnPoint = spawnPoints.get(i);
-                if (spawnPoint.equals(location)) {
-                    player.sendMessage(message.concat(String.format(" Spawn location ID: %d. Removed spawn point.", i)));
-                    spawnableElement.removeSpawnPoint(spawnPoint);
-                    return;
+            try {
+                // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
+                final SpawnPoint sp = Utils.findInIterable(spawnPoints, x -> x.equals(new SpawnPoint(location)));
+                player.sendMessage(message.concat(" Removed spawn point."));
+                spawnableElement.removeSpawnPoint(sp);
+            } catch (Utils.SearchNotFoundException ignored) {
+                player.sendMessage(message);
+            } finally {
+                e.setCancelled(true);
+                if (locationOptions instanceof MarkableLocationOptions) {
+                    ((MarkableLocationOptions) locationOptions).despawn(true);
+                } else {
+                    locationOptions.despawn();
                 }
             }
-            player.sendMessage(message);
-        } catch (Utils.SearchNotFoundException ignored) {
+        } catch (Utils.SearchNotFoundException ex) {
+            ex.printStackTrace();
         }
     }
 

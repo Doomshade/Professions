@@ -63,6 +63,14 @@ public class SpawnPoint extends Location implements ConfigurationSerializable {
         return spawnPoints;
     }
 
+    public boolean equals(Object o) {
+        return super.equals(o);
+    }
+
+    public int hashCode() {
+        return super.hashCode();
+    }
+
     public static SpawnPoint deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
@@ -85,12 +93,6 @@ public class SpawnPoint extends Location implements ConfigurationSerializable {
             throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of invalid range format");
         }
         return new SpawnPoint(loc, range);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        return super.equals(o);
     }
 
     @Override
