@@ -273,7 +273,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                     file.createNewFile();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
             cmd = Bukkit.getPluginCommand(commandName);
             cmd.setExecutor(this);

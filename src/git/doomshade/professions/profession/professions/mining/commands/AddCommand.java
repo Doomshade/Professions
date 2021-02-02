@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.utils.SpawnPoint;
@@ -44,7 +45,7 @@ public class AddCommand extends AbstractEditCommand {
         try {
             respawnTime = Range.fromString(args[2]);
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
@@ -55,7 +56,7 @@ public class AddCommand extends AbstractEditCommand {
         try {
             ore.getLocationOptions(lookingAt).spawn();
         } catch (SpawnException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return true;
     }

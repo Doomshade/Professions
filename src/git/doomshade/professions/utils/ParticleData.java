@@ -1,5 +1,6 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.Professions;
 import org.bukkit.Particle;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
@@ -35,7 +36,7 @@ public class ParticleData implements ConfigurationSerializable {
                 field.setAccessible(true);
                 field.set(data, map.get(field.getName()));
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         return data;
@@ -77,7 +78,7 @@ public class ParticleData implements ConfigurationSerializable {
                 field.setAccessible(true);
                 map.put(field.getName(), field.get(this));
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         return map;

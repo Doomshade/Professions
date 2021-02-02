@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbLocationOptions;
@@ -74,7 +75,7 @@ public class DespawnCommand extends AbstractCommand {
                     }
                 } catch (Exception e) {
                     sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             }
         } else {
@@ -88,7 +89,7 @@ public class DespawnCommand extends AbstractCommand {
                 sender.sendMessage("Successfully despawned herb at " + locName + ".");
             } catch (Exception e) {
                 sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         return true;

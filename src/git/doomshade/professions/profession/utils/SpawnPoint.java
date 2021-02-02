@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.utils;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -48,7 +49,9 @@ public class SpawnPoint extends Location implements ConfigurationSerializable {
         this(location, new Range(-1));
     }
 
-    public static List<SpawnPoint> deserializeAll(Map<String, Object> map) {
+    public static List<SpawnPoint> deserializeAll(Map<String, Object> map) throws ProfessionObjectInitializationException {
+
+        ProfessionObjectInitializationException ex = null;
         List<SpawnPoint> spawnPoints = new ArrayList<>();
         for (int i = 0; i < map.size(); i++) {
             final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
@@ -56,15 +59,39 @@ public class SpawnPoint extends Location implements ConfigurationSerializable {
                 try {
                     spawnPoints.add(SpawnPoint.deserializeSpawnPoint(((MemorySection) o).getValues(false)));
                 } catch (ProfessionObjectInitializationException e) {
-                    e.printStackTrace();
+                    ex = new ProfessionObjectInitializationException(SpawnPoint.class, Collections.emptyList(), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
+                    e.setAdditionalMessage("Spawn point ID: " + i);
+                    Professions.logError(e, false);
                 }
             }
         }
+
+        if (ex != null) {
+            throw ex;
+        }
+
         return spawnPoints;
     }
 
+    /**
+     * Overrides the Location's equals method. This allows SpawnPoint.equals(Location), but not Location.equals(SpawnPoint)!
+     *
+     * @param o the object to check equals for
+     * @return based on {@link Location}
+     * @see Location#equals(Object)
+     */
+    @Override
     public boolean equals(Object o) {
-        return super.equals(o);
+        if (o == this) return true;
+
+        if (o instanceof SpawnPoint) {
+            return super.equals(o);
+        } else if (o instanceof Location) {
+
+            // not the greatest, but oh well, bukkit decided to check for class equality with !=, not with Class#isAssignableFrom(Class) :/
+            return new Location(getWorld(), getX(), getY(), getZ(), getYaw(), getPitch()).equals(o);
+        }
+        return false;
     }
 
     public int hashCode() {
@@ -74,23 +101,35 @@ public class SpawnPoint extends Location implements ConfigurationSerializable {
     public static SpawnPoint deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
-            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of missing keys");
+            throw new ProfessionObjectInitializationException(
+                    SpawnPoint.class,
+                    missingKeysEnum,
+                    ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
         }
         MemorySection mem = (MemorySection) map.get(LOCATION.s);
         Location loc = deserialize(mem.getValues(false));
-        Range range = null;
+        Range range;
         Object obj = map.get(RESPAWN_TIME.s);
         if (obj instanceof String) {
             try {
                 range = Range.fromString((String) obj);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new ProfessionObjectInitializationException(
+                        SpawnPoint.class,
+                        Collections.singletonList(RESPAWN_TIME.s),
+                        ProfessionObjectInitializationException.NO_ID, map.toString(),
+                        ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
             }
         } else {
-            range = new Range((int) obj);
-        }
-        if (range == null) {
-            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of invalid range format");
+            try {
+                range = new Range((int) obj);
+            } catch (Exception e) {
+                throw new ProfessionObjectInitializationException(
+                        SpawnPoint.class,
+                        Collections.singletonList(RESPAWN_TIME.s),
+                        ProfessionObjectInitializationException.NO_ID, map.toString(),
+                        ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
+            }
         }
         return new SpawnPoint(loc, range);
     }

@@ -109,8 +109,8 @@ public class EditItemTypeCommand extends AbstractCommand {
         try {
             loaderCopy.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
             sender.sendMessage("Error loading " + file.getName() + ". Check console for error output.");
+            Professions.logError(e);
             return true;
         }
         saveUndo(file, loaderCopy);
@@ -212,11 +212,11 @@ public class EditItemTypeCommand extends AbstractCommand {
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         } catch (IOException e) {
-            e.printStackTrace();
             sender.sendMessage("Unexpected error occurred. Check console for further logs.");
+            Professions.logError(e);
         }
         return true;
     }

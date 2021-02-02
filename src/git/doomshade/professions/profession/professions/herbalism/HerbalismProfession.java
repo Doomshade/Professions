@@ -60,7 +60,6 @@ public class HerbalismProfession extends Profession {
                     .setItemType(itemType)
                     .setUserProfessionData(upd);
             switch (x) {
-
                 case FULL_INVENTORY:
                     msg = msg.concat(" with full inventory");
                 case SUCCESS:

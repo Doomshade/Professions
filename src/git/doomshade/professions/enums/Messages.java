@@ -87,7 +87,7 @@ public class Messages implements ISetup {
                 lang.options().copyDefaults(true);
                 lang.save(Settings.getLangFile());
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
     }

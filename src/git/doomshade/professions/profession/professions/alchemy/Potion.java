@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.professions.alchemy;
 
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -162,7 +163,13 @@ public class Potion implements ConfigurationSerializable {
         String potionId = (String) map.get(POTION_FLAG.s);
         PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
         MemorySection mem = (MemorySection) map.get(POTION.s);
-        ItemStack potion = ItemUtils.deserialize(mem.getValues(false));
+        ItemStack potion = null;
+        try {
+            potion = ItemUtils.deserialize(mem.getValues(false));
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionObjectInitializationException("Could not deserialize potion ItemStack from file.");
+        }
 
         return new Potion(potionEffects, duration, potionId, potionType, potion);
     }

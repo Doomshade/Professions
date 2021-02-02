@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.utils;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.data.cache.CacheUtils;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.task.ParticleTask;
 import org.bukkit.Bukkit;
@@ -12,6 +13,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 public class LocationOptions {
+
+    public static final String CACHE_FOLDER = "spawned";
 
     /**
      * The location
@@ -47,6 +50,10 @@ public class LocationOptions {
         spawnTask = new SpawnTask(this);
     }
 
+    public SpawnTask getSpawnTask() {
+        return spawnTask;
+    }
+
     public boolean isSpawned() {
         return spawned;
     }
@@ -55,13 +62,17 @@ public class LocationOptions {
         return true;
     }
 
-    public void scheduleSpawn() {
+    public void scheduleSpawn(int respawnTime, int spawnPointId) {
         try {
             Bukkit.getScheduler().cancelTask(spawnTask.getTaskId());
         } catch (IllegalStateException ignored) {
         }
-        spawnTask = new SpawnTask(spawnTask);
+        spawnTask = new SpawnTask(spawnTask, respawnTime, spawnPointId);
         spawnTask.runTaskTimer(Professions.getInstance(), 0L, 20L);
+    }
+
+    public void scheduleSpawn() {
+        scheduleSpawn(SpawnTask.RANDOM_RESPAWN_TIME, SpawnTask.getSpawnTaskIdFromSpawnPoint(this));
     }
 
     public void spawn() throws SpawnException {
@@ -73,6 +84,7 @@ public class LocationOptions {
     @SuppressWarnings("deprecation")
     public void forceSpawn() throws SpawnException {
         if (!enableSpawn) return;
+
         final Material material = element.getMaterial();
         if (material == null) {
             this.enableSpawn = false;
@@ -96,6 +108,7 @@ public class LocationOptions {
         addParticles();
         unscheduleSpawn();
         spawned = true;
+
         Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
@@ -111,6 +124,8 @@ public class LocationOptions {
         location.getBlock().setType(Material.AIR);
         unscheduleSpawn();
         spawned = false;
+
+        CacheUtils.clearCache(element.getId(), CACHE_FOLDER);
         Professions.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 

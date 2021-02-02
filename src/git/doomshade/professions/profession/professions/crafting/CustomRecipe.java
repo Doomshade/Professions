@@ -1,5 +1,8 @@
 package git.doomshade.professions.profession.professions.crafting;
 
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
@@ -84,15 +87,19 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     private Map<Character, ItemStack> deserializeIngredients(Map<String, Object> ingredients) {
         Map<Character, ItemStack> map = new HashMap<>();
         ingredients.forEach((x, y) -> {
-            map.put(x.charAt(0),
-                    y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
+            try {
+                map.put(x.charAt(0),
+                        y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
+            } catch (ConfigurationException e) {
+                Professions.logError(e, false);
+            }
         });
         return map;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected CraftShapedRecipe deserializeObject(Map<String, Object> map) {
+    protected CraftShapedRecipe deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         Object o = map.get(RESULT);
         Map<String, Object> recipeDes;
         if (o instanceof Map) {
@@ -102,9 +109,12 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         } else {
             return null;
         }
-        final ItemStack deserialize = ItemUtils.deserialize(recipeDes);
-        if (deserialize == null) {
-            return null;
+        final ItemStack deserialize;
+        try {
+            deserialize = ItemUtils.deserialize(recipeDes);
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionObjectInitializationException("Could not deserialize recipe ItemStack from file");
         }
         ShapedRecipe recipe = new ShapedRecipe(deserialize).shape(((ArrayList<String>) map.get(SHAPE)).toArray(new String[0]));
 

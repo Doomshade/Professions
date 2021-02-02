@@ -64,7 +64,7 @@ public class UserListener implements Listener {
         try {
             Professions.unloadUser(Professions.getUser(e.getPlayer()));
         } catch (IOException e1) {
-            e1.printStackTrace();
+            Professions.logError(e1);
         }
     }
 
@@ -74,7 +74,7 @@ public class UserListener implements Listener {
         try {
             Professions.loadUser(player);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Professions.logError(ex);
         }
 
         //

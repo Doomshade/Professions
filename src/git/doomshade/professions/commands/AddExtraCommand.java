@@ -44,7 +44,7 @@ public class AddExtraCommand extends AbstractCommand {
         try {
             user.save();
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return true;
     }

@@ -6,8 +6,16 @@ import java.util.HashSet;
 import java.util.logging.Level;
 
 public class ProfessionObjectInitializationException extends Exception {
-    private static final int NO_ID = -1;
-    private final Collection<String> keys;
+    public static final int NO_ID = -1;
+    private Collection<String> keys;
+    private Class<?> clazz;
+    private String additionalMessage = "";
+    private ExceptionReason reason;
+    private int id = -1;
+
+    // separations in ids
+    // should be the same size as (reasons - 1)
+
 
     /**
      * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int)} with an ID of -1 (Magical number)
@@ -62,24 +70,76 @@ public class ProfessionObjectInitializationException extends Exception {
     }
 
     public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id, String additionalMessage, ExceptionReason reason) {
-        super("Could not fully deserialize object of " + clazz.getSimpleName() + (id != NO_ID ? " with id " + id : "") + " " + reason.s + " - " + keys + ". " + additionalMessage);
+        super();
+        this.reason = reason;
         this.keys = keys;
+        this.id = id;
+        this.clazz = clazz;
+        this.additionalMessage = additionalMessage;
+
+        /*
+        if (id != -1)
+            this.ids.add(id);
+
+        this.reasons.add(reason);
+        this.separations.add(0);*/
     }
 
-    public enum ExceptionReason {
-        MISSING_KEYS("as some of the keys are missing!"), KEY_ERROR("as a key has been assigned wrong value!");
-
-        final String s;
-
-        ExceptionReason(String s) {
-            this.s = s;
-        }
+    public void setAdditionalMessage(String additionalMessage) {
+        this.additionalMessage = additionalMessage;
     }
+
+    @Override
+    public String getMessage() {
+        String s = String.format("Could not fully deserialize object of %s.<br>Reason(s):<br>",
+                clazz.getSimpleName());
+
+        s = s.concat(String.format("- %s (%s)%s %s", reason, keys, id == -1 ? "" : " for id: " + id, additionalMessage));
+
+        /*
+         s_ids,
+                        reasons.stream().map(x -> x.s).collect(Collectors.joining(", ")),
+                        keys,
+                        additionalMessage
+         */
+
+       /* int lastId = 0;
+        for (int i = 0; i < reasons.size(); i++) {
+            int separator = separations.get(i);
+            if (separator == 0) {
+                separator = this.ids.size();
+            }
+            final List<Integer> sublist = this.ids.subList(lastId, separator);
+            lastId = separator;
+            String forIds = sublist.isEmpty() ? "." : " for ids: " + sublist + ".";
+            s = s.concat(String.format("%s (%s)%s %s", reasons.get(i).s, keys, forIds, additionalMessage));
+
+            if (i + 1 != reasons.size()) {
+                s = s.concat("\n");
+            }
+        }*/
+
+        return s;
+    }
+
 
     public ProfessionObjectInitializationException(String message) {
         super(message);
         keys = new HashSet<>();
     }
+
+    /*
+    public void addId(int id) {
+        this.ids.add(id);
+    }
+
+    public void addIds(Collection<Integer> ids) {
+        this.ids.addAll(ids);
+    }
+
+    public void separate() {
+        this.separations.add(this.ids.size());
+    }*/
 
     public Collection<String> getKeys() {
         return Collections.unmodifiableCollection(keys);
@@ -93,7 +153,52 @@ public class ProfessionObjectInitializationException extends Exception {
         this.keys.addAll(keys);
     }
 
-    public void add(ProfessionObjectInitializationException ex) {
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setClazz(Class<?> clazz) {
+        this.clazz = clazz;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setReason(ExceptionReason reason) {
+        this.reason = reason;
+    }
+
+    public ExceptionReason getReason() {
+        return reason;
+    }
+
+    /*
+    public ProfessionObjectInitializationException setNext(ProfessionObjectInitializationException ex) {
+
+        ex.previous = this;
+        this.next = ex;
+
+        return ex;
+
         addKeys(ex.getKeys());
+        addIds(ex.ids);
+        separate();
+    }*/
+
+
+    public enum ExceptionReason {
+        MISSING_KEYS("some of the keys are missing"), KEY_ERROR("keys have been assigned wrong value");
+
+        final String s;
+
+        ExceptionReason(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
     }
 }

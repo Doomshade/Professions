@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -77,10 +78,16 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
-        return SpawnableElement.deserialize(map, Herb.class, x -> {
+        final Herb herb = SpawnableElement.deserialize(map, Herb.class, x -> {
             int gatherTime = (int) map.get(TIME_GATHER.s);
             MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-            ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
+            ItemStack gatherItem = null;
+            try {
+                gatherItem = ItemUtils.deserialize(mem.getValues(false));
+            } catch (ConfigurationException e) {
+                Professions.logError(e, false);
+                return null;
+            }
             String displayName = gatherItem.getType().name();
             if (gatherItem.hasItemMeta()) {
                 ItemMeta meta = gatherItem.getItemMeta();
@@ -90,6 +97,8 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
             }
             return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), x.getSpawnPoints(), (boolean) map.get(ENABLE_SPAWN.s), x.getParticleData(), gatherTime);
         });
+        if (herb == null) throw new ProfessionObjectInitializationException("Could not deserialize herb");
+        return herb;
     }
         /*
         // gather item
@@ -152,7 +161,7 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
             try {
                 entry.getKey().getLocationOptions(entry.getValue()).spawn();
             } catch (SpawnException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
     }

@@ -1,5 +1,6 @@
 package git.doomshade.professions.data;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.Profession;
 import git.doomshade.professions.utils.ItemUtils;
@@ -80,7 +81,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         try {
             clone.setup();
         } catch (ConfigurationException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return clone;
 

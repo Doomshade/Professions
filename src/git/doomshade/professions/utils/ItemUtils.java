@@ -8,6 +8,7 @@ import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.ReloadCommand;
 import git.doomshade.professions.commands.SaveCommand;
 import git.doomshade.professions.enums.SkillupColor;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import net.minecraft.server.v1_9_R1.NBTBase;
@@ -84,7 +85,7 @@ public final class ItemUtils implements ISetup {
     }
 
 
-    public static ItemStack deserialize(Map<String, Object> map) {
+    public static ItemStack deserialize(Map<String, Object> map) throws ConfigurationException {
         return deserialize(map, true);
     }
 
@@ -98,7 +99,7 @@ public final class ItemUtils implements ISetup {
      * @return deserialized ItemStack
      */
     @SuppressWarnings("unchecked")
-    public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook) {
+    public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook) throws ConfigurationException {
         if (map == null) {
             return null;
         }
@@ -116,7 +117,7 @@ public final class ItemUtils implements ISetup {
                 if (ITEMS_LOGGED.contains(map)) break diablo;
                 Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
 
-                Professions.log("The serialized form:\n" + map, Level.CONFIG);
+                Professions.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
                 ITEMS_LOGGED.add(map);
                 break diablo;
             }
@@ -140,9 +141,7 @@ public final class ItemUtils implements ISetup {
 
         final Object potentialMaterial = map.get(MATERIAL);
         if (potentialMaterial == null) {
-            final RuntimeException ex = new NullPointerException("Null material");
-            Professions.log(ex, Level.CONFIG);
-            throw ex;
+            throw new ConfigurationException(new NullPointerException("Null material for " + map));
         }
 
         ItemStack item = deserializeMaterial((String) potentialMaterial);
@@ -195,7 +194,7 @@ public final class ItemUtils implements ISetup {
                 unhandledTags = (Map<String, NBTBase>) unhandledTagsField.get(meta);
 
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
-                e.printStackTrace();
+                Professions.logError(e);
                 return null;
             }
 
@@ -215,7 +214,7 @@ public final class ItemUtils implements ISetup {
                     }
                 }
             } catch (IOException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         item.setItemMeta(meta);
@@ -230,93 +229,102 @@ public final class ItemUtils implements ISetup {
         }
 
 
-        // TODO THIS COULD BE A PROBLEM WITH DIABLOITEMS (SAVING THEIR CONFIG NAME !BASED ON DISPLAY NAME!) !!!
         Map<String, Object> map = new HashMap<>();
-
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta.hasDisplayName()) {
-                final String displayName = meta.getDisplayName();
-
-                // we look for DiabloLike first
-                diablolike:
-                if (Professions.isDiabloLikeHook()) {
-                    final List<DiabloItem> itemFromDisplayName = DiabloLike.getItemFromDisplayName(displayName);
-                    if (itemFromDisplayName == null) break diablolike;
-                    final List<DiabloItem> items = itemFromDisplayName
-                            .stream()
-                            .filter(x -> x.getItem().getType() == item.getType())
-                            .collect(Collectors.toList());
-
-                    if (items.size() > 1) {
-                        // log that we found the diablo item but there were duplicates
-                        Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
-                        Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
-                    } else {
-                        // there was only one of a kind diabloitem
-                        map.put(DIABLO_ITEM, items.get(0).getConfigName());
-                        return map;
-
-                    }
-                }
-
-                // DiabloLike item not found, continue in serialization
-
-                map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
-            }
-            if (meta.hasLore()) {
-                map.put(LORE, meta.getLore().stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
-            }
-
-
-            Class<? extends ItemMeta> clazz = meta.getClass();
-            if (!clazz.getSimpleName().equalsIgnoreCase("craftmetaitem")) {
-                clazz = (Class<? extends ItemMeta>) clazz.getSuperclass();
-            }
-            if (meta instanceof PotionMeta) {
-                PotionMeta potionMeta = (PotionMeta) meta;
-                map.put(POTION_TYPE, CraftPotionUtil.fromBukkit(potionMeta.getBasePotionData()));
-            }
-
-            Map<String, NBTBase> unhandledTags;
-            try {
-                final Field unhandledTagsField = clazz.getDeclaredField("unhandledTags");
-                unhandledTagsField.setAccessible(true);
-                unhandledTags = (Map<String, NBTBase>) unhandledTagsField.get(meta);
-
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                e.printStackTrace();
-                return null;
-            }
-
-            Map<String, NBTBase> internalTags = new HashMap<>(unhandledTags);
-            try {
-                final Method method = clazz.getDeclaredMethod("serializeInternal", Map.class);
-                method.setAccessible(true);
-                method.invoke(meta, internalTags);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-            if (!internalTags.isEmpty()) {
-                NBTTagCompound internal = new NBTTagCompound();
-
-                for (Map.Entry<String, NBTBase> stringNBTBaseEntry : internalTags.entrySet()) {
-                    internal.set(stringNBTBaseEntry.getKey(), stringNBTBaseEntry.getValue());
-                }
-
-                try {
-                    ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                    NBTCompressedStreamTools.a(internal, buf);
-                    map.put("internal", Base64.encodeBase64String(buf.toByteArray()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-
-                }
-            }
-        }
 
         map.put(MATERIAL, serializeMaterial(item));
         map.put(AMOUNT, item.getAmount());
+
+        // no item meta, means only material and amount can be serialized only
+        if (!item.hasItemMeta()) return map;
+
+        final ItemMeta meta = item.getItemMeta();
+
+        // TODO THIS COULD BE A PROBLEM WITH DIABLOITEMS (SAVING THEIR CONFIG NAME !BASED ON DISPLAY NAME!) !!!
+        if (meta.hasDisplayName()) {
+            final String displayName = meta.getDisplayName();
+
+            // we primarily look for DiabloLike
+            diablolike:
+            if (Professions.isDiabloLikeHook()) {
+                // get items from display name
+                final List<DiabloItem> itemFromDisplayName = DiabloLike.getItemFromDisplayName(displayName);
+
+                // diablolike returns null if there are no items (conventions? Pepega)
+                if (itemFromDisplayName == null) break diablolike;
+
+                // there could be multiple items with the same name but not the same material, so filter out the items with incorrect material
+                final List<DiabloItem> items = itemFromDisplayName
+                        .stream()
+                        .filter(x -> x.getItem().getType() == item.getType())
+                        .collect(Collectors.toList());
+
+                // we found more than one diablo item with the same name and material (this shit should not happen btw)
+                if (items.size() > 1) {
+                    // log that we found the diablo item but there were duplicates
+                    Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
+                    Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
+                }
+                // there was only one of a kind diabloitem
+                else {
+                    map.put(DIABLO_ITEM, items.get(0).getConfigName());
+                    return map;
+
+                }
+            }
+
+            // DiabloLike item not found, continue in serialization
+            map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
+        }
+
+        if (meta.hasLore()) {
+            map.put(LORE, meta.getLore().stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
+        }
+
+        // now we need to do some funky stuff with item meta because of potions
+        Class<? extends ItemMeta> clazz = meta.getClass();
+        if (!clazz.getSimpleName().equalsIgnoreCase("craftmetaitem")) {
+            clazz = (Class<? extends ItemMeta>) clazz.getSuperclass();
+        }
+        if (meta instanceof PotionMeta) {
+            PotionMeta potionMeta = (PotionMeta) meta;
+            map.put(POTION_TYPE, CraftPotionUtil.fromBukkit(potionMeta.getBasePotionData()));
+        }
+
+        Map<String, NBTBase> unhandledTags;
+        try {
+            final Field unhandledTagsField = clazz.getDeclaredField("unhandledTags");
+            unhandledTagsField.setAccessible(true);
+            unhandledTags = (Map<String, NBTBase>) unhandledTagsField.get(meta);
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            Professions.logError(e);
+            return null;
+        }
+
+        Map<String, NBTBase> internalTags = new HashMap<>(unhandledTags);
+        try {
+            final Method method = clazz.getDeclaredMethod("serializeInternal", Map.class);
+            method.setAccessible(true);
+            method.invoke(meta, internalTags);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            Professions.logError(e);
+        }
+        if (!internalTags.isEmpty()) {
+            NBTTagCompound internal = new NBTTagCompound();
+
+            for (Map.Entry<String, NBTBase> stringNBTBaseEntry : internalTags.entrySet()) {
+                internal.set(stringNBTBaseEntry.getKey(), stringNBTBaseEntry.getValue());
+            }
+
+            try {
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                NBTCompressedStreamTools.a(internal, buf);
+                map.put("internal", Base64.encodeBase64String(buf.toByteArray()));
+            } catch (IOException e) {
+                Professions.logError(e);
+            }
+        }
+
+
         return map;
     }
 
@@ -557,7 +565,7 @@ public final class ItemUtils implements ISetup {
                 try {
                     oos.writeObject(x);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             });
         }

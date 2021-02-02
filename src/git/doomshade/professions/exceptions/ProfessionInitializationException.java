@@ -9,6 +9,10 @@ public class ProfessionInitializationException extends Exception {
 
     private static final int NO_ID = -1;
 
+    public ProfessionInitializationException(String message) {
+        super(message);
+    }
+
     /**
      * Calls {@link #ProfessionInitializationException(Class, Collection, int)} with an ID of -1 (Magical number).
      *

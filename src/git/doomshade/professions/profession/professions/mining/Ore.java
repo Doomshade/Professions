@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
@@ -10,7 +11,6 @@ import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
-import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
 import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.RESULT;
@@ -63,31 +64,35 @@ public class Ore extends SpawnableElement<OreLocationOptions> implements Configu
      */
     public static Ore deserialize(Map<String, Object> map, final String name) throws ProfessionObjectInitializationException {
 
-        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(OreItemType.class, new HashSet<>());
-
-
+        AtomicReference<ProfessionObjectInitializationException> ex = new AtomicReference<>();
         final BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, Ore> func = (x, y) -> {
-            // if there are missing keys, add it to exception
-            if (y != null) {
-                ex.add(y);
-            }
+
+            ex.set(y);
+            if (x == null) return null;
+
             SortedSet<YieldResult> results = new TreeSet<>();
 
             MemorySection dropSection;
 
             int i = 0;
             while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
-                results.add(YieldResult.deserialize(dropSection.getValues(false)));
+                try {
+                    results.add(YieldResult.deserialize(dropSection.getValues(false)));
+                } catch (ConfigurationException e) {
+                    e.append("Ore (" + name + ")");
+                    Professions.logError(e, false);
+                }
                 i++;
             }
             return new Ore(x.getId(), name, x.getMaterial(), results, x.getSpawnPoints(), x.getParticleData());
         };
 
+        final Ore deserialize = SpawnableElement.deserialize(map, Ore.class, func);
         // if there are missing keys, throw ex
-        if (!ex.getKeys().isEmpty()) {
-            throw ex;
+        if (deserialize == null) {
+            throw ex.get();
         }
-        return SpawnableElement.deserialize(map, Ore.class, func);
+        return deserialize;
     }
     /*
         String id = (String) map.get(ID.s);

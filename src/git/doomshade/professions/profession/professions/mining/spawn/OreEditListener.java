@@ -53,7 +53,7 @@ public class OreEditListener implements Listener {
                     try {
                         ore.getLocationOptions(sp).spawn();
                     } catch (SpawnException e) {
-                        e.printStackTrace();
+                        Professions.logError(e);
                     }
                     player.sendMessage("Přidán nový spawn point pro " + ore.getName());
                 } else {
@@ -84,7 +84,7 @@ public class OreEditListener implements Listener {
             try {
                 respawnTime = Range.fromString(event.getMessage());
             } catch (Exception e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
             if (ore != null && respawnTime != null) {
                 final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime);
@@ -92,7 +92,7 @@ public class OreEditListener implements Listener {
                 try {
                     ore.getLocationOptions(sp).spawn();
                 } catch (SpawnException e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
                 player.sendMessage("Přidán nový spawn point pro " + ore.getName());
             } else {

@@ -292,7 +292,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             final Player player = e.getPlayer();
             try {
                 // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
-                final SpawnPoint sp = Utils.findInIterable(spawnPoints, x -> x.equals(new SpawnPoint(location)));
+                final SpawnPoint sp = Utils.findInIterable(spawnPoints, x -> x.equals(location));
                 player.sendMessage(message.concat(" Removed spawn point."));
                 spawnableElement.removeSpawnPoint(sp);
             } catch (Utils.SearchNotFoundException ignored) {
@@ -306,7 +306,7 @@ public class ProfessionListener extends AbstractProfessionListener {
                 }
             }
         } catch (Utils.SearchNotFoundException ex) {
-            ex.printStackTrace();
+            Professions.logError(ex);
         }
     }
 

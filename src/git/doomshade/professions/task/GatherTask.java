@@ -123,7 +123,7 @@ public class GatherTask extends BukkitRunnable {
     }
 
     /**
-     * Calls the given predicate, set's the gather tasks result if the predicate returns {@code true} and cancel's the event.
+     * Calls the given predicate, sets the gather tasks result if the predicate returns {@code true} and cancels the event.
      *
      * @param predicate the predicate
      * @param testedArg the tested arg in the predicate
@@ -196,7 +196,7 @@ public class GatherTask extends BukkitRunnable {
                 setResult(GatherResult.FULL_INVENTORY);
             } catch (Exception e) {
                 setResult(GatherResult.UNKNOWN);
-                e.printStackTrace();
+                Professions.logError(e);
             }
             return;
         }
@@ -219,7 +219,7 @@ public class GatherTask extends BukkitRunnable {
             setResult(GatherResult.SUCCESS);
         } catch (Exception e) {
             setResult(GatherResult.UNKNOWN);
-            e.printStackTrace();
+            Professions.logError(e);
         }
     }
 

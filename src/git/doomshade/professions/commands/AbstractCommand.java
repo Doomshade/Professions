@@ -81,7 +81,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                         argTrue = Utils.cast(map.get(ARG_TRUE));
                     } catch (ClassCastException e) {
                         logDeserializationError("true arguments");
-                        e.printStackTrace();
+                        Professions.logError(e);
                     }
                     args.put(true, argTrue);
 

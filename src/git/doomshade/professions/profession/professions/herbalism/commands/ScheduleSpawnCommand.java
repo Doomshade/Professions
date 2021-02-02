@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbLocationOptions;
@@ -62,7 +63,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                     sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
                 } catch (Exception e) {
                     sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             }
         } else {
@@ -73,7 +74,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                 sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
             } catch (Exception e) {
                 sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         return true;

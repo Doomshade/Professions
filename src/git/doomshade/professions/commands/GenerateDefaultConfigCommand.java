@@ -28,8 +28,8 @@ public class GenerateDefaultConfigCommand extends AbstractCommand {
         try {
             Professions.getInstance().saveResource("config.yml", "defaultconfig.yml", true);
         } catch (Exception e) {
-            e.printStackTrace();
             sender.sendMessage("Error creating default config file");
+            Professions.logError(e);
             return false;
         }
         sender.sendMessage("Successfully created default config file");

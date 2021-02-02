@@ -93,7 +93,7 @@ public final class User {
         try {
             loadUser(player);
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return USERS.get(player.getUniqueId());
     }
@@ -121,7 +121,6 @@ public final class User {
         }
         String fileName = file.getName();
         String substring = fileName.substring(0, fileName.length() - 4);
-        System.out.println(substring);
         return getUser(UUID.fromString(substring));
     }
 

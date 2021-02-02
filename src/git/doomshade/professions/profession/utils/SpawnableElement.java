@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.utils;
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
@@ -190,7 +191,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         try {
             getItemTypeHolder().save(false);
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
     }
 
@@ -249,6 +250,14 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         }
     }
 
+    public final void scheduleSpawns(int respawnTime) {
+        for (int i = 0; i < spawnPoints.size(); i++) {
+            SpawnPoint sp = spawnPoints.get(i);
+            LocOptions locationOptions = getLocationOptions(sp);
+            locationOptions.scheduleSpawn(respawnTime, i);
+        }
+    }
+
     /**
      * Despawns all {@link SpawnableElement}s on the server
      *
@@ -275,10 +284,10 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     /**
      * Spawns all {@link SpawnableElement}s on the server
      */
-    public final void spawnAll() {
+    public final void spawnAll() throws SpawnException {
         for (SpawnPoint sp : spawnPoints) {
             LocOptions locationOptions = getLocationOptions(sp);
-            locationOptions.scheduleSpawn();
+            locationOptions.spawn();
 
         }
     }
@@ -357,23 +366,34 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      *                           that does not create location options and returns {@code null} in {@link #getItemTypeHolder()}, but
      *                           everything else is an non-null, thus usable)
      *                           If all keys are present, the exception argument is {@code null}
-     * @param clazz              the class we are converting to
+     * @param clazz              the class we are converting to (here just for stack trace purposes)
      * @param <T>                the desired object type
      * @return the desired object
      */
     public static <T extends SpawnableElement<? extends LocationOptions>> T deserialize(Map<String, Object> map, Class<T> clazz, BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction) {
+
+        // get missing keys and initialize exception
         final Set<String> missingKeys = getMissingKeys(map);
-        ProfessionObjectInitializationException ex = null;
+
+        // deserialize spawn points before checking for missing keys as missing keys have no way of checking whether the spawn points deserialized correctly
+        List<SpawnPoint> spawnPoints;
+        try {
+            spawnPoints = new ArrayList<>(SpawnPoint.deserializeAll(map));
+        } catch (ProfessionObjectInitializationException e) {
+
+            // set the exception class to the deserialization object for further clearance
+            e.setClazz(clazz);
+            return conversionFunction.apply(null, e);
+        }
+
+
+        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(clazz, missingKeys, ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
         if (!missingKeys.isEmpty()) {
-            ex = new ProfessionObjectInitializationException(clazz, missingKeys);
-            ;
+            return conversionFunction.apply(null, ex);
         }
 
         String id = (String) map.get(ID.s);
         ItemStack material = ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s));
-
-        List<SpawnPoint> spawnPoints = new ArrayList<>(SpawnPoint.deserializeAll(map));
-
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
         final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
         SpawnableElement<?> spawnableElement = new SpawnableElementImpl<>(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(), spawnPoints, particleData);
