@@ -9,9 +9,12 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.List;
 
 public class SpawnTask extends BukkitRunnable {
+
     public final LocationOptions locationOptions;
     private transient int respawnTime;
     public transient int id = -1;
+
+    // because of cache
     private transient final int generatedRespawnTime;
 
     public static final int RANDOM_RESPAWN_TIME = -1;
@@ -24,7 +27,11 @@ public class SpawnTask extends BukkitRunnable {
         return respawnTime;
     }
 
-    public static int getSpawnTaskIdFromSpawnPoint(LocationOptions options) {
+    /**
+     * @param options the location options
+     * @return the spawn point ID from given location options if exists, otherwise -1
+     */
+    public static int getSpawnPointId(LocationOptions options) {
         final List<SpawnPoint> spawnPoints = options.element.getSpawnPoints();
         SpawnPoint example = new SpawnPoint(options.location);
         for (int i = 0; i < spawnPoints.size(); i++) {
@@ -37,6 +44,8 @@ public class SpawnTask extends BukkitRunnable {
     }
 
     public SpawnTask(LocationOptions locationOptions, int respawnTime, int id) {
+        IllegalArgumentException e = new IllegalArgumentException("No spawn point exists with location " + locationOptions.location + "!");;
+        if (id < 0) throw e;
         this.locationOptions = locationOptions;
         SpawnPoint example = new SpawnPoint(locationOptions.location);
 
@@ -47,15 +56,15 @@ public class SpawnTask extends BukkitRunnable {
             this.generatedRespawnTime = respawnTime;
             return;
         }
-        throw new IllegalArgumentException("No spawn point exists with location " + locationOptions.location + "!");
+        throw e;
     }
 
     public SpawnTask(LocationOptions locationOptions) throws IllegalArgumentException {
-        this(locationOptions, RANDOM_RESPAWN_TIME, getSpawnTaskIdFromSpawnPoint(locationOptions));
+        this(locationOptions, RANDOM_RESPAWN_TIME, getSpawnPointId(locationOptions));
     }
 
     public SpawnTask(SpawnTask copy) {
-        this(copy, RANDOM_RESPAWN_TIME, getSpawnTaskIdFromSpawnPoint(copy.locationOptions));
+        this(copy, RANDOM_RESPAWN_TIME, getSpawnPointId(copy.locationOptions));
     }
 
     public SpawnTask(SpawnTask copy, int respawnTime, int id) {

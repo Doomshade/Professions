@@ -72,7 +72,7 @@ public class LocationOptions {
     }
 
     public void scheduleSpawn() {
-        scheduleSpawn(SpawnTask.RANDOM_RESPAWN_TIME, SpawnTask.getSpawnTaskIdFromSpawnPoint(this));
+        scheduleSpawn(SpawnTask.RANDOM_RESPAWN_TIME, SpawnTask.getSpawnPointId(this));
     }
 
     public void spawn() throws SpawnException {
