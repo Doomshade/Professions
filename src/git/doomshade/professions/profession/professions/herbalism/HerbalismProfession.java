@@ -50,7 +50,7 @@ public class HerbalismProfession extends Profession {
         // this should not happen either but just making sure
         if (herb == null || location == null) return;
 
-        final HerbLocationOptions herbLocationOptions = herb.getLocationOptions(location);
+        final HerbSpawnPoint herbLocationOptions = herb.getSpawnPoints(location);
         final Player player = user.getPlayer();
 
         // end result action that will be called once the gathering is done/cancelled

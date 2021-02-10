@@ -1,5 +1,6 @@
 package git.doomshade.professions.task;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Location;
 import org.bukkit.Particle;

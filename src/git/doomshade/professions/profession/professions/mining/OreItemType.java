@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +50,6 @@ public class OreItemType extends ItemType<Ore> {
             ore.despawnAll();
         }
         Ore.ORES.clear();
-        SpawnPoint.SPAWN_POINTS.clear();
+        SpawnPointLocation.SPAWN_POINTS.clear();
     }
 }

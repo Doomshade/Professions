@@ -20,9 +20,9 @@ import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.utils.LocationOptions;
-import git.doomshade.professions.profession.utils.MarkableLocationOptions;
 import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.MarkableSpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
@@ -157,20 +157,23 @@ public class ProfessionListener extends AbstractProfessionListener {
 
         // add the location of ore because of its spawn point
         event.addExtra(location);
-        callEvent(event);
 
+        Professions.log("Called event");
+        callEvent(event);
         // event is cancelled when the player does not meet requirements
         if (event.isCancelled()) {
+            Professions.log("Cancelling event");
             e.setCancelled(true);
         }
         // destroy the block and disable particles if the requirements are met
         else {
-            final LocationOptions locationOptions = ore.getLocationOptions(location);
-            locationOptions.despawn();
+            final SpawnPoint spawnPoint = ore.getSpawnPoints(location);
+            Professions.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
+            spawnPoint.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
             if (!Permissions.has(player, Permissions.BUILDER) && player.getGameMode() != GameMode.CREATIVE) {
-                locationOptions.scheduleSpawn();
+                spawnPoint.scheduleSpawn();
             }
         }
     }
@@ -276,37 +279,37 @@ public class ProfessionListener extends AbstractProfessionListener {
             final Block block = e.getBlock();
             final Location location = block.getLocation();
 
-            SpawnableElement<? extends LocationOptions> spawnableElement = SpawnableElement.of(block);
+            SpawnableElement<? extends SpawnPoint> spawnableElement = SpawnableElement.of(block);
 
-            final LocationOptions locationOptions = spawnableElement.getLocationOptions(location);
-
-            // log
-            Professions.log(locationOptions);
-
-            final List<SpawnPoint> spawnPoints = spawnableElement.getSpawnPoints();
+            final SpawnPoint spawnPoint = spawnableElement.getSpawnPoints(location);
 
             // log
-            Professions.log(spawnPoints.contains(new SpawnPoint(location)));
+            Professions.log(spawnPoint);
+
+            final List<SpawnPointLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
+
+            // log
+            Professions.log(spawnPointLocations.contains(new SpawnPointLocation(location)));
             String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
             try {
                 // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
-                final SpawnPoint sp = Utils.findInIterable(spawnPoints, x -> x.equals(location));
+                final SpawnPointLocation sp = Utils.findInIterable(spawnPointLocations, x -> x.equals(location));
                 player.sendMessage(message.concat(" Removed spawn point."));
                 spawnableElement.removeSpawnPoint(sp);
             } catch (Utils.SearchNotFoundException ignored) {
                 player.sendMessage(message);
             } finally {
                 e.setCancelled(true);
-                if (locationOptions instanceof MarkableLocationOptions) {
-                    ((MarkableLocationOptions) locationOptions).despawn(true);
+                if (spawnPoint instanceof MarkableSpawnPoint) {
+                    ((MarkableSpawnPoint) spawnPoint).despawn(true);
                 } else {
-                    locationOptions.despawn();
+                    spawnPoint.despawn();
                 }
             }
         } catch (Utils.SearchNotFoundException ex) {
-            Professions.logError(ex);
+            //Professions.logError(ex);
         }
     }
 

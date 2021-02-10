@@ -8,12 +8,12 @@ import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
-public abstract class MarkableLocationOptions extends LocationOptions implements IMarkable {
+public abstract class MarkableSpawnPoint extends SpawnPoint implements IMarkable {
 
     private static final MarkerManager MARKER_MANAGER = Professions.getMarkerManager();
     private final MarkerWrapper marker;
 
-    public MarkableLocationOptions(Location location, MarkableLocationElement element) throws IllegalArgumentException {
+    public MarkableSpawnPoint(Location location, MarkableSpawnableElement<?> element) throws IllegalArgumentException {
         super(location, element);
         final int id = spawnTask.id;
         this.marker = new MarkerWrapper(element.getId().concat("-").concat(String.valueOf(id)), element.getMarkerIcon(), location);

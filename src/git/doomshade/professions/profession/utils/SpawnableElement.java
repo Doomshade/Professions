@@ -29,14 +29,14 @@ import static git.doomshade.professions.profession.utils.SpawnableElement.Spawna
 /**
  * Manages spawns of spawnable elements. This class already implements {@link LocationElement} interface.
  *
- * @param <LocOptions> the location options type (the type is useful only if you have custom class extending {@link LocationOptions})
+ * @param <SpawnPointType> the spawn point type (the type is useful only if you have custom class extending {@link SpawnPoint})
  * @author Doomshade
  * @version 1.0
  */
-public abstract class SpawnableElement<LocOptions extends LocationOptions> implements LocationElement, ConfigurationSerializable {
-    private final List<SpawnPoint> spawnPoints;
-    private final HashMap<Location, LocOptions> locationOptions = new HashMap<>();
-    private static final HashMap<Class<? extends SpawnableElement>, HashMap<String, SpawnableElement<? extends LocationOptions>>> SPAWNABLE_ELEMENTS = new HashMap<>();
+public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implements LocationElement, ConfigurationSerializable {
+    private final List<SpawnPointLocation> spawnPointLocations;
+    private final HashMap<Location, SpawnPointType> spawnPoints = new HashMap<>();
+    private static final HashMap<Class<? extends SpawnableElement>, HashMap<String, SpawnableElement<? extends SpawnPoint>>> SPAWNABLE_ELEMENTS = new HashMap<>();
     private final String id;
     private final String name;
     private final Material material;
@@ -44,12 +44,12 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     private final ParticleData particleData;
 
 
-    protected SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPoint> spawnPoints, ParticleData particleData) {
-        this(id, name, material, materialData, spawnPoints, particleData, true);
+    protected SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData) {
+        this(id, name, material, materialData, spawnPointLocations, particleData, true);
     }
 
-    private SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPoint> spawnPoints, ParticleData particleData, boolean registerElement) {
-        this.spawnPoints = new ArrayList<>(spawnPoints);
+    private SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
+        this.spawnPointLocations = new ArrayList<>(spawnPointLocations);
         this.id = id;
         this.name = name;
         this.material = material;
@@ -57,21 +57,21 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         this.particleData = particleData;
 
         if (!rejectedIds().contains(id) && registerElement) {
-            final HashMap<String, SpawnableElement<? extends LocationOptions>> map = SPAWNABLE_ELEMENTS.getOrDefault(getClass(), new HashMap<>());
+            final HashMap<String, SpawnableElement<? extends SpawnPoint>> map = SPAWNABLE_ELEMENTS.getOrDefault(getClass(), new HashMap<>());
             map.put(id, this);
             SPAWNABLE_ELEMENTS.put(getClass(), map);
         }
     }
 
-    public static ImmutableMap<String, SpawnableElement<? extends LocationOptions>> getSpawnableElements(Class<? extends SpawnableElement> of) {
+    public static ImmutableMap<String, SpawnableElement<? extends SpawnPoint>> getSpawnableElements(Class<? extends SpawnableElement> of) {
         return ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(of));
     }
 
-    public static ImmutableMap<String, SpawnableElement<? extends LocationOptions>> getSpawnableElements() {
-        final Collection<HashMap<String, SpawnableElement<? extends LocationOptions>>> values = SPAWNABLE_ELEMENTS.values();
+    public static ImmutableMap<String, SpawnableElement<? extends SpawnPoint>> getSpawnableElements() {
+        final Collection<HashMap<String, SpawnableElement<? extends SpawnPoint>>> values = SPAWNABLE_ELEMENTS.values();
 
-        final HashMap<String, SpawnableElement<? extends LocationOptions>> map = new HashMap<>();
-        for (HashMap<String, SpawnableElement<? extends LocationOptions>> v : values) {
+        final HashMap<String, SpawnableElement<? extends SpawnPoint>> map = new HashMap<>();
+        for (HashMap<String, SpawnableElement<? extends SpawnPoint>> v : values) {
             map.putAll(v);
         }
         return ImmutableMap.copyOf(map);
@@ -90,66 +90,35 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * @return the spawnable element
      * @throws Utils.SearchNotFoundException if the block is not a spawnable element
      */
-    public static <T extends SpawnableElement<? extends LocationOptions>> T of(Block block, Class<T> elementClass) throws Utils.SearchNotFoundException {
+    public static <T extends SpawnableElement<? extends SpawnPoint>> T of(Block block, Class<T> elementClass) throws Utils.SearchNotFoundException {
 
-        final SpawnableElement<? extends LocationOptions> el = iterate(block, SPAWNABLE_ELEMENTS.get(elementClass).values());
+        final SpawnableElement<? extends SpawnPoint> el = iterate(block, SPAWNABLE_ELEMENTS.get(elementClass).values());
 
         if (el != null) {
             return (T) el;
         }
 
-        /*
-        for (SpawnableElement<? extends LocationOptions> el : SPAWNABLE_ELEMENTS.get(elementClass).values()) {
-
-
-            // el.get() = function, that transforms a spawnable element instance into elementClass instance
-            if (el.get() != null) {
-                final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
-
-                if (spawn != null && spawn.getClass().equals(elementClass)) {
-
-                    // log
-                    Professions.log(spawn);
-                    return (T) spawn;
-                }
-            }
-        }*/
         throw new Utils.SearchNotFoundException();
     }
 
-    public static SpawnableElement<? extends LocationOptions> of(Block block) throws Utils.SearchNotFoundException {
-        for (HashMap<String, SpawnableElement<? extends LocationOptions>> e : SPAWNABLE_ELEMENTS.values()) {
+    public static SpawnableElement<? extends SpawnPoint> of(Block block) throws Utils.SearchNotFoundException {
+        for (HashMap<String, SpawnableElement<? extends SpawnPoint>> e : SPAWNABLE_ELEMENTS.values()) {
 
-            final SpawnableElement<? extends LocationOptions> el = iterate(block, e.values());
+            final SpawnableElement<? extends SpawnPoint> el = iterate(block, e.values());
 
             if (el != null) {
                 return el;
             }
-            /*
-            for (SpawnableElement<? extends LocationOptions> el : e.values()) {
-
-                // el.get() = function, that transforms a spawnable element instance into elementClass instance
-                if (el.get() != null) {
-                    final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
-
-                    if (spawn != null) {
-
-                        // log
-                        Professions.log(spawn);
-                        return spawn;
-                    }
-                }
-            }*/
         }
         throw new Utils.SearchNotFoundException();
     }
 
-    private static <T extends SpawnableElement<? extends LocationOptions>> SpawnableElement<? extends LocationOptions> iterate(Block block, Iterable<T> iterable) {
+    private static <T extends SpawnableElement<? extends SpawnPoint>> SpawnableElement<? extends SpawnPoint> iterate(Block block, Iterable<T> iterable) {
         for (T el : iterable) {
 
             // el.get() = function, that transforms a spawnable element instance into elementClass instance
             if (el.get() != null) {
-                final SpawnableElement<? extends LocationOptions> spawn = el.get().apply(block);
+                final SpawnableElement<? extends SpawnPoint> spawn = el.get().apply(block);
 
                 if (spawn != null) {
 
@@ -161,18 +130,33 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     }
 
 
-    public final void addSpawnPoint(SpawnPoint sp) {
-        this.spawnPoints.add(sp);
+    /**
+     * Adds a spawn point
+     *
+     * @param sp the spawn point
+     */
+    public final void addSpawnPoint(SpawnPointLocation sp) {
+        this.spawnPointLocations.add(sp);
         update();
     }
 
+    /**
+     * Removes a spawn point with given id
+     *
+     * @param id the id of the spawn point
+     */
     public final void removeSpawnPoint(int id) {
         if (!isSpawnPoint(id)) return;
-        removeSpawnPoint(spawnPoints.get(id));
+        removeSpawnPoint(spawnPointLocations.get(id));
     }
 
-    public final void removeSpawnPoint(SpawnPoint sp) {
-        if (sp == null || !isSpawnPoint(sp)) {
+    /**
+     * Removes given spawn point
+     *
+     * @param sp the spawn point
+     */
+    public final void removeSpawnPoint(SpawnPointLocation sp) {
+        if (sp == null || !isSpawnPointLocation(sp)) {
             return;
         }
         final BackupTask.Result result = Professions.getInstance().backupFirst();
@@ -182,11 +166,14 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
             else
                 Professions.log(ChatColor.RED + "Failed to back up files. Contact admins to check console output!");
         }
-        spawnPoints.remove(sp);
-        getLocationOptions(sp).despawn();
+        spawnPointLocations.remove(sp);
+        getSpawnPoints(sp).despawn();
         update();
     }
 
+    /**
+     * Saves this to file
+     */
     public final void update() {
         try {
             getItemTypeHolder().save(false);
@@ -195,18 +182,18 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         }
     }
 
-    public final LocOptions getLocationOptions(Location location) {
-        if (!locationOptions.containsKey(location)) {
-            locationOptions.put(location, createLocationOptions(location));
+    public final SpawnPointType getSpawnPoints(Location location) {
+        if (!spawnPoints.containsKey(location)) {
+            spawnPoints.put(location, createSpawnPoint(location));
         }
-        return locationOptions.get(location);
+        return spawnPoints.get(location);
     }
 
-    public final ImmutableMap<Location, LocOptions> getLocationOptions() {
-        return ImmutableMap.copyOf(locationOptions);
+    public final ImmutableMap<Location, SpawnPointType> getSpawnPoints() {
+        return ImmutableMap.copyOf(spawnPoints);
     }
 
-    protected abstract LocOptions createLocationOptions(Location location);
+    protected abstract SpawnPointType createSpawnPoint(Location location);
 
     /**
      * We need to save spawn points every time they are modified -  the item type holder provides {@link ItemTypeHolder#save(boolean)} method
@@ -220,8 +207,8 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * @param location the location to check for
      * @return {@code true} if the location is a spawn point, {@code false} otherwise
      */
-    public final boolean isSpawnPoint(Location location) {
-        return spawnPoints.contains(new SpawnPoint(location));
+    public final boolean isSpawnPointLocation(Location location) {
+        return spawnPointLocations.contains(new SpawnPointLocation(location));
     }
 
     /**
@@ -229,31 +216,31 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * @return {@code true} if a spawn point with that id exists, {@code false} otherwise
      */
     public final boolean isSpawnPoint(int id) {
-        return spawnPoints.get(id) != null;
+        return spawnPointLocations.get(id) != null;
     }
 
     /**
      * @return a list of spawn points
      */
-    public final List<SpawnPoint> getSpawnPoints() {
-        return spawnPoints;
+    public final List<SpawnPointLocation> getSpawnPointLocations() {
+        return spawnPointLocations;
     }
 
     /**
      * Schedules a spawn on all {@link SpawnableElement}s on the server
      */
     public final void scheduleSpawns() {
-        for (SpawnPoint sp : spawnPoints) {
-            LocOptions locationOptions = getLocationOptions(sp);
+        for (SpawnPointLocation sp : spawnPointLocations) {
+            SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.scheduleSpawn();
 
         }
     }
 
     public final void scheduleSpawns(int respawnTime) {
-        for (int i = 0; i < spawnPoints.size(); i++) {
-            SpawnPoint sp = spawnPoints.get(i);
-            LocOptions locationOptions = getLocationOptions(sp);
+        for (int i = 0; i < spawnPointLocations.size(); i++) {
+            SpawnPointLocation sp = spawnPointLocations.get(i);
+            SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.scheduleSpawn(respawnTime, i);
         }
     }
@@ -261,13 +248,13 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     /**
      * Despawns all {@link SpawnableElement}s on the server
      *
-     * @param hideOnDynmap whether or not to hide a marker icon on dynmap, this boolean has no effect if the provided {@code LocOptions} is not an instance of {@link MarkableLocationOptions}
+     * @param hideOnDynmap whether or not to hide a marker icon on dynmap, this boolean has no effect if the provided {@code LocOptions} is not an instance of {@link MarkableSpawnPoint}
      */
     public final void despawnAll(boolean hideOnDynmap) {
-        for (SpawnPoint sp : spawnPoints) {
-            LocOptions locationOptions = getLocationOptions(sp);
-            if (locationOptions instanceof MarkableLocationOptions) {
-                ((MarkableLocationOptions) locationOptions).despawn(hideOnDynmap);
+        for (SpawnPointLocation sp : spawnPointLocations) {
+            SpawnPointType locationOptions = getSpawnPoints(sp);
+            if (locationOptions instanceof MarkableSpawnPoint) {
+                ((MarkableSpawnPoint) locationOptions).despawn(hideOnDynmap);
             } else {
                 locationOptions.despawn();
             }
@@ -285,8 +272,8 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * Spawns all {@link SpawnableElement}s on the server
      */
     public final void spawnAll() throws SpawnException {
-        for (SpawnPoint sp : spawnPoints) {
-            LocOptions locationOptions = getLocationOptions(sp);
+        for (SpawnPointLocation sp : spawnPointLocations) {
+            SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.spawn();
 
         }
@@ -299,13 +286,13 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
     /**
      * @return the spawnable location element if the provided argument matched a location element
      */
-    protected Function<Block, ? extends SpawnableElement<? extends LocationOptions>> get() {
+    protected Function<Block, ? extends SpawnableElement<? extends SpawnPoint>> get() {
         return block -> {
             Material mat = block.getType();
             Location location = block.getLocation();
-            for (HashMap<String, SpawnableElement<? extends LocationOptions>> v : SPAWNABLE_ELEMENTS.values()) {
+            for (HashMap<String, SpawnableElement<? extends SpawnPoint>> v : SPAWNABLE_ELEMENTS.values()) {
                 try {
-                    return Utils.findInIterable(v.values(), x -> x.material == mat && x.isSpawnPoint(location));
+                    return Utils.findInIterable(v.values(), x -> x.material == mat && x.isSpawnPointLocation(location));
                 } catch (Utils.SearchNotFoundException ignored) {
                 }
             }
@@ -343,8 +330,8 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
 
                 int i = 0;
 
-                for (SpawnPoint spawnPoint : getSpawnPoints()) {
-                    put(SPAWN_POINT.s.concat("-" + i++), spawnPoint.serialize());
+                for (SpawnPointLocation spawnPointLocation : getSpawnPointLocations()) {
+                    put(SPAWN_POINT.s.concat("-" + i++), spawnPointLocation.serialize());
                 }
                 put(PARTICLE.s, getParticleData().serialize());
             }
@@ -370,15 +357,15 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
      * @param <T>                the desired object type
      * @return the desired object
      */
-    public static <T extends SpawnableElement<? extends LocationOptions>> T deserialize(Map<String, Object> map, Class<T> clazz, BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction) {
+    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction) {
 
         // get missing keys and initialize exception
         final Set<String> missingKeys = getMissingKeys(map);
 
         // deserialize spawn points before checking for missing keys as missing keys have no way of checking whether the spawn points deserialized correctly
-        List<SpawnPoint> spawnPoints;
+        List<SpawnPointLocation> spawnPointLocations;
         try {
-            spawnPoints = new ArrayList<>(SpawnPoint.deserializeAll(map));
+            spawnPointLocations = new ArrayList<>(SpawnPointLocation.deserializeAll(map));
         } catch (ProfessionObjectInitializationException e) {
 
             // set the exception class to the deserialization object for further clearance
@@ -396,13 +383,13 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         ItemStack material = ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s));
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
         final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
-        SpawnableElement<?> spawnableElement = new SpawnableElementImpl<>(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(), spawnPoints, particleData);
+        SpawnableElement<?> spawnableElement = new SpawnableElementImpl<>(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(), spawnPointLocations, particleData);
 
         return conversionFunction.apply(spawnableElement, ex);
     }
 
     // worst case scenario (if this does not work) - replace BiFunction with Function..
-    public static <T extends SpawnableElement<? extends LocationOptions>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) {
+    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) {
         return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
 
@@ -425,7 +412,7 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         public EnumMap<SpawnableElementEnum, Object> getDefaultValues() {
             return new EnumMap<SpawnableElementEnum, Object>(SpawnableElementEnum.class) {
                 {
-                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
+                    put(SPAWN_POINT, SpawnPointLocation.EXAMPLE.serialize());
                     put(ID, "some_id");
                     put(MATERIAL, Material.GLASS);
                     put(PARTICLE, new ParticleData());
@@ -444,14 +431,14 @@ public abstract class SpawnableElement<LocOptions extends LocationOptions> imple
         return name;
     }
 
-    private static class SpawnableElementImpl<T extends LocationOptions> extends SpawnableElement<T> {
+    private static class SpawnableElementImpl<T extends SpawnPoint> extends SpawnableElement<T> {
 
-        protected SpawnableElementImpl(String id, String name, Material material, byte materialData, List<SpawnPoint> spawnPoints, ParticleData particleData) {
-            super(id, name, material, materialData, spawnPoints, particleData, false);
+        protected SpawnableElementImpl(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData) {
+            super(id, name, material, materialData, spawnPointLocations, particleData, false);
         }
 
         @Override
-        protected T createLocationOptions(Location location) {
+        protected T createSpawnPoint(Location location) {
             return null;
         }
 

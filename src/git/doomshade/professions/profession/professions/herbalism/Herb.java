@@ -5,8 +5,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.MarkableLocationElement;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.MarkableSpawnableElement;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -31,25 +31,22 @@ import static git.doomshade.professions.profession.professions.herbalism.Herb.He
  *
  * @author Doomshade
  */
-public class Herb extends SpawnableElement<HerbLocationOptions> implements MarkableLocationElement, ConfigurationSerializable {
+public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements ConfigurationSerializable {
 
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
-    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(), ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5);
+    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(),
+            ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
 
     private final ItemStack gatherItem;
     private final boolean enableSpawn;
     private final int timeGather;
 
-    // TODO: 26.01.2020 make implementation of custom marker icons
-    private final String markerIcon;
-
-    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<SpawnPoint> spawnPoints, boolean enableSpawn, ParticleData particleData, int gatherTime) {
-        super(id, name, herbMaterial, materialData, spawnPoints, particleData);
+    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<SpawnPointLocation> spawnPointLocations, boolean enableSpawn, ParticleData particleData, int gatherTime, String markerIcon) {
+        super(id, name, herbMaterial, materialData, spawnPointLocations, particleData, markerIcon);
         this.gatherItem = gatherItem;
         this.enableSpawn = enableSpawn;
         this.timeGather = gatherTime;
-        this.markerIcon = "flower";
         if (!rejectedIds().contains(id))
             HERBS.put(getId(), this);
     }
@@ -60,7 +57,7 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     }
 
     public static Herb getHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return Utils.findInIterable(HERBS.values(), x -> x.getMaterial() == herb && x.isSpawnPoint(location));
+        return Utils.findInIterable(HERBS.values(), x -> x.getMaterial() == herb && x.isSpawnPointLocation(location));
     }
 
     @Nullable
@@ -95,7 +92,8 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
                     displayName = meta.getDisplayName();
                 }
             }
-            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), x.getSpawnPoints(), (boolean) map.get(ENABLE_SPAWN.s), x.getParticleData(), gatherTime);
+            // TODO: 26.01.2020 make implementation of custom marker icons
+            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), x.getSpawnPointLocations(), (boolean) map.get(ENABLE_SPAWN.s), x.getParticleData(), gatherTime, "flower");
         });
         if (herb == null) throw new ProfessionObjectInitializationException("Could not deserialize herb");
         return herb;
@@ -149,7 +147,7 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
             Herb herb = entry.getKey();
-            if (herb.getLocationOptions(entry.getValue()).isSpawned()) {
+            if (herb.getSpawnPoints(entry.getValue()).isSpawned()) {
                 herbs.put(herb, entry.getValue());
             }
         }
@@ -159,7 +157,7 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     public static void spawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
             try {
-                entry.getKey().getLocationOptions(entry.getValue()).spawn();
+                entry.getKey().getSpawnPoints(entry.getValue()).spawn();
             } catch (SpawnException e) {
                 Professions.logError(e);
             }
@@ -169,16 +167,16 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     @SuppressWarnings("unused")
     public static void despawnHerbs(World world) {
         for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
-            entry.getKey().getLocationOptions(entry.getValue()).despawn();
+            entry.getKey().getSpawnPoints(entry.getValue()).despawn();
         }
     }
 
     private static Map<Herb, Location> getHerbsInWorld(World world) {
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Herb herb : HERBS.values()) {
-            for (SpawnPoint spawnPoint : herb.getSpawnPoints()) {
-                if (spawnPoint.getWorld().equals(world)) {
-                    herbs.put(herb, spawnPoint);
+            for (SpawnPointLocation spawnPointLocation : herb.getSpawnPointLocations()) {
+                if (spawnPointLocation.getWorld().equals(world)) {
+                    herbs.put(herb, spawnPointLocation);
                 }
             }
         }
@@ -211,8 +209,8 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
     }
 
     @Override
-    protected HerbLocationOptions createLocationOptions(Location location) {
-        return new HerbLocationOptions(location, this);
+    protected HerbSpawnPoint createSpawnPoint(Location location) {
+        return new HerbSpawnPoint(location, this);
     }
 
     @NotNull
@@ -223,11 +221,6 @@ public class Herb extends SpawnableElement<HerbLocationOptions> implements Marka
 
     public ItemStack getGatherItem() {
         return gatherItem;
-    }
-
-    @Override
-    public String getMarkerIcon() {
-        return markerIcon;
     }
 
     @Override

@@ -2,7 +2,7 @@ package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.profession.utils.LocationOptions;
+import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -43,7 +43,7 @@ public class GatherTask extends BukkitRunnable {
     private static final HashMap<UUID, GatherTask> TASKS = new HashMap<>();
 
     // let these be protected for further polymorphism purposes
-    protected final LocationOptions locationOptions;
+    protected final SpawnPoint spawnPoint;
     protected final ItemStack result;
     protected final UserProfessionData gatherer;
     protected final Consumer<GatherResult> endResultAction;
@@ -56,15 +56,15 @@ public class GatherTask extends BukkitRunnable {
     private Predicate<Double> movePredicate;
 
     /**
-     * @param locationOptions the location options containing location and spawn methods
+     * @param spawnPoint the location options containing location and spawn methods
      * @param gatherer        the gathering player to call this task upon
      * @param result          the expected result of the gathering task
      * @param endResultAction the action to be performed depending on the gather result
      * @param bossBarOptions  the bossbar options of gathering task
      */
-    public GatherTask(LocationOptions locationOptions, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions) {
+    public GatherTask(SpawnPoint spawnPoint, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions) {
         this.result = result;
-        this.locationOptions = locationOptions;
+        this.spawnPoint = spawnPoint;
         this.gatherer = gatherer;
         this.bossBarOptions = bossBarOptions;
         this.endResultAction = endResultAction;
@@ -177,7 +177,7 @@ public class GatherTask extends BukkitRunnable {
     @Override
     public final void run() {
         cancelTask();
-        Location location = locationOptions.location;
+        Location location = spawnPoint.location;
 
         // someone has already gathered the expected block
         // this does not fully prevent the duplication of gathering but should suffice
@@ -191,8 +191,8 @@ public class GatherTask extends BukkitRunnable {
         final Item item = location.getWorld().dropItemNaturally(location.clone().add(0.5, 0.5, 0.5), result);
         if (inventory.firstEmpty() == -1 && !inventory.contains(result)) {
             try {
-                locationOptions.despawn();
-                locationOptions.scheduleSpawn();
+                spawnPoint.despawn();
+                spawnPoint.scheduleSpawn();
                 setResult(GatherResult.FULL_INVENTORY);
             } catch (Exception e) {
                 setResult(GatherResult.UNKNOWN);
@@ -202,8 +202,8 @@ public class GatherTask extends BukkitRunnable {
         }
 
         try {
-            locationOptions.despawn();
-            locationOptions.scheduleSpawn();
+            spawnPoint.despawn();
+            spawnPoint.scheduleSpawn();
             inventory.addItem(result);
 
             // set the pickup delay of the item on the ground so the player can't duplicate the herbs

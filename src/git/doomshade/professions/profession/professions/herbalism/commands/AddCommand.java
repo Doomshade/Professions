@@ -4,7 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
@@ -53,9 +53,9 @@ public class AddCommand extends AbstractCommand {
             return true;
         }
 
-        herb.addSpawnPoint(new SpawnPoint(lookingAt, respawnTime));
+        herb.addSpawnPoint(new SpawnPointLocation(lookingAt, respawnTime));
         try {
-            herb.getLocationOptions(lookingAt).spawn();
+            herb.getSpawnPoints(lookingAt).spawn();
         } catch (SpawnException e) {
             Professions.logError(e);
         }

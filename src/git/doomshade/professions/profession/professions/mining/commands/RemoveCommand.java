@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -30,12 +30,12 @@ public class RemoveCommand extends AbstractEditCommand {
             Location loc = Utils.getLookingAt(hrac);
             Ore ore;
             try {
-                ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPoint(loc));
+                ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPointLocation(loc));
             } catch (Utils.SearchNotFoundException e) {
                 hrac.sendMessage("Block you are looking at is no ore");
                 return true;
             }
-            ore.removeSpawnPoint(new SpawnPoint(loc));
+            ore.removeSpawnPoint(new SpawnPointLocation(loc));
             sender.sendMessage("Successfully removed spawn point");
         } else {
             if (args.length < 3) {
@@ -55,7 +55,7 @@ public class RemoveCommand extends AbstractEditCommand {
             final String message = "Invalid spawn point id (number required)";
             try {
                 spawnPointId = Integer.parseInt(args[2]);
-                if (spawnPointId >= ore.getSpawnPoints().size()) {
+                if (spawnPointId >= ore.getSpawnPointLocations().size()) {
                     hrac.sendMessage(message);
                     return true;
                 }

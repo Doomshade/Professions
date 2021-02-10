@@ -358,7 +358,6 @@ public final class Professions extends JavaPlugin implements ISetup {
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
-            CacheUtils.closeCacheFiles();
         } catch (IOException e) {
             Professions.logError(e);
         } finally {

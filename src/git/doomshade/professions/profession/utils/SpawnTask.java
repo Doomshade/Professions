@@ -10,7 +10,7 @@ import java.util.List;
 
 public class SpawnTask extends BukkitRunnable {
 
-    public final LocationOptions locationOptions;
+    public final SpawnPoint spawnPoint;
     private transient int respawnTime;
     public transient int id = -1;
 
@@ -31,11 +31,11 @@ public class SpawnTask extends BukkitRunnable {
      * @param options the location options
      * @return the spawn point ID from given location options if exists, otherwise -1
      */
-    public static int getSpawnPointId(LocationOptions options) {
-        final List<SpawnPoint> spawnPoints = options.element.getSpawnPoints();
-        SpawnPoint example = new SpawnPoint(options.location);
-        for (int i = 0; i < spawnPoints.size(); i++) {
-            SpawnPoint sp = spawnPoints.get(i);
+    public static int getSpawnPointId(SpawnPoint options) {
+        final List<SpawnPointLocation> spawnPointLocations = options.element.getSpawnPointLocations();
+        SpawnPointLocation example = new SpawnPointLocation(options.location);
+        for (int i = 0; i < spawnPointLocations.size(); i++) {
+            SpawnPointLocation sp = spawnPointLocations.get(i);
             if (sp.equals(example)) {
                 return i;
             }
@@ -43,15 +43,18 @@ public class SpawnTask extends BukkitRunnable {
         return -1;
     }
 
-    public SpawnTask(LocationOptions locationOptions, int respawnTime, int id) {
-        IllegalArgumentException e = new IllegalArgumentException("No spawn point exists with location " + locationOptions.location + "!");;
+    SpawnTask(SpawnPoint spawnPoint, int respawnTime, int id) {
+        IllegalArgumentException e = new IllegalArgumentException("No spawn point exists with location " + spawnPoint.location + "!");
         if (id < 0) throw e;
-        this.locationOptions = locationOptions;
-        SpawnPoint example = new SpawnPoint(locationOptions.location);
+        this.spawnPoint = spawnPoint;
+        SpawnPointLocation example = new SpawnPointLocation(spawnPoint.location);
 
-        final SpawnPoint sp = locationOptions.element.getSpawnPoints().get(id);
+        final SpawnPointLocation sp = spawnPoint.element.getSpawnPointLocations().get(id);
         if (sp.equals(example)) {
             this.id = id;
+
+            // TODO: 09.02.2021 duplicate spawn tasks 
+            Professions.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
             this.respawnTime = respawnTime >= 0 ? respawnTime : sp.respawnTime.getRandom() + 1;
             this.generatedRespawnTime = respawnTime;
             return;
@@ -59,23 +62,23 @@ public class SpawnTask extends BukkitRunnable {
         throw e;
     }
 
-    public SpawnTask(LocationOptions locationOptions) throws IllegalArgumentException {
-        this(locationOptions, RANDOM_RESPAWN_TIME, getSpawnPointId(locationOptions));
+    SpawnTask(SpawnPoint spawnPoint) throws IllegalArgumentException {
+        this(spawnPoint, RANDOM_RESPAWN_TIME, getSpawnPointId(spawnPoint));
     }
 
-    public SpawnTask(SpawnTask copy) {
-        this(copy, RANDOM_RESPAWN_TIME, getSpawnPointId(copy.locationOptions));
+    SpawnTask(SpawnTask copy) {
+        this(copy, RANDOM_RESPAWN_TIME, getSpawnPointId(copy.spawnPoint));
     }
 
-    public SpawnTask(SpawnTask copy, int respawnTime, int id) {
-        this(copy.locationOptions, respawnTime, id);
+    SpawnTask(SpawnTask copy, int respawnTime, int id) {
+        this(copy.spawnPoint, respawnTime, id);
     }
 
     @Override
     public void run() {
         if (respawnTime <= 0) {
             try {
-                locationOptions.spawn();
+                spawnPoint.spawn();
             } catch (SpawnException e) {
                 Professions.logError(e);
                 cancel();

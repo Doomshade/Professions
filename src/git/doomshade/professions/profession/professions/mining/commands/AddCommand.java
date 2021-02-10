@@ -3,7 +3,7 @@ package git.doomshade.professions.profession.professions.mining.commands;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.SpawnPointLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
@@ -52,9 +52,9 @@ public class AddCommand extends AbstractEditCommand {
             return true;
         }
 
-        ore.addSpawnPoint(new SpawnPoint(lookingAt, respawnTime));
+        ore.addSpawnPoint(new SpawnPointLocation(lookingAt, respawnTime));
         try {
-            ore.getLocationOptions(lookingAt).spawn();
+            ore.getSpawnPoints(lookingAt).spawn();
         } catch (SpawnException e) {
             Professions.logError(e);
         }
