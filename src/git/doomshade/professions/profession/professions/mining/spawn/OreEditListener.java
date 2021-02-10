@@ -5,7 +5,7 @@ import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -48,7 +48,7 @@ public class OreEditListener implements Listener {
             final Ore ore = oreItemType.getObject();
             if (ore != null) {
                 if (nms.hasTag() && nms.getTag().hasKey("ignoreRange") && nms.getTag().getByte("ignoreRange") == 1) {
-                    final SpawnPointLocation sp = new SpawnPointLocation(location, new Range(0));
+                    final ExtendedLocation sp = new ExtendedLocation(location, new Range(0));
                     ore.addSpawnPoint(sp);
                     try {
                         ore.getSpawnPoints(sp).spawn();
@@ -87,7 +87,7 @@ public class OreEditListener implements Listener {
                 Professions.logError(e);
             }
             if (ore != null && respawnTime != null) {
-                final SpawnPointLocation sp = new SpawnPointLocation(oreLocation.location, respawnTime);
+                final ExtendedLocation sp = new ExtendedLocation(oreLocation.location, respawnTime);
                 ore.addSpawnPoint(sp);
                 try {
                     ore.getSpawnPoints(sp).spawn();

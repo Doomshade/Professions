@@ -12,17 +12,31 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.*;
 
-import static git.doomshade.professions.profession.utils.SpawnPointLocation.SpawnPointEnum.*;
+import static git.doomshade.professions.profession.utils.ExtendedLocation.SpawnPointEnum.*;
 import static git.doomshade.professions.profession.utils.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
 
-public class SpawnPointLocation extends Location implements ConfigurationSerializable {
+/**
+ * Class made purely for serialization purposes. This class allows having location and respawn time together in a single segment.<br>
+ * For example:<br>
+ * <code>
+ * spawnpoint-0:<br>
+ * respawn-time: '5'<br>
+ * location:<br>
+ * world: world<br>
+ * x: 50.0<br>
+ * y: 71.0<br>
+ * z: 413.0<br>
+ * pitch: 0.0<br>
+ * yaw: 0.0</code>
+ */
+public class ExtendedLocation extends Location implements ConfigurationSerializable {
 
-    public static final HashSet<SpawnPointLocation> SPAWN_POINTS;
-    public static final SpawnPointLocation EXAMPLE;
+    public static final HashSet<ExtendedLocation> SPAWN_POINTS;
+    public static final ExtendedLocation EXAMPLE;
 
     static {
         SPAWN_POINTS = new HashSet<>();
-        EXAMPLE = new SpawnPointLocation(ItemUtils.EXAMPLE_LOCATION, new Range(5));
+        EXAMPLE = new ExtendedLocation(ItemUtils.EXAMPLE_LOCATION, new Range(5));
     }
 
     final Range respawnTime;
@@ -33,7 +47,7 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
      * @param location
      * @param respawnTime
      */
-    public SpawnPointLocation(Location location, Range respawnTime) {
+    public ExtendedLocation(Location location, Range respawnTime) {
         super(location.getWorld(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         this.respawnTime = respawnTime;
         if (respawnTime.getMin() != -1)
@@ -45,21 +59,21 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
      *
      * @param location
      */
-    public SpawnPointLocation(Location location) {
+    public ExtendedLocation(Location location) {
         this(location, new Range(-1));
     }
 
-    public static List<SpawnPointLocation> deserializeAll(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static List<ExtendedLocation> deserializeAll(Map<String, Object> map) throws ProfessionObjectInitializationException {
 
         ProfessionObjectInitializationException ex = null;
-        List<SpawnPointLocation> spawnPointLocations = new ArrayList<>();
+        List<ExtendedLocation> spawnPointLocations = new ArrayList<>();
         for (int i = 0; i < map.size(); i++) {
             final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
             if (o instanceof MemorySection) {
                 try {
-                    spawnPointLocations.add(SpawnPointLocation.deserializeSpawnPoint(((MemorySection) o).getValues(false)));
+                    spawnPointLocations.add(ExtendedLocation.deserializeSpawnPoint(((MemorySection) o).getValues(false)));
                 } catch (ProfessionObjectInitializationException e) {
-                    ex = new ProfessionObjectInitializationException(SpawnPointLocation.class, Collections.emptyList(), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
+                    ex = new ProfessionObjectInitializationException(ExtendedLocation.class, Collections.emptyList(), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
                     e.setAdditionalMessage("Spawn point ID: " + i);
                     Professions.logError(e, false);
                 }
@@ -84,7 +98,7 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
     public boolean equals(Object o) {
         if (o == this) return true;
 
-        if (o instanceof SpawnPointLocation) {
+        if (o instanceof ExtendedLocation) {
             return super.equals(o);
         } else if (o instanceof Location) {
 
@@ -98,11 +112,11 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
         return super.hashCode();
     }
 
-    public static SpawnPointLocation deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static ExtendedLocation deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
         final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
         if (!missingKeysEnum.isEmpty()) {
             throw new ProfessionObjectInitializationException(
-                    SpawnPointLocation.class,
+                    ExtendedLocation.class,
                     missingKeysEnum,
                     ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
         }
@@ -115,7 +129,7 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
                 range = Range.fromString((String) obj);
             } catch (Exception e) {
                 throw new ProfessionObjectInitializationException(
-                        SpawnPointLocation.class,
+                        ExtendedLocation.class,
                         Collections.singletonList(RESPAWN_TIME.s),
                         ProfessionObjectInitializationException.NO_ID, map.toString(),
                         ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
@@ -125,13 +139,13 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
                 range = new Range((int) obj);
             } catch (Exception e) {
                 throw new ProfessionObjectInitializationException(
-                        SpawnPointLocation.class,
+                        ExtendedLocation.class,
                         Collections.singletonList(RESPAWN_TIME.s),
                         ProfessionObjectInitializationException.NO_ID, map.toString(),
                         ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
             }
         }
-        return new SpawnPointLocation(loc, range);
+        return new ExtendedLocation(loc, range);
     }
 
     @Override
@@ -146,7 +160,7 @@ public class SpawnPointLocation extends Location implements ConfigurationSeriali
     public Map<String, Object> serialize() {
         return new HashMap<String, Object>() {
             {
-                put(LOCATION.s, SpawnPointLocation.super.serialize());
+                put(LOCATION.s, ExtendedLocation.super.serialize());
                 put(RESPAWN_TIME.s, respawnTime.toString());
             }
         };

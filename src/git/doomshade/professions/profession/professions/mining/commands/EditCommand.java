@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -64,7 +64,7 @@ public class EditCommand extends AbstractEditCommand {
             Player player = (Player) sender;
             Location loc = player.getTargetBlock((Set<Material>) null, 5).getLocation();
             try {
-                Ore ore = Utils.findInIterable(ores.values(), x -> x.getSpawnPointLocations().contains(new SpawnPointLocation(loc)));
+                Ore ore = Utils.findInIterable(ores.values(), x -> x.getSpawnPointLocations().contains(new ExtendedLocation(loc)));
                 final OreSpawnPoint locationOptions = ore.getSpawnPoints(loc);
                 locationOptions.despawn();
 

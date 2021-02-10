@@ -6,7 +6,7 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.MarkableSpawnableElement;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -42,7 +42,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     private final boolean enableSpawn;
     private final int timeGather;
 
-    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<SpawnPointLocation> spawnPointLocations, boolean enableSpawn, ParticleData particleData, int gatherTime, String markerIcon) {
+    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<ExtendedLocation> spawnPointLocations, boolean enableSpawn, ParticleData particleData, int gatherTime, String markerIcon) {
         super(id, name, herbMaterial, materialData, spawnPointLocations, particleData, markerIcon);
         this.gatherItem = gatherItem;
         this.enableSpawn = enableSpawn;
@@ -174,7 +174,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     private static Map<Herb, Location> getHerbsInWorld(World world) {
         HashMap<Herb, Location> herbs = new HashMap<>();
         for (Herb herb : HERBS.values()) {
-            for (SpawnPointLocation spawnPointLocation : herb.getSpawnPointLocations()) {
+            for (ExtendedLocation spawnPointLocation : herb.getSpawnPointLocations()) {
                 if (spawnPointLocation.getWorld().equals(world)) {
                     herbs.put(herb, spawnPointLocation);
                 }

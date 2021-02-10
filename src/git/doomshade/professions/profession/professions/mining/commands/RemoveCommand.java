@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -35,7 +35,7 @@ public class RemoveCommand extends AbstractEditCommand {
                 hrac.sendMessage("Block you are looking at is no ore");
                 return true;
             }
-            ore.removeSpawnPoint(new SpawnPointLocation(loc));
+            ore.removeSpawnPoint(new ExtendedLocation(loc));
             sender.sendMessage("Successfully removed spawn point");
         } else {
             if (args.length < 3) {

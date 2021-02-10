@@ -22,7 +22,7 @@ import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.utils.SpawnPoint;
 import git.doomshade.professions.profession.utils.MarkableSpawnPoint;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
@@ -286,16 +286,16 @@ public class ProfessionListener extends AbstractProfessionListener {
             // log
             Professions.log(spawnPoint);
 
-            final List<SpawnPointLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
+            final List<ExtendedLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
 
             // log
-            Professions.log(spawnPointLocations.contains(new SpawnPointLocation(location)));
+            Professions.log(spawnPointLocations.contains(new ExtendedLocation(location)));
             String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
             try {
                 // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
-                final SpawnPointLocation sp = Utils.findInIterable(spawnPointLocations, x -> x.equals(location));
+                final ExtendedLocation sp = Utils.findInIterable(spawnPointLocations, x -> x.equals(location));
                 player.sendMessage(message.concat(" Removed spawn point."));
                 spawnableElement.removeSpawnPoint(sp);
             } catch (Utils.SearchNotFoundException ignored) {

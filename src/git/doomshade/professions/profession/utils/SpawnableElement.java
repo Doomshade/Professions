@@ -34,7 +34,8 @@ import static git.doomshade.professions.profession.utils.SpawnableElement.Spawna
  * @version 1.0
  */
 public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implements LocationElement, ConfigurationSerializable {
-    private final List<SpawnPointLocation> spawnPointLocations;
+
+    private final List<ExtendedLocation> spawnPointLocations;
     private final HashMap<Location, SpawnPointType> spawnPoints = new HashMap<>();
     private static final HashMap<Class<? extends SpawnableElement>, HashMap<String, SpawnableElement<? extends SpawnPoint>>> SPAWNABLE_ELEMENTS = new HashMap<>();
     private final String id;
@@ -43,12 +44,11 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
     private final byte materialData;
     private final ParticleData particleData;
 
-
-    protected SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData) {
+    protected SpawnableElement(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
         this(id, name, material, materialData, spawnPointLocations, particleData, true);
     }
 
-    private SpawnableElement(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
+    private SpawnableElement(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
         this.spawnPointLocations = new ArrayList<>(spawnPointLocations);
         this.id = id;
         this.name = name;
@@ -121,7 +121,6 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
                 final SpawnableElement<? extends SpawnPoint> spawn = el.get().apply(block);
 
                 if (spawn != null) {
-
                     return spawn;
                 }
             }
@@ -135,7 +134,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      *
      * @param sp the spawn point
      */
-    public final void addSpawnPoint(SpawnPointLocation sp) {
+    public final void addSpawnPoint(ExtendedLocation sp) {
         this.spawnPointLocations.add(sp);
         update();
     }
@@ -155,7 +154,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      *
      * @param sp the spawn point
      */
-    public final void removeSpawnPoint(SpawnPointLocation sp) {
+    public final void removeSpawnPoint(ExtendedLocation sp) {
         if (sp == null || !isSpawnPointLocation(sp)) {
             return;
         }
@@ -208,7 +207,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      * @return {@code true} if the location is a spawn point, {@code false} otherwise
      */
     public final boolean isSpawnPointLocation(Location location) {
-        return spawnPointLocations.contains(new SpawnPointLocation(location));
+        return spawnPointLocations.contains(new ExtendedLocation(location));
     }
 
     /**
@@ -222,7 +221,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
     /**
      * @return a list of spawn points
      */
-    public final List<SpawnPointLocation> getSpawnPointLocations() {
+    public final List<ExtendedLocation> getSpawnPointLocations() {
         return spawnPointLocations;
     }
 
@@ -230,7 +229,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      * Schedules a spawn on all {@link SpawnableElement}s on the server
      */
     public final void scheduleSpawns() {
-        for (SpawnPointLocation sp : spawnPointLocations) {
+        for (ExtendedLocation sp : spawnPointLocations) {
             SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.scheduleSpawn();
 
@@ -239,7 +238,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
 
     public final void scheduleSpawns(int respawnTime) {
         for (int i = 0; i < spawnPointLocations.size(); i++) {
-            SpawnPointLocation sp = spawnPointLocations.get(i);
+            ExtendedLocation sp = spawnPointLocations.get(i);
             SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.scheduleSpawn(respawnTime, i);
         }
@@ -251,7 +250,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      * @param hideOnDynmap whether or not to hide a marker icon on dynmap, this boolean has no effect if the provided {@code LocOptions} is not an instance of {@link MarkableSpawnPoint}
      */
     public final void despawnAll(boolean hideOnDynmap) {
-        for (SpawnPointLocation sp : spawnPointLocations) {
+        for (ExtendedLocation sp : spawnPointLocations) {
             SpawnPointType locationOptions = getSpawnPoints(sp);
             if (locationOptions instanceof MarkableSpawnPoint) {
                 ((MarkableSpawnPoint) locationOptions).despawn(hideOnDynmap);
@@ -272,7 +271,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
      * Spawns all {@link SpawnableElement}s on the server
      */
     public final void spawnAll() throws SpawnException {
-        for (SpawnPointLocation sp : spawnPointLocations) {
+        for (ExtendedLocation sp : spawnPointLocations) {
             SpawnPointType locationOptions = getSpawnPoints(sp);
             locationOptions.spawn();
 
@@ -330,7 +329,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
 
                 int i = 0;
 
-                for (SpawnPointLocation spawnPointLocation : getSpawnPointLocations()) {
+                for (ExtendedLocation spawnPointLocation : getSpawnPointLocations()) {
                     put(SPAWN_POINT.s.concat("-" + i++), spawnPointLocation.serialize());
                 }
                 put(PARTICLE.s, getParticleData().serialize());
@@ -363,9 +362,9 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
         final Set<String> missingKeys = getMissingKeys(map);
 
         // deserialize spawn points before checking for missing keys as missing keys have no way of checking whether the spawn points deserialized correctly
-        List<SpawnPointLocation> spawnPointLocations;
+        List<ExtendedLocation> spawnPointLocations;
         try {
-            spawnPointLocations = new ArrayList<>(SpawnPointLocation.deserializeAll(map));
+            spawnPointLocations = new ArrayList<>(ExtendedLocation.deserializeAll(map));
         } catch (ProfessionObjectInitializationException e) {
 
             // set the exception class to the deserialization object for further clearance
@@ -412,7 +411,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
         public EnumMap<SpawnableElementEnum, Object> getDefaultValues() {
             return new EnumMap<SpawnableElementEnum, Object>(SpawnableElementEnum.class) {
                 {
-                    put(SPAWN_POINT, SpawnPointLocation.EXAMPLE.serialize());
+                    put(SPAWN_POINT, ExtendedLocation.EXAMPLE.serialize());
                     put(ID, "some_id");
                     put(MATERIAL, Material.GLASS);
                     put(PARTICLE, new ParticleData());
@@ -433,7 +432,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
 
     private static class SpawnableElementImpl<T extends SpawnPoint> extends SpawnableElement<T> {
 
-        protected SpawnableElementImpl(String id, String name, Material material, byte materialData, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData) {
+        protected SpawnableElementImpl(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
             super(id, name, material, materialData, spawnPointLocations, particleData, false);
         }
 

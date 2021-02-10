@@ -5,7 +5,7 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
 import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.SpawnPointLocation;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.FileEnum;
@@ -38,7 +38,7 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
     public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, Collections.emptySortedSet(), new ArrayList<>(), new ParticleData());
     private SortedSet<YieldResult> results;
 
-    private Ore(String id, String name, Material oreMaterial, SortedSet<YieldResult> results, List<SpawnPointLocation> spawnPointLocations, ParticleData particleData) {
+    private Ore(String id, String name, Material oreMaterial, SortedSet<YieldResult> results, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
         super(id, name, oreMaterial, (byte) 0, spawnPointLocations, particleData);
         this.results = results;
         if (!rejectedIds().contains(id))

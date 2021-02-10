@@ -2,17 +2,22 @@ package git.doomshade.professions.profession.utils;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import git.doomshade.professions.task.ParticleTask;
+import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import org.bukkit.Bukkit;
 
 import java.util.List;
 
-public class SpawnTask extends BukkitRunnable {
+public class SpawnTask extends ExtendedBukkitRunnable {
 
-    public final SpawnPoint spawnPoint;
+    /**
+     * Particle task that spawns particles periodically
+     */
+    private ParticleTask particleTask;
+    private final SpawnPoint spawnPoint;
     private transient int respawnTime;
     public transient int id = -1;
+    private transient boolean running = false;
 
     // because of cache
     private transient final int generatedRespawnTime;
@@ -32,10 +37,10 @@ public class SpawnTask extends BukkitRunnable {
      * @return the spawn point ID from given location options if exists, otherwise -1
      */
     public static int getSpawnPointId(SpawnPoint options) {
-        final List<SpawnPointLocation> spawnPointLocations = options.element.getSpawnPointLocations();
-        SpawnPointLocation example = new SpawnPointLocation(options.location);
+        final List<ExtendedLocation> spawnPointLocations = options.element.getSpawnPointLocations();
+        ExtendedLocation example = new ExtendedLocation(options.location);
         for (int i = 0; i < spawnPointLocations.size(); i++) {
-            SpawnPointLocation sp = spawnPointLocations.get(i);
+            ExtendedLocation sp = spawnPointLocations.get(i);
             if (sp.equals(example)) {
                 return i;
             }
@@ -47,16 +52,17 @@ public class SpawnTask extends BukkitRunnable {
         IllegalArgumentException e = new IllegalArgumentException("No spawn point exists with location " + spawnPoint.location + "!");
         if (id < 0) throw e;
         this.spawnPoint = spawnPoint;
-        SpawnPointLocation example = new SpawnPointLocation(spawnPoint.location);
+        ExtendedLocation example = new ExtendedLocation(spawnPoint.location);
 
-        final SpawnPointLocation sp = spawnPoint.element.getSpawnPointLocations().get(id);
-        if (sp.equals(example)) {
+        final ExtendedLocation el = spawnPoint.element.getSpawnPointLocations().get(id);
+        if (el.equals(example)) {
             this.id = id;
 
             // TODO: 09.02.2021 duplicate spawn tasks 
             Professions.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
-            this.respawnTime = respawnTime >= 0 ? respawnTime : sp.respawnTime.getRandom() + 1;
+            this.respawnTime = respawnTime >= 0 ? respawnTime : el.respawnTime.getRandom() + 1;
             this.generatedRespawnTime = respawnTime;
+            this.particleTask = new ParticleTask(spawnPoint.element.getParticleData(), spawnPoint.location);
             return;
         }
         throw e;
@@ -74,6 +80,10 @@ public class SpawnTask extends BukkitRunnable {
         this(copy.spawnPoint, respawnTime, id);
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
     @Override
     public void run() {
         if (respawnTime <= 0) {
@@ -85,13 +95,45 @@ public class SpawnTask extends BukkitRunnable {
                 return;
             }
             cancel();
+            running = false;
             return;
         }
         respawnTime--;
     }
 
     @Override
-    public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
-        return super.runTaskTimer(plugin, 0L, 20L);
+    protected long delay() {
+        return 0;
+    }
+
+    @Override
+    protected long period() {
+        return 20;
+    }
+
+    @Override
+    protected void onStart() {
+        addParticles();
+    }
+
+    @Override
+    protected void onCancel() {
+        removeParticles();
+    }
+
+    private void removeParticles() throws IllegalStateException {
+        if (particleTask.isRunning())
+            particleTask.cancel();
+    }
+
+    private void addParticles() {
+        if (!particleTask.isRunning()) {
+            try {
+                Bukkit.getScheduler().cancelTask(particleTask.getTaskId());
+            } catch (IllegalStateException ignored) {
+            }
+            particleTask = new ParticleTask(particleTask);
+            particleTask.startTask();
+        }
     }
 }
