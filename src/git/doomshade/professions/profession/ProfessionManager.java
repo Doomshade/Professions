@@ -10,7 +10,6 @@ import git.doomshade.professions.profession.professions.blacksmithing.BSItemType
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
 import git.doomshade.professions.profession.professions.enchanting.EnchantManager;
 import git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType;
-import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.professions.enchanting.enchants.RandomAttributeEnchant;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
@@ -23,7 +22,6 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
-import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.profession.types.ItemType;
@@ -47,6 +45,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -124,12 +123,17 @@ public final class ProfessionManager implements ISetup {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) throws IOException {
+        registerItemTypeHolder(itemTypeHolder.get());
+    }
+
     /**
      * @param itemTypeHolder the {@link ItemTypeHolder} to register
      * @param <T>            the {@link ItemTypeHolder}
      * @throws IOException ex
      */
     public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
+        if (itemTypeHolder == null) return;
         itemTypeHolder.update();
         ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
     }
@@ -244,37 +248,39 @@ public final class ProfessionManager implements ISetup {
     private void registerItemTypeHolders() throws IOException {
 
         // MINING
-        {
+        registerItemTypeHolderSupplier(() -> {
             OreItemType ore = ItemType.getExampleItemType(OreItemType.class, Ore.EXAMPLE_ORE);
             ore.setName(ChatColor.GRAY + "Obsidian");
             ore.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            registerItemTypeHolder(new ItemTypeHolder<>(ore));
-        }
+            return new ItemTypeHolder<>(ore);
+        });
 
         // BLACKSMITHING
-        {
+        registerItemTypeHolderSupplier(() -> {
             BSItemType bs = ItemType.getExampleItemType(BSItemType.class, ItemUtils.EXAMPLE_RESULT);
             bs.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             bs.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            //registerItemTypeHolder(new ItemTypeHolder<>(bs));
-        }
+            return null;
+            //return new ItemTypeHolder<>(bs);
+        });
 
         // HUNTING (no longer used)
-        {
+        registerItemTypeHolderSupplier(() -> {
             PreyItemType preyItemType = ItemType.getExampleItemType(PreyItemType.class, new Mob(EntityType.SKELETON));
             preyItemType.setName(ChatColor.YELLOW + "Kostlivec");
-            //registerItemTypeHolder(new ItemTypeHolder<>(preyItemType));
-        }
+            return null;
+            //return new ItemTypeHolder<>(preyItemType));
+        });
 
         // HERBALISM
-        {
+        registerItemTypeHolderSupplier(() -> {
             HerbItemType herb = ItemType.getExampleItemType(HerbItemType.class, Herb.EXAMPLE_HERB);
             herb.setName(ChatColor.DARK_AQUA + "Test gather item");
-            registerItemTypeHolder(new ItemTypeHolder<>(herb));
-        }
+            return new ItemTypeHolder<>(herb);
+        });
 
         // ENCHANTING
-        {
+        registerItemTypeHolderSupplier(() -> {
             EnchantManager enchm = EnchantManager.getInstance();
             try {
                 enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
@@ -285,11 +291,11 @@ public final class ProfessionManager implements ISetup {
             EnchantedItemItemType eit = ItemType.getExampleItemType(EnchantedItemItemType.class, ench);
             eit.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             eit.setName(ChatColor.RED + "Test random attribute enchantment");
-            registerItemTypeHolder(new ItemTypeHolder<>(eit));
-        }
+            return new ItemTypeHolder<>(eit);
+        });
 
         // CRAFTING
-        {
+        registerItemTypeHolderSupplier(() -> {
             ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
             CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, CraftShapedRecipe.fromBukkitRecipe(recipe));
             cr.setName(ChatColor.DARK_GREEN + "Test recipe");
@@ -313,28 +319,29 @@ public final class ProfessionManager implements ISetup {
                     }
                 }
             }
-            //registerItemTypeHolder(itemTypeHolder);
-        }
+            return null;
+            //return itemTypeHolder;
+        });
 
         // SMELTING
-        {
+        registerItemTypeHolderSupplier(() -> {
             BarItemType barItemType = ItemType.getExampleItemType(BarItemType.class, ItemUtils.EXAMPLE_RESULT);
             barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
             barItemType.setName(ChatColor.BLUE + "Test bar");
-            registerItemTypeHolder(new ItemTypeHolder<>(barItemType));
-        }
+            return new ItemTypeHolder<>(barItemType);
+        });
 
         // ALCHEMY
-        {
+        registerItemTypeHolderSupplier(() -> {
             final PotionItemType potionItemType = ItemType.getExampleItemType(PotionItemType.class, Potion.EXAMPLE_POTION);
-            registerItemTypeHolder(new ItemTypeHolder<>(potionItemType));
-        }
+            return new ItemTypeHolder<>(potionItemType);
+        });
 
         // JEWELCRAFTING
-        {
+        registerItemTypeHolderSupplier(() -> {
             final GemItemType gemItemType = ItemType.getExampleItemType(GemItemType.class, Gem.EXAMPLE_GEM);
-            registerItemTypeHolder(new ItemTypeHolder<>(gemItemType));
-        }
+            return new ItemTypeHolder<>(gemItemType);
+        });
     }
 
     /**
@@ -357,9 +364,9 @@ public final class ProfessionManager implements ISetup {
      * Registers a profession
      *
      * @param prof       the profession to register
-     * @param sayMessage whether or not to announce the registration
+     * @param logMessage whether or not to announce the registration
      */
-    private void registerProfession(Profession prof, boolean sayMessage) {
+    private void registerProfession(Profession prof, boolean logMessage) {
 
         // required plugins of the profession
         Set<String> requiredPlugins = new HashSet<>();
@@ -402,7 +409,7 @@ public final class ProfessionManager implements ISetup {
 
         // lastly call #onLoad
         prof.onLoad();
-        if (sayMessage)
+        if (logMessage)
             Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
     }
 

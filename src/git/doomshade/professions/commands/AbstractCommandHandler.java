@@ -45,7 +45,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
     // initialize plugin command and its file
     private PluginCommand cmd = null;
-    private File file;
+    private File file = null;
 
     /**
      * Keep in mind that this method CREATES a copy of the command handlers
@@ -265,7 +265,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      */
     @Override
     public final void setup() throws IOException {
-        if (cmd == null) {
+        if (cmd == null || file == null) {
             String commandName = getCommandExecutorName();
             try {
                 file = new File(FOLDER, String.format("%s.yml", commandName));
@@ -280,8 +280,9 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
         INSTANCE_COMMANDS.clear();
         registerCommands();
-        postRegisterCommands();
+
         setupCommandFile();
+        postRegisterCommands();
     }
 
     @Override
