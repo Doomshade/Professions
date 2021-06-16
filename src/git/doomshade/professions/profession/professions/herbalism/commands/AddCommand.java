@@ -36,7 +36,7 @@ public class AddCommand extends AbstractCommand {
             player.sendMessage("Invalid herb id");
             return true;
         }
-        Location lookingAt = Utils.getLookingAt(player);
+        Location lookingAt = Utils.getLookingAt(player).getLocation();
         if (lookingAt == null) {
             player.sendMessage("You must be looking at some block");
             return true;

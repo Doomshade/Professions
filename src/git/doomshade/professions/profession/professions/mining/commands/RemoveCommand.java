@@ -27,7 +27,7 @@ public class RemoveCommand extends AbstractEditCommand {
         Player hrac = (Player) sender;
 
         if (args.length == 1) {
-            Location loc = Utils.getLookingAt(hrac);
+            Location loc = Utils.getLookingAt(hrac).getLocation();
             Ore ore;
             try {
                 ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPointLocation(loc));
@@ -36,7 +36,6 @@ public class RemoveCommand extends AbstractEditCommand {
                 return true;
             }
             ore.removeSpawnPoint(new ExtendedLocation(loc));
-            sender.sendMessage("Successfully removed spawn point");
         } else {
             if (args.length < 3) {
                 hrac.sendMessage("You must enter both ore and spawn point id!");
@@ -65,8 +64,8 @@ public class RemoveCommand extends AbstractEditCommand {
             }
 
             ore.removeSpawnPoint(spawnPointId);
-            sender.sendMessage("Successfully removed spawn point");
         }
+        sender.sendMessage("Successfully removed spawn point");
 
         return true;
     }

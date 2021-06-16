@@ -2,8 +2,8 @@ package git.doomshade.professions.utils;
 
 import com.avaje.ebean.validation.NotNull;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 
@@ -24,8 +24,12 @@ public final class Utils {
         return String.format(" and received %d XP", xp);
     }
 
-    public static Location getLookingAt(Player player) {
-        return player.getTargetBlock((Set<Material>) null, 5).getLocation();
+    /**
+     * @param player the player
+     * @return the block the player is currently looking at
+     */
+    public static Block getLookingAt(Player player) {
+        return player.getTargetBlock((Set<Material>) null, 5);
     }
 
 
@@ -37,16 +41,16 @@ public final class Utils {
      * @throws SearchNotFoundException when nothing is found under the given condition
      */
     @NotNull
-    public static <A> Set<A> findAllInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
-        Set<A> set = new HashSet<>();
+    public static <A> Collection<A> findAllInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
+        Collection<A> arr = new ArrayList<>();
         for (A a : iterable) {
             if (condition.test(a)) {
-                set.add(a);
+                arr.add(a);
             }
         }
 
-        if (!set.isEmpty()) {
-            return set;
+        if (!arr.isEmpty()) {
+            return arr;
         }
         throw new SearchNotFoundException();
     }
@@ -69,8 +73,6 @@ public final class Utils {
 
     /**
      * Casts an object to desired class.
-     * Note that this method has no way of telling whether the object is instanceof the class it is being cast to,
-     * thus a {@link ClassCastException} will be thrown if object cannot be casted to the class
      *
      * @param obj the object to class
      * @param <T> the class to cast to
@@ -82,24 +84,37 @@ public final class Utils {
     }
 
     /**
-     * @param map    the {@link ConfigurationSerializable#serialize()} map
-     * @param values the {@link Enum} values ({@code Enum.values()})
+     * Gets the missing keys of a map based on enum values.
+     * Useful for deserialization - checking if all keys are present
+     *
+     * @param map     the {@link ConfigurationSerializable#serialize()} map
+     * @param values  the {@link Enum} values ({@code Enum.values()})
+     * @param ignored the ignored enum values
      * @return a {@link Set} of {@link String}s
      */
     @NotNull
-    public static Set<String> getMissingKeys(Map<String, Object> map, FileEnum[] values, FileEnum... filtered) {
-        return getMissingKeysEnum(map, values, filtered).stream().map(Object::toString).collect(Collectors.toSet());
+    public static Set<String> getMissingKeys(Map<String, Object> map, FileEnum[] values, FileEnum... ignored) {
+        return getMissingKeysEnum(map, values, ignored).stream().map(Object::toString).collect(Collectors.toSet());
     }
 
-    public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values, FileEnum... filtered) {
+    /**
+     * Gets the missing keys of a map based on enum values.
+     * Useful for deserialization - checking if all keys are present
+     *
+     * @param map     the {@link ConfigurationSerializable#serialize()} map
+     * @param values  the {@link Enum} values ({@code Enum.values()})
+     * @param ignored the ignored enum values
+     * @return a {@link Set} of {@link FileEnum}s
+     */
+    public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values, FileEnum... ignored) {
         Set<FileEnum> list = new HashSet<>();
 
         _loop:
         for (FileEnum value : values) {
             final String key = value.toString();
             if (!map.containsKey(key)) {
-                for (FileEnum filter : filtered) {
-                    if (value == filter) {
+                for (FileEnum ignore : ignored) {
+                    if (value == ignore) {
                         continue _loop;
                     }
                 }
@@ -110,18 +125,30 @@ public final class Utils {
         return list;
     }
 
+    /**
+     * Translates the colour in lore
+     *
+     * @param lore the lore
+     * @return translated lore
+     */
     public static List<String> translateLore(List<String> lore) {
         if (lore == null) return new ArrayList<>();
         List<String> newLore = new ArrayList<>(lore);
         for (int i = 0; i < newLore.size(); i++) {
             final String s = newLore.get(i);
-            newLore.set(i, translateName(s));
+            newLore.set(i, translateColour(s));
         }
         return newLore;
     }
 
-    public static String translateName(String name) {
-        return name.isEmpty() ? name : ChatColor.translateAlternateColorCodes('&', name);
+    /**
+     * Replaces '&' with in-game colour codes
+     *
+     * @param s the string
+     * @return translated string
+     */
+    public static String translateColour(String s) {
+        return s.isEmpty() ? s : ChatColor.translateAlternateColorCodes('&', s);
     }
 
     /**
