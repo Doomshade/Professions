@@ -1,8 +1,8 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.professions.mining.spawn.OreLocationOptions;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -40,7 +40,7 @@ public class EditCommand extends AbstractEditCommand {
             switch (args[1].toLowerCase()) {
                 case "allwool":
                     for (Ore ore : ores.values()) {
-                        ore.getLocationOptions().values().forEach(x -> {
+                        ore.getSpawnPoints().values().forEach(x -> {
                             x.despawn();
                             Location loc = x.location;
                             loc.getBlock().setType(Material.WOOL);
@@ -50,7 +50,7 @@ public class EditCommand extends AbstractEditCommand {
                     break;
                 case "allore":
                     for (Ore ore : ores.values()) {
-                        ore.getLocationOptions().values().forEach(x -> {
+                        ore.getSpawnPoints().values().forEach(x -> {
                             x.despawn();
                             x.scheduleSpawn();
                         });
@@ -64,8 +64,8 @@ public class EditCommand extends AbstractEditCommand {
             Player player = (Player) sender;
             Location loc = player.getTargetBlock((Set<Material>) null, 5).getLocation();
             try {
-                Ore ore = Utils.findInIterable(ores.values(), x -> x.getSpawnPoints().contains(new SpawnPoint(loc)));
-                final OreLocationOptions locationOptions = ore.getLocationOptions(loc);
+                Ore ore = Utils.findInIterable(ores.values(), x -> x.getSpawnPointLocations().contains(new ExtendedLocation(loc)));
+                final OreSpawnPoint locationOptions = ore.getSpawnPoints(loc);
                 locationOptions.despawn();
 
                 if (EDITED.remove(loc)) {

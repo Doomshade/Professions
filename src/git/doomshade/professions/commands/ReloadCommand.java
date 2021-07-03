@@ -26,7 +26,7 @@ public class ReloadCommand extends AbstractCommand {
     public ReloadCommand() {
         setCommand("reload");
         setDescription("Reloads plugin");
-        setArg(false, Collections.singletonList("clear cache (true/false)"));
+        setArg(false, "clear cache (true/false)");
         setRequiresPlayer(false);
 
         // TODO take into consideration

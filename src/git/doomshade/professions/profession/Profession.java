@@ -63,7 +63,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
 
@@ -72,7 +72,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         try {
             settings.setup();
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         this.professionSettings = settings;
 
@@ -90,7 +90,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
                 try {
                     throw new IllegalAccessException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead!");
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
         }
 
@@ -174,7 +174,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     /**
      * @return the handled {@link ItemType}'s holders
      */
-    public final Set<ItemTypeHolder<?>> getItems() {
+    public final Iterable<ItemTypeHolder<?>> getItems() {
         return items;
     }
 

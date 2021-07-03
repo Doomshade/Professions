@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -27,16 +27,15 @@ public class RemoveCommand extends AbstractEditCommand {
         Player hrac = (Player) sender;
 
         if (args.length == 1) {
-            Location loc = Utils.getLookingAt(hrac);
+            Location loc = Utils.getLookingAt(hrac).getLocation();
             Ore ore;
             try {
-                ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPoint(loc));
+                ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPointLocation(loc));
             } catch (Utils.SearchNotFoundException e) {
                 hrac.sendMessage("Block you are looking at is no ore");
                 return true;
             }
-            ore.removeSpawnPoint(new SpawnPoint(loc));
-            sender.sendMessage("Successfully removed spawn point");
+            ore.removeSpawnPoint(new ExtendedLocation(loc));
         } else {
             if (args.length < 3) {
                 hrac.sendMessage("You must enter both ore and spawn point id!");
@@ -55,7 +54,7 @@ public class RemoveCommand extends AbstractEditCommand {
             final String message = "Invalid spawn point id (number required)";
             try {
                 spawnPointId = Integer.parseInt(args[2]);
-                if (spawnPointId >= ore.getSpawnPoints().size()) {
+                if (spawnPointId >= ore.getSpawnPointLocations().size()) {
                     hrac.sendMessage(message);
                     return true;
                 }
@@ -65,8 +64,8 @@ public class RemoveCommand extends AbstractEditCommand {
             }
 
             ore.removeSpawnPoint(spawnPointId);
-            sender.sendMessage("Successfully removed spawn point");
         }
+        sender.sendMessage("Successfully removed spawn point");
 
         return true;
     }

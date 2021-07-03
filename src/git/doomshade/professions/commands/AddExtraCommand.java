@@ -24,7 +24,7 @@ public class AddExtraCommand extends AbstractCommand {
 
     public AddExtraCommand() {
         setDescription("Adds an \"extra\" to a profession for requirement purposes");
-        setArg(true, Arrays.asList("user", "profession", "extra"));
+        setArg(true, "user", "profession", "extra");
         setCommand("extra");
         setRequiresPlayer(false);
         addPermission(Permissions.HELPER);
@@ -44,7 +44,7 @@ public class AddExtraCommand extends AbstractCommand {
         try {
             user.save();
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return true;
     }

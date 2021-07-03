@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Material;
@@ -43,10 +44,14 @@ public class TestCommand extends AbstractCommand {
         final Map<String, Object> serialize = ItemUtils.serialize(item);
         if (serialize != null) {
             Professions.log(serialize.toString());
-            final ItemStack deserialize = ItemUtils.deserialize(serialize);
-            if (deserialize != null) {
+            final ItemStack deserialize;
+            try {
+                deserialize = ItemUtils.deserialize(serialize);
                 Professions.log(deserialize);
+            } catch (ConfigurationException e) {
+                Professions.logError(e, false);
             }
+
         }
         return true;
     }

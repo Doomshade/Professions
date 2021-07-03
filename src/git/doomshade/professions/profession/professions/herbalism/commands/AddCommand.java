@@ -1,9 +1,10 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
@@ -35,7 +36,7 @@ public class AddCommand extends AbstractCommand {
             player.sendMessage("Invalid herb id");
             return true;
         }
-        Location lookingAt = Utils.getLookingAt(player);
+        Location lookingAt = Utils.getLookingAt(player).getLocation();
         if (lookingAt == null) {
             player.sendMessage("You must be looking at some block");
             return true;
@@ -45,18 +46,18 @@ public class AddCommand extends AbstractCommand {
         try {
             respawnTime = Range.fromString(args[2]);
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
             return true;
         }
 
-        herb.addSpawnPoint(new SpawnPoint(lookingAt, respawnTime));
+        herb.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
         try {
-            herb.getLocationOptions(lookingAt).spawn();
+            herb.getSpawnPoints(lookingAt).spawn();
         } catch (SpawnException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return true;
     }

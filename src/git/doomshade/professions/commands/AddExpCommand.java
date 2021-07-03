@@ -22,10 +22,8 @@ import java.util.List;
 public class AddExpCommand extends AbstractCommand {
 
     public AddExpCommand() {
-        args = new HashMap<>();
-        args.put(true, Arrays.asList("profession", "add/set", "exp"));
-        args.put(false, Arrays.asList("player"));
-        setArgs(args);
+        setArg(true, "profession", "add/set", "exp");
+        setArg(false, "player");
         setCommand("exp");
         setDescription("Gives exp to the player or sets it");
         addPermission(Permissions.HELPER);

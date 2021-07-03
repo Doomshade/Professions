@@ -98,7 +98,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             try {
                 loader.save(file);
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
                 return false;
             }
 

@@ -122,7 +122,7 @@ profession:
     ## take the same example above and lets say the user is lvl 25
     ## (25 (=user lvl) - 15 (=lvl above)) = 10; 10 * 0.03 (=inc.-by) = 0.3 = 30% chance for an item to drop 2 times
     ## when the user hits lvl 30, the chance will be: 15 * 0.03 = 0.45 = 45% chance for an item to drop 2 times and so on
-    ## technically, once the user hits lvl 49, the chance will be 100% for an item to drop 2 times (34 * 0.03 = 1.02 = 1.0 = 100%)
+    ## technically, once the user hits lvl 49, the chance will be 100% for an item to drop 2 times (34 * 0.03 = 1.02 =~ 1.0 = 100%)
     ##
     ## you can make the "increment-since" = 0, that would mean the chances for extra drop will increment every level since the start
     drop:

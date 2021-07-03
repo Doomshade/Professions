@@ -2,6 +2,7 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import com.google.common.collect.Sets;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.GetSet;
@@ -187,7 +188,13 @@ public class Gem implements ConfigurationSerializable {
         String id = (String) map.get(ID.s);
         String gemEffect = (String) map.get(GEM_EFFECT.s);
         MemorySection itemSection = (MemorySection) map.get(GEM.s);
-        ItemStack item = ItemUtils.deserialize(itemSection.getValues(false));
+        ItemStack item = null;
+        try {
+            item = ItemUtils.deserialize(itemSection.getValues(false));
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionObjectInitializationException("Could not deserialize gem ItemStack from file");
+        }
         String displayName = (String) map.get(DISPLAY_NAME.s);
         displayName = displayName == null || displayName.isEmpty() ? displayName : ChatColor.translateAlternateColorCodes('&', displayName);
 

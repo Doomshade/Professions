@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.types.ItemType;
 import git.doomshade.professions.profession.types.SerializeField;
 
@@ -24,7 +25,7 @@ public abstract class ICustomTypeNew<T> {
                     field.setAccessible(true);
                     field.set(this, map.get(key));
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             }
         }
@@ -40,7 +41,7 @@ public abstract class ICustomTypeNew<T> {
                     field.setAccessible(true);
                     map.put(key, field.get(this));
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             }
         }

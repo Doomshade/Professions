@@ -58,7 +58,7 @@ public class PluginProfessionListener implements Listener {
             player.sendMessage(new Messages.MessageBuilder(Messages.Global.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
         } catch (Exception e2) {
             player.sendMessage(ChatColor.RED + "Nastala neočekávaná chyba. Kontaktuj prosím admina, napiš mu čas, kdy se stala, a pokus se popsat situaci, která nastala.");
-            e2.printStackTrace();
+            Professions.logError(e2);
         }
 
     }

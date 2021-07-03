@@ -12,7 +12,7 @@ import java.util.List;
 public class ExpMultiplierCommand extends AbstractCommand {
 
     public ExpMultiplierCommand() {
-        setArg(true, Arrays.asList("multiplier", "skillapi/professions"));
+        setArg(true, "multiplier", "skillapi/professions");
         setCommand("exp-multiplier");
         setDescription("Sets the exp multiplier. (Default 1)");
         setRequiresPlayer(false);

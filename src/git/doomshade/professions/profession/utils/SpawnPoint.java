@@ -1,140 +1,138 @@
 package git.doomshade.professions.profession.utils;
 
-import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.Range;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.SpawnException;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.logging.Level;
 
-import static git.doomshade.professions.profession.utils.SpawnPoint.SpawnPointEnum.*;
-import static git.doomshade.professions.profession.utils.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
+/**
+ * This class stores the location of spawn point, the
+ */
+public class SpawnPoint {
 
-public class SpawnPoint extends Location implements ConfigurationSerializable {
-
-    public static final HashSet<SpawnPoint> SPAWN_POINTS;
-    public static final SpawnPoint EXAMPLE;
-
-    static {
-        SPAWN_POINTS = new HashSet<>();
-        EXAMPLE = new SpawnPoint(ItemUtils.EXAMPLE_LOCATION, new Range(5));
-    }
-
-    final Range respawnTime;
+    public static final String CACHE_FOLDER = "spawned";
 
     /**
-     * Use this constructor to create a new spawn point
-     *
-     * @param location
-     * @param respawnTime
+     * The location
      */
-    public SpawnPoint(Location location, Range respawnTime) {
-        super(location.getWorld(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
-        this.respawnTime = respawnTime;
-        if (respawnTime.getMin() != -1)
-            SPAWN_POINTS.add(this);
-    }
+    public final Location location;
 
     /**
-     * For hashcode purposes only! Makes checking collections with {@code contains} method easier.
-     *
-     * @param location
+     * The location element containing data about the location
      */
-    public SpawnPoint(Location location) {
-        this(location, new Range(-1));
-    }
+    public final SpawnableElement<?> element;
+    /**
+     * Spawn task that spawns the herb once it's ready
+     */
+    protected SpawnTask spawnTask;
 
-    public static List<SpawnPoint> deserializeAll(Map<String, Object> map) {
-        List<SpawnPoint> spawnPoints = new ArrayList<>();
-        for (int i = 0; i < map.size(); i++) {
-            final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
-            if (o instanceof MemorySection) {
-                try {
-                    spawnPoints.add(SpawnPoint.deserializeSpawnPoint(((MemorySection) o).getValues(false)));
-                } catch (ProfessionObjectInitializationException e) {
-                    e.printStackTrace();
-                }
-            }
+    private boolean spawned = false;
+    /**
+     * Boolean to make sure that the error does not spam console
+     */
+    private boolean enableSpawn = true;
+
+    public SpawnPoint(Location location, SpawnableElement<?> element) throws IllegalArgumentException {
+        this.location = location;
+        this.element = element;
+        if (!element.getSpawnPointLocations().contains(new ExtendedLocation(location))) {
+            throw new IllegalArgumentException("No spawn point with " + location + " exists for " + element.getName() + "(" + element.getSpawnPointLocations() + ")");
         }
-        return spawnPoints;
+        spawnTask = new SpawnTask(this);
     }
 
+    public SpawnTask getSpawnTask() {
+        return spawnTask;
+    }
+
+    public boolean isSpawned() {
+        return spawned;
+    }
+
+    public boolean isSpawnable() {
+        return true;
+    }
+
+    public void scheduleSpawn(int respawnTime, int spawnPointId) {
+        try {
+            Bukkit.getScheduler().cancelTask(spawnTask.getTaskId());
+        } catch (IllegalStateException ignored) {
+        }
+        spawnTask = new SpawnTask(spawnTask, respawnTime, spawnPointId);
+        spawnTask.startTask();
+    }
+
+    public void scheduleSpawn() {
+        scheduleSpawn(SpawnTask.RANDOM_RESPAWN_TIME, SpawnTask.getSpawnPointId(this));
+    }
+
+    public void spawn() throws SpawnException {
+        if (isSpawnable() && !spawned) {
+            forceSpawn();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    public void forceSpawn() throws SpawnException {
+        if (!enableSpawn) return;
+
+        final Material material = element.getMaterial();
+        if (material == null) {
+            this.enableSpawn = false;
+            throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_MATERIAL, element);
+        }
+        final Block block;
+        if (location == null || (block = location.getBlock()) == null) {
+            this.enableSpawn = false;
+            throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_LOCATION, element);
+        }
+        final byte materialData = element.getMaterialData();
+
+        block.setType(material, false);
+        block.setData(materialData);
+        if (material == Material.DOUBLE_PLANT) {
+            final Block top = location.getWorld().getBlockAt(location.clone().add(0, 1, 0));
+            top.setType(material, false);
+            top.setData((byte) 10);
+        }
+
+        unscheduleSpawn();
+        spawned = true;
+
+        Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
+    }
+
+    private void unscheduleSpawn() {
+        try {
+            spawnTask.cancel();
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void despawn() {
+        location.getBlock().setType(Material.AIR);
+        unscheduleSpawn();
+        spawned = false;
+
+        Professions.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        return super.equals(o);
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SpawnPoint that = (SpawnPoint) o;
+        return location.equals(that.location) &&
+                element.equals(that.element);
     }
 
+    @Override
     public int hashCode() {
-        return super.hashCode();
-    }
-
-    public static SpawnPoint deserializeSpawnPoint(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        final Set<String> missingKeysEnum = Utils.getMissingKeys(map, values());
-        if (!missingKeysEnum.isEmpty()) {
-            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of missing keys");
-        }
-        MemorySection mem = (MemorySection) map.get(LOCATION.s);
-        Location loc = deserialize(mem.getValues(false));
-        Range range = null;
-        Object obj = map.get(RESPAWN_TIME.s);
-        if (obj instanceof String) {
-            try {
-                range = Range.fromString((String) obj);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            range = new Range((int) obj);
-        }
-        if (range == null) {
-            throw new ProfessionObjectInitializationException("Could not deserialize spawn point because of invalid range format");
-        }
-        return new SpawnPoint(loc, range);
-    }
-
-    @Override
-    public String toString() {
-        return "SpawnPoint{" +
-                "location=" + super.toString() +
-                ", respawnTime=" + respawnTime +
-                '}';
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
-        return new HashMap<String, Object>() {
-            {
-                put(LOCATION.s, SpawnPoint.super.serialize());
-                put(RESPAWN_TIME.s, respawnTime.toString());
-            }
-        };
-    }
-
-    enum SpawnPointEnum implements FileEnum {
-        LOCATION("location"), RESPAWN_TIME("respawn-time");
-
-        private final String s;
-
-        SpawnPointEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-        @Override
-        public EnumMap<SpawnPointEnum, Object> getDefaultValues() {
-            return new EnumMap<SpawnPointEnum, Object>(SpawnPointEnum.class) {
-                {
-                    put(LOCATION, ItemUtils.EXAMPLE_LOCATION.serialize());
-                    put(RESPAWN_TIME, 60);
-                }
-            };
-        }
+        return Objects.hash(location, element);
     }
 }

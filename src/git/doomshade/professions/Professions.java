@@ -7,6 +7,7 @@ import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.AbstractSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.data.cache.CacheUtils;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
@@ -264,7 +265,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @param object the object to log
      */
     public static void log(Object object) {
-        log(object == null ? "null" : object.toString());
+        log(object, Level.INFO);
     }
 
     /**
@@ -276,9 +277,18 @@ public final class Professions extends JavaPlugin implements ISetup {
         log(message, Level.INFO);
     }
 
-    public static void logError(Exception e) {
-        log("Internal plugin error, contact author with the stack trace from your log file.", Level.WARNING);
-        log(Arrays.toString(e.getStackTrace()), Level.CONFIG);
+    /**
+     * Calls {@link Professions#logError(Throwable, boolean)} with {@code true} argument
+     *
+     * @param e the throwable
+     */
+    public static void logError(Throwable e) {
+        logError(e, true);
+    }
+
+    public static void logError(Throwable e, boolean pluginError) {
+        log((pluginError ? "Internal" : "External") + " plugin error" + (!pluginError ? ", please check logs for further information." : ", please contact author with the stack trace from your log file."), Level.WARNING);
+        log(e.getMessage().replaceAll("<br>", "\n") + (pluginError ? ": " + Arrays.toString(e.getStackTrace()) : ""), Level.CONFIG);
     }
 
     // hooks
@@ -305,6 +315,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 try {
                     fos = new PrintStream(getInstance().getLogFile());
                 } catch (FileNotFoundException e) {
+                    // DONT CALL #logError HERE!
                     e.printStackTrace();
                     return;
                 }
@@ -347,9 +358,10 @@ public final class Professions extends JavaPlugin implements ISetup {
         Bukkit.getScheduler().cancelTasks(this);
         try {
             saveFiles();
-            fos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
+        } finally {
+            fos.close();
         }
     }
 
@@ -390,7 +402,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         try {
             setupFiles();
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
 
         // Hook dynmap after setups as it uses config
@@ -471,7 +483,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             bool = func.test(plug);
         } catch (Exception e) {
             log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
-            e.printStackTrace();
+            Professions.logError(e);
             return;
         }
         if (bool) {
@@ -582,7 +594,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 try {
                     throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
                 } catch (ConfigurationException ex) {
-                    ex.printStackTrace();
+                    Professions.logError(ex);
                 }
             }
         }
@@ -597,7 +609,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 try {
                     throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
                 } catch (ConfigurationException ex) {
-                    ex.printStackTrace();
+                    Professions.logError(ex);
                 }
             }
         }
@@ -650,10 +662,8 @@ public final class Professions extends JavaPlugin implements ISetup {
                 try {
                     itemType.onReload();
                 } catch (Exception e) {
-                    String errormsg = "Failed to reload itemtype " + itemType.getName() + ".";
-                    log(errormsg.concat(" Check log file for exception message."));
-                    log(new Exception(errormsg), Level.CONFIG);
-                    e.printStackTrace();
+                    log("Failed to reload itemtype " + itemType.getName() + ". Check log file for exception message.");
+                    Professions.logError(e);
                     successful = false;
                 }
             }
@@ -717,7 +727,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         try {
             registerSetup(Settings.getInstance());
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
 
         // then other settings
@@ -725,7 +735,7 @@ public final class Professions extends JavaPlugin implements ISetup {
             try {
                 registerSetup(s);
             } catch (Exception e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
 
@@ -733,7 +743,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         try {
             registerSetup(Messages.getInstance());
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         // then the rest
         registerSetup(ItemUtils.instance);
@@ -772,7 +782,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 LOG_FILE.createNewFile();
                 fos = new PrintStream(LOG_FILE);
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
 
@@ -835,8 +845,8 @@ public final class Professions extends JavaPlugin implements ISetup {
                         in.close();
                     }
                 } catch (IOException var10) {
-                    var10.printStackTrace();
                     log("Could not save " + outFile.getName() + " to " + outFile);
+                    Professions.logError(var10);
                 }
 
             }
@@ -863,7 +873,7 @@ public final class Professions extends JavaPlugin implements ISetup {
                 FIRST_BACKUP = false;
                 return backup();
             } catch (Exception e) {
-                e.printStackTrace();
+                Professions.logError(e);
                 return BackupTask.Result.FAILURE;
             }
         }

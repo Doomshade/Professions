@@ -14,7 +14,7 @@ import java.util.List;
 public class NormalizeLevelsCommand extends AbstractCommand {
 
     public NormalizeLevelsCommand() {
-        setArg(true, Arrays.asList("previous x", "previous y", "previous z"));
+        setArg(true, "previous x", "previous y", "previous z");
         setCommand("normalize");
         setDescription(
                 "(DOESN'T WORK YET) Normalizes levels based on XP this curve (use with caution, save users before using this command!)");

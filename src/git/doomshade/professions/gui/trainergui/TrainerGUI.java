@@ -176,7 +176,7 @@ public class TrainerGUI extends GUI implements ISetup {
                 try {
                     range = Range.fromString(split[1]);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Professions.logError(e);
                     return;
                 }
             }

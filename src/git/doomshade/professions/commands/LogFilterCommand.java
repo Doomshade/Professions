@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 public class LogFilterCommand extends AbstractCommand {
 
     public LogFilterCommand() {
-        setArg(false, Collections.singletonList("log file name"));
-        setArg(true, Collections.singletonList("\"regex\""));
+        setArg(false, "log file name");
+        setArg(true, "\"regex\"");
         setCommand("log");
         setDescription("Creates a log file in log directory with the searched term");
         addPermission(Permissions.ADMIN);
@@ -88,10 +88,10 @@ public class LogFilterCommand extends AbstractCommand {
             }
             sender.sendMessage("Successfully created " + customLog.getName() + " in folder " + filteredLogsFolder.getName());
         } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-            sender.sendMessage("Soubor neexistuje.");
+            sender.sendMessage("File does not exist.");
+            Professions.logError(ex);
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
 
         return true;

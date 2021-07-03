@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.utils;
 
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -18,9 +19,15 @@ public class YieldResult implements ConfigurationSerializable, Comparable<YieldR
         this.drop = drop;
     }
 
-    public static YieldResult deserialize(Map<String, Object> map) {
+    public static YieldResult deserialize(Map<String, Object> map) throws ConfigurationException {
         MemorySection section = (MemorySection) map.get("item");
-        final ItemStack deserialize = ItemUtils.deserialize(section.getValues(false));
+        final ItemStack deserialize;
+        try {
+            deserialize = ItemUtils.deserialize(section.getValues(false));
+        } catch (ConfigurationException e) {
+            e.append("Yield Result");
+            throw e;
+        }
         final double chance = (double) map.getOrDefault("chance", 0);
         return new YieldResult(chance, deserialize);
     }

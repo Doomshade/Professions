@@ -1,5 +1,7 @@
 package git.doomshade.professions.profession.types;
 
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.profession.ICraftable;
 import git.doomshade.professions.user.UserProfessionData;
@@ -68,10 +70,20 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         }
 
         MemorySection itemReqSection = (MemorySection) map.get(CRAFTABLE_ITEM_REQ.s);
-        setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
+        try {
+            setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionInitializationException("Could not deserialize " + this);
+        }
 
         MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
-        setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
+        try {
+            setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionInitializationException("Could not deserialize a craftable item type");
+        }
     }
 
     /**

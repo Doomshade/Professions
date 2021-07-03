@@ -48,10 +48,10 @@ public final class ProfessionSettingsManager extends AbstractSettings {
             } catch (ConfigurationException ex) {
                 Professions.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" + Arrays.toString(ex.getStackTrace()), Level.WARNING);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Professions.logError(ex);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
 
         return theSettings;
@@ -70,7 +70,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         try {
             save();
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
     }
 

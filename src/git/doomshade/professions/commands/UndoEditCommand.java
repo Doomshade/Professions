@@ -1,5 +1,6 @@
 package git.doomshade.professions.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 public class UndoEditCommand extends AbstractCommand {
 
     public UndoEditCommand() {
-        setArg(true, Collections.singletonList(EditItemTypeCommand.ARG_FILE));
+        setArg(true, EditItemTypeCommand.ARG_FILE);
         setCommand("undo");
         setDescription("Undoes previous actions made to an item type file");
         setRequiresPlayer(false);
@@ -42,8 +43,8 @@ public class UndoEditCommand extends AbstractCommand {
                 loader.save(file);
                 sender.sendMessage("Undid previous action made to " + file.getName());
             } catch (IOException e) {
-                e.printStackTrace();
                 sender.sendMessage("Could not undo previous actions! Check console for more output.");
+                Professions.logError(e);
             }
         } else {
             sender.sendMessage("Nothing to undo");

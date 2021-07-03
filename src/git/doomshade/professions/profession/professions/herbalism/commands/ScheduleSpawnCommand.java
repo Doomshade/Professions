@@ -1,8 +1,9 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.profession.professions.herbalism.HerbLocationOptions;
+import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -46,15 +47,15 @@ public class ScheduleSpawnCommand extends AbstractCommand {
         Location loc = null;
         try {
             if (spId instanceof Integer)
-                loc = herb.getSpawnPoints().get((Integer) spId);
+                loc = herb.getSpawnPointLocations().get((Integer) spId);
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
             return true;
         }
 
         if (loc == null) {
-            for (Map.Entry<Location, HerbLocationOptions> entry : herb.getLocationOptions().entrySet()) {
-                final HerbLocationOptions hlo = entry.getValue();
+            for (Map.Entry<Location, HerbSpawnPoint> entry : herb.getSpawnPoints().entrySet()) {
+                final HerbSpawnPoint hlo = entry.getValue();
                 Location hloLoc = hlo.location;
                 String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
                 try {
@@ -62,18 +63,18 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                     sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
                 } catch (Exception e) {
                     sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
-                    e.printStackTrace();
+                    Professions.logError(e);
                 }
             }
         } else {
             String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
             try {
-                final HerbLocationOptions hlo = herb.getLocationOptions(loc);
+                final HerbSpawnPoint hlo = herb.getSpawnPoints(loc);
                 hlo.scheduleSpawn();
                 sender.sendMessage("Successfully scheduled spawn of herb at " + locName + ".");
             } catch (Exception e) {
                 sender.sendMessage("Could not schedule spawn of herb at " + locName + ". Check console for error stacktrace.");
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         return true;
@@ -92,7 +93,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                     sender.sendMessage(args[1] + " is an invalid herb id.");
                     break;
                 }
-                for (int i = 0; i < herb.getSpawnPoints().size(); i++) {
+                for (int i = 0; i < herb.getSpawnPointLocations().size(); i++) {
                     String id = String.valueOf(i);
                     if (args[2].startsWith(id)) {
                         list.add(id);

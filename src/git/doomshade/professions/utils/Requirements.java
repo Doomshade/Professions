@@ -1,6 +1,6 @@
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.profession.ICraftable;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -14,7 +14,7 @@ import java.util.*;
  * A class managing requirements of a player.
  *
  * @author Doomshade
- * @see ICraftable
+ * @see git.doomshade.professions.profession.ICraftable
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
 
@@ -42,7 +42,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return deserialized class
      * @see ConfigurationSerializable
      */
-    public static Requirements deserialize(Map<String, Object> map) {
+    public static Requirements deserialize(Map<String, Object> map) throws ConfigurationException {
         List<ItemStack> items = new ArrayList<>();
         for (Object next : map.values()) {
             if (next instanceof MemorySection)

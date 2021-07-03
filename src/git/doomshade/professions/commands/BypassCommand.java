@@ -19,8 +19,8 @@ import java.util.List;
 public class BypassCommand extends AbstractCommand {
 
     public BypassCommand() {
-        setArg(false, Arrays.asList("player", "suppress exp event (true/false)"));
-        setArg(true, Arrays.asList("true/false"));
+        setArg(false, "player", "suppress exp event (true/false)");
+        setArg(true, "true/false");
         setCommand("bypass");
         setDescription("Allows user to bypass level restrictions");
         setRequiresPlayer(false);

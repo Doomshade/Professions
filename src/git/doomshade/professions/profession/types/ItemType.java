@@ -6,6 +6,7 @@ import git.doomshade.professions.data.ItemSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionEvent;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.ICraftable;
@@ -75,7 +76,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             try {
                 itemFile.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         }
         this.setLevelReq(1);
@@ -106,8 +107,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Professions.logError(e, true);
         }
+        return null;
     }
 
     /**
@@ -134,9 +136,11 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             instance.deserialize(id, map);
             return instance;
         } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
             Professions.log("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType(T) constructor!", Level.SEVERE);
+            Professions.logError(e);
+        } catch (ProfessionInitializationException ex) {
+            Professions.logError(ex, false);
         }
         return null;
     }
@@ -173,17 +177,19 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         }
 
         MemorySection invReqSection = (MemorySection) map.get(INVENTORY_REQUIREMENTS.s);
-        setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+        try {
+            setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+        }
 
         MemorySection mem = (MemorySection) map.get(OBJECT.s);
 
         try {
             setObject(deserializeObject(mem.getValues(true)));
-        } catch (ProfessionObjectInitializationException e) {
-            Professions.log(e.getMessage(), Level.WARNING);
-        } catch (NullPointerException e1) {
+        } catch (Exception e1) {
             Professions.log("Failed to load object from " + getFile().getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
-            e1.printStackTrace();
+            Professions.logError(e1, false);
         }
     }
 

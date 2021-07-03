@@ -31,7 +31,7 @@ public class BackupTask extends BukkitRunnable {
             writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
         } catch (IOException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
     }
 

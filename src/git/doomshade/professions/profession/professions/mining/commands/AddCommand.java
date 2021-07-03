@@ -1,8 +1,9 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
+import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
@@ -34,7 +35,7 @@ public class AddCommand extends AbstractEditCommand {
             player.sendMessage("Invalid ore id");
             return true;
         }
-        Location lookingAt = Utils.getLookingAt(player);
+        Location lookingAt = Utils.getLookingAt(player).getLocation();
         if (lookingAt == null) {
             player.sendMessage("You must be looking at some block");
             return true;
@@ -44,18 +45,18 @@ public class AddCommand extends AbstractEditCommand {
         try {
             respawnTime = Range.fromString(args[2]);
         } catch (Exception e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
             return true;
         }
 
-        ore.addSpawnPoint(new SpawnPoint(lookingAt, respawnTime));
+        ore.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
         try {
-            ore.getLocationOptions(lookingAt).spawn();
+            ore.getSpawnPoints(lookingAt).spawn();
         } catch (SpawnException e) {
-            e.printStackTrace();
+            Professions.logError(e);
         }
         return true;
     }

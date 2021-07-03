@@ -81,7 +81,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                         argTrue = Utils.cast(map.get(ARG_TRUE));
                     } catch (ClassCastException e) {
                         logDeserializationError("true arguments");
-                        e.printStackTrace();
+                        Professions.logError(e);
                     }
                     args.put(true, argTrue);
 
@@ -250,8 +250,8 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * @param bool use {@code true} if the argument is required, {@code false} otherwise
      * @param args the arguments
      */
-    public final void setArg(boolean bool, List<String> args) {
-        this.args.put(bool, args);
+    public final void setArg(boolean bool, String... args) {
+        this.args.put(bool, Arrays.asList(args));
     }
 
     /**

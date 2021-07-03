@@ -34,11 +34,11 @@ public interface LocationElement extends Element {
      */
     String getName();
 
+    boolean isSpawnPointLocation(Location location);
+
     /**
      * @return the spawn points of this element
      */
-    List<SpawnPoint> getSpawnPoints();
-
-    boolean isSpawnPoint(Location location);
+    /*List<SpawnPointLocation> getSpawnPointLocations();*/
 
 }

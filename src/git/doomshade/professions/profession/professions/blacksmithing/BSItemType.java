@@ -1,5 +1,7 @@
 package git.doomshade.professions.profession.professions.blacksmithing;
 
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.types.CraftableItemType;
 import git.doomshade.professions.utils.ItemUtils;
@@ -28,6 +30,11 @@ public class BSItemType extends CraftableItemType<ItemStack> {
 
     @Override
     protected ItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return ItemUtils.deserialize(map);
+        try {
+            return ItemUtils.deserialize(map);
+        } catch (ConfigurationException e) {
+            Professions.logError(e, false);
+            throw new ProfessionObjectInitializationException("Could not deserialize blacksmith ItemStack from file.");
+        }
     }
 }

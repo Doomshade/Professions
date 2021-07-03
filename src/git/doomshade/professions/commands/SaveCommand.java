@@ -33,8 +33,8 @@ public class SaveCommand extends AbstractCommand {
             Professions.getInstance().saveFiles();
             sender.sendMessage(ChatColor.GREEN + "Files saved successfully");
         } catch (IOException e) {
-            e.printStackTrace();
             sender.sendMessage(ChatColor.RED + "Error! Check console for error stack trace.");
+            Professions.logError(e);
         }
         return true;
     }

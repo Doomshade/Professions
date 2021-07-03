@@ -1,16 +1,17 @@
 package git.doomshade.professions.task;
 
+import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
-public class ParticleTask extends BukkitRunnable {
+public class ParticleTask extends ExtendedBukkitRunnable {
     private final ParticleData particle;
     private final Location location;
     private final Location particleOffsetLocation;
 
-    private boolean running = false;
 
     public ParticleTask(ParticleData particle, Location location) {
         this.particle = particle;
@@ -20,22 +21,20 @@ public class ParticleTask extends BukkitRunnable {
 
     public ParticleTask(ParticleTask copy) {
         this(copy.particle, copy.location);
-        this.running = copy.running;
     }
 
     @Override
     public void run() {
-        running = true;
         location.getWorld().spawnParticle(Particle.valueOf(particle.getParticle()), particleOffsetLocation, particle.getCount(), particle.getxOffset(), particle.getyOffset(), particle.getzOffset(), particle.getSpeed());
     }
 
     @Override
-    public synchronized void cancel() throws IllegalStateException {
-        running = false;
-        super.cancel();
+    protected long delay() {
+        return 0;
     }
 
-    public boolean isRunning() {
-        return running;
+    @Override
+    protected long period() {
+        return particle.getPeriod();
     }
 }

@@ -22,8 +22,8 @@ import java.util.List;
 public class LevelCommand extends AbstractCommand {
 
     public LevelCommand() {
-        setArg(true, Arrays.asList("profession", "add/set", "level"));
-        setArg(false, Arrays.asList("player"));
+        setArg(true, "profession", "add/set", "level");
+        setArg(false, "player");
         setCommand("level");
         setRequiresPlayer(false);
         setDescription("Adds levels or sets the level of the player");

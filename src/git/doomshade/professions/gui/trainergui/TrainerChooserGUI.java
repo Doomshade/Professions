@@ -48,7 +48,7 @@ public class TrainerChooserGUI extends GUI {
             String id = file.getName().substring(0, file.getName().lastIndexOf('.'));
 
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-            String name = Utils.translateName(loader.getString(KEY_NAME, "Trainer name"));
+            String name = Utils.translateColour(loader.getString(KEY_NAME, "Trainer name"));
 
             NAME_ID_MAP.put(name, id);
             List<String> lore = Utils.translateLore(loader.getStringList("lore"));

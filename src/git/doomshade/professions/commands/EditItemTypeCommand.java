@@ -34,7 +34,14 @@ public class EditItemTypeCommand extends AbstractCommand {
     private static final TreeMap<File, LinkedList<FileConfiguration>> UNDO = new TreeMap<>();
 
     public EditItemTypeCommand() {
-        setArg(true, Arrays.asList(ARG_FILE, "path (ex. items.0.crafting-time)", "value\nfor booleans: true or false\nfor list: end each line with ';', ex. firstLine;secondLine;thirdLine\nfor item: hand\nfor item material: material\nfor location: location"));
+        setArg(true, ARG_FILE,
+                "path (ex. items.0.crafting-time)",
+                "value\n" +
+                        "for booleans: true or false\n" +
+                        "for list: end each line with ';', ex. firstLine;secondLine;thirdLine\n" +
+                        "for item: hand\n" +
+                        "for item material: material\n" +
+                        "for location: location");
         setCommand("edit");
         setDescription("Edits something in item type file");
         setRequiresPlayer(false);
@@ -109,8 +116,8 @@ public class EditItemTypeCommand extends AbstractCommand {
         try {
             loaderCopy.load(file);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
             sender.sendMessage("Error loading " + file.getName() + ". Check console for error output.");
+            Professions.logError(e);
             return true;
         }
         saveUndo(file, loaderCopy);
@@ -212,11 +219,11 @@ public class EditItemTypeCommand extends AbstractCommand {
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                e.printStackTrace();
+                Professions.logError(e);
             }
         } catch (IOException e) {
-            e.printStackTrace();
             sender.sendMessage("Unexpected error occurred. Check console for further logs.");
+            Professions.logError(e);
         }
         return true;
     }

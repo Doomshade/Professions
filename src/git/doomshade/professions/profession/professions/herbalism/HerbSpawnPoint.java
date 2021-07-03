@@ -1,11 +1,11 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
-import git.doomshade.professions.profession.utils.MarkableLocationOptions;
+import git.doomshade.professions.profession.utils.MarkableSpawnPoint;
 import org.bukkit.Location;
 
-public class HerbLocationOptions extends MarkableLocationOptions {
+public class HerbSpawnPoint extends MarkableSpawnPoint {
 
-    HerbLocationOptions(Location location, Herb herb) {
+    HerbSpawnPoint(Location location, Herb herb) {
         super(location, herb);
     }
 
