@@ -19,7 +19,7 @@ public class OresCommand extends AbstractEditCommand {
         setDescription("Opens a GUI with available ores. Place the ore block to register the position of an ore.");
         setRequiresPlayer(true);
         addPermission(Permissions.BUILDER);
-        setArg(false, Collections.singletonList("ignore range (true/false, default=false)"));
+        setArg(false, "ignore range (true/false, default=false)");
     }
 
     @Override

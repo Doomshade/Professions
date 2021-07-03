@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 public class ScheduleSpawnCommand extends AbstractCommand {
 
     public ScheduleSpawnCommand() {
-        setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
-        setArg(false, Collections.singletonList("forcespawn (bypass respawn timer and configuration in itemtype, default: false)"));
+        setArg(true, "herb", "all / spawnpoint id");
+        setArg(false, "forcespawn (bypass respawn timer and configuration in itemtype, default: false)");
         setCommand("schedulespawn");
         setDescription("Schedules a spawn of a herb");
         setRequiresPlayer(false);

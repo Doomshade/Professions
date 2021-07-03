@@ -20,8 +20,8 @@ public class GiveCommand extends AbstractCommand {
 
         setCommand("give");
         setDescription("Gives a player a gem");
-        setArg(true, Collections.singletonList("gem id"));
-        setArg(false, Collections.singletonList("player"));
+        setArg(true, "gem id");
+        setArg(false, "player");
         setRequiresPlayer(false);
         addPermission(Permissions.HELPER);
     }

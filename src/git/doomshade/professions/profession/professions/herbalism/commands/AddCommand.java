@@ -23,7 +23,7 @@ public class AddCommand extends AbstractCommand {
         setCommand("add");
         setDescription("Marks the block you are looking at as a herb");
         setRequiresPlayer(true);
-        setArg(true, Arrays.asList("herb", "respawn time (e.g. 4 or 5-8)"));
+        setArg(true, "herb", "respawn time (e.g. 4 or 5-8)");
         addPermission(Permissions.BUILDER);
     }
 

@@ -28,7 +28,7 @@ public class EditCommand extends AbstractEditCommand {
     public EditCommand() {
         setCommand("edit");
         setRequiresPlayer(true);
-        setArg(false, Collections.singletonList("allwool/allore"));
+        setArg(false, "allwool/allore");
         addPermission(Permissions.BUILDER);
     }
 

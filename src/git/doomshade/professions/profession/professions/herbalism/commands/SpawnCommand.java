@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 public class SpawnCommand extends AbstractCommand {
 
     public SpawnCommand() {
-        setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
-        setArg(false, Collections.singletonList("forcespawn (bypass respawn timer and configuration in itemtype, default: false)"));
+        setArg(true, "herb", "all / spawnpoint id");
+        setArg(false, "forcespawn (bypass respawn timer and configuration in itemtype, default: false)");
         setCommand("spawn");
         setDescription("Spawns a herb");
         setRequiresPlayer(false);

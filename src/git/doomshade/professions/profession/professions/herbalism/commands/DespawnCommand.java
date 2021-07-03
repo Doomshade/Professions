@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 public class DespawnCommand extends AbstractCommand {
 
     DespawnCommand() {
-        setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
-        setArg(false, Collections.singletonList("disable further spawn"));
+        setArg(true, "herb", "all / spawnpoint id");
+        setArg(false, "disable further spawn");
         setCommand("despawn");
         setDescription("Despawns a herb");
         setRequiresPlayer(false);

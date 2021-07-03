@@ -21,7 +21,7 @@ public class InsertCommand extends AbstractCommand {
         setCommand("insert");
         setDescription("Applies a gem's effect onto the item you are currently holding");
         setRequiresPlayer(true);
-        setArg(true, Collections.singletonList("gem id"));
+        setArg(true, "gem id");
         addPermission(Permissions.HELPER);
     }
 

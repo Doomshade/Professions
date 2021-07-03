@@ -21,7 +21,7 @@ public class AddCommand extends AbstractEditCommand {
         setCommand("add");
         setDescription("Marks the block you are looking at as an ore");
         setRequiresPlayer(true);
-        setArg(true, Arrays.asList("ore", "respawn time (e.g. 4 or 5-8)"));
+        setArg(true, "ore", "respawn time (e.g. 4 or 5-8)");
         addPermission(Permissions.BUILDER);
     }
 

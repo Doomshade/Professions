@@ -18,7 +18,7 @@ public class RemoveCommand extends AbstractEditCommand {
         setCommand("remove");
         setDescription("Removes an ore you are currently looking at from spawn points or optionally via args");
         setRequiresPlayer(true);
-        setArg(false, Arrays.asList("ore id", "spawnpoint id"));
+        setArg(false, "ore id", "spawnpoint id");
         addPermission(Permissions.BUILDER);
     }
 
