@@ -2,8 +2,8 @@ package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.profession.utils.SpawnPoint;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.spawn.SpawnPoint;
+import git.doomshade.professions.api.user.UserProfessionData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 

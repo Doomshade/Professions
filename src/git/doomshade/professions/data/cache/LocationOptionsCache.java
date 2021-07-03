@@ -1,7 +1,7 @@
 package git.doomshade.professions.data.cache;
 
-import git.doomshade.professions.profession.utils.SpawnPoint;
-import git.doomshade.professions.profession.utils.SpawnTask;
+import git.doomshade.professions.api.spawn.SpawnPoint;
+import git.doomshade.professions.api.spawn.SpawnTask;
 
 import java.io.Serializable;
 

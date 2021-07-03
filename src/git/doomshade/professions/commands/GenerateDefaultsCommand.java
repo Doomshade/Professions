@@ -1,9 +1,9 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ICraftable;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.utils.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

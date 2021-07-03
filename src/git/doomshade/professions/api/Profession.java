@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession;
+package git.doomshade.professions.api;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSettingsManager;
@@ -10,10 +10,10 @@ import git.doomshade.professions.profession.professions.enchanting.EnchantingPro
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.user.User;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;

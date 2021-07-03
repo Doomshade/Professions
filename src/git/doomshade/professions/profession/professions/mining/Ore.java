@@ -4,9 +4,9 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.utils.SpawnableElement;
+import git.doomshade.professions.api.spawn.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -26,7 +26,7 @@ import java.util.function.BiFunction;
 import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.RESULT;
 
 /**
- * Custom class for {@link git.doomshade.professions.profession.types.ItemType}.
+ * Custom class for {@link git.doomshade.professions.api.types.ItemType}.
  * Here I wanted to have a custom mining result, I'd have otherwise only passed {@link Material} as a generic argument to {@link OreItemType}.
  *
  * @author Doomshade

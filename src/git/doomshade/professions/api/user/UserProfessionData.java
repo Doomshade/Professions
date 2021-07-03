@@ -1,4 +1,4 @@
-package git.doomshade.professions.user;
+package git.doomshade.professions.api.user;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
@@ -10,9 +10,9 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;

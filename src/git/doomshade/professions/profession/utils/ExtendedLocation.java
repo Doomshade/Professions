@@ -13,7 +13,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import java.util.*;
 
 import static git.doomshade.professions.profession.utils.ExtendedLocation.SpawnPointEnum.*;
-import static git.doomshade.professions.profession.utils.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
+import static git.doomshade.professions.api.spawn.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
 
 /**
  * Class made purely for serialization purposes. This class allows having location and respawn time together in a single segment.<br>
@@ -39,7 +39,7 @@ public class ExtendedLocation extends Location implements ConfigurationSerializa
         EXAMPLE = new ExtendedLocation(ItemUtils.EXAMPLE_LOCATION, new Range(5));
     }
 
-    final Range respawnTime;
+    private final Range respawnTime;
 
     /**
      * Use this constructor to create a new spawn point
@@ -164,6 +164,10 @@ public class ExtendedLocation extends Location implements ConfigurationSerializa
                 put(RESPAWN_TIME.s, respawnTime.toString());
             }
         };
+    }
+
+    public Range getRespawnTime() {
+        return respawnTime;
     }
 
     enum SpawnPointEnum implements FileEnum {

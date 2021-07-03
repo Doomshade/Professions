@@ -1,16 +1,16 @@
-package git.doomshade.professions.user;
+package git.doomshade.professions.api.user;
 
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.MaxProfessionsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.Profession.ProfessionType;
-import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.Profession.ProfessionType;
+import git.doomshade.professions.api.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.profession.types.ItemType
+ * @see git.doomshade.professions.api.types.ItemType
  */
 public class EditItemTypeCommand extends AbstractCommand {
 

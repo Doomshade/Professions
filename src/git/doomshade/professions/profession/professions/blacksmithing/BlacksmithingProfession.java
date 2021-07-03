@@ -3,9 +3,8 @@ package git.doomshade.professions.profession.professions.blacksmithing;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.professions.smelting.BarItemType;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 

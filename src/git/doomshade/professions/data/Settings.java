@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;

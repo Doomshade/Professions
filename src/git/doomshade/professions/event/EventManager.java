@@ -1,9 +1,9 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.user.User;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.user.User;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 

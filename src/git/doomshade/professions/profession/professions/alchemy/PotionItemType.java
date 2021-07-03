@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.professions.alchemy;
 
 import com.sucy.skill.SkillAPI;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.api.types.CraftableItemType;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

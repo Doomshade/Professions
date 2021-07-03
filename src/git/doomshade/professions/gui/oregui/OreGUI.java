@@ -3,7 +3,7 @@ package git.doomshade.professions.gui.oregui;
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import net.minecraft.server.v1_9_R1.NBTTagByte;

@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.types;
+package git.doomshade.professions.api.types;
 
 import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.Professions;
@@ -8,7 +8,7 @@ import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.api.ProfessionManager;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;

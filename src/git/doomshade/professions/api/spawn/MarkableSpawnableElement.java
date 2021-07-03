@@ -1,5 +1,7 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
+import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.utils.MarkableLocationElement;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Material;
 

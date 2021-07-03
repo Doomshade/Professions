@@ -1,7 +1,8 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.task.ParticleTask;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
@@ -60,7 +61,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
             // TODO: 09.02.2021 duplicate spawn tasks 
             Professions.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
-            this.respawnTime = respawnTime >= 0 ? respawnTime : el.respawnTime.getRandom() + 1;
+            this.respawnTime = respawnTime >= 0 ? respawnTime : el.getRespawnTime().getRandom() + 1;
             this.generatedRespawnTime = respawnTime;
             this.particleTask = new ParticleTask(spawnPoint.element.getParticleData(), spawnPoint.location);
             return;

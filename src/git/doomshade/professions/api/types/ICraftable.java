@@ -1,7 +1,7 @@
-package git.doomshade.professions.profession;
+package git.doomshade.professions.api.types;
 
-import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.types.CraftableItemType;
+import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.inventory.ItemStack;
 

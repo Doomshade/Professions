@@ -1,7 +1,8 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;

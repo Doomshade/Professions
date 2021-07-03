@@ -4,7 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;

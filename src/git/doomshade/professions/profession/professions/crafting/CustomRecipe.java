@@ -3,7 +3,7 @@ package git.doomshade.professions.profession.professions.crafting;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.MemorySection;

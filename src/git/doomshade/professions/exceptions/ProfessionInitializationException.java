@@ -1,6 +1,6 @@
 package git.doomshade.professions.exceptions;
 
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.types.ItemType;
 
 import java.util.Collection;
 import java.util.logging.Level;

@@ -1,6 +1,6 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.api.types.CraftableItemType;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.inventory.ItemStack;
 

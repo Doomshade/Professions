@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.user.User;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

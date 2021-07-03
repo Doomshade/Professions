@@ -2,8 +2,8 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.types.ItemType;
 
 public final class JewelcraftingProfession extends Profession {
 

@@ -4,9 +4,9 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Global;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.ProfessionManager;
-import git.doomshade.professions.user.User;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.ProfessionManager;
+import git.doomshade.professions.api.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -14,7 +14,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.dynmap.IMarkable;

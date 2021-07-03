@@ -1,10 +1,12 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.utils.LocationElement;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -24,7 +26,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static git.doomshade.professions.profession.utils.SpawnableElement.SpawnableElementEnum.*;
+import static git.doomshade.professions.api.spawn.SpawnableElement.SpawnableElementEnum.*;
 
 /**
  * Manages spawns of spawnable elements. This class already implements {@link LocationElement} interface.

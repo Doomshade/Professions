@@ -1,9 +1,9 @@
 package git.doomshade.professions.placeholder;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.user.User;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.Utils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;

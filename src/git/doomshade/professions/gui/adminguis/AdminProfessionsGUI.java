@@ -2,7 +2,7 @@ package git.doomshade.professions.gui.adminguis;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

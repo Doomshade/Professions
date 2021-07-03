@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession;
+package git.doomshade.professions.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -24,8 +24,8 @@ import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.IrremovableSet;
 import git.doomshade.professions.utils.ItemUtils;

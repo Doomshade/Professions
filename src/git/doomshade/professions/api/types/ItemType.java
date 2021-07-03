@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.types;
+package git.doomshade.professions.api.types;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ExpSettings;
@@ -9,10 +9,8 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ICustomType;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
@@ -43,7 +41,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * <p>If you want to make your own type, make a class extend this and override all constructors!</p>
  * <p>To make a specialized item type (e.g. making this item craft-able - yields a result in a time with
  * given prerequisites or train-able from an NPC with {@link git.doomshade.professions.trait.TrainerTrait}) trait,
- * see {@link ICustomType} extensions</p>
+ * see extensions</p>
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
  * @author Doomshade
@@ -349,7 +347,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @param upd the {@link git.doomshade.professions.user.User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
+     * @param upd the {@link git.doomshade.professions.api.user.User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
      * @return the itemstack (icon) representation of this item type used in a GUI
      */
     public ItemStack getIcon(@Nullable UserProfessionData upd) {

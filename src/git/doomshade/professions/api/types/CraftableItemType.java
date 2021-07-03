@@ -1,10 +1,9 @@
-package git.doomshade.professions.profession.types;
+package git.doomshade.professions.api.types;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;

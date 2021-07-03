@@ -1,6 +1,6 @@
 package git.doomshade.professions.event;
 
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.user.UserProfessionData;
 import org.bukkit.event.HandlerList;
 
 /**

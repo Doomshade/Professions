@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
 import git.doomshade.professions.task.GatherTask;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.api.user.UserProfessionData;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.inventory.ItemStack;
