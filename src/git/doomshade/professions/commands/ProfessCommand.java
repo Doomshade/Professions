@@ -27,8 +27,8 @@ import java.util.Map;
 public class ProfessCommand extends AbstractCommand {
 
     public ProfessCommand() {
-        setArg(true, Collections.singletonList("profession"));
-        setArg(false, Collections.singletonList("player"));
+        setArg(true, "profession");
+        setArg(false, "player");
         setCommand("profess");
         setDescription("Professes a player");
         setRequiresPlayer(false);

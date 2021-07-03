@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class UndoEditCommand extends AbstractCommand {
 
     public UndoEditCommand() {
-        setArg(true, Collections.singletonList(EditItemTypeCommand.ARG_FILE));
+        setArg(true, EditItemTypeCommand.ARG_FILE);
         setCommand("undo");
         setDescription("Undoes previous actions made to an item type file");
         setRequiresPlayer(false);

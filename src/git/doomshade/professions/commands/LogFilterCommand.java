@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 public class LogFilterCommand extends AbstractCommand {
 
     public LogFilterCommand() {
-        setArg(false, Collections.singletonList("log file name"));
-        setArg(true, Collections.singletonList("\"regex\""));
+        setArg(false, "log file name");
+        setArg(true, "\"regex\"");
         setCommand("log");
         setDescription("Creates a log file in log directory with the searched term");
         addPermission(Permissions.ADMIN);

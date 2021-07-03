@@ -22,10 +22,8 @@ import java.util.*;
 public class UnprofessCommand extends AbstractCommand {
 
     public UnprofessCommand() {
-        args = new HashMap<>();
-        args.put(true, Collections.singletonList("profession"));
-        args.put(false, Collections.singletonList("player"));
-        setArgs(args);
+        setArg(true, "profession");
+        setArg(false, "player");
         setCommand("unprofess");
         setDescription("Unprofesses a player");
         setRequiresPlayer(false);

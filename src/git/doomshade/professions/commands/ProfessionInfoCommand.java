@@ -39,9 +39,7 @@ import java.util.function.Function;
 public class ProfessionInfoCommand extends AbstractCommand {
 
     public ProfessionInfoCommand() {
-        args = new HashMap<>();
-        args.put(false, Collections.singletonList("player"));
-        setArgs(args);
+        setArg(false, "player");
         setCommand("info");
         setDescription("Shows all information about a player profession");
         setRequiresPlayer(false);
