@@ -107,8 +107,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            Professions.logError(e, true);
         }
+        return null;
     }
 
     /**

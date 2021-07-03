@@ -174,7 +174,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     /**
      * @return the handled {@link ItemType}'s holders
      */
-    public final Set<ItemTypeHolder<?>> getItems() {
+    public final Iterable<ItemTypeHolder<?>> getItems() {
         return items;
     }
 
