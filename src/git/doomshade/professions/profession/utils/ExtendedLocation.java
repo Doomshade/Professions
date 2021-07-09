@@ -13,7 +13,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import java.util.*;
 
 import static git.doomshade.professions.profession.utils.ExtendedLocation.SpawnPointEnum.*;
-import static git.doomshade.professions.api.spawn.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
+import static git.doomshade.professions.profession.spawn.SpawnableElement.SpawnableElementEnum.SPAWN_POINT;
 
 /**
  * Class made purely for serialization purposes. This class allows having location and respawn time together in a single segment.<br>

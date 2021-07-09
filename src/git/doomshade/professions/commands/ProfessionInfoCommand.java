@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.api.user.UserProfessionData;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * <p> Prints information to the sender about a profession. The "message" list must not be an empty array in prof.yml, otherwise this prints nothing.
@@ -75,8 +76,11 @@ public class ProfessionInfoCommand extends AbstractCommand {
         final String firstMessage = messages.get(0);
         if (!firstMessage.isEmpty())
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
-        ArrayList<UserProfessionData> profs = new ArrayList<>(user.getProfessions());
-        profs.sort(Comparator.comparing(x -> x.getProfession().getProfessionType()));
+        Collection<UserProfessionData> profs = user.getProfessions()
+                .stream()
+                .map(x -> (UserProfessionData) x)
+                .sorted(Comparator.comparing(x -> x.getProfession().getProfessionType()))
+                .collect(Collectors.toList());
         for (UserProfessionData prof : profs) {
             for (int i = 1; i < messages.size(); i++) {
                 String s = messages.get(i);

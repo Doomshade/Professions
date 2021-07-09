@@ -62,7 +62,7 @@ public class UserListener implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         try {
-            Professions.unloadUser(Professions.getUser(e.getPlayer()));
+            Professions.unloadUser(Professions.getUserr(e.getPlayer()));
         } catch (IOException e1) {
             Professions.logError(e1);
         }

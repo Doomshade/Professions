@@ -39,10 +39,6 @@ public abstract class AbstractProfessionSpecificSettings extends AbstractSetting
         return profession;
     }
 
-    final void register(ProfessionSettingsManager manager) throws ConfigurationException {
-        manager.register(this);
-    }
-
     @Override
     public String getSetupName() {
         return profession.getColoredName() + ChatColor.RESET + " settings";

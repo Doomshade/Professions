@@ -3,10 +3,11 @@ package git.doomshade.professions.gui.playerguis;
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.api.user.UserProfessionData;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,7 +25,7 @@ public class PlayerProfessionsGUI extends GUI {
         Builder builder = getInventoryBuilder().size(9).title(Settings.getSettings(GUISettings.class).getProfessionsGuiName());
         User user = User.getUser(getHolder());
         int i = -1;
-        for (UserProfessionData upd : user.getProfessions()) {
+        for (IUserProfessionData upd : user.getProfessions()) {
             final ItemStack icon = upd.getProfession().getIcon();
             GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
             item.changeItem(this, icon::getItemMeta);

@@ -1,17 +1,20 @@
-package git.doomshade.professions.api.user;
+package git.doomshade.professions.user;
 
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.Profession.ProfessionType;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.user.IUser;
+import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.MaxProfessionsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.Profession.ProfessionType;
-import git.doomshade.professions.api.ProfessionManager;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
-import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.utils.Utils;
+import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,7 +32,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
-public final class User {
+public final class User implements IUser {
 
     private static final String KEY_NAME = "name";
     private static final String KEY_PROFESSIONS = "professions";
@@ -85,11 +88,10 @@ public final class User {
      *
      * @param player the player
      * @return an instance of {@code User}
+     * @throws IllegalArgumentException if player is null
      */
-    public static User getUser(Player player) {
-        if (player == null) {
-            return null;
-        }
+    public static User getUser(Player player) throws IllegalArgumentException {
+        Validate.notNull(player, "Player cannot be null");
         try {
             loadUser(player);
         } catch (IOException e) {
@@ -156,9 +158,7 @@ public final class User {
     }
 
 
-    /**
-     * Unloads the player (used when player is logging off)
-     */
+    @Override
     public void unloadUser() {
         ACTIVE_POTIONS.forEach((x, y) -> y.cancel());
         USERS.remove(player.getUniqueId());
@@ -169,7 +169,6 @@ public final class User {
      * {@link User#hasProfession(Profession)} and
      * {@link User#hasProfessionType(ProfessionType)}
      * {@link Profession#isSubprofession()}
-     *
      *
      * @param prof the profession to check
      */
@@ -185,10 +184,7 @@ public final class User {
         return usedProfessionTypes.get(type) >= Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
-    /**
-     * @param prof the profession to look for
-     * @return true if this user has already that profession
-     */
+    @Override
     public boolean hasProfession(Profession prof) {
         try {
             Utils.findInIterable(professions.values(), x -> x.getProfession().getID().equals(prof.getID()));
@@ -201,12 +197,7 @@ public final class User {
         }
     }
 
-    /**
-     * Professes the player
-     *
-     * @param prof profession to profess
-     * @return true if professed successfully, false otherwise
-     */
+    @Override
     public boolean profess(Profession prof) {
         if (!canProfess(prof)) {
             return false;
@@ -214,30 +205,34 @@ public final class User {
         registerProfession(prof);
         updateUsedProfessionTypes(prof.getProfessionType(), true);
 
+        registerSubProfessions(prof);
+        return true;
+    }
+
+    private void registerSubProfessions(Profession prof) {
         final Collection<Class<? extends Profession>> subProfs = prof.getSubprofessions();
         if (subProfs != null) {
             final ProfessionManager profMan = ProfessionManager.getInstance();
             for (Class<? extends Profession> subProf : subProfs) {
-                final Profession profession = profMan.getProfession(subProf);
+                final Optional<Profession> opt = profMan.getProfession(subProf);
 
+                if (!opt.isPresent()) {
+                    continue;
+                }
+                Profession profession = opt.get();
                 // making sure, not needed likely
-                if (profession.isSubprofession())
+                if (profession.isSubprofession()) {
                     registerProfession(profession);
+                }
             }
         }
-        return true;
     }
 
     private void registerProfession(Profession prof) {
         professions.put(prof.getClass(), new UserProfessionData(this, prof));
     }
 
-    /**
-     * Unprofesses the player
-     *
-     * @param prof profession to profess
-     * @return true if unprofessed successfully, false otherwise
-     */
+    @Override
     public boolean unprofess(Profession prof) {
         if (!hasProfession(prof)) {
             return false;
@@ -249,7 +244,8 @@ public final class User {
         if (subprofessions != null) {
             final ProfessionManager profMan = ProfessionManager.getInstance();
             for (Class<? extends Profession> subProfClass : subprofessions) {
-                unregisterProfession(profMan.getProfession(subProfClass));
+                final Optional<Profession> opt = profMan.getProfession(subProfClass);
+                opt.ifPresent(this::unregisterProfession);
             }
         }
         return true;
@@ -273,30 +269,17 @@ public final class User {
         Arrays.asList(message).forEach(player::sendMessage);
     }
 
-    /**
-     * Returns all user's professions
-     *
-     * @return set of users profession data
-     */
-    public ImmutableSet<UserProfessionData> getProfessions() {
+    @Override
+    public Collection<IUserProfessionData> getProfessions() {
         return ImmutableSet.copyOf(professions.values());
     }
 
-    /**
-     * @return the player
-     */
+    @Override
     public final Player getPlayer() {
         return player;
     }
 
-    /**
-     * Adds exp to the player.
-     *
-     * @param exp    the amount of exp to give
-     * @param prof   the profession of this user
-     * @param source the item source
-     * @return {@link UserProfessionData#addExp(double, ItemType)}
-     */
+    @Override
     public boolean addExp(double exp, Profession prof, ItemType<?> source) throws PlayerHasNoProfessionException {
         UserProfessionData upd = getProfessionData(prof);
         return upd.addExp(exp, source);
@@ -338,34 +321,19 @@ public final class User {
         upd.setLevel(level);
     }
 
-    /**
-     * Gets the profession data
-     *
-     * @param prof the profession
-     * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
-     */
+    @Override
     public UserProfessionData getProfessionData(Profession prof) throws PlayerHasNoProfessionException {
         return getProfessionData(prof.getClass());
     }
 
-    /**
-     * Gets the profession data
-     *
-     * @param profClass the profession's class
-     * @return the {@link User}'s {@link Profession} data if the user has the profession, null otherwise
-     * @throws PlayerHasNoProfessionException if player does not have the profession
-     */
+    @Override
     public UserProfessionData getProfessionData(Class<? extends Profession> profClass) throws PlayerHasNoProfessionException {
         final UserProfessionData upd = professions.get(profClass);
         if (upd == null) throw new PlayerHasNoProfessionException(this, profClass.getSimpleName());
         return upd;
     }
 
-    /**
-     * Saves the user's data
-     *
-     * @throws IOException ex
-     */
+    @Override
     public void save() throws IOException {
         for (UserProfessionData upd : professions.values()) {
             upd.save();
@@ -373,20 +341,12 @@ public final class User {
         loader.save(file);
     }
 
-    /**
-     * Used for bypassing level requirements
-     *
-     * @return {@code true} if the user bypasses level requirement, {@code false} otherwise
-     */
+    @Override
     public boolean isBypass() {
         return bypass;
     }
 
-    /**
-     * Sets whether or not this user should bypass level requirement. Usable for admins. Sets {@link #setSuppressExpEvent(boolean)} to {@code false} if {@code bypass} is {@code false}
-     *
-     * @param bypass the bypass
-     */
+    @Override
     public void setBypass(boolean bypass) {
         this.bypass = bypass;
         if (!bypass) {
@@ -394,24 +354,17 @@ public final class User {
         }
     }
 
-    /**
-     * Used for suppressing the user from receiving experience
-     *
-     * @return {@code true} if the user is being suppressed from receiving exp, {@code false} otherwise
-     */
+    @Override
     public boolean isSuppressExpEvent() {
         return suppressExpEvent;
     }
 
-    /**
-     * Sets the player to suppress the player from receiving exp
-     *
-     * @param suppressExpEvent the suppressExpEvent
-     */
+    @Override
     public void setSuppressExpEvent(boolean suppressExpEvent) {
         this.suppressExpEvent = suppressExpEvent;
     }
 
+    @Override
     public void applyPotion(Potion potion) {
         if (isActivePotion(potion)) {
             return;
@@ -421,10 +374,12 @@ public final class User {
         ACTIVE_POTIONS.put(potion.getPotionId(), potionTask);
     }
 
+    @Override
     public boolean isActivePotion(Potion potion) {
         return ACTIVE_POTIONS.containsKey(potion.getPotionId());
     }
 
+    @Override
     public void unApplyPotion(Potion potion) {
         if (!isActivePotion(potion)) {
             return;
@@ -446,9 +401,8 @@ public final class User {
     private void loadProfessions() {
         this.professions = new HashMap<>();
         profSection.getKeys(false).forEach(x -> {
-            Profession prof = Professions.getProfessionManager().getProfession(x);
-            if (prof != null)
-                professions.put(prof.getClass(), new UserProfessionData(this, prof));
+            Optional<Profession> opt = Professions.getProfMan().getProfession(x);
+            opt.ifPresent(prof -> professions.put(prof.getClass(), new UserProfessionData(this, prof)));
         });
         usedProfessionTypes = new HashMap<>();
         for (ProfessionType type : ProfessionType.values()) {

@@ -5,7 +5,7 @@ import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
-import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.task.CraftingTask;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

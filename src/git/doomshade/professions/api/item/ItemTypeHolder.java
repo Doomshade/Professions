@@ -1,4 +1,4 @@
-package git.doomshade.professions.api.types;
+package git.doomshade.professions.api.item;
 
 import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.Professions;
@@ -8,13 +8,14 @@ import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.api.ProfessionManager;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
     /**
      * List required for the ordering of item types
      */
-    private List<Type> itemTypes = new ArrayList<>();
+    private final List<Type> itemTypes = new ArrayList<>();
 
     /**
      * The sorting order
@@ -120,17 +121,21 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             itemsSection = loader.createSection(ItemType.KEY);
         }
 
-        if (safely) {
-            itemsSection.addDefault(String.valueOf(0), itemType.serialize());
-        }
-        if (!itemTypes.isEmpty())
-            for (int i = 0; i < itemTypes.size(); i++) {
-                Type registeredObject = itemTypes.get(i);
-                if (safely)
-                    itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
-                else
-                    itemsSection.set(String.valueOf(i), registeredObject.serialize());
+        if (itemsSection != null) {
+            if (safely) {
+                itemsSection.addDefault(String.valueOf(0), itemType.serialize());
             }
+            if (!itemTypes.isEmpty()) {
+                for (int i = 0; i < itemTypes.size(); i++) {
+                    Type registeredObject = itemTypes.get(i);
+                    if (safely) {
+                        itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
+                    } else {
+                        itemsSection.set(String.valueOf(i), registeredObject.serialize());
+                    }
+                }
+            }
+        }
         loader.options().copyDefaults(true);
         loader.save(itemFile);
     }
@@ -264,7 +269,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
     }
 
     @Override
-    public Iterator<Type> iterator() {
+    public @NotNull Iterator<Type> iterator() {
         return itemTypes.iterator();
     }
 }

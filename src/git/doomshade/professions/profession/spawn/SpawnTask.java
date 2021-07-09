@@ -1,4 +1,4 @@
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.profession.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;

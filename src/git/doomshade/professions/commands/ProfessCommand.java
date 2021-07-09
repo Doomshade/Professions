@@ -1,12 +1,12 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Global;
 import git.doomshade.professions.enums.Messages.MessageBuilder;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.ProfessionManager;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Professes a player
@@ -50,12 +51,13 @@ public class ProfessCommand extends AbstractCommand {
             sender.sendMessage("Enter user's name please");
             return true;
         }
-        Profession prof = Professions.getProfessionManager().getProfession(args[1]);
+        Optional<Profession> opt = Professions.getProfMan().getProfession(args[1]);
         MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
-        if (prof == null) {
+        if (!opt.isPresent()) {
             user.sendMessage(builder.setMessage(Global.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
+        Profession prof = opt.get();
         builder = builder.setProfession(prof);
         if (user.profess(prof)) {
             user.sendMessage(builder.setMessage(Global.SUCCESSFULLY_PROFESSED).build());
@@ -72,7 +74,7 @@ public class ProfessCommand extends AbstractCommand {
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         final List<String> profs = new ArrayList<>();
         User user;
-        ProfessionManager profMan = Professions.getProfessionManager();
+        ProfessionManager profMan = (ProfessionManager) Professions.getProfMan();
         Map<String, Profession> map = profMan.getProfessionsById();
         map.forEach((y, x) -> profs.add(x.getID()));
         if (args.length >= 3) {

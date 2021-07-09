@@ -1,6 +1,6 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
-import git.doomshade.professions.api.spawn.MarkableSpawnPoint;
+import git.doomshade.professions.profession.spawn.MarkableSpawnPoint;
 import org.bukkit.Location;
 
 public class HerbSpawnPoint extends MarkableSpawnPoint {

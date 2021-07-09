@@ -20,7 +20,7 @@ public class AdminProfessionsGUI extends GUI {
         GUIInventory.Builder builder = getInventoryBuilder().size(9);
 
         int i = -1;
-        for (Profession prof : Professions.getProfessionManager().getProfessionsById().values()) {
+        for (Profession prof : Professions.getProfMan().getProfessionsById().values()) {
             ItemStack icon = prof.getIcon();
             GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
             item.changeItem(this, icon::getItemMeta);

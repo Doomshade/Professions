@@ -1,8 +1,12 @@
-package git.doomshade.professions.api;
+package git.doomshade.professions.profession;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfessionManager;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
@@ -24,8 +28,6 @@ import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.IrremovableSet;
 import git.doomshade.professions.utils.ItemUtils;
@@ -40,7 +42,6 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.PluginManager;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -53,7 +54,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
-public final class ProfessionManager implements ISetup {
+public final class ProfessionManager implements ISetup, IProfessionManager {
     private static final ProfessionManager instance = new ProfessionManager();
 
     /**
@@ -67,6 +68,8 @@ public final class ProfessionManager implements ISetup {
     private final Professions plugin = Professions.getInstance();
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
     private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
+    private static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
+
 
     private ProfessionManager() {
     }
@@ -81,15 +84,15 @@ public final class ProfessionManager implements ISetup {
     /**
      * @return all registered {@link ItemTypeHolder}s
      */
-    public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
+    public Collection<ItemTypeHolder<?>> getItemTypeHolders() {
         return ImmutableSet.copyOf(ITEMS.keySet());
     }
 
-    /**
-     * @param clazz the {@link ItemTypeHolder} class to look for
-     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
-     * @return instance of {@link ItemTypeHolder}
-     */
+    public static Collection<Class<? extends Profession>> getInitedProfessions() {
+        return ImmutableSet.copyOf(INITED_PROFESSIONS);
+    }
+
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException {
         for (Entry<ItemTypeHolder<?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
@@ -103,7 +106,6 @@ public final class ProfessionManager implements ISetup {
     /**
      * @return all registered {@link Profession}s
      */
-    @SuppressWarnings("rawtypes")
     public ImmutableSet<Class<? extends Profession>> getRegisteredProfessions() {
         return ImmutableSet.copyOf(REGISTERED_PROFESSIONS);
     }
@@ -122,57 +124,62 @@ public final class ProfessionManager implements ISetup {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) throws IOException {
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) {
         registerItemTypeHolder(itemTypeHolder.get());
     }
 
-    /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @param <T>            the {@link ItemTypeHolder}
-     * @throws IOException ex
-     */
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
+    @Override
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) {
         if (itemTypeHolder == null) return;
-        itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
+        try {
+            itemTypeHolder.update();
+            ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
+        } catch (IOException e) {
+            Professions.logError(e);
+        }
     }
 
-    /**
-     * @param name the {@link Profession#getName()} or {@link Profession#getID()} of {@link Profession}
-     * @return the {@link Profession} if found, {@code null} otherwise
-     */
-    @Nullable
-    public Profession getProfession(String name) {
-        if (name == null || name.isEmpty()) {
-            return null;
+    @Override
+    public Optional<Profession> getProfessionById(String id) {
+        if (id == null || id.isEmpty()) {
+            return Optional.empty();
         }
-        Profession prof = PROFESSIONS_ID.get(name.toLowerCase());
+        Profession prof = PROFESSIONS_ID.get(id.toLowerCase());
         if (prof == null) {
-            prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+            return Optional.empty();
         }
+        return Optional.of(prof);
+    }
+
+    @Override
+    public Optional<Profession> getProfessionByName(String name) {
+        if (name == null || name.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Profession prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
 
         if (prof == null) {
             try {
-                prof = Utils.findInIterable(PROFESSIONS_ID.values(), x -> ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
+                prof = Utils.findInIterable(PROFESSIONS_ID.values(),
+                        x -> x.getIcon() != null
+                                && x.getIcon().getItemMeta() != null
+                                && ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
             } catch (Utils.SearchNotFoundException e) {
-                //e.printStackTrace();
+                return Optional.empty();
             }
         }
-        return prof;
+        return Optional.of(prof);
     }
 
-    /**
-     * @param profession the {@link Profession} class
-     * @return the {@link Profession} if found
-     * @throws RuntimeException if the profession is not registered
-     */
-    public Profession getProfession(Class<? extends Profession> profession) throws RuntimeException {
+    @Override
+    public Optional<Profession> getProfession(Class<? extends Profession> profession) {
         for (Profession prof : PROFESSIONS_ID.values()) {
             if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
-                return prof;
+                return Optional.of(prof);
             }
         }
-        throw new RuntimeException("Profession not registered!");
+        return Optional.empty();
     }
 
     @Override
@@ -226,7 +233,7 @@ public final class ProfessionManager implements ISetup {
         PROFESSIONS_ID.clear();
         PROFESSIONS_NAME.clear();
         ITEMS.clear();
-        Profession.INITED_PROFESSIONS.clear();
+        INITED_PROFESSIONS.clear();
     }
 
     /**
@@ -382,7 +389,7 @@ public final class ProfessionManager implements ISetup {
         }
 
         // the constructor was not overwritten correctly
-        if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
+        if (!INITED_PROFESSIONS.contains(prof.getClass())) {
             throw new IllegalStateException("If you want to override constructors, make sure to call super() !");
         }
 

@@ -1,14 +1,14 @@
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.profession.spawn;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.dynmap.IMarkable;
+import git.doomshade.professions.api.spawn.IMarkableSpawnPoint;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
 import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
-public abstract class MarkableSpawnPoint extends SpawnPoint implements IMarkable {
+public abstract class MarkableSpawnPoint extends SpawnPoint implements IMarkableSpawnPoint {
 
     private static final MarkerManager MARKER_MANAGER = Professions.getMarkerManager();
     private final MarkerWrapper marker;

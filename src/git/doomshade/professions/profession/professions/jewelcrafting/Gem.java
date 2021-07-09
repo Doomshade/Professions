@@ -189,7 +189,9 @@ public class Gem implements ConfigurationSerializable {
                 inventory.getItemInOffHand(),
                 inventory.getItem(9),
                 inventory.getItem(10),
-                inventory.getItem(11)));
+                inventory.getItem(11)
+        )
+        );
 
         scannedItems.addAll(Arrays.stream(inventory.getArmorContents()).collect(Collectors.toList()));
         return scannedItems;
@@ -273,12 +275,6 @@ public class Gem implements ConfigurationSerializable {
 
         // firstly check whether or not the item has lore
         ItemMeta meta = item.getItemMeta();
-        if (!ignoreMisto && meta == null) {
-            return InsertResult.INVALID_ITEM;
-        }
-
-        item = item.clone();
-        meta = item.getItemMeta();
 
         if (meta == null) {
             return InsertResult.INVALID_ITEM;

@@ -1,10 +1,11 @@
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.profession.spawn;
 
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.ISpawnableElement;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.utils.LocationElement;
 import git.doomshade.professions.task.BackupTask;
@@ -26,7 +27,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static git.doomshade.professions.api.spawn.SpawnableElement.SpawnableElementEnum.*;
+import static git.doomshade.professions.profession.spawn.SpawnableElement.SpawnableElementEnum.*;
 
 /**
  * Manages spawns of spawnable elements. This class already implements {@link LocationElement} interface.
@@ -35,22 +36,28 @@ import static git.doomshade.professions.api.spawn.SpawnableElement.SpawnableElem
  * @author Doomshade
  * @version 1.0
  */
-public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implements LocationElement, ConfigurationSerializable {
+public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
+        implements LocationElement, ConfigurationSerializable, ISpawnableElement<SpawnPointType> {
 
     private final List<ExtendedLocation> spawnPointLocations;
     private final HashMap<Location, SpawnPointType> spawnPoints = new HashMap<>();
-    private static final HashMap<Class<? extends SpawnableElement>, HashMap<String, SpawnableElement<? extends SpawnPoint>>> SPAWNABLE_ELEMENTS = new HashMap<>();
+    private static final HashMap<
+            Class<? extends SpawnableElement>,
+            HashMap<String, SpawnableElement<? extends SpawnPoint>>
+            > SPAWNABLE_ELEMENTS = new HashMap<>();
     private final String id;
     private final String name;
     private final Material material;
     private final byte materialData;
     private final ParticleData particleData;
 
-    protected SpawnableElement(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
+    protected SpawnableElement(String id, String name, Material material, byte materialData,
+                               List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
         this(id, name, material, materialData, spawnPointLocations, particleData, true);
     }
 
-    private SpawnableElement(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
+    private SpawnableElement(String id, String name, Material material, byte materialData,
+                             List<ExtendedLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
         this.spawnPointLocations = new ArrayList<>(spawnPointLocations);
         this.id = id;
         this.name = name;
@@ -193,8 +200,6 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
     public final ImmutableMap<Location, SpawnPointType> getSpawnPoints() {
         return ImmutableMap.copyOf(spawnPoints);
     }
-
-    protected abstract SpawnPointType createSpawnPoint(Location location);
 
     /**
      * We need to save spawn points every time they are modified -  the item type holder provides {@link ItemTypeHolder#save(boolean)} method
@@ -390,6 +395,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
     }
 
     // worst case scenario (if this does not work) - replace BiFunction with Function..
+
     public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) {
         return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
@@ -425,6 +431,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
         public String toString() {
             return s;
         }
+
     }
 
     @Override
@@ -439,7 +446,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
         }
 
         @Override
-        protected T createSpawnPoint(Location location) {
+        public T createSpawnPoint(Location location) {
             return null;
         }
 
@@ -447,6 +454,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
         protected @NotNull ItemTypeHolder<?> getItemTypeHolder() {
             return null;
         }
+
     }
 
     @Override
@@ -463,7 +471,6 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> implem
     public int hashCode() {
         return Objects.hash(getId(), getMaterial(), getMaterialData());
     }
-
 
     // was originally used to validate args inside staticGet() function
    /* protected final void validateArguments(List<?> args, Class<?>... desiredInstances) {

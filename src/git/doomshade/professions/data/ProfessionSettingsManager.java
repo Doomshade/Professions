@@ -37,7 +37,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
             if (settings instanceof Cloneable) {
                 theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
             } else {
-                theSettings = (T) SerializationUtils.clone((Serializable) settings);
+                theSettings = (T) SerializationUtils.clone(settings);
             }
         } catch (Utils.SearchNotFoundException e) {
             try {
@@ -64,8 +64,8 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
     @Override
     public void setup() throws ConfigurationException {
-        new ProfessionSpecificDropSettings(profession).register(this);
-        new ProfessionSpecificDefaultsSettings(profession).register(this);
+        register(new ProfessionSpecificDropSettings(profession));
+        register(new ProfessionSpecificDefaultsSettings(profession));
 
         try {
             save();

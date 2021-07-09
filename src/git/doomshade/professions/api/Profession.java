@@ -1,19 +1,20 @@
 package git.doomshade.professions.api;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
-import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -41,7 +42,6 @@ import java.util.*;
  */
 public abstract class Profession implements Listener, Comparable<Profession> {
 
-    static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
@@ -80,12 +80,10 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         this.name = defaults.getName();
         this.icon = defaults.getIcon();
         this.pt = defaults.getProfessionType();
-
-
     }
 
     private void ensureNotInitialized(boolean ignoreError) {
-        if (!INITED_PROFESSIONS.add(getClass())) {
+        if (!ProfessionManager.getInitedProfessions().contains(getClass())) {
             if (!ignoreError)
                 try {
                     throw new IllegalAccessException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead!");
@@ -168,7 +166,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      * @param items the items
      */
     protected final void addItems(Class<? extends ItemType<?>> items) {
-        this.items.add(Professions.getProfessionManager().getItemTypeHolder(items));
+        this.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 
     /**

@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.profession.professions.mining.Ore;
@@ -38,7 +38,7 @@ public class OreEditListener implements Listener {
             return;
         }
         try {
-            final ItemTypeHolder<OreItemType> itemTypeHolder = Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);
+            final ItemTypeHolder<OreItemType> itemTypeHolder = Professions.getProfMan().getItemTypeHolder(OreItemType.class);
             final ItemStack itemInHand = event.getItemInHand();
             if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName()) {
                 return;

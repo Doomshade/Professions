@@ -1,6 +1,8 @@
-package git.doomshade.professions.api.types;
+package git.doomshade.professions.api.item;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
 import git.doomshade.professions.data.Settings;
@@ -9,8 +11,8 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.user.UserProfessionData;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
@@ -22,6 +24,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -52,7 +55,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     private int exp, levelReq;
     private T item;
-    private File itemFile;
+    private final File itemFile;
     private String name = "";
     private String configName = "";
     private List<String> description, restrictedWorlds;
@@ -66,7 +69,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the object
      */
     public ItemType(T object) {
         this.itemFile = getFile(getClass());
@@ -105,9 +108,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
-            Professions.logError(e, true);
+            throw new IllegalArgumentException(e);
         }
-        return null;
     }
 
     /**
@@ -197,7 +199,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @return serialized item type
      */
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(OBJECT.s, getSerializedObject());
         map.put(EXP.s, exp);
@@ -347,14 +349,19 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @param upd the {@link git.doomshade.professions.api.user.User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
+     * @param upd the {@link User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
      * @return the itemstack (icon) representation of this item type used in a GUI
      */
-    public ItemStack getIcon(@Nullable UserProfessionData upd) {
+    public ItemStack getIcon(@Nullable IUserProfessionData upd) {
         ItemStack icon = new ItemStack(getGuiMaterial());
-        ItemMeta iconMeta = icon.getItemMeta();
-        iconMeta.setDisplayName(getName());
-        final List<String> lore = ItemUtils.getDescription(this, getDescription(), upd);
+        ItemMeta meta = icon.getItemMeta();
+
+        if (meta == null) {
+            return icon;
+        }
+
+        meta.setDisplayName(getName());
+        final List<String> lore = ItemUtils.getDescription(this, getDescription(), (UserProfessionData) upd);
 
         if (upd != null) {
             Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
@@ -369,8 +376,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                 lore.set(i, s);
             }
         }
-        iconMeta.setLore(lore);
-        icon.setItemMeta(iconMeta);
+        meta.setLore(lore);
+        icon.setItemMeta(meta);
         return icon;
     }
 

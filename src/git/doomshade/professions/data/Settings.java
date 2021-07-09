@@ -10,10 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -87,8 +84,9 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
-        return getProfessionSettings(Professions.getProfessionManager().getProfession(clazz));
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) throws IllegalArgumentException {
+        final Optional<Profession> opt = Professions.getProfMan().getProfession(clazz);
+        return getProfessionSettings(opt.orElseThrow(() -> new IllegalArgumentException(clazz.getSimpleName() + " is not a registered profession!")));
     }
 
     public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Profession profession) {

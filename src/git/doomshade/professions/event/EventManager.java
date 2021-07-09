@@ -1,9 +1,9 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.user.User;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 
@@ -43,7 +43,7 @@ public final class EventManager {
         }
 
         // search in item type holders
-        for (ItemTypeHolder<?> itemHolder : Professions.getProfessionManager().getItemTypeHolders()) {
+        for (ItemTypeHolder<?> itemHolder : Professions.getProfMan().getItemTypeHolders()) {
 
             // make sure we got the right item type
             if (!itemHolder.getItemType().getClass().equals(itemTypeClass)) {

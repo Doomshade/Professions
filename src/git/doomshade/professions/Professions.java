@@ -3,6 +3,9 @@ package git.doomshade.professions;
 
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
+import git.doomshade.professions.api.IProfessionManager;
+import git.doomshade.professions.api.IProfessionAPI;
+import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.AbstractSettings;
@@ -22,20 +25,20 @@ import git.doomshade.professions.gui.trainergui.TrainerGUI;
 import git.doomshade.professions.listeners.*;
 import git.doomshade.professions.placeholder.PlaceholderManager;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.ProfessionManager;
+import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.commands.AlchemyCommandHandler;
 import git.doomshade.professions.profession.professions.herbalism.commands.HerbalismCommandHandler;
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.LogTask;
 import git.doomshade.professions.task.SaveTask;
 import git.doomshade.professions.trait.TrainerListener;
 import git.doomshade.professions.trait.TrainerTrait;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.ItemUtils;
 import net.citizensnpcs.Citizens;
@@ -64,10 +67,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 
@@ -77,7 +77,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
-public final class Professions extends JavaPlugin implements ISetup {
+public final class Professions extends JavaPlugin implements ISetup, IProfessionAPI {
 
     private static final int RED = 900;
     private static final int GREEN = 500;
@@ -175,11 +175,10 @@ public final class Professions extends JavaPlugin implements ISetup {
         User.saveUsers();
     }
 
-
     /**
      * @return the {@link ProfessionManager} instance
      */
-    public static ProfessionManager getProfessionManager() {
+    public static ProfessionManager getProfMan() {
         return profMan;
     }
 
@@ -188,22 +187,22 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @return the profession
      * @see ProfessionManager#getProfession(String)
      */
-    public static Profession getProfession(String name) {
+    public static Optional<Profession> getProfessionById(String name) {
         return profMan.getProfession(name);
     }
 
     /**
-     * Calls {@link #getProfession(String)} with the {@link ItemStack}'s display name
+     * Calls {@link #getProfessionById(String)} with the {@link ItemStack}'s display name
      *
      * @param item the item to look for the profession from
      * @return the profession
-     * @see #getProfession(String)
+     * @see #getProfessionById(String)
      */
-    public static Profession getProfession(ItemStack item) {
-        if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasDisplayName()) {
-            return null;
+    public static Optional<Profession> getProfession(ItemStack item) {
+        if (item == null || item.getItemMeta() == null || !item.getItemMeta().hasDisplayName()) {
+            return Optional.empty();
         }
-        return getProfession(item.getItemMeta().getDisplayName());
+        return profMan.getProfessionByName(item.getItemMeta().getDisplayName());
     }
 
     /**
@@ -218,7 +217,7 @@ public final class Professions extends JavaPlugin implements ISetup {
      * @return the {@link User} instance
      * @see User#getUser(Player)
      */
-    public static User getUser(Player player) {
+    public static User getUserr(Player player) {
         return User.getUser(player);
     }
 
@@ -287,10 +286,13 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     public static void logError(Throwable e, boolean pluginError) {
         log((pluginError ? "Internal" : "External") + " plugin error" + (!pluginError ? ", please check logs for further information." : ", please contact author with the stack trace from your log file."), Level.WARNING);
-        log(e.getMessage().replaceAll("<br>", "\n") + (pluginError ? ": " + Arrays.toString(e.getStackTrace()) : ""), Level.CONFIG);
+        if (e != null && e.getMessage() != null && e.getStackTrace() != null) {
+            log(e.getMessage().replaceAll("<br>", "\n") + (pluginError ? ": " + Arrays.toString(e.getStackTrace()) : ""), Level.CONFIG);
+        }
     }
 
     // hooks
+
     private static Professions instance;
     private static boolean diabloLike = false;
 
@@ -473,7 +475,7 @@ public final class Professions extends JavaPlugin implements ISetup {
 
     private void hookPlugin(String plugin, Predicate<Plugin> func) {
         final Plugin plug = Bukkit.getPluginManager().getPlugin(plugin);
-        if (plug == null) {
+        if (plug == null || !plug.isEnabled()) {
             return;
         }
 
@@ -877,5 +879,15 @@ public final class Professions extends JavaPlugin implements ISetup {
             }
         }
         return null;
+    }
+
+    @Override
+    public IProfessionManager getProfessionManager() {
+        return getProfMan();
+    }
+
+    @Override
+    public IUser getUser(Player player) {
+        return getUserr(player);
     }
 }

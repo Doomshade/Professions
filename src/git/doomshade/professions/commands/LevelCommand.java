@@ -2,8 +2,8 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.api.user.UserProfessionData;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Adds levels or sets the level or player's profession
@@ -44,17 +45,16 @@ public class LevelCommand extends AbstractCommand {
                 target = (Player) sender;
             }
         }
-        Profession prof = Professions.getProfession(args[1]);
+        Optional<Profession> opt = Professions.getProfessionById(args[1]);
+        if (!opt.isPresent()) {
+            return true;
+        }
+        Profession prof = opt.get();
         User user = User.getUser(target);
         if (!user.hasProfession(prof)) {
             return false;
         }
         UserProfessionData upd = user.getProfessionData(prof);
-
-        // can't happen, but IDE won't stfu
-        if (upd == null) {
-            return false;
-        }
 
         int level = Integer.parseInt(args[3]);
         switch (args[2].toLowerCase()) {

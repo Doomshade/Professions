@@ -1,6 +1,6 @@
 package git.doomshade.professions.enums;
 
-import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 

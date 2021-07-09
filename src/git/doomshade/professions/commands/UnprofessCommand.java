@@ -3,8 +3,8 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.ProfessionManager;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -34,12 +34,13 @@ public class UnprofessCommand extends AbstractCommand {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         User user = User.getUser((Player) sender);
-        Profession prof = Professions.getProfessionManager().getProfession(args[1]);
+        Optional<Profession> opt = Professions.getProfMan().getProfession(args[1]);
         Messages.MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
-        if (prof == null) {
+        if (!opt.isPresent()) {
             user.sendMessage(builder.setMessage(Messages.Global.PROFESSION_DOESNT_EXIST).build());
             return true;
         }
+        Profession prof = opt.get();
         builder = builder.setProfession(prof);
         if (user.unprofess(prof)) {
             user.sendMessage(builder.setMessage(Messages.Global.SUCCESSFULLY_UNPROFESSED).build());
@@ -53,7 +54,7 @@ public class UnprofessCommand extends AbstractCommand {
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         final List<String> profs = new ArrayList<>();
         User user;
-        ProfessionManager profMan = Professions.getProfessionManager();
+        ProfessionManager profMan = (ProfessionManager) Professions.getProfMan();
         Map<String, Profession> map = profMan.getProfessionsById();
         map.forEach((y, x) -> profs.add(x.getID()));
         if (args.length >= 3) {

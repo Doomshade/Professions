@@ -19,13 +19,13 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.spawn.SpawnPoint;
-import git.doomshade.professions.api.spawn.MarkableSpawnPoint;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
+import git.doomshade.professions.profession.spawn.MarkableSpawnPoint;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.api.spawn.SpawnableElement;
+import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.task.GatherTask;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
@@ -405,7 +405,12 @@ public class ProfessionListener extends AbstractProfessionListener {
             if (!user.isActivePotion(potion)) {
                 user.applyPotion(potion);
             } else {
-                user.sendMessage(new Messages.MessageBuilder(Messages.AlchemyMessages.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(ItemType.getExampleItemType(PotionItemType.class, potion)).build());
+                user.sendMessage(new Messages.MessageBuilder(
+                        Messages.AlchemyMessages.POTION_ALREADY_ACTIVE)
+                        .setPlayer(user)
+                        .setItemType(ItemType.getExampleItemType(PotionItemType.class, potion))
+                        .build()
+                );
                 e.setCancelled(true);
             }
         }
@@ -419,16 +424,16 @@ public class ProfessionListener extends AbstractProfessionListener {
     @EventHandler(ignoreCancelled = true)
     public void onEnchant(PlayerInteractEvent e) {
 
-        Player hrac = e.getPlayer();
+        Player player = e.getPlayer();
 
-        ItemStack mh = hrac.getInventory().getItemInMainHand();
+        ItemStack mh = player.getInventory().getItemInMainHand();
         if (mh == null) {
             return;
         }
 
-        if (ENCHANTS.containsKey(hrac.getUniqueId())) {
-            Enchant enchant = ENCHANTS.remove(hrac.getUniqueId());
-            ProfessionEvent<EnchantedItemItemType> event = callEvent(hrac, enchant, EnchantedItemItemType.class,
+        if (ENCHANTS.containsKey(player.getUniqueId())) {
+            Enchant enchant = ENCHANTS.remove(player.getUniqueId());
+            ProfessionEvent<EnchantedItemItemType> event = callEvent(player, enchant, EnchantedItemItemType.class,
                     new PreEnchantedItem(enchant, mh));
             if (event != null && !event.isCancelled()) {
                 // don't delete the item!
@@ -436,11 +441,11 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        for (EnchantedItemItemType enchItemType : Professions.getProfessionManager().getItemTypeHolder(EnchantedItemItemType.class)
+        for (EnchantedItemItemType enchItemType : Professions.getProfMan().getItemTypeHolder(EnchantedItemItemType.class)
                 .getRegisteredItemTypes()) {
             Enchant eit = enchItemType.getObject();
             if (eit != null && areSimilar(eit.getItem(), mh)) {
-                ENCHANTS.put(hrac.getUniqueId(), eit);
+                ENCHANTS.put(player.getUniqueId(), eit);
                 break;
             }
         }

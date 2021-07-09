@@ -1,6 +1,7 @@
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.profession.spawn;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import org.bukkit.Bukkit;
@@ -16,7 +17,7 @@ import java.util.logging.Level;
 /**
  * This class stores the location of spawn point, the
  */
-public class SpawnPoint {
+public class SpawnPoint implements ISpawnPoint {
 
     public static final String CACHE_FOLDER = "spawned";
 
@@ -51,6 +52,14 @@ public class SpawnPoint {
 
     public SpawnTask getSpawnTask() {
         return spawnTask;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public SpawnableElement<?> getSpawnableElement() {
+        return element;
     }
 
     public boolean isSpawned() {

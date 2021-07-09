@@ -4,10 +4,10 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.api.types.ItemTypeHolder;
-import git.doomshade.professions.api.spawn.MarkableSpawnableElement;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.profession.spawn.MarkableSpawnableElement;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.api.spawn.SpawnableElement;
+import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
@@ -209,14 +209,14 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     }
 
     @Override
-    protected HerbSpawnPoint createSpawnPoint(Location location) {
+    public HerbSpawnPoint createSpawnPoint(Location location) {
         return new HerbSpawnPoint(location, this);
     }
 
     @NotNull
     @Override
     protected ItemTypeHolder<HerbItemType> getItemTypeHolder() {
-        return Professions.getProfessionManager().getItemTypeHolder(HerbItemType.class);
+        return Professions.getProfMan().getItemTypeHolder(HerbItemType.class);
     }
 
     public ItemStack getGatherItem() {

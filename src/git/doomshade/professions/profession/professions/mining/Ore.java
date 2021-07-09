@@ -1,12 +1,13 @@
 package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.api.spawn.SpawnableElement;
+import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -26,7 +27,7 @@ import java.util.function.BiFunction;
 import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.RESULT;
 
 /**
- * Custom class for {@link git.doomshade.professions.api.types.ItemType}.
+ * Custom class for {@link ItemType}.
  * Here I wanted to have a custom mining result, I'd have otherwise only passed {@link Material} as a generic argument to {@link OreItemType}.
  *
  * @author Doomshade
@@ -122,14 +123,14 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
     }*/
 
     @Override
-    protected OreSpawnPoint createSpawnPoint(Location location) {
+    public OreSpawnPoint createSpawnPoint(Location location) {
         return new OreSpawnPoint(location, this);
     }
 
     @NotNull
     @Override
     protected ItemTypeHolder<OreItemType> getItemTypeHolder() {
-        return Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);
+        return Professions.getProfMan().getItemTypeHolder(OreItemType.class);
     }
 
     @Override

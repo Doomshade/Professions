@@ -2,7 +2,7 @@ package git.doomshade.professions.gui.oregui;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
@@ -29,7 +29,7 @@ public class OreGUI extends GUI {
     @Override
     public void init() throws GUIInitializationException {
         GUIInventory.Builder builder = getInventoryBuilder().title(ChatColor.DARK_GREEN + "Ores");
-        final ItemTypeHolder<OreItemType> holder = Professions.getProfessionManager().getItemTypeHolder(OreItemType.class);
+        final ItemTypeHolder<OreItemType> holder = Professions.getProfMan().getItemTypeHolder(OreItemType.class);
         ignore = getContext().getContext("ignore");
 
         int i = -1;
@@ -59,7 +59,7 @@ public class OreGUI extends GUI {
             return;
         }
         try {
-            Utils.findInIterable(Professions.getProfessionManager()
+            Utils.findInIterable(Professions.getProfMan()
                             .getItemTypeHolder(OreItemType.class).getRegisteredItemTypes(),
                     x -> x.getIcon(null)
                             .getItemMeta()

@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.api.types.ItemType
+ * @see ItemType
  */
 public class EditItemTypeCommand extends AbstractCommand {
 

@@ -6,12 +6,12 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.ProfessionManager;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.trait.TrainerTrait;
-import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.api.user.UserProfessionData;
+import git.doomshade.professions.user.User;
+import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
@@ -26,10 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 
 public class TrainerGUI extends GUI implements ISetup {
@@ -161,7 +158,7 @@ public class TrainerGUI extends GUI implements ISetup {
         File trainerFile = new File(Professions.getInstance().getTrainerFolder(), trainerId.concat(".yml"));
         FileConfiguration loader = YamlConfiguration.loadConfiguration(trainerFile);
 
-        final ProfessionManager profMan = Professions.getProfessionManager();
+        final ProfessionManager profMan = Professions.getProfMan();
         for (String key : loader.getStringList("configs")) {
 
             // 1) split
@@ -215,7 +212,8 @@ public class TrainerGUI extends GUI implements ISetup {
             Professions.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)", Level.WARNING);
             throw new GUIInitializationException();
         }
-        this.eligibleProfession = Professions.getProfession(profession);
+        this.eligibleProfession = Professions.getProfessionById(profession)
+                .orElseThrow(GUIInitializationException::new);
         CACHE.put(trainerId, trainableItems);
         CACHE_PROFESSIONS.put(trainerId, eligibleProfession);
     }

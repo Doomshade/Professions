@@ -4,7 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 

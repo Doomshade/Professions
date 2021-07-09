@@ -1,6 +1,6 @@
 package git.doomshade.professions.profession.professions.alchemy;
 
-import git.doomshade.professions.api.types.CraftableItemType;
+import git.doomshade.professions.api.item.CraftableItemType;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.utils.EffectUtils;
 import org.bukkit.Bukkit;
@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
 public class PotionItemType extends CraftableItemType<Potion> {
 

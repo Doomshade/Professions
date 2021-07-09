@@ -2,7 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Adds profession exp to a player
@@ -29,10 +30,12 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Profession prof = Professions.getProfession(args[1]);
-        if (prof == null) {
+        Optional<Profession> opt = Professions.getProfessionById(args[1]);
+        if (!opt.isPresent()) {
             return true;
         }
+
+        Profession prof = opt.get();
         double exp = Double.parseDouble(args[3]);
 
         Player target;

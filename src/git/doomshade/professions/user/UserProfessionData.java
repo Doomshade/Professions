@@ -1,6 +1,7 @@
-package git.doomshade.professions.api.user;
+package git.doomshade.professions.user;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
@@ -11,8 +12,8 @@ import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -28,15 +29,15 @@ import java.util.List;
  * @author Doomshade
  * @version 1.0
  */
-public class UserProfessionData {
+public class UserProfessionData implements IUserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";
-    private User user;
-    private Profession profession;
+    private final User user;
+    private final Profession profession;
     private double exp;
     private int level;
     private final List<String> extras;
     private ConfigurationSection s;
-    private MessageBuilder builder;
+    private final MessageBuilder builder;
 
     UserProfessionData(User user, Profession profession) {
         s = user.getProfessionSection(profession);
@@ -58,38 +59,29 @@ public class UserProfessionData {
         this.builder = new Messages.MessageBuilder().setPlayer(user).setProfession(profession);
     }
 
-    void save() {
+    @Override
+    public void save() {
         s.set(KEY_EXP, exp);
         s.set(KEY_LEVEL, level);
         s.set(KEY_EXTRAS, extras);
     }
 
-    /**
-     * @return the profession
-     */
+    @Override
     public Profession getProfession() {
         return profession;
     }
 
-    /**
-     * @return the user
-     */
+    @Override
     public User getUser() {
         return user;
     }
 
-    /**
-     * @return the current exp
-     */
+    @Override
     public double getExp() {
         return exp;
     }
 
-    /**
-     * Sets current exp to the value. Adds a level if {@code exp > } {@link #getRequiredExp()}
-     *
-     * @param exp the exp to set
-     */
+    @Override
     public void setExp(double exp) {
         this.exp = exp;
         if (exp >= getRequiredExp()) {
@@ -98,18 +90,12 @@ public class UserProfessionData {
         }
     }
 
-    /**
-     * @return the current level
-     */
+    @Override
     public int getLevel() {
         return level;
     }
 
-    /**
-     * Sets current level to the value. This method also ensures you won't be able to go over the {@link #getLevelCap()}.
-     *
-     * @param level the level to set to
-     */
+    @Override
     public void setLevel(int level) {
         int temp = this.level;
         this.level = Math.min(level, getLevelCap());
@@ -142,13 +128,7 @@ public class UserProfessionData {
                 + "\n" + "Exp: " + (int) exp + "/" + getRequiredExp();
     }
 
-    /**
-     * Adds exp to the user's profession
-     *
-     * @param exp    the amount of exp to give
-     * @param source the source of exp ({@code null} for command source)
-     * @return {@code true} if {@code exp > 0} and the {@link ProfessionExpGainEvent#isCancelled()} returns {@code false}.
-     */
+    @Override
     public boolean addExp(double exp, ItemType<?> source) {
         if (exp == 0) {
             return false;
@@ -177,29 +157,18 @@ public class UserProfessionData {
         return true;
     }
 
-    /**
-     * This method calculates every time it is called, so be careful.
-     *
-     * @return required exp for next level
-     */
+    @Override
     public int getRequiredExp() {
         return Settings.getSettings(ExpSettings.class).getExpFormula().calculate(level);
     }
 
-    /**
-     * @return the level cap
-     */
+    @Override
     public int getLevelCap() {
         return Settings.getSettings(ExpSettings.class).getLevelCap();
     }
 
 
-    /**
-     * Adds levels to the user's profession data
-     *
-     * @param level the level to add
-     * @return {@code true} if the level was added, {@code false} otherwise
-     */
+    @Override
     public boolean addLevel(int level) {
         if (level == 0 || isMaxLevel()) {
             return false;
@@ -214,11 +183,7 @@ public class UserProfessionData {
         return true;
     }
 
-    /**
-     * This method also ensures that, if in any case the {@link #getLevel()} is greater than {@link #getLevelCap()}, the level is set to the level cap.
-     *
-     * @return {@code true} if current level == {@link #getLevelCap()}.
-     */
+    @Override
     public boolean isMaxLevel() {
         if (level > getLevelCap()) {
             this.level = getLevelCap();
@@ -226,13 +191,7 @@ public class UserProfessionData {
         return level == getLevelCap();
     }
 
-    /**
-     * Trains a user something new. This is saved as {@code extras} in user data file.
-     *
-     * @param trainable the trainable to train
-     * @return {@code true} if the user has successfully trained the item (has enough money and {@link UserProfessionData#hasTrained(ItemType)} returns {@code false}), false otherwise
-     * @see UserProfessionData#addExtra(String)
-     */
+    @Override
     public boolean train(ItemType<?> trainable) {
         EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getTrainableCost());
         if (!response.transactionSuccess() || hasTrained(trainable)) {
@@ -242,11 +201,7 @@ public class UserProfessionData {
         return true;
     }
 
-    /**
-     * @param trainable the trainable to check for
-     * @return {@code true} if the user has already trained this, {@code false} otherwise
-     * @see #hasExtra(String)
-     */
+    @Override
     public boolean hasTrained(ItemType<?> trainable) {
         return hasExtra(trainable.getConfigName());
     }
@@ -259,22 +214,13 @@ public class UserProfessionData {
         return SkillupColor.getSkillupColor(itemType.getLevelReq(), getLevel());
     }
 
-    /**
-     * Adds something extra to the user for later usage. Used in {@link UserProfessionData#train(ItemType)}.
-     *
-     * @param extra the extra to add
-     */
+    @Override
     public void addExtra(String extra) {
         if (!extra.isEmpty() && !hasExtra(extra))
             extras.add(translatedExtra(extra));
     }
 
-    /**
-     * Used in {@link UserProfessionData#hasTrained(ItemType)}.
-     *
-     * @param extra the extra to look for
-     * @return {@code true} if the user has this extra, {@code false} otherwise
-     */
+    @Override
     public boolean hasExtra(String extra) {
         return !extra.isEmpty() && extras.contains(translatedExtra(extra));
     }

@@ -1,6 +1,6 @@
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.api.types.ICraftable;
+import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
