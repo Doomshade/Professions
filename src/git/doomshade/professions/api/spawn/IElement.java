@@ -6,7 +6,7 @@ package git.doomshade.professions.api.spawn;
  * @author Doomshade
  * @version 1.0
  */
-public interface Element {
+public interface IElement {
 
     /**
      * @return the id of this element

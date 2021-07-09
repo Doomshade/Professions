@@ -9,7 +9,6 @@ import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -27,18 +26,18 @@ public class AddCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Player player = (Player) sender;
         Herb herb = Herb.getHerb(args[1]);
 
         if (herb == null) {
             player.sendMessage("Invalid herb id");
-            return true;
+            return;
         }
         Location lookingAt = Utils.getLookingAt(player).getLocation();
-        if (lookingAt == null) {
+        if (lookingAt.getBlock().getBlockData().getMaterial().isAir()) {
             player.sendMessage("You must be looking at some block");
-            return true;
+            return;
         }
 
         Range respawnTime = null;
@@ -49,7 +48,7 @@ public class AddCommand extends AbstractCommand {
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
-            return true;
+            return;
         }
 
         herb.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
@@ -58,11 +57,10 @@ public class AddCommand extends AbstractCommand {
         } catch (SpawnException e) {
             Professions.logError(e);
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         List<String> list = new ArrayList<>();
         switch (args.length) {
             case 2:

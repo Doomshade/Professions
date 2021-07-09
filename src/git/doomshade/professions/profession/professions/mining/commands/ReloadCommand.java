@@ -2,7 +2,6 @@ package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -20,12 +19,11 @@ public class ReloadCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        return false;
+    public void onCommand(CommandSender sender, String[] args) {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

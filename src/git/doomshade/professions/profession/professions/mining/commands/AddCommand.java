@@ -8,7 +8,6 @@ import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -25,19 +24,19 @@ public class AddCommand extends AbstractEditCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
 
         Player player = (Player) sender;
         Ore ore = Ore.getOre(args[1]);
 
         if (ore == null) {
             player.sendMessage("Invalid ore id");
-            return true;
+            return;
         }
         Location lookingAt = Utils.getLookingAt(player).getLocation();
-        if (lookingAt == null) {
+        if (lookingAt.getBlock().getBlockData().getMaterial().isAir()) {
             player.sendMessage("You must be looking at some block");
-            return true;
+            return;
         }
 
         Range respawnTime = null;
@@ -48,7 +47,7 @@ public class AddCommand extends AbstractEditCommand {
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
-            return true;
+            return;
         }
 
         ore.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
@@ -57,11 +56,10 @@ public class AddCommand extends AbstractEditCommand {
         } catch (SpawnException e) {
             Professions.logError(e);
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

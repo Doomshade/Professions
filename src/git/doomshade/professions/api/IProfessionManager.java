@@ -5,7 +5,27 @@ import git.doomshade.professions.api.item.ItemTypeHolder;
 
 import java.util.Optional;
 
+/**
+ * Class responsible for registration of a profession
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public interface IProfessionManager {
+
+    /**
+     * @param itemTypeHolder the {@link ItemTypeHolder} to register
+     * @param <T>            the {@link ItemTypeHolder}
+     */
+    <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder);
+
+    /**
+     * Registers a profession<br>
+     * Make sure you only create a single instance of the profession, multiple instances are disallowed and will throw an exception
+     *
+     * @param prof the profession to register
+     */
+    void registerProfession(Profession prof);
 
     /**
      * @param clazz the {@link ItemTypeHolder} class to look for
@@ -13,12 +33,6 @@ public interface IProfessionManager {
      * @return instance of {@link ItemTypeHolder}
      */
     <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException;
-
-    /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @param <T>            the {@link ItemTypeHolder}
-     */
-    <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder);
 
     /**
      * @param id the{@link Profession#getID()} of {@link Profession}

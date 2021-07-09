@@ -3,7 +3,6 @@ package git.doomshade.professions.profession.professions.jewelcrafting.commands;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
@@ -23,13 +22,13 @@ public class InsertCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
 
         Optional<Gem> opt = Gem.getGem(args[1]);
 
-        if (!opt.isPresent()) {
+        if (opt.isEmpty()) {
             sender.sendMessage("Invalid gem id");
-            return true;
+            return;
         }
 
         Gem gem = opt.get();
@@ -38,11 +37,10 @@ public class InsertCommand extends AbstractCommand {
         gem.insert(inventory.getItemInMainHand(), true);
         //inventory.setItemInMainHand(item.get());
 
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return new ArrayList<>(Gem.GEMS.keySet());
     }
 

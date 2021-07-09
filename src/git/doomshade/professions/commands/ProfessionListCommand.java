@@ -6,7 +6,6 @@ import git.doomshade.professions.api.Profession.ProfessionType;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
@@ -27,8 +26,8 @@ public class ProfessionListCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        ProfessionManager profMan = (ProfessionManager) Professions.getProfMan();
+    public void onCommand(CommandSender sender, String[] args) {
+        ProfessionManager profMan = Professions.getProfMan();
         Map<ProfessionType, Integer> profTypes = new TreeMap<>();
         List<Profession> profs = new ArrayList<>(profMan.getProfessionsById().values());
         profs.sort(Comparator.naturalOrder());
@@ -41,11 +40,10 @@ public class ProfessionListCommand extends AbstractCommand {
         });
         profs.forEach(x -> sender.sendMessage(x.getColoredName() + ChatColor.RESET + ", " + x.getProfessionType()));
         profTypes.forEach((x, y) -> sender.sendMessage(x.toString() + ": " + y));
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

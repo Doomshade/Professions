@@ -1,7 +1,6 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.Arrays;
@@ -18,13 +17,13 @@ public class NormalizeLevelsCommand extends AbstractCommand {
         setCommand("normalize");
         setDescription(
                 "(DOESN'T WORK YET) Normalizes levels based on XP this curve (use with caution, save users before using this command!)");
-        setMessages(Arrays.asList("Normalized %d users."));
+        addMessages("Normalized %d users.");
         setRequiresPlayer(false);
         addPermission(Permissions.ADMIN);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
 
 		/*
 		int[] form = new int[3];
@@ -56,11 +55,10 @@ public class NormalizeLevelsCommand extends AbstractCommand {
 		}
 
 		sender.sendMessage(String.format(getMessages().get(0), files.length));*/
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

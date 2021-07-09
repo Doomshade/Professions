@@ -5,7 +5,6 @@ import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -22,7 +21,7 @@ public class RemoveCommand extends AbstractEditCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Player hrac = (Player) sender;
 
         if (args.length == 1) {
@@ -32,20 +31,20 @@ public class RemoveCommand extends AbstractEditCommand {
                 ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPointLocation(loc));
             } catch (Utils.SearchNotFoundException e) {
                 hrac.sendMessage("Block you are looking at is no ore");
-                return true;
+                return;
             }
             ore.removeSpawnPoint(new ExtendedLocation(loc));
         } else {
             if (args.length < 3) {
                 hrac.sendMessage("You must enter both ore and spawn point id!");
-                return true;
+                return;
             }
 
             Ore ore = Ore.getOre(args[1]);
 
             if (ore == null) {
                 hrac.sendMessage("Invalid ore id");
-                return true;
+                return;
             }
 
             int spawnPointId;
@@ -55,22 +54,21 @@ public class RemoveCommand extends AbstractEditCommand {
                 spawnPointId = Integer.parseInt(args[2]);
                 if (spawnPointId >= ore.getSpawnPointLocations().size()) {
                     hrac.sendMessage(message);
-                    return true;
+                    return;
                 }
             } catch (NumberFormatException e) {
                 hrac.sendMessage(message);
-                return true;
+                return;
             }
 
             ore.removeSpawnPoint(spawnPointId);
         }
         sender.sendMessage("Successfully removed spawn point");
 
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

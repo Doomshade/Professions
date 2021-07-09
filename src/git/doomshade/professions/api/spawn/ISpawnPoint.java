@@ -3,6 +3,9 @@ package git.doomshade.professions.api.spawn;
 import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.Location;
 
+/**
+ * Data of a spawn point
+ */
 public interface ISpawnPoint {
 
     /**

@@ -10,7 +10,7 @@ import org.bukkit.Material;
  * @author Doomshade
  * @version 1.0
  */
-public interface LocationElement extends Element {
+public interface ILocationElement extends IElement {
 
     /**
      * @return the particle data about this location element if there should be particles played, {@code null} otherwise

@@ -5,7 +5,6 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,14 +25,14 @@ public class TestCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
 
         ItemStack item;
         if (sender instanceof Player) {
             Player player = (Player) sender;
             item = player.getInventory().getItemInMainHand();
-            if (item == null) {
-                return true;
+            if (item.getType().isAir()) {
+                return;
             }
         } else {
 
@@ -53,11 +52,10 @@ public class TestCommand extends AbstractCommand {
             }
 
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

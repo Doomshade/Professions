@@ -7,7 +7,6 @@ import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -33,7 +32,7 @@ public class EditCommand extends AbstractEditCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         final HashMap<String, Ore> ores = Ore.ORES;
         if (args.length >= 2) {
 
@@ -58,7 +57,7 @@ public class EditCommand extends AbstractEditCommand {
                     EDITED.clear();
                     break;
                 default:
-                    return true;
+                    return;
             }
         } else {
             Player player = (Player) sender;
@@ -75,14 +74,13 @@ public class EditCommand extends AbstractEditCommand {
                     loc.getBlock().setType(Material.WHITE_WOOL);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                return true;
+                return;
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

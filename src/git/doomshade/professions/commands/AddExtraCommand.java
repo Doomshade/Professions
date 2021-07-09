@@ -6,7 +6,6 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.io.IOException;
@@ -32,10 +31,10 @@ public class AddExtraCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Optional<Profession> opt = Professions.getProfessionById(args[2]);
         if (!opt.isPresent()) {
-            return true;
+            return;
         }
 
         Profession prof = opt.get();
@@ -51,11 +50,10 @@ public class AddExtraCommand extends AbstractCommand {
         } catch (IOException e) {
             Professions.logError(e);
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

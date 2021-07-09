@@ -5,7 +5,6 @@ import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -48,7 +47,7 @@ public class ProfessionInfoCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         final User user;
 
         if (args.length >= 2) {
@@ -56,20 +55,20 @@ public class ProfessionInfoCommand extends AbstractCommand {
         } else if (sender instanceof Player) {
             user = User.getUser((Player) sender);
         } else {
-            return false;
+            return;
         }
 
         if (user == null) {
             sender.sendMessage("No user named " + args[1] + " is currently on the server.");
-            return true;
+            return;
         }
         if (user.getProfessions().isEmpty()) {
             sender.sendMessage(user.getPlayer().getName() + " has no professions");
-            return true;
+            return;
         }
         final List<String> messages = getMessages();
         if (messages.isEmpty()) {
-            return true;
+            return;
         }
 
         // get a  better way of doing this..
@@ -87,11 +86,10 @@ public class ProfessionInfoCommand extends AbstractCommand {
                 sender.sendMessage(Regex.replaceAll(s, prof));
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

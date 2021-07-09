@@ -6,7 +6,6 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -31,11 +30,11 @@ public class LevelCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Player target;
         if (!(sender instanceof Player)) {
             if (args.length < 5) {
-                return false;
+                return;
             }
             target = Bukkit.getPlayer(args[4]);
         } else {
@@ -47,12 +46,12 @@ public class LevelCommand extends AbstractCommand {
         }
         Optional<Profession> opt = Professions.getProfessionById(args[1]);
         if (!opt.isPresent()) {
-            return true;
+            return;
         }
         Profession prof = opt.get();
         User user = User.getUser(target);
         if (!user.hasProfession(prof)) {
-            return false;
+            return;
         }
         UserProfessionData upd = user.getProfessionData(prof);
 
@@ -65,11 +64,10 @@ public class LevelCommand extends AbstractCommand {
                 upd.addLevel(level);
                 break;
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

@@ -6,7 +6,6 @@ import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
@@ -27,11 +26,11 @@ public class ScheduleSpawnCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Herb herb = Herb.getHerb(args[1]);
         if (herb == null) {
             sender.sendMessage("Herb with ID " + args[1] + " does not exist.");
-            return true;
+            return;
         }
         Object spId;
         try {
@@ -41,7 +40,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                 spId = "";
             } else {
                 sender.sendMessage("Invalid number format.");
-                return true;
+                return;
             }
         }
         Location loc = null;
@@ -50,7 +49,7 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                 loc = herb.getSpawnPointLocations().get((Integer) spId);
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
-            return true;
+            return;
         }
 
         if (loc == null) {
@@ -77,11 +76,10 @@ public class ScheduleSpawnCommand extends AbstractCommand {
                 Professions.logError(e);
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         List<String> list = new ArrayList<>();
         switch (args.length) {
             case 2:

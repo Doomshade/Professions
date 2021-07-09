@@ -49,7 +49,7 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
- * A manager regarding registration and queries of a {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
+ * A manager regarding registration and queries of {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
  *
  * @author Doomshade
  * @version 1.0
@@ -69,7 +69,6 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
     private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
     private static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
-
 
     private ProfessionManager() {
     }
@@ -421,12 +420,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
             Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
     }
 
-    /**
-     * Registers a profession
-     * <p>IMPORTANT! Make sure you only create a SINGLE instance of the profession, multiple instances are disallowed and WILL throw an exception!</p>
-     *
-     * @param prof the profession to register
-     */
+    @Override
     public void registerProfession(Profession prof) {
         registerProfession(prof, true);
     }

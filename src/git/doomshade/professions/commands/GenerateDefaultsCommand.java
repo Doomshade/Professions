@@ -5,7 +5,6 @@ import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.utils.*;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -35,7 +34,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfMan().getItemTypeHolders()) {
             ItemType<?> itemType = itemTypeHolder.getItemType();
 
@@ -99,17 +98,16 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 loader.save(file);
             } catch (IOException e) {
                 Professions.logError(e);
-                return false;
+                return;
             }
 
         }
 
         sender.sendMessage("Defaults generated successfully");
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

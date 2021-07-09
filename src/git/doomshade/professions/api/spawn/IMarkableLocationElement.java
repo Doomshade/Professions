@@ -1,6 +1,9 @@
 package git.doomshade.professions.api.spawn;
 
-public interface MarkableLocationElement extends LocationElement {
+/**
+ * A markable location elemtn
+ */
+public interface IMarkableLocationElement extends ILocationElement {
 
     /**
      * @return the icon id of this element

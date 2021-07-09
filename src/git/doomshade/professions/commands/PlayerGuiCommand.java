@@ -3,7 +3,6 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -27,14 +26,13 @@ public class PlayerGuiCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
 //		GUI.getGui((Player) sender, MainGui.class).openGui();
         Professions.getGUIManager().openGui(PlayerProfessionsGUI.class, (Player) sender);
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

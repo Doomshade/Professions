@@ -1,6 +1,7 @@
 package git.doomshade.professions.api.spawn;
 
 /**
+ * A markable spawnable element
  *
  * @param <SpawnPointType>
  * @author Doomshade

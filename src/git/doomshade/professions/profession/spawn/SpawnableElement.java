@@ -7,7 +7,7 @@ import git.doomshade.professions.api.spawn.ISpawnableElement;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.api.spawn.LocationElement;
+import git.doomshade.professions.api.spawn.ILocationElement;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -30,14 +30,14 @@ import java.util.function.Function;
 import static git.doomshade.professions.profession.spawn.SpawnableElement.SpawnableElementEnum.*;
 
 /**
- * Manages spawns of spawnable elements. This class already implements {@link LocationElement} interface.
+ * Manages spawns of spawnable elements. This class already implements {@link ILocationElement} interface.
  *
  * @param <SpawnPointType> the spawn point type (the type is useful only if you have custom class extending {@link SpawnPoint})
  * @author Doomshade
  * @version 1.0
  */
 public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
-        implements LocationElement, ConfigurationSerializable, ISpawnableElement<SpawnPointType> {
+        implements ILocationElement, ConfigurationSerializable, ISpawnableElement<SpawnPointType> {
 
     private final List<ExtendedLocation> spawnPointLocations;
     private final HashMap<Location, SpawnPointType> spawnPoints = new HashMap<>();

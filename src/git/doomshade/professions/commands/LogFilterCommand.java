@@ -2,7 +2,6 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
@@ -10,7 +9,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -34,7 +32,7 @@ public class LogFilterCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         File logFile;
         final int[] i = {1};
 
@@ -69,7 +67,7 @@ public class LogFilterCommand extends AbstractCommand {
         }
         if (!logFile.exists()) {
             sender.sendMessage(logFile.getName() + " file does not exist!");
-            return true;
+            return;
         }
         sender.sendMessage("Iterating through " + logFile.getName() + " with pattern: " + pattern.pattern());
 
@@ -93,12 +91,10 @@ public class LogFilterCommand extends AbstractCommand {
         } catch (IOException e) {
             Professions.logError(e);
         }
-
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

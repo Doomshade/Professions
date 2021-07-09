@@ -5,7 +5,6 @@ import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -29,10 +28,10 @@ public class AddExpCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Optional<Profession> opt = Professions.getProfessionById(args[1]);
         if (!opt.isPresent()) {
-            return true;
+            return;
         }
 
         Profession prof = opt.get();
@@ -42,12 +41,12 @@ public class AddExpCommand extends AbstractCommand {
         if (args.length >= 5) {
             target = Bukkit.getPlayer(args[4]);
             if (target == null || !target.isValid() || !target.isOnline()) {
-                return true;
+                return;
             }
         } else if (sender instanceof Player) {
             target = (Player) sender;
         } else {
-            return true;
+            return;
         }
         User targetUser = User.getUser(target);
         switch (args[2]) {
@@ -58,11 +57,10 @@ public class AddExpCommand extends AbstractCommand {
                 targetUser.setExp(exp, prof);
                 break;
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

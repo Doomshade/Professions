@@ -299,7 +299,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
         AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
         if (isValid(sender, acmd)) {
-            return acmd.onTabComplete(sender, cmd, label, args);
+            return acmd.onTabComplete(sender, args);
         }
 
         for (AbstractCommand instanceCmd : INSTANCE_COMMANDS.values()) {
@@ -331,10 +331,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-
-
             //int amnt = 0;
-
             printValidCommands(sender);
             return true;
         }
@@ -350,11 +347,11 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             sender.sendMessage(infoMessage(acmd));
             return true;
         }
-        final boolean result = acmd.onCommand(sender, cmd, label, args);
+        acmd.onCommand(sender, args);
         if ((acmd.getPermissions().contains(Permissions.HELPER) || acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
-            Professions.log(String.format("%s issued %s command with arguments: %s and result %s", sender.getName(), acmd.getCommand(), Arrays.toString(args), result), Level.CONFIG);
+            Professions.log(String.format("%s issued %s command with arguments: %s", sender.getName(), acmd.getCommand(), Arrays.toString(args)), Level.CONFIG);
         }
-        return result;
+        return true;
     }
 
     public static String infoMessage(Class<? extends AbstractCommandHandler> ch, Class<? extends AbstractCommand> ac) {

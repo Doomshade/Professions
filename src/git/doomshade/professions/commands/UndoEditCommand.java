@@ -2,13 +2,11 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,11 +29,11 @@ public class UndoEditCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         File file = EditItemTypeCommand.getFile(args);
         if (!file.exists()) {
             sender.sendMessage(file.getName() + " does not exist!");
-            return true;
+            return;
         }
         FileConfiguration loader = EditItemTypeCommand.getAndRemoveLastUndo(file);
         if (loader != null) {
@@ -49,11 +47,10 @@ public class UndoEditCommand extends AbstractCommand {
         } else {
             sender.sendMessage("Nothing to undo");
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         EditItemTypeCommand.getFile(args);
         List<String> list = EditItemTypeCommand.files.stream().filter(x -> x.startsWith(args[EditItemTypeCommand.i[0] - 1])).distinct().collect(Collectors.toList());
         return list.isEmpty() ? null : list;
