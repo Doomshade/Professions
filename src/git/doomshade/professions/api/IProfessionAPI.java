@@ -4,6 +4,12 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.user.IUser;
 import org.bukkit.entity.Player;
 
+/**
+ * The API starting point
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public interface IProfessionAPI {
 
     /**

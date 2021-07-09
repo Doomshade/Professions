@@ -1,13 +1,11 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
-import git.doomshade.professions.utils.ParticleData;
+import git.doomshade.professions.api.IParticleData;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
-import java.util.List;
-
 /**
- * A location element containing an ID and needed information about a {@link org.bukkit.Location}
+ * A location element containing an ID and needed information about a {@link Location}
  *
  * @author Doomshade
  * @version 1.0
@@ -17,7 +15,7 @@ public interface LocationElement extends Element {
     /**
      * @return the particle data about this location element if there should be particles played, {@code null} otherwise
      */
-    ParticleData getParticleData();
+    IParticleData getParticleData();
 
     /**
      * @return the material of the location's block

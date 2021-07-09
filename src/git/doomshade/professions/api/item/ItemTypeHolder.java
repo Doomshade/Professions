@@ -2,13 +2,13 @@ package git.doomshade.professions.api.item;
 
 import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -25,12 +25,12 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Holder for {@link ItemType}. To register this holder call {@link ProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
+ * Holder for {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
  *
  * @param <Type> the ItemType
  * @author Doomshade
  * @version 1.0
- * @see ProfessionManager and its regsiterItemTypeHolders() method on GitHub to see an example on how to register this holder properly.
+ * @see IProfessionManager
  */
 public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
 

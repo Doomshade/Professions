@@ -8,12 +8,12 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParticleData implements ConfigurationSerializable {
+public class ParticleData implements ConfigurationSerializable, git.doomshade.professions.api.IParticleData {
 
-    private String particle;
-    private int count;
-    private int period;
-    private double xOffset, yOffset, zOffset, speed;
+    private final String particle;
+    private final int count;
+    private final int period;
+    private final double xOffset, yOffset, zOffset, speed;
 
     public ParticleData(String particle, int count, int period, double xOffset, double yOffset, double zOffset, double speed) {
         this.particle = particle;
@@ -42,30 +42,37 @@ public class ParticleData implements ConfigurationSerializable {
         return data;
     }
 
+    @Override
     public String getParticle() {
         return particle;
     }
 
+    @Override
     public int getCount() {
         return count;
     }
 
+    @Override
     public int getPeriod() {
         return period;
     }
 
-    public double getxOffset() {
+    @Override
+    public double getXOffset() {
         return xOffset;
     }
 
-    public double getyOffset() {
+    @Override
+    public double getYOffset() {
         return yOffset;
     }
 
-    public double getzOffset() {
+    @Override
+    public double getZOffset() {
         return zOffset;
     }
 
+    @Override
     public double getSpeed() {
         return speed;
     }

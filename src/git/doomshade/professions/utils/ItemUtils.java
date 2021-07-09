@@ -529,7 +529,7 @@ public final class ItemUtils implements ISetup {
                     clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY + "." + id + ")");
         }
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
-        return ((MemorySection) itemsSection.get(itemId)).getValues(true);
+        return ((MemorySection) itemsSection.get(itemId)).getValues(false);
     }
 
     /**

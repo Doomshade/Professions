@@ -4,8 +4,6 @@ import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
 
 public class ParticleTask extends ExtendedBukkitRunnable {
     private final ParticleData particle;
@@ -16,7 +14,7 @@ public class ParticleTask extends ExtendedBukkitRunnable {
     public ParticleTask(ParticleData particle, Location location) {
         this.particle = particle;
         this.location = location;
-        this.particleOffsetLocation = location.clone().add(particle.getxOffset(), particle.getyOffset(), particle.getzOffset());
+        this.particleOffsetLocation = location.clone().add(particle.getXOffset(), particle.getYOffset(), particle.getZOffset());
     }
 
     public ParticleTask(ParticleTask copy) {
@@ -25,7 +23,15 @@ public class ParticleTask extends ExtendedBukkitRunnable {
 
     @Override
     public void run() {
-        location.getWorld().spawnParticle(Particle.valueOf(particle.getParticle()), particleOffsetLocation, particle.getCount(), particle.getxOffset(), particle.getyOffset(), particle.getzOffset(), particle.getSpeed());
+        location.getWorld().spawnParticle(
+                Particle.valueOf(particle.getParticle()),
+                particleOffsetLocation,
+                particle.getCount(),
+                particle.getXOffset(),
+                particle.getYOffset(),
+                particle.getZOffset(),
+                particle.getSpeed()
+        );
     }
 
     @Override

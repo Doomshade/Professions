@@ -3,6 +3,7 @@ package git.doomshade.professions.api.item;
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.user.IUserProfessionData;
+import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.utils.ItemUtils;
@@ -26,6 +27,13 @@ import java.util.regex.Pattern;
 
 import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
+/**
+ * An {@link ItemType} that allows for crafting an ItemStack
+ *
+ * @param <T> the item type to look for in {@link ProfessionEvent}
+ * @author Doomshade
+ * @version 1.0
+ */
 public abstract class CraftableItemType<T> extends ItemType<T> implements ICraftable {
 
     private double craftingTime = 5d;
@@ -78,9 +86,9 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
             throw new ProfessionInitializationException("Could not deserialize " + this);
         }
 
-        MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
+        MemorySection isSection = (MemorySection) map.get(RESULT.s);
         try {
-            setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
+            setResult(ItemUtils.deserialize(isSection.getValues(false)));
         } catch (ConfigurationException e) {
             Professions.logError(e, false);
             throw new ProfessionInitializationException("Could not deserialize a craftable item type");
@@ -187,6 +195,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     public final Map<Sound, String> getSounds() {
         return ImmutableMap.copyOf(sounds);
     }
+
 
     public Function<ItemStack, ?> getExtraInEvent() {
         return null;

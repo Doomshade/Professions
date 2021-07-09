@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.spawn;
 
 import git.doomshade.professions.api.spawn.IMarkableSpawnableElement;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.utils.MarkableLocationElement;
+import git.doomshade.professions.api.spawn.MarkableLocationElement;
 import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Material;
 

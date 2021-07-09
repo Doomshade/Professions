@@ -7,7 +7,7 @@ import git.doomshade.professions.api.spawn.ISpawnableElement;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.utils.LocationElement;
+import git.doomshade.professions.api.spawn.LocationElement;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;

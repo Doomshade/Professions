@@ -22,7 +22,7 @@ public class EffectUtils {
         git.doomshade.loreattributes.Attribute laAttribute = git.doomshade.loreattributes.Attribute.parse(attribute);
 
         if (laAttribute != null) {
-            // TODO uncomment !!!!!!!!!!!!!!!!!!!!
+            // TODO uncomment !!!!!!!!!!!!!!!!!!!!!
             git.doomshade.loreattributes.user.User.getUser(player).addCustomAttribute(laAttribute, amount);
         } else {
             com.sucy.skill.manager.AttributeManager.Attribute sapiAttribute = com.sucy.skill.SkillAPI.getAttributeManager().getAttribute(attribute);

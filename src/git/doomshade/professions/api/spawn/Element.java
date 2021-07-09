@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 /**
  * An element containing an ID

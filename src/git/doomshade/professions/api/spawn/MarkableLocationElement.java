@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 public interface MarkableLocationElement extends LocationElement {
 

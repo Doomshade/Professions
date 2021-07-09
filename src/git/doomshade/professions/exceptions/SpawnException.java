@@ -1,7 +1,7 @@
 package git.doomshade.professions.exceptions;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.utils.LocationElement;
+import git.doomshade.professions.api.spawn.LocationElement;
 
 import java.util.logging.Level;
 

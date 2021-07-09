@@ -17,7 +17,7 @@ import java.util.logging.Level;
 /**
  * This class stores the location of spawn point, the
  */
-public class SpawnPoint implements ISpawnPoint {
+public abstract class SpawnPoint implements ISpawnPoint {
 
     public static final String CACHE_FOLDER = "spawned";
 
