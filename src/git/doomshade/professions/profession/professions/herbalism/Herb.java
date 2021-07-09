@@ -36,7 +36,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
     public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(),
-            ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
+            ItemUtils.EXAMPLE_RESULT, Material.SUNFLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
 
     private final ItemStack gatherItem;
     private final boolean enableSpawn;

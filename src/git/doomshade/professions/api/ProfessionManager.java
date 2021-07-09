@@ -34,7 +34,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Server;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -296,8 +295,10 @@ public final class ProfessionManager implements ISetup {
 
         // CRAFTING
         registerItemTypeHolderSupplier(() -> {
-            ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
-            CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, CraftShapedRecipe.fromBukkitRecipe(recipe));
+            ShapedRecipe recipe = new ShapedRecipe(CustomRecipe.NMS_KEY, ItemUtils.EXAMPLE_RESULT)
+                    .shape("abc", "def", "ghi")
+                    .setIngredient('e', Material.DIAMOND);
+            CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, recipe);
             cr.setName(ChatColor.DARK_GREEN + "Test recipe");
             final ItemTypeHolder<CustomRecipe> itemTypeHolder = new ItemTypeHolder<>(cr);
             itemTypeHolder.registerObject(cr);
@@ -312,9 +313,9 @@ public final class ProfessionManager implements ISetup {
                 if (!(bukkitRecipe instanceof ShapedRecipe)) {
                     continue;
                 }
-                CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
+                ShapedRecipe shaped = (ShapedRecipe) bukkitRecipe;
                 for (CustomRecipe customRecipe : itemTypeHolder.getRegisteredItemTypes()) {
-                    if (customRecipe.equalsObject(bukkitShapedRecipe)) {
+                    if (customRecipe.equalsObject(shaped)) {
                         bukkitRecipes.remove();
                     }
                 }

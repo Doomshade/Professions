@@ -28,7 +28,7 @@ import static git.doomshade.professions.data.AbstractSettings.outdated;
  */
 public final class Settings implements ISetup {
 
-    public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
+    private static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
     private static final String DEFAULT_PROPERTIES = "lang_en.yml";
     protected static FileConfiguration config;
     protected static Professions plugin;
@@ -57,6 +57,10 @@ public final class Settings implements ISetup {
         registerSettings(new TrainableSettings());
         registerSettings(new GUISettings());
         registerSettings(new MaxProfessionsSettings());
+    }
+
+    public static Collection<AbstractSettings> getSettings() {
+        return Collections.unmodifiableCollection(SETTINGS);
     }
 
     private Settings() {

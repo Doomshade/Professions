@@ -730,7 +730,7 @@ public final class Professions extends JavaPlugin implements ISetup {
         }
 
         // then other settings
-        for (AbstractSettings s : Settings.SETTINGS) {
+        for (AbstractSettings s : Settings.getSettings()) {
             try {
                 registerSetup(s);
             } catch (Exception e) {

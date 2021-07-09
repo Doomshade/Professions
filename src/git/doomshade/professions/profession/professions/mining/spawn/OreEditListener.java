@@ -1,21 +1,23 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.api.types.ItemTypeHolder;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -43,11 +45,13 @@ public class OreEditListener implements Listener {
             }
             final String displayName = itemInHand.getItemMeta().getDisplayName();
             OreItemType oreItemType = Utils.findInIterable(itemTypeHolder.getRegisteredItemTypes(), x -> x.getIcon(null).getItemMeta().getDisplayName().equals(displayName));
-            net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(itemInHand);
+
             final Location location = event.getBlock().getLocation();
             final Ore ore = oreItemType.getObject();
             if (ore != null) {
-                if (nms.hasTag() && nms.getTag().hasKey("ignoreRange") && nms.getTag().getByte("ignoreRange") == 1) {
+                final PersistentDataContainer pdc = itemInHand.getItemMeta().getPersistentDataContainer();
+
+                if (pdc.has(OreGUI.NBT_KEY, PersistentDataType.BYTE) && pdc.get(OreGUI.NBT_KEY, PersistentDataType.BYTE) == 1) {
                     final ExtendedLocation sp = new ExtendedLocation(location, new Range(0));
                     ore.addSpawnPoint(sp);
                     try {

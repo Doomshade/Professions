@@ -1,19 +1,19 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.event.EventManager;
-import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.api.user.User;
+import git.doomshade.professions.event.EventManager;
+import git.doomshade.professions.event.ProfessionEvent;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -74,21 +74,21 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     @EventHandler
-    public void onGatherPickup(PlayerPickupItemEvent e) {
-        if (e.isCancelled()) {
+    public void onGatherPickup(EntityPickupItemEvent e) {
+        if (e.isCancelled() || !(e.getEntity() instanceof Player)) {
             return;
         }
-        Player hrac = e.getPlayer();
+        Player player = (Player) e.getEntity();
         Item item = e.getItem();
         /*
-        if (callEvent(hrac, new Herb(item.getItemStack(), null), HerbItemType.class, IGathering.class) == null) {
+        if (callEvent(player, new Herb(item.getItemStack(), null), HerbItemType.class, IGathering.class) == null) {
             return;
         }
 
-        List<UUID> uuids = PICKUPS.getOrDefault(hrac.getUniqueId(), new ArrayList<>());
+        List<UUID> uuids = PICKUPS.getOrDefault(player.getUniqueId(), new ArrayList<>());
         uuids.add(item.getUniqueId());
 
-        PICKUPS.put(hrac.getUniqueId(), uuids);
+        PICKUPS.put(player.getUniqueId(), uuids);
          */
 
     }

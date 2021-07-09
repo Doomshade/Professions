@@ -2,16 +2,13 @@ package git.doomshade.professions.profession.professions.jewelcrafting.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
-import git.doomshade.professions.utils.GetSet;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,9 +34,9 @@ public class InsertCommand extends AbstractCommand {
 
         Gem gem = opt.get();
         final PlayerInventory inventory = ((Player) sender).getInventory();
-        GetSet<ItemStack> item = new GetSet<>(inventory.getItemInMainHand());
-        gem.insert(item, true);
-        inventory.setItemInMainHand(item.get());
+        //GetSet<ItemStack> item = new GetSet<>(inventory.getItemInMainHand());
+        gem.insert(inventory.getItemInMainHand(), true);
+        //inventory.setItemInMainHand(item.get());
 
         return true;
     }

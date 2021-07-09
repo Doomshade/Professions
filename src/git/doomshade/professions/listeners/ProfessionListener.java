@@ -33,7 +33,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -43,6 +42,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -50,6 +50,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -241,14 +242,14 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
         Player hrac = (Player) he;
 
-        if (recipe instanceof CraftShapedRecipe) {
+        if (recipe instanceof ShapedRecipe) {
 
             // get amount of items that are crafted (it won't call that amount of events, we
             // have to handle it)
             int amountOfItems = getAmountOfItems(recipe.getResult(), hrac, e);
 
             // get the event to modify it before calling it
-            ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((CraftShapedRecipe) recipe), CustomRecipe.class);
+            ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((ShapedRecipe) recipe), CustomRecipe.class);
             if (event == null) {
                 return;
             }
@@ -503,8 +504,10 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @EventHandler
-    public void onPickup(PlayerPickupItemEvent e) {
-        updateLater(e.getPlayer());
+    public void onPickup(EntityPickupItemEvent e) {
+        if (e.getEntity() instanceof Player) {
+            updateLater((Player) e.getEntity());
+        }
     }
 
     @EventHandler

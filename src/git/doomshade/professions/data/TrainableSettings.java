@@ -1,16 +1,16 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.types.ItemType;
 import git.doomshade.professions.api.user.User;
-import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static git.doomshade.professions.utils.ItemUtils.getDescription;
 
 /**
  * Settings for trainable item types
@@ -24,7 +24,7 @@ public class TrainableSettings extends AbstractProfessionSettings {
             NOT_TRAINED = "not-trained",
             CANNOT_TRAIN = "cannot-train";
 
-    private final ArrayList<String> trainedLore, notTrainedLore, unableToTrainLore;
+    private final List<String> trainedLore, notTrainedLore, unableToTrainLore;
 
     TrainableSettings() {
         trainedLore = new ArrayList<>();
@@ -46,7 +46,7 @@ public class TrainableSettings extends AbstractProfessionSettings {
         }
     }
 
-    private void initLore(ConfigurationSection trainableSection, String section, ArrayList<String> lore) {
+    private void initLore(ConfigurationSection trainableSection, String section, List<String> lore) {
         if (trainableSection.isList(section)) {
             lore.addAll(trainableSection.getStringList(section));
             for (int i = 0; i < lore.size(); i++) {
@@ -75,20 +75,15 @@ public class TrainableSettings extends AbstractProfessionSettings {
     }
 
     private List<String> getNotTrainedLore(ItemType<?> itemType) {
-        return replaceStrings(itemType, notTrainedLore);
+        return getDescription(itemType, notTrainedLore);
     }
 
     private List<String> getTrainedLore(ItemType<?> itemType) {
-        return replaceStrings(itemType, trainedLore);
+        return getDescription(itemType, trainedLore);
     }
 
 
     private List<String> getUnableToTrainLore(ItemType<?> itemType) {
-        return replaceStrings(itemType, unableToTrainLore);
-    }
-
-    @NotNull
-    private List<String> replaceStrings(ItemType<?> itemType, List<String> lore) {
-        return ItemUtils.getDescription(itemType, lore);
+        return getDescription(itemType, unableToTrainLore);
     }
 }

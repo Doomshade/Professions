@@ -2,24 +2,25 @@ package git.doomshade.professions.gui.oregui;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.api.types.ItemTypeHolder;
+import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
-import net.minecraft.server.v1_9_R1.NBTTagByte;
-import net.minecraft.server.v1_9_R1.NBTTagCompound;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
 public class OreGUI extends GUI {
 
     private boolean ignore = false;
+    public static final NamespacedKey NBT_KEY = new NamespacedKey(Professions.getInstance(), "ignoreRange");
 
     protected OreGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -54,18 +55,22 @@ public class OreGUI extends GUI {
         final InventoryClickEvent event = e.getEvent();
         event.setCancelled(true);
         ItemStack click = event.getCurrentItem();
-        if (click == null || !click.hasItemMeta() || !click.getItemMeta().hasDisplayName()) {
+        if (click == null || !click.hasItemMeta() || click.getItemMeta() == null || !click.getItemMeta().hasDisplayName()) {
             return;
         }
         try {
-            Utils.findInIterable(Professions.getProfessionManager().getItemTypeHolder(OreItemType.class).getRegisteredItemTypes(), x -> x.getIcon(null).getItemMeta().getDisplayName().equals(click.getItemMeta().getDisplayName()));
+            Utils.findInIterable(Professions.getProfessionManager()
+                            .getItemTypeHolder(OreItemType.class).getRegisteredItemTypes(),
+                    x -> x.getIcon(null)
+                            .getItemMeta()
+                            .getDisplayName()
+                            .equals(click.getItemMeta().getDisplayName()));
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
-        net.minecraft.server.v1_9_R1.ItemStack is = CraftItemStack.asNMSCopy(click);
-        NBTTagCompound nbtTag = is.hasTag() ? is.getTag() : new NBTTagCompound();
-        nbtTag.set("ignoreRange", new NBTTagByte(ignore ? (byte) 1 : 0));
-        is.setTag(nbtTag);
-        event.getWhoClicked().getInventory().addItem(CraftItemStack.asBukkitCopy(is));
+
+        final PersistentDataContainer pdc = click.getItemMeta().getPersistentDataContainer();
+        pdc.set(NBT_KEY, PersistentDataType.BYTE, ignore ? (byte) 1 : 0);
+        event.getWhoClicked().getInventory().addItem(click);
     }
 }

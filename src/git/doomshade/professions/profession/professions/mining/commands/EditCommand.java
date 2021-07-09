@@ -43,7 +43,7 @@ public class EditCommand extends AbstractEditCommand {
                         ore.getSpawnPoints().values().forEach(x -> {
                             x.despawn();
                             Location loc = x.location;
-                            loc.getBlock().setType(Material.WOOL);
+                            loc.getBlock().setType(Material.WHITE_WOOL);
                             EDITED.add(loc);
                         });
                     }
@@ -72,7 +72,7 @@ public class EditCommand extends AbstractEditCommand {
                     locationOptions.scheduleSpawn();
                 } else {
                     EDITED.add(loc);
-                    loc.getBlock().setType(Material.WOOL);
+                    loc.getBlock().setType(Material.WHITE_WOOL);
                 }
             } catch (Utils.SearchNotFoundException e) {
                 return true;

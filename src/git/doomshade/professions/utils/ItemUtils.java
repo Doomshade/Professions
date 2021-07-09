@@ -3,18 +3,14 @@ package git.doomshade.professions.utils;
 import git.doomshade.diablolike.DiabloLike;
 import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.types.ItemType;
+import git.doomshade.professions.api.user.UserProfessionData;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.ReloadCommand;
 import git.doomshade.professions.commands.SaveCommand;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.api.types.ItemType;
-import git.doomshade.professions.api.user.UserProfessionData;
-import net.minecraft.server.v1_9_R1.NBTBase;
-import net.minecraft.server.v1_9_R1.NBTCompressedStreamTools;
-import net.minecraft.server.v1_9_R1.NBTTagCompound;
-import org.apache.commons.codec.binary.Base64;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -23,15 +19,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_9_R1.potion.CraftPotionUtil;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -59,11 +52,24 @@ public final class ItemUtils implements ISetup {
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
     static final String DIABLO_ITEM = "diabloitem";
+    public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
+            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of requirement"))
+            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
+            .setAmount(5)
+            .build();
+    public static final ItemStack EXAMPLE_RESULT = new ItemStackBuilder(Material.GLASS)
+            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of result"))
+            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
+            .setAmount(5)
+            .build();
+    public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
 
+    private static boolean loggedDiablo = false;
     private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
     private static final File ITEMS_LOGGED_FILE = new File(Professions.getInstance().getCacheFolder(), "itemutilscache.bin");
 
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
+
 
     public static String serializeMaterial(ItemStack item) {
         return serializeMaterial(item.getType(), (byte) item.getDurability());
@@ -84,12 +90,9 @@ public final class ItemUtils implements ISetup {
         return new ItemStack(Material.valueOf(split[0]), 1, damage);
     }
 
-
     public static ItemStack deserialize(Map<String, Object> map) throws ConfigurationException {
         return deserialize(map, true);
     }
-
-    private static boolean loggedDiablo = false;
 
     /**
      * Deserializes an ItemStack from a map. <br>
@@ -104,40 +107,24 @@ public final class ItemUtils implements ISetup {
             return null;
         }
 
-        diablo:
         if (checkForDiabloHook && Professions.isDiabloLikeHook()) {
             Object potentialId = map.get(DIABLO_ITEM);
-            if (!(potentialId instanceof String)) {
-                if (!loggedDiablo) {
-                    Professions.log("Found items that are not a DiabloItem.");
-                    Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
-                    Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
-                    loggedDiablo = true;
+            if (potentialId instanceof String) {
+                final String id = (String) potentialId;
+                final DiabloItem diabloItem = DiabloLike.getItemFromConfigName(id);
+
+                if (diabloItem != null) {
+                    final ItemStack item = diabloItem.getItemUtils().getDropItem();
+                    final Object potentialAmount = map.get(AMOUNT);
+                    if (potentialAmount instanceof Integer) {
+                        item.setAmount((int) potentialAmount);
+                    }
+                    return item;
                 }
-                if (ITEMS_LOGGED.contains(map)) break diablo;
-                Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
-
-                Professions.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
-                ITEMS_LOGGED.add(map);
-                break diablo;
+            } else {
+                logDiablo(map);
             }
-
-            // the potentialId is instanceof String and also not null -> continue
-            final String id = (String) potentialId;
-            final DiabloItem diabloItem = DiabloLike.getItemFromConfigName(id);
-            if (diabloItem == null) {
-                Professions.log("No Diablo Item with id " + id + " found!", Level.WARNING);
-                break diablo;
-            }
-
-            final ItemStack item = diabloItem.getItemUtils().getDropItem();
-            final Object potentialAmount = map.get(AMOUNT);
-            if (potentialAmount instanceof Integer) {
-                item.setAmount((int) potentialAmount);
-            }
-            return item;
         }
-
 
         final Object potentialMaterial = map.get(MATERIAL);
         if (potentialMaterial == null) {
@@ -147,6 +134,10 @@ public final class ItemUtils implements ISetup {
         ItemStack item = deserializeMaterial((String) potentialMaterial);
 
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return item;
+        }
+
         final Object potentialDisplayName = map.get(DISPLAY_NAME);
         if (potentialDisplayName != null) {
             final String displayName = (String) potentialDisplayName;
@@ -167,11 +158,18 @@ public final class ItemUtils implements ISetup {
         if (meta instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) meta;
             final Object potentialPotionType = map.get(POTION_TYPE);
-            if (potentialPotionType != null) {
-                potionMeta.setBasePotionData(CraftPotionUtil.toBukkit((String) potentialPotionType));
+            if (potentialPotionType instanceof String) {
+
+                //potionMeta.setBasePotionData(CraftPotionUtil.toBukkit((String) potentialPotionType));
             }
         }
 
+        item.setItemMeta(meta);
+        return item;
+        //return deserializeInternal(map, item, meta);
+    }
+    /*@NotNull
+    private static ItemStack deserializeInternal(Map<String, Object> map, ItemStack item, ItemMeta meta) {
         final Object potentialInternal = map.get("internal");
 
         if (potentialInternal != null) {
@@ -195,7 +193,8 @@ public final class ItemUtils implements ISetup {
 
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
                 Professions.logError(e);
-                return null;
+                item.setItemMeta(meta);
+                return item;
             }
 
 
@@ -219,9 +218,23 @@ public final class ItemUtils implements ISetup {
         }
         item.setItemMeta(meta);
         return item;
+    }*/
+
+
+    private static void logDiablo(Map<String, Object> map) {
+        if (!loggedDiablo) {
+            Professions.log("Found items that are not a DiabloItem.");
+            Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
+            Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
+            loggedDiablo = true;
+        }
+        if (!ITEMS_LOGGED.contains(map)) {
+            Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
+            Professions.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
+            ITEMS_LOGGED.add(map);
+        }
     }
 
-    @SuppressWarnings("unchecked")
     public static Map<String, Object> serialize(final ItemStack item) {
 
         if (item == null) {
@@ -235,52 +248,75 @@ public final class ItemUtils implements ISetup {
         map.put(AMOUNT, item.getAmount());
 
         // no item meta, means only material and amount can be serialized only
-        if (!item.hasItemMeta()) return map;
-
         final ItemMeta meta = item.getItemMeta();
+        if (meta == null) {
+            return map;
+        }
 
-        // TODO THIS COULD BE A PROBLEM WITH DIABLOITEMS (SAVING THEIR CONFIG NAME !BASED ON DISPLAY NAME!) !!!
-        if (meta.hasDisplayName()) {
-            final String displayName = meta.getDisplayName();
+        Map<String, Object> diabloLikeMap = serializeDisplayName(item, map, meta);
 
-            // we primarily look for DiabloLike
-            diablolike:
-            if (Professions.isDiabloLikeHook()) {
-                // get items from display name
-                final List<DiabloItem> itemFromDisplayName = DiabloLike.getItemFromDisplayName(displayName);
-
-                // diablolike returns null if there are no items (conventions? Pepega)
-                if (itemFromDisplayName == null) break diablolike;
-
-                // there could be multiple items with the same name but not the same material, so filter out the items with incorrect material
-                final List<DiabloItem> items = itemFromDisplayName
-                        .stream()
-                        .filter(x -> x.getItem().getType() == item.getType())
-                        .collect(Collectors.toList());
-
-                // we found more than one diablo item with the same name and material (this shit should not happen btw)
-                if (items.size() > 1) {
-                    // log that we found the diablo item but there were duplicates
-                    Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
-                    Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
-                }
-                // there was only one of a kind diabloitem
-                else {
-                    map.put(DIABLO_ITEM, items.get(0).getConfigName());
-                    return map;
-
-                }
-            }
-
-            // DiabloLike item not found, continue in serialization
-            map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
+        if (diabloLikeMap != null) {
+            return diabloLikeMap;
         }
 
         if (meta.hasLore()) {
             map.put(LORE, meta.getLore().stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
         }
 
+        if (meta instanceof PotionMeta) {
+            PotionMeta potionMeta = (PotionMeta) meta;
+            map.put(POTION_TYPE, potionMeta.getBasePotionData());
+        }
+
+        return map;
         // now we need to do some funky stuff with item meta because of potions
+        //return serializePotionMeta(map, meta);
+    }
+
+    @Nullable
+    private static Map<String, Object> serializeDisplayName(ItemStack item, Map<String, Object> map, ItemMeta meta) {
+        // TODO THIS COULD BE A PROBLEM WITH DIABLOITEMS (SAVING THEIR CONFIG NAME !BASED ON DISPLAY NAME!) !!!
+        if (!meta.hasDisplayName()) {
+            return null;
+        }
+        final String displayName = meta.getDisplayName();
+
+        // we primarily look for DiabloLike
+        diablolike:
+        if (Professions.isDiabloLikeHook()) {
+            // get items from display name
+            final List<DiabloItem> itemFromDisplayName = DiabloLike.getItemFromDisplayName(displayName);
+
+            // diablolike returns null if there are no items (conventions? Pepega)
+            if (itemFromDisplayName == null) break diablolike;
+
+            // there could be multiple items with the same name but not the same material, so filter out the items with incorrect material
+            final List<DiabloItem> items = itemFromDisplayName
+                    .stream()
+                    .filter(x -> x.getItem().getType() == item.getType())
+                    .collect(Collectors.toList());
+
+            // we found more than one diablo item with the same name and material (this shit should not happen btw)
+            if (items.size() > 1) {
+                // log that we found the diablo item but there were duplicates
+                Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
+                Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
+            }
+            // there was only one of a kind diabloitem
+            else {
+                map.put(DIABLO_ITEM, items.get(0).getConfigName());
+                return map;
+
+            }
+        }
+
+        // DiabloLike item not found, continue in serialization
+        map.put(DISPLAY_NAME, displayName.replaceAll("§", "&"));
+
+        return null;
+    }
+    /*@SuppressWarnings("unchecked")
+    private static Map<String, Object> serializePotionMeta(Map<String, Object> map, ItemMeta meta) {
         Class<? extends ItemMeta> clazz = meta.getClass();
         if (!clazz.getSimpleName().equalsIgnoreCase("craftmetaitem")) {
             clazz = (Class<? extends ItemMeta>) clazz.getSuperclass();
@@ -297,7 +333,7 @@ public final class ItemUtils implements ISetup {
             unhandledTags = (Map<String, NBTBase>) unhandledTagsField.get(meta);
         } catch (IllegalAccessException | NoSuchFieldException e) {
             Professions.logError(e);
-            return null;
+            return map;
         }
 
         Map<String, NBTBase> internalTags = new HashMap<>(unhandledTags);
@@ -326,20 +362,8 @@ public final class ItemUtils implements ISetup {
 
 
         return map;
-    }
+    }*/
 
-    public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
-            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of requirement"))
-            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
-            .setAmount(5)
-            .build();
-
-    public static final ItemStack EXAMPLE_RESULT = new ItemStackBuilder(Material.GLASS)
-            .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of result"))
-            .withDisplayName(ChatColor.DARK_AQUA + "Display name")
-            .setAmount(5)
-            .build();
-    public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
 
     /**
      * Calls {@link #getDescription(ItemType, List)} with {@link ItemType}'s description from file.
@@ -575,10 +599,10 @@ public final class ItemUtils implements ISetup {
      * Builder for {@link ItemStack}
      */
     public static class ItemStackBuilder {
-        private Material mat;
+        private final Material mat;
         private int amount;
         private short damage;
-        private ItemMeta meta;
+        private final ItemMeta meta;
 
         /**
          * @param mat the material
@@ -595,7 +619,9 @@ public final class ItemUtils implements ISetup {
          * @return {@code this}
          */
         public ItemStackBuilder withLore(List<String> lore) {
-            meta.setLore(lore);
+            if (meta != null) {
+                meta.setLore(lore);
+            }
             return this;
         }
 
@@ -604,7 +630,9 @@ public final class ItemUtils implements ISetup {
          * @return {@code this}
          */
         public ItemStackBuilder withDisplayName(String displayName) {
-            meta.setDisplayName(displayName.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', displayName));
+            if (meta != null) {
+                meta.setDisplayName(displayName.isEmpty() ? "" : ChatColor.translateAlternateColorCodes('&', displayName));
+            }
             return this;
         }
 

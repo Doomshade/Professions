@@ -2,7 +2,6 @@ package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.ISetup;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 

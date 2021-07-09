@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
 
 import java.util.Objects;
 import java.util.logging.Level;
@@ -92,14 +94,19 @@ public class SpawnPoint {
             this.enableSpawn = false;
             throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_LOCATION, element);
         }
-        final byte materialData = element.getMaterialData();
+        //final byte materialData = element.getMaterialData();
 
-        block.setType(material, false);
-        block.setData(materialData);
-        if (material == Material.DOUBLE_PLANT) {
+        final BlockData blockData = block.getBlockData();
+        if (blockData instanceof Bisected) {
+            final Bisected bdBottom = (Bisected) blockData;
+            bdBottom.setHalf(Bisected.Half.BOTTOM);
             final Block top = location.getWorld().getBlockAt(location.clone().add(0, 1, 0));
             top.setType(material, false);
-            top.setData((byte) 10);
+            final Bisected bdTop = (Bisected) top.getBlockData();
+            bdTop.setHalf(Bisected.Half.TOP);
+            //top.setData((byte) 10);
+        } else {
+            block.setType(material, false);
         }
 
         unscheduleSpawn();
