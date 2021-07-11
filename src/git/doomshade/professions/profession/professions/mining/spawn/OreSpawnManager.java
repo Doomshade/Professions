@@ -1,8 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.utils.ISetup;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -29,7 +28,7 @@ public class OreSpawnManager implements ISetup {
             instance = this;
         }
 
-        this.oreLocations = new File(Professions.getInstance().getAdditionalDataFolder(), ".yml");
+        this.oreLocations = new File(IOManager.getAdditionalDataFolder(), "fname.yml");
         this.loader = YamlConfiguration.loadConfiguration(oreLocations);
 
     }

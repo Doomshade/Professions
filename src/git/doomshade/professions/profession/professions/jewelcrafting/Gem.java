@@ -3,31 +3,31 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 import com.google.common.collect.Sets;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.GetSet;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
-import net.minecraft.server.v1_9_R1.NBTTagCompound;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.profession.professions.jewelcrafting.Gem.GemEnum.*;
-import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.ACTIVE_GEM_NBT_TAG;
-import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.IDS;
+import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.*;
 
 
 public class Gem implements ConfigurationSerializable {
@@ -36,17 +36,28 @@ public class Gem implements ConfigurationSerializable {
     // TODO settings
     public static final String EMPTY_GEM = "(Místo pro klenot)";
     private static final String EXAMPLE_GEM_ID = "example-gem-id";
+
     // stay here cuz of order!
-    public static final Gem EXAMPLE_GEM = new Gem(EXAMPLE_GEM_ID, ItemUtils.EXAMPLE_RESULT, GemUtils.ADD_ATTRIBUTE_EFFECT, ChatColor.GREEN + "Test display name", Arrays.asList("poskozeni:50", "vitalita:30"), GemEquipmentSlot.ARMOR);
+    public static final Gem EXAMPLE_GEM = new Gem(
+            EXAMPLE_GEM_ID,
+            ItemUtils.EXAMPLE_RESULT,
+            GemUtils.ADD_ATTRIBUTE_EFFECT,
+            ChatColor.GREEN + "Test display name",
+            Arrays.asList("poskozeni:50", "vitalita:30"),
+            GemEquipmentSlot.ARMOR
+    );
+
     private static final HashMap<UUID, Set<Gem>> ACTIVE_GEMS = new HashMap<>();
-    private static final String GEM_NBT_TAG = "gemItemType";
     private static final HashSet<String> LOGGED_ERROR_GEMS = new HashSet<>();
     private final List<String> context;
     private final ItemStack gem;
     private final GemEffect gemEffect;
     private final String id;
     private final GemEquipmentSlot equipmentSlot;
-    private String displayName;
+    private final String displayName;
+    //private static final InsertResult INVALID_ITEM_RESULT = new InsertResult(null, ResultEnum.INVALID_ITEM);
+    //private static final InsertResult NO_GEM_SPACE_RESULT = new InsertResult(null, ResultEnum.NO_GEM_SPACE);
+
 
     private Gem(String id, ItemStack gem, GemEffect gemEffect, String displayName, List<String> context, GemEquipmentSlot equipmentSlot) throws IllegalArgumentException {
 
@@ -60,7 +71,8 @@ public class Gem implements ConfigurationSerializable {
         }
         this.id = id;
         this.context = context;
-        this.gem = addNbtTag(gem);
+        this.gem = gem;
+        addNbtTag(gem, GEM_NBT_TAG);
         this.gemEffect = gemEffect;
         this.displayName = displayName;
 
@@ -70,30 +82,26 @@ public class Gem implements ConfigurationSerializable {
     }
 
     private static Optional<Gem> getGem(ItemStack item, String tag) {
-
-
         final Optional<Gem> empty = Optional.empty();
 
-        if (item == null || item.getType() == Material.AIR) {
-            return empty;
-        }
-        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
-        if (!itemStack.hasTag()) {
-            return empty;
-        }
-        NBTTagCompound nbtTag = itemStack.getTag();
-
-        if (!nbtTag.hasKey(tag)) {
+        if (item == null || item.getType() == Material.AIR || item.getItemMeta() == null) {
             return empty;
         }
 
-        final String id = nbtTag.getString(tag);
+        final PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+
+        NamespacedKey key = new NamespacedKey(Professions.getInstance(), tag);
+        if (!pdc.has(key, PersistentDataType.STRING)) {
+            return empty;
+        }
+
+        final String id = pdc.get(key, PersistentDataType.STRING);
         final Gem value = GEMS.get(id);
         if (value == null) {
             if (LOGGED_ERROR_GEMS.add(id)) {
                 final String s = "Found a gem but the gem is not registered! (" + id + ")";
-                Professions.log(s, Level.WARNING);
-                Professions.log(s, Level.CONFIG);
+                ProfessionLogger.log(s, Level.WARNING);
+                ProfessionLogger.log(s, Level.CONFIG);
             }
             return empty;
         }
@@ -119,20 +127,27 @@ public class Gem implements ConfigurationSerializable {
         return getGem(item, ACTIVE_GEM_NBT_TAG);
     }
 
-    private ItemStack addNbtTag(ItemStack gem) {
-        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(gem);
-        NBTTagCompound nbtTag = itemStack.hasTag() ? itemStack.getTag() : new NBTTagCompound();
-        nbtTag.setString(GEM_NBT_TAG, id);
-        itemStack.setTag(nbtTag);
-        return CraftItemStack.asBukkitCopy(itemStack);
+    private void addNbtTag(ItemStack gem, String key) {
+        addNbtTag(gem, key, this.id);
+    }
+
+    private void addNbtTag(ItemStack gem, String key, String id) {
+        if (gem.getItemMeta() == null) {
+            return;
+        }
+        PersistentDataContainer pdc = gem.getItemMeta().getPersistentDataContainer();
+        NamespacedKey nmsk = new NamespacedKey(Professions.getInstance(), key);
+        pdc.set(nmsk, PersistentDataType.STRING, id);
     }
 
     public static boolean hasGem(ItemStack item) {
-        if (item == null) {
+        if (item == null || item.getItemMeta() == null) {
             return false;
         }
-        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
-        return itemStack != null && itemStack.hasTag() && itemStack.getTag().hasKey(ACTIVE_GEM_NBT_TAG);
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey(Professions.getInstance(), ACTIVE_GEM_NBT_TAG);
+
+        return pdc.has(key, PersistentDataType.STRING);
     }
 
     public static void update(Player player) {
@@ -141,7 +156,7 @@ public class Gem implements ConfigurationSerializable {
 
         final PlayerInventory inventory = player.getInventory();
         for (ItemStack item : inventory.getArmorContents()) {
-            if (item == null) {
+            if (item == null || item.getType() == Material.AIR) {
                 continue;
             }
             if (hasGem(item)) {
@@ -149,7 +164,8 @@ public class Gem implements ConfigurationSerializable {
                 opt.ifPresent(gems::add);
             }
         }
-        for (ItemStack item : Arrays.asList(inventory.getItemInMainHand(), inventory.getItemInOffHand(), inventory.getItem(9), inventory.getItem(10), inventory.getItem(11))) {
+
+        for (ItemStack item : getScannedItems(inventory)) {
             if (item == null) {
                 continue;
             }
@@ -167,6 +183,22 @@ public class Gem implements ConfigurationSerializable {
         difference2.forEach(x -> x.unApply(player));
     }
 
+    @NotNull
+    private static Iterable<ItemStack> getScannedItems(PlayerInventory inventory) {
+        // TODO add this to config
+        List<ItemStack> scannedItems = new ArrayList<>(Arrays.asList(
+                inventory.getItemInMainHand(),
+                inventory.getItemInOffHand(),
+                inventory.getItem(9),
+                inventory.getItem(10),
+                inventory.getItem(11)
+        )
+        );
+
+        scannedItems.addAll(Arrays.stream(inventory.getArmorContents()).collect(Collectors.toList()));
+        return scannedItems;
+    }
+
     public static void unApplyAll(Player player) {
         ACTIVE_GEMS.getOrDefault(player.getUniqueId(), new HashSet<>()).forEach(x -> x.unApply(player));
     }
@@ -182,7 +214,7 @@ public class Gem implements ConfigurationSerializable {
         try {
             equipmentSlot = GemEquipmentSlot.valueOf((String) map.get(EQUIPMENT_SLOT.s));
         } catch (IllegalArgumentException e) {
-            Professions.log("Available equipment slots: " + Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
+            ProfessionLogger.log("Available equipment slots: " + Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
             throw new ProfessionObjectInitializationException(GemItemType.class, Collections.singletonList(EQUIPMENT_SLOT.s), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
         }
         String id = (String) map.get(ID.s);
@@ -191,8 +223,8 @@ public class Gem implements ConfigurationSerializable {
         ItemStack item = null;
         try {
             item = ItemUtils.deserialize(itemSection.getValues(false));
-        } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+        } catch (ConfigurationException | InitializationException e) {
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize gem ItemStack from file");
         }
         String displayName = (String) map.get(DISPLAY_NAME.s);
@@ -233,22 +265,20 @@ public class Gem implements ConfigurationSerializable {
         return ACTIVE_GEMS.getOrDefault(player.getUniqueId(), new HashSet<>()).contains(this);
     }
 
-    public InsertResult insert(GetSet<ItemStack> getSet) {
-        return insert(getSet, false);
+    public InsertResult insert(ItemStack item) {
+        return insert(item, false);
     }
 
-    public InsertResult insert(GetSet<ItemStack> getSet, boolean ignoreMisto) {
+    public InsertResult insert(ItemStack item, boolean ignoreMisto) {
 
-        ItemStack item = getSet.get().clone();
-
-        // firstly check whether or not the item has lore
-        if (item == null || (!ignoreMisto && !item.hasItemMeta())) {
+        if (item == null) {
             return InsertResult.INVALID_ITEM;
         }
 
-        final ItemMeta itemMeta = item.getItemMeta();
+        // firstly check whether or not the item has lore
+        ItemMeta meta = item.getItemMeta();
 
-        if (!ignoreMisto && !itemMeta.hasLore()) {
+        if (meta == null) {
             return InsertResult.INVALID_ITEM;
         }
 
@@ -256,15 +286,17 @@ public class Gem implements ConfigurationSerializable {
             return InsertResult.NO_GEM_SPACE;
         }
 
-
-        AtomicInteger index = new AtomicInteger(-1);
-        final List<String> lore = itemMeta.getLore();
+        final List<String> lore = meta.getLore();
+        final List<String> loreCopy = new ArrayList<>(lore)
+                .stream()
+                .map(ChatColor::stripColor)
+                .collect(Collectors.toList());
+        int idx = loreCopy.indexOf(EMPTY_GEM);
 
         // look for the gem slot, return false if not found
+        /*AtomicInteger index = new AtomicInteger(-1);
         try {
             Utils.findInIterable(lore, new Predicate<String>() {
-
-                boolean alreadyFound = false;
 
                 int i = 0;
 
@@ -272,41 +304,43 @@ public class Gem implements ConfigurationSerializable {
                 public boolean test(String x) {
                     boolean found = !x.isEmpty() && ChatColor.stripColor(x).equalsIgnoreCase(EMPTY_GEM);
 
-                    if (!alreadyFound) {
-                        if (found) {
-                            alreadyFound = true;
-                            index.set(i);
-                        } else {
-                            i++;
-                        }
+                    if (found) {
+                        index.set(i);
+                    } else {
+                        i++;
                     }
 
                     return found;
                 }
             });
         } catch (Utils.SearchNotFoundException e) {
-            if (!ignoreMisto)
-                return InsertResult.NO_GEM_SPACE;
-        }
+            if (!ignoreMisto) {
+                return NO_GEM_SPACE_RESULT;
+            }
+        }*/
 
-        final int theIndex = index.get();
-
-        if (theIndex != -1) {
-            lore.set(theIndex, displayName);
-            itemMeta.setLore(lore);
-            item.setItemMeta(itemMeta);
+        if (idx != -1) {
+            lore.set(idx, displayName);
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        } else if (!ignoreMisto) {
+            return InsertResult.NO_GEM_SPACE;
         }
 
         // gem slot found, time to add NBT tag and replace the gem line
-        net.minecraft.server.v1_9_R1.ItemStack itemStack = CraftItemStack.asNMSCopy(item);
 
-        NBTTagCompound nbtTag = itemStack.hasTag() ? itemStack.getTag() : new NBTTagCompound();
-        nbtTag.setString(ACTIVE_GEM_NBT_TAG, id);
-        itemStack.setTag(nbtTag);
-
-        getSet.set(CraftItemStack.asBukkitCopy(itemStack));
-
+        addNbtTag(item, ACTIVE_GEM_NBT_TAG);
         return InsertResult.SUCCESS;
+    }
+
+    public static class InsertResultt {
+        public final ItemStack item;
+        public final InsertResult result;
+
+        private InsertResultt(ItemStack item, InsertResult result) {
+            this.item = item;
+            this.result = result;
+        }
     }
 
     public enum InsertResult {

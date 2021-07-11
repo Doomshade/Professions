@@ -5,7 +5,8 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
@@ -19,11 +20,11 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.utils.SpawnPoint;
-import git.doomshade.professions.profession.utils.MarkableSpawnPoint;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
+import git.doomshade.professions.profession.spawn.MarkableSpawnPoint;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.utils.SpawnableElement;
+import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
@@ -33,7 +34,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -43,6 +43,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -50,6 +51,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.world.WorldInitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -158,17 +160,17 @@ public class ProfessionListener extends AbstractProfessionListener {
         // add the location of ore because of its spawn point
         event.addExtra(location);
 
-        Professions.log("Called event");
+        ProfessionLogger.log("Called event");
         callEvent(event);
         // event is cancelled when the player does not meet requirements
         if (event.isCancelled()) {
-            Professions.log("Cancelling event");
+            ProfessionLogger.log("Cancelling event");
             e.setCancelled(true);
         }
         // destroy the block and disable particles if the requirements are met
         else {
             final SpawnPoint spawnPoint = ore.getSpawnPoints(location);
-            Professions.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
+            ProfessionLogger.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
             spawnPoint.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
@@ -241,14 +243,14 @@ public class ProfessionListener extends AbstractProfessionListener {
         }
         Player hrac = (Player) he;
 
-        if (recipe instanceof CraftShapedRecipe) {
+        if (recipe instanceof ShapedRecipe) {
 
             // get amount of items that are crafted (it won't call that amount of events, we
             // have to handle it)
             int amountOfItems = getAmountOfItems(recipe.getResult(), hrac, e);
 
             // get the event to modify it before calling it
-            ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((CraftShapedRecipe) recipe), CustomRecipe.class);
+            ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((ShapedRecipe) recipe), CustomRecipe.class);
             if (event == null) {
                 return;
             }
@@ -284,12 +286,12 @@ public class ProfessionListener extends AbstractProfessionListener {
             final SpawnPoint spawnPoint = spawnableElement.getSpawnPoints(location);
 
             // log
-            Professions.log(spawnPoint);
+            ProfessionLogger.log(spawnPoint);
 
             final List<ExtendedLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
 
             // log
-            Professions.log(spawnPointLocations.contains(new ExtendedLocation(location)));
+            ProfessionLogger.log(spawnPointLocations.contains(new ExtendedLocation(location)));
             String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
@@ -404,7 +406,12 @@ public class ProfessionListener extends AbstractProfessionListener {
             if (!user.isActivePotion(potion)) {
                 user.applyPotion(potion);
             } else {
-                user.sendMessage(new Messages.MessageBuilder(Messages.AlchemyMessages.POTION_ALREADY_ACTIVE).setPlayer(user).setItemType(ItemType.getExampleItemType(PotionItemType.class, potion)).build());
+                user.sendMessage(new Messages.MessageBuilder(
+                        Messages.AlchemyMessages.POTION_ALREADY_ACTIVE)
+                        .setPlayer(user)
+                        .setItemType(ItemType.getExampleItemType(PotionItemType.class, potion))
+                        .build()
+                );
                 e.setCancelled(true);
             }
         }
@@ -418,16 +425,16 @@ public class ProfessionListener extends AbstractProfessionListener {
     @EventHandler(ignoreCancelled = true)
     public void onEnchant(PlayerInteractEvent e) {
 
-        Player hrac = e.getPlayer();
+        Player player = e.getPlayer();
 
-        ItemStack mh = hrac.getInventory().getItemInMainHand();
+        ItemStack mh = player.getInventory().getItemInMainHand();
         if (mh == null) {
             return;
         }
 
-        if (ENCHANTS.containsKey(hrac.getUniqueId())) {
-            Enchant enchant = ENCHANTS.remove(hrac.getUniqueId());
-            ProfessionEvent<EnchantedItemItemType> event = callEvent(hrac, enchant, EnchantedItemItemType.class,
+        if (ENCHANTS.containsKey(player.getUniqueId())) {
+            Enchant enchant = ENCHANTS.remove(player.getUniqueId());
+            ProfessionEvent<EnchantedItemItemType> event = callEvent(player, enchant, EnchantedItemItemType.class,
                     new PreEnchantedItem(enchant, mh));
             if (event != null && !event.isCancelled()) {
                 // don't delete the item!
@@ -435,11 +442,10 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        for (EnchantedItemItemType enchItemType : Professions.getProfessionManager().getItemTypeHolder(EnchantedItemItemType.class)
-                .getRegisteredItemTypes()) {
+        for (EnchantedItemItemType enchItemType : Professions.getProfMan().getItemTypeHolder(EnchantedItemItemType.class)) {
             Enchant eit = enchItemType.getObject();
             if (eit != null && areSimilar(eit.getItem(), mh)) {
-                ENCHANTS.put(hrac.getUniqueId(), eit);
+                ENCHANTS.put(player.getUniqueId(), eit);
                 break;
             }
         }
@@ -503,8 +509,10 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     @EventHandler
-    public void onPickup(PlayerPickupItemEvent e) {
-        updateLater(e.getPlayer());
+    public void onPickup(EntityPickupItemEvent e) {
+        if (e.getEntity() instanceof Player) {
+            updateLater((Player) e.getEntity());
+        }
     }
 
     @EventHandler

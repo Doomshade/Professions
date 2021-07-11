@@ -1,4 +1,4 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.api.spawn;
 
 /**
  * An element containing an ID
@@ -6,7 +6,7 @@ package git.doomshade.professions.profession.utils;
  * @author Doomshade
  * @version 1.0
  */
-public interface Element {
+public interface IElement {
 
     /**
      * @return the id of this element

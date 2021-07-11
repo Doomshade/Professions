@@ -1,6 +1,6 @@
 package git.doomshade.professions.event;
 
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.Cancellable;

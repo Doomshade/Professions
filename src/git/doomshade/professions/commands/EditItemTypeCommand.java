@@ -1,10 +1,11 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
- * @see git.doomshade.professions.profession.types.ItemType
+ * @see ItemType
  */
 public class EditItemTypeCommand extends AbstractCommand {
 
@@ -46,7 +47,7 @@ public class EditItemTypeCommand extends AbstractCommand {
         setDescription("Edits something in item type file");
         setRequiresPlayer(false);
         files.clear();
-        files.addAll(Arrays.stream(Objects.requireNonNull(Professions.getInstance().getItemsFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
+        files.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
         addPermission(Permissions.ADMIN);
     }
 
@@ -67,7 +68,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                 return s;
             }
         }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
-        return new File(Professions.getInstance().getItemsFolder(), fileName);
+        return new File(IOManager.getItemFolder(), fileName);
     }
 
     @Nullable
@@ -93,12 +94,12 @@ public class EditItemTypeCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         File file = getFile(args);
         String fileName = file.getName();
         if (!file.exists()) {
             sender.sendMessage(fileName + " file does not exist! Make sure to put \" or ' around the file name.");
-            return true;
+            return;
         }
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
         final String path = args[i[0]++];
@@ -108,7 +109,7 @@ public class EditItemTypeCommand extends AbstractCommand {
         String[] values = String.join(" ", Arrays.asList(args).subList(i[0], args.length)).split(";");
         if (values.length == 0) {
             sender.sendMessage("Cannot set " + path + " to empty value like that. If you really want to set it to empty, set the value to NULL");
-            return true;
+            return;
         }
         String setValue = "";
 
@@ -117,8 +118,8 @@ public class EditItemTypeCommand extends AbstractCommand {
             loaderCopy.load(file);
         } catch (IOException | InvalidConfigurationException e) {
             sender.sendMessage("Error loading " + file.getName() + ". Check console for error output.");
-            Professions.logError(e);
-            return true;
+            ProfessionLogger.logError(e);
+            return;
         }
         saveUndo(file, loaderCopy);
 
@@ -146,7 +147,6 @@ public class EditItemTypeCommand extends AbstractCommand {
                         // not a number nor a list, must be a string or a boolean
 
                         String valueCopy = value.toLowerCase();
-
                         switch (valueCopy) {
                             case "true":
                                 loader.set(path, true);
@@ -157,43 +157,33 @@ public class EditItemTypeCommand extends AbstractCommand {
                             case "hand":
                                 if (!(sender instanceof Player)) {
                                     getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set an item to a path!");
-                                    return true;
+                                    return;
                                 }
                                 ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
                                 String materialName;
-                                if (hand != null) {
-                                    materialName = hand.getType().name();
-                                    setValue = "item ";
-                                    if (hand.hasItemMeta() && hand.getItemMeta().hasDisplayName()) {
-                                        setValue += hand.getItemMeta().getDisplayName();
-                                    } else {
-                                        setValue += materialName;
-                                    }
-                                    loader.set(path, ItemUtils.serialize(hand));
+                                materialName = hand.getType().name();
+                                setValue = "item ";
+                                if (hand.hasItemMeta() && hand.getItemMeta().hasDisplayName()) {
+                                    setValue += hand.getItemMeta().getDisplayName();
                                 } else {
-                                    setValue = "null item";
-                                    loader.set(path, null);
+                                    setValue += materialName;
                                 }
+                                loader.set(path, ItemUtils.serialize(hand));
                                 break;
                             case "material":
                                 if (!(sender instanceof Player)) {
                                     getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set a material to a path!");
-                                    return true;
+                                    return;
                                 }
                                 hand = ((Player) sender).getInventory().getItemInMainHand();
-                                if (hand != null) {
-                                    materialName = hand.getType().name();
-                                    setValue = "material " + materialName;
-                                    loader.set(path, materialName);
-                                } else {
-                                    getAndRemoveLastUndoWithMessage(file, sender, "You must have something in hand!");
-                                    return true;
-                                }
+                                materialName = hand.getType().name();
+                                setValue = "material " + materialName;
+                                loader.set(path, materialName);
                                 break;
                             case "location":
                                 if (!(sender instanceof Player)) {
                                     getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set a location to a path!");
-                                    return true;
+                                    return;
                                 }
                                 setValue = "your current location";
                                 loader.set(path, ((Player) sender).getLocation().getBlock().getLocation().serialize());
@@ -219,17 +209,16 @@ public class EditItemTypeCommand extends AbstractCommand {
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         } catch (IOException e) {
             sender.sendMessage("Unexpected error occurred. Check console for further logs.");
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         List<String> list = new ArrayList<>();
 
         File file = getFile(args);

@@ -1,8 +1,8 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
-import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Class representing all the commands. This is not a {@link org.bukkit.command.CommandExecutor}, the executor is the command handler registering this command!
+ * Class representing all the commands. This is not a {@link CommandExecutor}, the executor is the command handler registering this command!
  *
  * @author Doomshade
  * @version 1.0
@@ -49,7 +49,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
              * @param type the method the error occurred in
              */
             private void logDeserializationError(String type) {
-                Professions.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
+                ProfessionLogger.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
             }
 
             private String getDeserializationError(String type) {
@@ -62,12 +62,12 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
             }
 
             @Override
-            public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-                return false;
+            public void onCommand(CommandSender sender, String[] args) {
+
             }
 
             @Override
-            public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+            public List<String> onTabComplete(CommandSender sender, String[] args) {
                 return null;
             }
 
@@ -81,7 +81,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                         argTrue = Utils.cast(map.get(ARG_TRUE));
                     } catch (ClassCastException e) {
                         logDeserializationError("true arguments");
-                        Professions.logError(e);
+                        ProfessionLogger.logError(e);
                     }
                     args.put(true, argTrue);
 
@@ -103,7 +103,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 try {
                     st = Utils.cast(map.get(COMMAND));
                 } catch (ClassCastException e) {
-                    Professions.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
+                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
                 }
                 return st;
             }
@@ -179,9 +179,13 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
     }
 
-    public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
+    /**
+     * @param sender the sender of this command
+     * @param args   the arguments of the command
+     */
+    public abstract void onCommand(CommandSender sender, String[] args);
 
-    public abstract List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args);
+    public abstract List<String> onTabComplete(CommandSender sender, String[] args);
 
     /**
      * @return the arguments of command
@@ -268,6 +272,10 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public final void setMessages(List<String> messages) {
         this.messages = messages;
+    }
+
+    public final void addMessages(String... messages) {
+        this.messages.addAll(Arrays.asList(messages));
     }
 
     @Override

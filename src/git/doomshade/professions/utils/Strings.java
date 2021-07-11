@@ -1,5 +1,7 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ICraftable;
 import org.bukkit.Material;
 
 import java.util.Arrays;
@@ -14,7 +16,7 @@ import java.util.EnumMap;
 public final class Strings {
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.ICraftable}
+     * The enum for {@link ICraftable}
      */
     public enum ICraftableEnum implements FileEnum {
         CRAFTABLE_ITEM_REQ("item-requirements"),
@@ -50,7 +52,7 @@ public final class Strings {
     }
 
     /**
-     * The enum for {@link git.doomshade.professions.profession.types.ItemType}
+     * The enum for {@link ItemType}
      */
     public enum ItemTypeEnum implements FileEnum {
         LEVEL_REQ("level-req"),

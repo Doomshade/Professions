@@ -1,13 +1,14 @@
 package git.doomshade.professions.dynmap;
 
 import org.bukkit.Location;
+import org.dynmap.markers.Marker;
 
 import javax.annotation.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
 /**
- * Wrapper class for {@link org.dynmap.markers.Marker}
+ * Wrapper class for {@link Marker}
  *
  * @author Doomshade
  * @version 1.0

@@ -1,6 +1,6 @@
 package git.doomshade.professions.enums;
 
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
@@ -14,7 +14,9 @@ import java.util.List;
  * @version 1.0
  */
 public enum SortType {
-    NAME("name", Comparator.comparing(ItemType::getName)), EXPERIENCE("exp", Comparator.comparing(o -> -o.getExp())), LEVEL_REQ("level-req", Comparator.comparing(ItemType::getLevelReq));
+    NAME("name", Comparator.comparing(ItemType::getName)),
+    EXPERIENCE("exp", Comparator.comparing(o -> -o.getExp())),
+    LEVEL_REQ("level-req", Comparator.comparing(ItemType::getLevelReq));
 
     /**
      * the sort type ID in text

@@ -2,10 +2,8 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Deprecated
@@ -19,7 +17,7 @@ public class ExpMultiplierCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         double expMultiplier = 1;
         try {
             expMultiplier = Double.parseDouble(args[1]);
@@ -36,11 +34,10 @@ public class ExpMultiplierCommand extends AbstractCommand {
                 break;
         }
 
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

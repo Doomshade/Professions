@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.smelting;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.api.item.CraftableItemType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;

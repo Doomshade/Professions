@@ -1,17 +1,20 @@
-package git.doomshade.professions.profession.types;
+package git.doomshade.professions.api.item;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
+import git.doomshade.professions.data.ProfessionExpSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.ICustomType;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.trait.TrainerTrait;
+import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
@@ -24,10 +27,10 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -39,14 +42,15 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
 
 /**
- * <p>{@link ProfessionEvent} returns an object of this to handle in a {@link Profession}</p>
- * <p>If you want to make your own type, make a class extend this and override all constructors!</p>
- * <p>To make a specialized item type (e.g. making this item craft-able - yields a result in a time with
- * given prerequisites or train-able from an NPC with {@link git.doomshade.professions.trait.TrainerTrait}) trait,
- * see {@link ICustomType} extensions</p>
+ * <p>{@link ProfessionEvent} returns an instance of this to handle in a {@link Profession}</p>
+ * <p>If you want to make your own type, make a class extend this and override all constructors</p>
+ * <p>To make a specialized item type (e.g. making this item craftable - yields a result in a time with
+ * given prerequisites or trainable from an NPC with {@link TrainerTrait}) trait,
+ * see extensions</p>
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
  * @author Doomshade
+ * @see CraftableItemType
  */
 public abstract class ItemType<T> implements ConfigurationSerializable, Comparable<ItemType<T>> {
 
@@ -54,7 +58,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     private int exp, levelReq;
     private T item;
-    private File itemFile;
     private String name = "";
     private String configName = "";
     private List<String> description, restrictedWorlds;
@@ -68,48 +71,32 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the object
      */
     public ItemType(T object) {
-        this.itemFile = getFile(getClass());
-        if (!itemFile.exists()) {
-            try {
-                itemFile.createNewFile();
-            } catch (IOException e) {
-                Professions.logError(e);
-            }
-        }
         this.setLevelReq(1);
         this.setExp(0);
         this.setObject(object);
         this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
-        //this.setHiddenWhenUnavailable(false);
         this.setIgnoreSkillupColor(false);
-
-        /*if (getClass().isAnnotationPresent(SerializeAdditionalType.class)) {
-            SerializeAdditionalType annotation = getClass().getAnnotation(SerializeAdditionalType.class);
-            for (Class<? extends ICustomTypeNew<?>> ictn : annotation.value()) {
-                try {
-                    final Constructor<? extends ICustomTypeNew<?>> declaredConstructor = ictn.getDeclaredConstructor(ItemType.class);
-                    declaredConstructor.setAccessible(true);
-                    ICustomTypeNew<?> iCustomTypeNew = declaredConstructor.newInstance(this);
-                    addAdditionalData(iCustomTypeNew);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-            }
-        }*/
     }
 
+    /**
+     * @param clazz  the ItemType class
+     * @param object the ItemType generic argument
+     * @param <T>
+     * @param <Obj>
+     * @return an example instance of the ItemType
+     * @throws IllegalArgumentException if the ItemType class does not implement {@link ItemType#ItemType(Object)} constructor
+     */
     @SuppressWarnings("all")
-    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object) {
+    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object) throws IllegalArgumentException {
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
-            Professions.logError(e, true);
+            throw new IllegalArgumentException(clazz.getSimpleName() + " does not implement ItemType(T) constructor!", e);
         }
-        return null;
     }
 
     /**
@@ -123,9 +110,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     @Nullable
     @SuppressWarnings("all")
-    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws ProfessionInitializationException {
-        Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
+    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws InitializationException {
         try {
+            Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
             Constructor<?> c = clazz.getDeclaredConstructors()[0];
             c.setAccessible(true);
 
@@ -136,11 +123,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             instance.deserialize(id, map);
             return instance;
         } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            Professions.log("Could not deserialize " + clazz.getSimpleName()
+            ProfessionLogger.log("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType(T) constructor!", Level.SEVERE);
-            Professions.logError(e);
-        } catch (ProfessionInitializationException ex) {
-            Professions.logError(ex, false);
+            ProfessionLogger.logError(e);
         }
         return null;
     }
@@ -150,11 +135,12 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *
      * @param id  the id of this itemtype
      * @param map the map
-     * @throws ProfessionInitializationException if the initialization of this class is unsuccessful
+     * @throws InitializationException if the initialization of this class is unsuccessful
      */
-    public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+    protected void deserialize(int id, Map<String, Object> map) throws InitializationException {
 
-        // sets the config name aswell
+        // setup the item type before throwing the ex as we use getOrDefault everywhere
+        // and then log what's missing
         setFileId(id);
         setExp((int) map.getOrDefault(EXP.s, 0));
         setLevelReq((int) map.getOrDefault(LEVEL_REQ.s, Integer.MAX_VALUE));
@@ -170,26 +156,27 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         setTrainable((boolean) map.getOrDefault(TRAINABLE.s, false));
         setTrainableCost((int) map.getOrDefault(TRAINABLE_COST.s, -1));
 
+        // check for missing keys
         Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s)).collect(Collectors.toSet());
-
         if (!list.isEmpty()) {
             throw new ProfessionInitializationException(getClass(), list, getFileId());
         }
 
+        // requirements deserialization
         MemorySection invReqSection = (MemorySection) map.get(INVENTORY_REQUIREMENTS.s);
         try {
             setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
         }
 
-        MemorySection mem = (MemorySection) map.get(OBJECT.s);
-
+        // object deserialization
+        MemorySection objSection = (MemorySection) map.get(OBJECT.s);
         try {
-            setObject(deserializeObject(mem.getValues(true)));
-        } catch (Exception e1) {
-            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
-            Professions.logError(e1, false);
+            setObject(deserializeObject(objSection.getValues(true)));
+        } catch (ProfessionObjectInitializationException e) {
+            ProfessionLogger.log("Failed to load object from " + ItemUtils.getItemTypeFile(getClass()).getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
+            ProfessionLogger.logError(e, false);
         }
     }
 
@@ -199,7 +186,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @return serialized item type
      */
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(OBJECT.s, getSerializedObject());
         map.put(EXP.s, exp);
@@ -219,9 +206,13 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * Represents the number ID in the item type file.
      *
      * @return the ID number in the file
+     * @throws UnsupportedOperationException if this method is called on the example ItemType
+     * @see ItemType#getExampleItemType(Class, Object)
      */
-    public final int getFileId() {
-        if (fileId == -1) throw new UnsupportedOperationException("Cannot get the file ID of an example Item Type!");
+    public final int getFileId() throws UnsupportedOperationException {
+        if (fileId < 0) {
+            throw new UnsupportedOperationException("Cannot get the file ID of an example Item Type!");
+        }
         return fileId;
     }
 
@@ -232,24 +223,21 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     private void setFileId(int fileId) {
         this.fileId = fileId;
-        final String fileName = getFile().getName();
+        final String fileName = ItemUtils.getItemTypeFile(getClass()).getName();
         this.configName = fileName.substring(0, fileName.lastIndexOf('.')) + "." + fileId;
     }
 
     /**
      * Represents the config name of this item type in a "filename.fileId" format (filename without the .yml extension).
-     * <p>Note that this method was created for consistent ID's of item types, this is only a generated ID from the file.</p>
+     * <p>Note that this method was created for consistent IDs of item types, this is only a generated ID from the file.</p>
      *
      * @return the config name
      */
     public final String getConfigName() {
-        if (configName.isEmpty())
+        if (configName.isEmpty()) {
             throw new UnsupportedOperationException("Cannot get the config name of an example Item Type!");
+        }
         return configName;
-    }
-
-    private static <A extends ItemType<?>> File getFile(Class<A> clazz) {
-        return ItemUtils.getItemTypeFile(clazz);
     }
 
     /**
@@ -332,7 +320,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * @return {@code true} if this item type ignores the skillup color exp modifications
-     * @see git.doomshade.professions.data.ProfessionExpSettings
+     * @see ProfessionExpSettings
      */
     public final boolean isIgnoreSkillupColor() {
         return ignoreSkillupColor;
@@ -342,21 +330,26 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * Sets whether or not this item type should ignore the skillup color exp modifications
      *
      * @param ignoreSkillupColor whether or not to ignore skillup color
-     * @see git.doomshade.professions.data.ProfessionExpSettings
+     * @see ProfessionExpSettings
      */
-    public void setIgnoreSkillupColor(boolean ignoreSkillupColor) {
+    public final void setIgnoreSkillupColor(boolean ignoreSkillupColor) {
         this.ignoreSkillupColor = ignoreSkillupColor;
     }
 
     /**
-     * @param upd the {@link git.doomshade.professions.user.User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
+     * @param upd the {@link User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
      * @return the itemstack (icon) representation of this item type used in a GUI
      */
-    public ItemStack getIcon(@Nullable UserProfessionData upd) {
+    public ItemStack getIcon(@Nullable IUserProfessionData upd) {
         ItemStack icon = new ItemStack(getGuiMaterial());
-        ItemMeta iconMeta = icon.getItemMeta();
-        iconMeta.setDisplayName(getName());
-        final List<String> lore = ItemUtils.getDescription(this, getDescription(), upd);
+        ItemMeta meta = icon.getItemMeta();
+
+        if (meta == null) {
+            return icon;
+        }
+
+        meta.setDisplayName(getName());
+        final List<String> lore = ItemUtils.getDescription(this, getDescription(), (UserProfessionData) upd);
 
         if (upd != null) {
             Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
@@ -371,8 +364,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
                 lore.set(i, s);
             }
         }
-        iconMeta.setLore(lore);
-        icon.setItemMeta(iconMeta);
+        meta.setLore(lore);
+        icon.setItemMeta(meta);
         return icon;
     }
 
@@ -406,13 +399,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     public final void setTrainable(boolean trainable) {
         this.trainable = trainable;
-    }
-
-    /**
-     * @return the file of this item type
-     */
-    public final File getFile() {
-        return itemFile;
     }
 
     /**
@@ -510,7 +496,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     @SuppressWarnings("all")
     public String toCompactString() {
-        String name = getFile().getName();
+        String name = ItemUtils.getItemTypeFile(getClass()).getName();
         StringBuilder sb = new StringBuilder("{")
                 .append(name)
                 .append(",")

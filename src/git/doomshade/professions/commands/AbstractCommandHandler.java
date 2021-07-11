@@ -3,6 +3,7 @@ package git.doomshade.professions.commands;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -193,7 +194,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             // there is a possibility that somebody made a mistake in file and overrode the ID of command, let them know!
             // this will VERY LIKELY not happen, but if I happen to call this method somewhere else but the setup method, then I need to know :)
             if (!keys.contains(id)) {
-                Professions.log("Could not find command with " + id + " ID, please reload the plugin!", Level.WARNING);
+                ProfessionLogger.log("Could not find command with " + id + " ID, please reload the plugin!", Level.WARNING);
                 continue;
             }
             // lastly, partly deserialize the command
@@ -201,7 +202,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                     .partlyDeserialize(loader.getConfigurationSection(id).getValues(false));
             final String command = fileCommand.getCommand();
             if (command == null || command.isEmpty()) {
-                Professions.log("Could not deserialize " + id + ".", Level.WARNING);
+                ProfessionLogger.log("Could not deserialize " + id + ".", Level.WARNING);
                 continue;
             }
             // ugly but duh
@@ -273,7 +274,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                     file.createNewFile();
                 }
             } catch (IOException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
             cmd = Bukkit.getPluginCommand(commandName);
             cmd.setExecutor(this);
@@ -299,7 +300,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
         AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
         if (isValid(sender, acmd)) {
-            return acmd.onTabComplete(sender, cmd, label, args);
+            return acmd.onTabComplete(sender, args);
         }
 
         for (AbstractCommand instanceCmd : INSTANCE_COMMANDS.values()) {
@@ -331,10 +332,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (args.length == 0) {
-
-
             //int amnt = 0;
-
             printValidCommands(sender);
             return true;
         }
@@ -350,11 +348,11 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             sender.sendMessage(infoMessage(acmd));
             return true;
         }
-        final boolean result = acmd.onCommand(sender, cmd, label, args);
+        acmd.onCommand(sender, args);
         if ((acmd.getPermissions().contains(Permissions.HELPER) || acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
-            Professions.log(String.format("%s issued %s command with arguments: %s and result %s", sender.getName(), acmd.getCommand(), Arrays.toString(args), result), Level.CONFIG);
+            ProfessionLogger.log(String.format("%s issued %s command with arguments: %s", sender.getName(), acmd.getCommand(), Arrays.toString(args)), Level.CONFIG);
         }
-        return result;
+        return true;
     }
 
     public static String infoMessage(Class<? extends AbstractCommandHandler> ch, Class<? extends AbstractCommand> ac) {

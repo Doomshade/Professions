@@ -3,11 +3,15 @@ package git.doomshade.professions.profession;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfessionManager;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
-import git.doomshade.professions.profession.professions.blacksmithing.BSItemType;
-import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
+import git.doomshade.professions.profession.professions.enchanting.Enchant;
 import git.doomshade.professions.profession.professions.enchanting.EnchantManager;
 import git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType;
 import git.doomshade.professions.profession.professions.enchanting.enchants.RandomAttributeEnchant;
@@ -24,8 +28,6 @@ import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.IrremovableSet;
 import git.doomshade.professions.utils.ItemUtils;
@@ -33,28 +35,24 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.plugin.PluginManager;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
- * A manager regarding registration and queries of a {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
+ * A manager regarding registration and queries of {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
  *
  * @author Doomshade
  * @version 1.0
  */
-public final class ProfessionManager implements ISetup {
+public final class ProfessionManager implements ISetup, IProfessionManager {
     private static final ProfessionManager instance = new ProfessionManager();
 
     /**
@@ -63,11 +61,12 @@ public final class ProfessionManager implements ISetup {
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
 
     @SuppressWarnings("rawtypes")
-    private final HashMap<ItemTypeHolder<?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
+    private final HashMap<ItemTypeHolder<?, ?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
     private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
+    private static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
 
     private ProfessionManager() {
     }
@@ -82,20 +81,20 @@ public final class ProfessionManager implements ISetup {
     /**
      * @return all registered {@link ItemTypeHolder}s
      */
-    public ImmutableSet<ItemTypeHolder<?>> getItemTypeHolders() {
+    public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
         return ImmutableSet.copyOf(ITEMS.keySet());
     }
 
-    /**
-     * @param clazz the {@link ItemTypeHolder} class to look for
-     * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
-     * @return instance of {@link ItemTypeHolder}
-     */
+    public static Collection<Class<? extends Profession>> getInitedProfessions() {
+        return ImmutableSet.copyOf(INITED_PROFESSIONS);
+    }
+
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException {
-        for (Entry<ItemTypeHolder<?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
+    public <T, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException {
+        for (Entry<ItemTypeHolder<?, ?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
             if (entry.getValue().equals(clazz)) {
-                return (ItemTypeHolder<A>) entry.getKey();
+                return (ItemTypeHolder<T, A>) entry.getKey();
             }
         }
         throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
@@ -104,7 +103,6 @@ public final class ProfessionManager implements ISetup {
     /**
      * @return all registered {@link Profession}s
      */
-    @SuppressWarnings("rawtypes")
     public ImmutableSet<Class<? extends Profession>> getRegisteredProfessions() {
         return ImmutableSet.copyOf(REGISTERED_PROFESSIONS);
     }
@@ -123,57 +121,54 @@ public final class ProfessionManager implements ISetup {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) throws IOException {
-        registerItemTypeHolder(itemTypeHolder.get());
-    }
-
-    /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @param <T>            the {@link ItemTypeHolder}
-     * @throws IOException ex
-     */
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
-        if (itemTypeHolder == null) return;
+    @Override
+    public <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, T o, Consumer<IType> additionalCommand) throws IOException {
+        ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
         itemTypeHolder.update();
         ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
     }
 
-    /**
-     * @param name the {@link Profession#getName()} or {@link Profession#getID()} of {@link Profession}
-     * @return the {@link Profession} if found, {@code null} otherwise
-     */
-    @Nullable
-    public Profession getProfession(String name) {
-        if (name == null || name.isEmpty()) {
-            return null;
+    @Override
+    public Optional<Profession> getProfessionById(String id) {
+        if (id == null || id.isEmpty()) {
+            return Optional.empty();
         }
-        Profession prof = PROFESSIONS_ID.get(name.toLowerCase());
+        Profession prof = PROFESSIONS_ID.get(id.toLowerCase());
         if (prof == null) {
-            prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+            return Optional.empty();
         }
+        return Optional.of(prof);
+    }
+
+    @Override
+    public Optional<Profession> getProfessionByName(String name) {
+        if (name == null || name.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Profession prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
 
         if (prof == null) {
             try {
-                prof = Utils.findInIterable(PROFESSIONS_ID.values(), x -> ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
+                prof = Utils.findInIterable(PROFESSIONS_ID.values(),
+                        x -> x.getIcon() != null
+                                && x.getIcon().getItemMeta() != null
+                                && ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
             } catch (Utils.SearchNotFoundException e) {
-                //e.printStackTrace();
+                return Optional.empty();
             }
         }
-        return prof;
+        return Optional.of(prof);
     }
 
-    /**
-     * @param profession the {@link Profession} class
-     * @return the {@link Profession} if found
-     * @throws RuntimeException if the profession is not registered
-     */
-    public Profession getProfession(Class<? extends Profession> profession) throws RuntimeException {
+    @Override
+    public Optional<Profession> getProfession(Class<? extends Profession> profession) {
         for (Profession prof : PROFESSIONS_ID.values()) {
             if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
-                return prof;
+                return Optional.of(prof);
             }
         }
-        throw new RuntimeException("Profession not registered!");
+        return Optional.empty();
     }
 
     @Override
@@ -193,14 +188,14 @@ public final class ProfessionManager implements ISetup {
         boolean loggedDuplicate = false;
         HashMap<String, ItemType<?>> map = new HashMap<>();
         LinkedList<ItemType<?>> duplicates = new LinkedList<>();
-        for (ItemTypeHolder<?> holder : getItemTypeHolders()) {
+        for (ItemTypeHolder<?, ?> holder : getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 final ItemType<?> put = map.putIfAbsent(itemType.getConfigName(), itemType);
                 if (put != null) {
                     if (!loggedDuplicate) {
                         final String errorMsg = "Found duplicates of config names.";
-                        Professions.log(errorMsg, Level.CONFIG);
-                        Professions.log(errorMsg, Level.SEVERE);
+                        ProfessionLogger.log(errorMsg, Level.CONFIG);
+                        ProfessionLogger.log(errorMsg, Level.SEVERE);
                         loggedDuplicate = true;
                     }
                     duplicates.add(put);
@@ -211,14 +206,14 @@ public final class ProfessionManager implements ISetup {
 
         StringBuilder duplicatesString = new StringBuilder();
         if (loggedDuplicate) {
-            Professions.log("Duplicates:");
-            Professions.log("Duplicates:", Level.CONFIG);
+            ProfessionLogger.log("Duplicates:");
+            ProfessionLogger.log("Duplicates:", Level.CONFIG);
 
             for (ItemType<?> duplicate : duplicates) {
                 duplicatesString.append("\n").append(duplicate.toCompactString());
             }
             System.out.println(duplicatesString);
-            Professions.log(duplicatesString, Level.CONFIG);
+            ProfessionLogger.log(duplicatesString, Level.CONFIG);
         }
     }
 
@@ -227,7 +222,7 @@ public final class ProfessionManager implements ISetup {
         PROFESSIONS_ID.clear();
         PROFESSIONS_NAME.clear();
         ITEMS.clear();
-        Profession.INITED_PROFESSIONS.clear();
+        INITED_PROFESSIONS.clear();
     }
 
     /**
@@ -243,61 +238,71 @@ public final class ProfessionManager implements ISetup {
      * Huge method for {@link ItemTypeHolder} registrations
      *
      * @throws IOException if an IO error occurs
-     * @see #registerItemTypeHolder(ItemTypeHolder)
+     * @see #registerItemTypeHolder(Class, Object, Consumer)
      */
     private void registerItemTypeHolders() throws IOException {
 
         // MINING
-        registerItemTypeHolderSupplier(() -> {
-            OreItemType ore = ItemType.getExampleItemType(OreItemType.class, Ore.EXAMPLE_ORE);
-            ore.setName(ChatColor.GRAY + "Obsidian");
-            ore.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            return new ItemTypeHolder<>(ore);
-        });
+        registerItemTypeHolder(
+                OreItemType.class,
+                Ore.EXAMPLE_ORE,
+                ore -> {
+                    ore.setName(ChatColor.GRAY + "Obsidian");
+                    ore.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                }
+        );
 
         // BLACKSMITHING
-        registerItemTypeHolderSupplier(() -> {
-            BSItemType bs = ItemType.getExampleItemType(BSItemType.class, ItemUtils.EXAMPLE_RESULT);
-            bs.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            bs.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            return null;
-            //return new ItemTypeHolder<>(bs);
-        });
+        /*registerItemTypeHolder(
+                new ItemTypeHolder<>(BSItemType.class, ItemUtils.EXAMPLE_RESULT, bs -> {
+                    bs.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                    bs.addInventoryRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                })
+        );*/
 
         // HUNTING (no longer used)
-        registerItemTypeHolderSupplier(() -> {
-            PreyItemType preyItemType = ItemType.getExampleItemType(PreyItemType.class, new Mob(EntityType.SKELETON));
-            preyItemType.setName(ChatColor.YELLOW + "Kostlivec");
-            return null;
-            //return new ItemTypeHolder<>(preyItemType));
-        });
+        registerItemTypeHolder(
+                PreyItemType.class,
+                new Mob(EntityType.SKELETON),
+                x -> {
+                    x.setName(ChatColor.YELLOW + "Kostlivec");
+                }
+        );
+
 
         // HERBALISM
-        registerItemTypeHolderSupplier(() -> {
-            HerbItemType herb = ItemType.getExampleItemType(HerbItemType.class, Herb.EXAMPLE_HERB);
-            herb.setName(ChatColor.DARK_AQUA + "Test gather item");
-            return new ItemTypeHolder<>(herb);
-        });
+        registerItemTypeHolder(
+                HerbItemType.class,
+                Herb.EXAMPLE_HERB,
+                x -> {
+                    x.setName(ChatColor.DARK_AQUA + "Test gather item");
+                }
+        );
 
         // ENCHANTING
-        registerItemTypeHolderSupplier(() -> {
-            EnchantManager enchm = EnchantManager.getInstance();
-            try {
-                enchm.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
-            } catch (Exception e) {
-                Professions.logError(e);
-            }
-            RandomAttributeEnchant ench = enchm.getEnchant(RandomAttributeEnchant.class);
-            EnchantedItemItemType eit = ItemType.getExampleItemType(EnchantedItemItemType.class, ench);
-            eit.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            eit.setName(ChatColor.RED + "Test random attribute enchantment");
-            return new ItemTypeHolder<>(eit);
-        });
+        registerItemTypeHolder(
+                EnchantedItemItemType.class,
+                (Supplier<Enchant>) () -> {
+                    EnchantManager enchMan = EnchantManager.getInstance();
+                    try {
+                        enchMan.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
+                    } catch (Exception e) {
+                        ProfessionLogger.logError(e);
+                    }
+                    return enchMan.getEnchant(RandomAttributeEnchant.class);
+                },
+                x -> {
+                    x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                    x.setName(ChatColor.RED + "Test random attribute enchantment");
+                }
+        );
 
         // CRAFTING
-        registerItemTypeHolderSupplier(() -> {
-            ShapedRecipe recipe = new ShapedRecipe(ItemUtils.EXAMPLE_RESULT).shape("abc", "def", "ghi").setIngredient('e', Material.DIAMOND);
-            CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, CraftShapedRecipe.fromBukkitRecipe(recipe));
+        /*registerItemTypeHolderSupplier(() -> {
+            ShapedRecipe recipe = new ShapedRecipe(CustomRecipe.NMS_KEY, ItemUtils.EXAMPLE_RESULT)
+                    .shape("abc", "def", "ghi")
+                    .setIngredient('e', Material.DIAMOND);
+            CustomRecipe cr = ItemType.getExampleItemType(CustomRecipe.class, recipe);
             cr.setName(ChatColor.DARK_GREEN + "Test recipe");
             final ItemTypeHolder<CustomRecipe> itemTypeHolder = new ItemTypeHolder<>(cr);
             itemTypeHolder.registerObject(cr);
@@ -312,36 +317,38 @@ public final class ProfessionManager implements ISetup {
                 if (!(bukkitRecipe instanceof ShapedRecipe)) {
                     continue;
                 }
-                CraftShapedRecipe bukkitShapedRecipe = CraftShapedRecipe.fromBukkitRecipe((ShapedRecipe) bukkitRecipe);
-                for (CustomRecipe customRecipe : itemTypeHolder.getRegisteredItemTypes()) {
-                    if (customRecipe.equalsObject(bukkitShapedRecipe)) {
+                ShapedRecipe shaped = (ShapedRecipe) bukkitRecipe;
+                for (CustomRecipe customRecipe : itemTypeHolder) {
+                    if (customRecipe.equalsObject(shaped)) {
                         bukkitRecipes.remove();
                     }
                 }
             }
             return null;
             //return itemTypeHolder;
-        });
+        });*/
 
         // SMELTING
-        registerItemTypeHolderSupplier(() -> {
-            BarItemType barItemType = ItemType.getExampleItemType(BarItemType.class, ItemUtils.EXAMPLE_RESULT);
-            barItemType.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-            barItemType.setName(ChatColor.BLUE + "Test bar");
-            return new ItemTypeHolder<>(barItemType);
-        });
+        registerItemTypeHolder(
+                BarItemType.class,
+                ItemUtils.EXAMPLE_RESULT,
+                x -> {
+                    x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                    x.setName(ChatColor.BLUE + "Test bar");
+                }
+        );
 
         // ALCHEMY
-        registerItemTypeHolderSupplier(() -> {
-            final PotionItemType potionItemType = ItemType.getExampleItemType(PotionItemType.class, Potion.EXAMPLE_POTION);
-            return new ItemTypeHolder<>(potionItemType);
-        });
+        registerItemTypeHolder(
+                PotionItemType.class,
+                Potion.EXAMPLE_POTION
+        );
 
         // JEWELCRAFTING
-        registerItemTypeHolderSupplier(() -> {
-            final GemItemType gemItemType = ItemType.getExampleItemType(GemItemType.class, Gem.EXAMPLE_GEM);
-            return new ItemTypeHolder<>(gemItemType);
-        });
+        registerItemTypeHolder(
+                GemItemType.class,
+                Gem.EXAMPLE_GEM
+        );
     }
 
     /**
@@ -380,18 +387,15 @@ public final class ProfessionManager implements ISetup {
                     prof.getColoredName(), ChatColor.RESET, String.join(", ", prof.getRequiredPlugins()), String.join(", ", requiredPlugins)));
         }
 
-        // the constructor was not overwritten correctly
-        if (!Profession.INITED_PROFESSIONS.contains(prof.getClass())) {
-            throw new IllegalStateException("If you want to override constructors, make sure to call super() !");
+        if (!INITED_PROFESSIONS.add(prof.getClass())) {
+            throw new IllegalArgumentException(String.format("%s %shas already been registered!", prof.getColoredName(), ChatColor.RESET));
         }
 
         // make sure the profession is not already registered
-        PROFESSIONS_ID.forEach((y, x) -> {
-            if (x.getID().equalsIgnoreCase(prof.getID())) {
-                throw new IllegalArgumentException(ChatColor.DARK_RED + "ERROR:" + ChatColor.RED + " A profession with name "
-                        + prof.getName() + ChatColor.RESET + " already exists! (" + prof.getID() + ")");
-            }
-        });
+        if (PROFESSIONS_ID.containsKey(prof.getID().toLowerCase())) {
+            throw new IllegalArgumentException(String.format("%sERROR: %sA profession with name %s already exists! (%s)",
+                    ChatColor.DARK_RED, ChatColor.RED, prof.getName() + ChatColor.RESET, prof.getID()));
+        }
 
         // finally the profession is registered
         PROFESSIONS_ID.put(prof.getID().toLowerCase(), prof);
@@ -410,39 +414,36 @@ public final class ProfessionManager implements ISetup {
         // lastly call #onLoad
         prof.onLoad();
         if (logMessage)
-            Professions.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
+            ProfessionLogger.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
     }
 
-    /**
-     * Registers a profession
-     * <p>IMPORTANT! Make sure you only create a SINGLE instance of the profession, multiple instances are disallowed and WILL throw an exception!</p>
-     *
-     * @param prof the profession to register
-     */
+    @Override
     public void registerProfession(Profession prof) {
         registerProfession(prof, true);
     }
 
     /**
      * Sorts the professions ID and professions name maps for better visuals in chat
-     * <p>Note that this is not a necessary method, but adds something extra to it</p>
      */
     private void sortProfessions() {
         Map<String, Profession> MAP_COPY = new HashMap<>(PROFESSIONS_ID);
-        PROFESSIONS_ID = sortByValue(MAP_COPY);
+        PROFESSIONS_ID = Utils.sortMapByValue(MAP_COPY, Comparator.comparing(Profession::getName));
         MAP_COPY = new HashMap<>(PROFESSIONS_NAME);
-        PROFESSIONS_NAME = sortByValue(MAP_COPY);
+        PROFESSIONS_NAME = Utils.sortMapByValue(MAP_COPY, Comparator.comparing(Profession::getName));
     }
 
     /**
      * Sorts the map by value
      *
-     * @param unsortMap the map to sort
+     * @param map the map to sort
      * @return sorted map
+     * @see Utils#sortMapByValue(Map, Comparator)
+     * @deprecated not used anymore
      */
-    private Map<String, Profession> sortByValue(Map<String, Profession> unsortMap) {
+    @Deprecated
+    private Map<String, Profession> sortByValue(Map<String, Profession> map) {
 
-        List<Entry<String, Profession>> list = new LinkedList<>(unsortMap.entrySet());
+        List<Entry<String, Profession>> list = new LinkedList<>(map.entrySet());
 
         list.sort(Comparator.comparing(o -> o.getValue().getName()));
         Map<String, Profession> sortedMap = new LinkedHashMap<>();

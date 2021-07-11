@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
 import org.bukkit.Location;
 
 public class OreSpawnPoint extends SpawnPoint {

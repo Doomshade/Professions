@@ -1,9 +1,12 @@
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
-import org.bukkit.scheduler.BukkitRunnable;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 
 import java.io.*;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.zip.ZipEntry;
@@ -15,7 +18,10 @@ import java.util.zip.ZipOutputStream;
  * @author Doomshade
  * @version 1.0
  */
-public class BackupTask extends BukkitRunnable {
+public class BackupTask extends ExtendedBukkitRunnable {
+    // 1 hr
+    private static final long BACKUP_DELAY = Duration.ofHours(1).getSeconds();
+
     private static final String BACKUP = "backup";
     private static final FilenameFilter FILE_FILTER = (dir, name) -> !(name.contains(BACKUP) || dir.getName().contains(BACKUP));
 
@@ -28,10 +34,10 @@ public class BackupTask extends BukkitRunnable {
     public void run() {
 
         try {
-            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(IOManager.getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 
@@ -95,6 +101,16 @@ public class BackupTask extends BukkitRunnable {
             }
         }
         return currentFiles;
+    }
+
+    @Override
+    protected long delay() {
+        return BACKUP_DELAY * 20L;
+    }
+
+    @Override
+    protected long period() {
+        return BACKUP_DELAY * 20L;
     }
 
     public enum Result {

@@ -3,11 +3,9 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,14 +26,14 @@ public class BypassCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Player target;
         if (args.length >= 3) {
             target = Bukkit.getPlayer(args[2]);
         } else if (sender instanceof Player) {
             target = (Player) sender;
         } else {
-            return false;
+            return;
         }
         User user = User.getUser(target);
         boolean bypass = Boolean.parseBoolean(args[1]);
@@ -47,11 +45,10 @@ public class BypassCommand extends AbstractCommand {
             message += " a suppress event na " + suppress;
         }
         sender.sendMessage(message);
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

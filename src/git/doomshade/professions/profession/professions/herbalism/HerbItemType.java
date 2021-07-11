@@ -4,8 +4,9 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.cache.LocationOptionsCache;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -95,7 +96,7 @@ public class HerbItemType extends ItemType<Herb> {
 
     @Override
     public void onDisable() {
-        for (Herb herb : Herb.HERBS.values()) {
+        for (Herb herb : Herb.getElements(Herb.class).values()) {
             Collection<LocationOptionsCache> cache = new ArrayList<>();
             for (Map.Entry<Location, HerbSpawnPoint> entry : herb.getSpawnPoints().entrySet()) {
                 HerbSpawnPoint hlo = entry.getValue();
@@ -108,7 +109,7 @@ public class HerbItemType extends ItemType<Herb> {
             }*/
             herb.despawnAll(true);
         }
-        Herb.HERBS.clear();
+        Herb.getElements(Herb.class).clear();
         ExtendedLocation.SPAWN_POINTS.clear();
     }
 }

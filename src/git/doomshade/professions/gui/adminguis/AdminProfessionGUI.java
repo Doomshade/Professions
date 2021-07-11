@@ -2,7 +2,7 @@ package git.doomshade.professions.gui.adminguis;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.listeners.UserListener;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.utils.Strings;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

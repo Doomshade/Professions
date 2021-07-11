@@ -1,10 +1,12 @@
-package git.doomshade.professions.profession.types;
+package git.doomshade.professions.api.item;
 
-import git.doomshade.professions.Professions;
+import com.google.common.collect.ImmutableMap;
+import git.doomshade.professions.api.user.IUserProfessionData;
+import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
@@ -14,6 +16,7 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +28,13 @@ import java.util.regex.Pattern;
 
 import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
+/**
+ * An {@link ItemType} that allows for crafting an ItemStack
+ *
+ * @param <T> the item type to look for in {@link ProfessionEvent}
+ * @author Doomshade
+ * @version 1.0
+ */
 public abstract class CraftableItemType<T> extends ItemType<T> implements ICraftable {
 
     private double craftingTime = 5d;
@@ -35,14 +45,14 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the object
      */
     public CraftableItemType(T object) {
         super(object);
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         final Map<String, Object> map = super.serialize();
         map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
         map.put(RESULT.s, ItemUtils.serialize(getResult()));
@@ -53,16 +63,16 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     }
 
     @Override
-    public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+    public void deserialize(int id, Map<String, Object> map) throws InitializationException {
         super.deserialize(id, map);
-        setCraftingTime((double) map.getOrDefault(CRAFTING_TIME.s, 5d));
+        this.craftingTime = (double) map.getOrDefault(CRAFTING_TIME.s, 5d);
 
-        setSounds(new HashMap<ICraftable.Sound, String>() {
+        this.sounds = new HashMap<>() {
             {
                 put(Sound.CRAFTING, (String) map.getOrDefault(SOUND_CRAFTING.s, "block.fire.extinguish"));
                 put(Sound.ON_CRAFT, (String) map.getOrDefault(SOUND_CRAFTED.s, "block.fire.ambient"));
             }
-        });
+        };
 
         Set<String> list = Utils.getMissingKeys(map, Strings.ICraftableEnum.values());
         if (!list.isEmpty()) {
@@ -73,15 +83,15 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         try {
             setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionInitializationException("Could not deserialize " + this);
         }
 
-        MemorySection itemStackSection = (MemorySection) map.get(RESULT.s);
+        MemorySection isSection = (MemorySection) map.get(RESULT.s);
         try {
-            setResult(ItemUtils.deserialize(itemStackSection.getValues(false)));
+            setResult(ItemUtils.deserialize(isSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionInitializationException("Could not deserialize a craftable item type");
         }
     }
@@ -116,13 +126,19 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         return super.meetsRequirements(player) && getCraftingRequirements().meetsRequirements(player);
     }
 
-
     @Override
-    public ItemStack getIcon(UserProfessionData upd) {
+    public ItemStack getIcon(IUserProfessionData upd) {
         final ItemStack icon = super.getIcon(upd);
         ItemMeta meta = icon.getItemMeta();
+
+        if (meta == null) {
+            return icon;
+        }
         List<String> lore = meta.getLore();
 
+        if (lore == null) {
+            return icon;
+        }
 
         Pattern regex = Pattern.compile("\\{" + CRAFTABLE_ITEM_REQ.s + "}");
         for (int i = 0; i < lore.size(); i++) {
@@ -141,7 +157,8 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         return icon;
     }
 
-    public String toStringFormat() {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder()
                 .append("\ncrafting time: " + getCraftingTime())
                 .append("\ncrafting result: " + getResult())
@@ -153,11 +170,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     @Override
     public final double getCraftingTime() {
         return craftingTime;
-    }
-
-    @Override
-    public final void setCraftingTime(double craftingTime) {
-        this.craftingTime = craftingTime;
     }
 
     @Override
@@ -176,20 +188,15 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         return craftingRequirements;
     }
 
-    @Override
-    public final void setCraftingRequirements(Requirements craftingRequirements) {
+    private void setCraftingRequirements(Requirements craftingRequirements) {
         this.craftingRequirements = craftingRequirements;
     }
 
     @Override
     public final Map<Sound, String> getSounds() {
-        return sounds;
+        return ImmutableMap.copyOf(sounds);
     }
 
-    @Override
-    public final void setSounds(Map<Sound, String> sounds) {
-        this.sounds = sounds;
-    }
 
     public Function<ItemStack, ?> getExtraInEvent() {
         return null;

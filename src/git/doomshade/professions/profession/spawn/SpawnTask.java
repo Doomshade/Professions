@@ -1,7 +1,8 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.profession.spawn;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.task.ParticleTask;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
@@ -17,7 +18,6 @@ public class SpawnTask extends ExtendedBukkitRunnable {
     private final SpawnPoint spawnPoint;
     private transient int respawnTime;
     public transient int id = -1;
-    private transient boolean running = false;
 
     // because of cache
     private transient final int generatedRespawnTime;
@@ -59,8 +59,8 @@ public class SpawnTask extends ExtendedBukkitRunnable {
             this.id = id;
 
             // TODO: 09.02.2021 duplicate spawn tasks 
-            Professions.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
-            this.respawnTime = respawnTime >= 0 ? respawnTime : el.respawnTime.getRandom() + 1;
+            ProfessionLogger.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
+            this.respawnTime = respawnTime >= 0 ? respawnTime : el.getRespawnTime().getRandom() + 1;
             this.generatedRespawnTime = respawnTime;
             this.particleTask = new ParticleTask(spawnPoint.element.getParticleData(), spawnPoint.location);
             return;
@@ -80,22 +80,20 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         this(copy.spawnPoint, respawnTime, id);
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
     @Override
     public void run() {
         if (respawnTime <= 0) {
             try {
                 spawnPoint.spawn();
             } catch (SpawnException e) {
-                Professions.logError(e);
-                cancel();
-                return;
+                ProfessionLogger.logError(e);
+            } finally {
+                // spawn does cancel this task, however if an exception happened we need to
+                // cancel it here
+                if (isRunning()) {
+                    cancel();
+                }
             }
-            cancel();
-            running = false;
             return;
         }
         respawnTime--;
@@ -108,7 +106,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long period() {
-        return 20;
+        return 20L;
     }
 
     @Override

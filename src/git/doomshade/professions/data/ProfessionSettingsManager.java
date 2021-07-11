@@ -1,16 +1,18 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
-import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang.SerializationUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Level;
@@ -37,7 +39,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
             if (settings instanceof Cloneable) {
                 theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
             } else {
-                theSettings = (T) SerializationUtils.clone((Serializable) settings);
+                theSettings = (T) SerializationUtils.clone(settings);
             }
         } catch (Utils.SearchNotFoundException e) {
             try {
@@ -46,12 +48,12 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 Professions.getInstance().registerSetup(theSettings);
                 SETTINGS.add(theSettings);
             } catch (ConfigurationException ex) {
-                Professions.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" + Arrays.toString(ex.getStackTrace()), Level.WARNING);
+                ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" + Arrays.toString(ex.getStackTrace()), Level.WARNING);
             } catch (Exception ex) {
-                Professions.logError(ex);
+                ProfessionLogger.logError(ex);
             }
         } catch (Exception e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
 
         return theSettings;
@@ -64,13 +66,13 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
     @Override
     public void setup() throws ConfigurationException {
-        new ProfessionSpecificDropSettings(profession).register(this);
-        new ProfessionSpecificDefaultsSettings(profession).register(this);
+        register(new ProfessionSpecificDropSettings(profession));
+        register(new ProfessionSpecificDefaultsSettings(profession));
 
         try {
             save();
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 
@@ -79,12 +81,13 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         if (SETTINGS.isEmpty()) {
             throw new RuntimeException("Settings are empty! #save method was likely called before #setup method!");
         }
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(profession.getFile());
+        final File f = IOManager.getProfessionFile(profession);
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
         for (AbstractProfessionSpecificSettings settings : SETTINGS) {
             loader.addDefaults(settings.getDefaultSection().getRoot());
         }
         loader.options().copyDefaults(true);
-        loader.save(profession.getFile());
+        loader.save(f);
     }
 
     @Override

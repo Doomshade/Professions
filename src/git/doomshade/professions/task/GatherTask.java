@@ -2,7 +2,8 @@ package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.profession.utils.SpawnPoint;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -170,7 +171,7 @@ public class GatherTask extends BukkitRunnable {
         if (gatherResult == null || gatherResult == GatherResult.UNKNOWN) {
             final String msg = ChatColor.RED + "The block was not gathered for unknown reasons. Contact the admins and try to describe the problem thoroughly.";
             player.sendMessage(msg);
-            Professions.log(msg, Level.CONFIG);
+            ProfessionLogger.log(msg, Level.CONFIG);
         }
     }
 
@@ -196,7 +197,7 @@ public class GatherTask extends BukkitRunnable {
                 setResult(GatherResult.FULL_INVENTORY);
             } catch (Exception e) {
                 setResult(GatherResult.UNKNOWN);
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
             return;
         }
@@ -219,7 +220,7 @@ public class GatherTask extends BukkitRunnable {
             setResult(GatherResult.SUCCESS);
         } catch (Exception e) {
             setResult(GatherResult.UNKNOWN);
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

@@ -1,117 +1,94 @@
-package git.doomshade.professions.profession;
+package git.doomshade.professions.api;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.listeners.ProfessionListener;
+import git.doomshade.professions.profession.ProfessionManager;
+import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
+import git.doomshade.professions.profession.professions.blacksmithing.BlacksmithingProfession;
 import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
+import git.doomshade.professions.profession.professions.herbalism.HerbalismProfession;
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
-import git.doomshade.professions.profession.professions.skinning.SkinningProfession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
-import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
- * The class for custom profession.
+ * The class for a custom profession
  *
  * @author Doomshade
  * @version 1.0
+ * @see AlchemyProfession
+ * @see BlacksmithingProfession
  * @see EnchantingProfession
+ * @see HerbalismProfession
  * @see JewelcraftingProfession
  * @see MiningProfession
- * @see SkinningProfession
- * @see git.doomshade.professions.profession.professions.alchemy.AlchemyProfession
- * @see git.doomshade.professions.profession.professions.smelting.SmeltingProfession
+ * @see SmeltingProfession
  */
 public abstract class Profession implements Listener, Comparable<Profession> {
 
-    static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
-    private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
+    private final HashSet<ItemTypeHolder<?, ?>> items = new HashSet<>();
     private final ItemStack icon;
-    private final File file;
     private final ProfessionSettingsManager professionSettings;
 
-    public Profession() {
+    public Profession() throws IllegalStateException {
         this(false);
     }
 
-    private Profession(boolean ignoreInitializationError) {
+    private Profession(boolean ignoreInitializationError) throws IllegalStateException {
+        // make sure only a single instance of this class is created
         ensureNotInitialized(ignoreInitializationError);
-
-        String fileName = getClass().getSimpleName().toLowerCase().replace("profession", "");
-        this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
-        if (!file.exists() && !fileName.isEmpty()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                Professions.logError(e);
-            }
-        }
 
         // initialize settings AFTER initializing file as settings require the profession file!
         ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
         try {
             settings.setup();
         } catch (Exception e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         this.professionSettings = settings;
-
         ProfessionSpecificDefaultsSettings defaults = settings.getSettings(ProfessionSpecificDefaultsSettings.class);
         this.name = defaults.getName();
         this.icon = defaults.getIcon();
         this.pt = defaults.getProfessionType();
-
-
     }
 
-    private void ensureNotInitialized(boolean ignoreError) {
-        if (!INITED_PROFESSIONS.add(getClass())) {
-            if (!ignoreError)
-                try {
-                    throw new IllegalAccessException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead!");
-                } catch (IllegalAccessException e) {
-                    Professions.logError(e);
-                }
+    private void ensureNotInitialized(boolean ignoreError) throws IllegalStateException {
+        if (ProfessionManager.getInitedProfessions().contains(getClass()) && !ignoreError) {
+            throw new IllegalStateException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead");
         }
 
     }
 
     /**
-     * Gets the settings file for profession
-     *
-     * @return the settings file for profession
-     */
-    public final File getFile() {
-        return file;
-    }
-
-    /**
-     * Casts desired event to another one.
+     * Casts desired event to another one
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
      * @param clazz the generic argument class
      * @return the casted event
+     * @throws ClassCastException if the event couldn't be cast
      */
     @SuppressWarnings({"unchecked"})
     protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event, Class<A> clazz) throws ClassCastException {
@@ -123,23 +100,42 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     }
 
     /**
-     * Casts desired event to another one.
+     * Casts desired event to another one
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
      * @param clazz the generic argument class
      * @return the casted event
+     * @throws ClassCastException if the event couldn't be cast
      */
     protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
         return getEvent(event.event, clazz);
     }
 
+    /**
+     * Casts desired event to another one
+     *
+     * @param event the profession event to cast
+     * @param <A>   the generic argument of the event
+     * @param clazz the generic argument class
+     * @return the casted event
+     * @throws ClassCastException if the event couldn't be cast
+     */
     protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEvent<?> event, Class<A> clazz) throws ClassCastException {
-        return getEvent(event, clazz).get();
+        return getEvent(event, clazz).orElse(null);
     }
 
+    /**
+     * Casts desired event to another one
+     *
+     * @param event the profession event to cast
+     * @param <A>   the generic argument of the event
+     * @param clazz the generic argument class
+     * @return the casted event
+     * @throws ClassCastException if the event couldn't be cast
+     */
     protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEventWrapper<?> event, Class<A> clazz) throws ClassCastException {
-        return getEvent(event, clazz).get();
+        return getEvent(event, clazz).orElse(null);
     }
 
     /**
@@ -167,14 +163,14 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      *
      * @param items the items
      */
-    protected final void addItems(Class<? extends ItemType<?>> items) {
-        this.items.add(Professions.getProfessionManager().getItemTypeHolder(items));
+    protected final <T, A extends ItemType<T>> void addItems(Class<A> items) {
+        this.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 
     /**
      * @return the handled {@link ItemType}'s holders
      */
-    public final Iterable<ItemTypeHolder<?>> getItems() {
+    public final Iterable<ItemTypeHolder<?, ?>> getItems() {
         return items;
     }
 
@@ -272,6 +268,11 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         return isValidEvent(e, true);
     }
 
+    /**
+     * @param e               event to check for
+     * @param <ItemTypeClass> the item type
+     * @return {@code true} if the player has a profession of this called event, {@code false} otherwise
+     */
     protected final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
         return e.getPlayer().hasProfession(this);
     }
@@ -290,7 +291,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     }
 
     /**
-     * Compares the profession types and then the names.
+     * Compares the profession types and then the names
      *
      * @param o the profession to compare
      * @return {@inheritDoc}
@@ -317,16 +318,24 @@ public abstract class Profession implements Listener, Comparable<Profession> {
 
     }
 
+    /**
+     * @return the required plugin IDs
+     */
     public final Set<String> getRequiredPlugins() {
         return requiredPlugins;
     }
 
+    /**
+     * Adds a plugin requirement
+     *
+     * @param plugin the plugin ID
+     */
     protected void addRequiredPlugin(String plugin) {
         requiredPlugins.add(plugin);
     }
 
     /**
-     * Handles the called profession event from {@link git.doomshade.professions.listeners.ProfessionListener} <br>
+     * Handles the called profession event from {@link ProfessionListener} <br>
      * Cancels the event if the player does not have this profession and is a rank lower than builder <br>
      * If the player has this profession and the profession event is correct, {@link #onEvent(ProfessionEventWrapper)} is called
      *
@@ -343,7 +352,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
             event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
             return;
         }
-        for (ItemTypeHolder<?> ith : items) {
+        for (ItemTypeHolder<?, ?> ith : items) {
             for (ItemType<?> it : ith) {
                 if (it.getClass().equals(event.getItemType().getClass())) {
                     onEvent(new ProfessionEventWrapper<>(event));
@@ -353,6 +362,12 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         }
     }
 
+    /**
+     * Called when an event related to this profession occurs
+     *
+     * @param e       the event
+     * @param <IType> the ItemType
+     */
     public abstract <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> e);
 
     @Nullable
@@ -421,9 +436,14 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         }
     }
 
+    /**
+     * @return {@code true} if this profession is a subprofession, {@code false} otherwise
+     */
     public abstract boolean isSubprofession();
 
-
+    /**
+     * @return a collection of subprofessions of this profession
+     */
     public Collection<Class<? extends Profession>> getSubprofessions() {
         return null;
     }

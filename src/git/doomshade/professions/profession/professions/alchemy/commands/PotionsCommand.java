@@ -3,7 +3,6 @@ package git.doomshade.professions.profession.professions.alchemy.commands;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.utils.Permissions;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -17,13 +16,12 @@ public class PotionsCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         sender.sendMessage(Potion.getPotions().toString());
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

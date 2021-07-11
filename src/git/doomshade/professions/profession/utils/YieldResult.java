@@ -1,6 +1,7 @@
 package git.doomshade.professions.profession.utils;
 
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -19,7 +20,7 @@ public class YieldResult implements ConfigurationSerializable, Comparable<YieldR
         this.drop = drop;
     }
 
-    public static YieldResult deserialize(Map<String, Object> map) throws ConfigurationException {
+    public static YieldResult deserialize(Map<String, Object> map) throws ConfigurationException, InitializationException {
         MemorySection section = (MemorySection) map.get("item");
         final ItemStack deserialize;
         try {

@@ -7,7 +7,6 @@ import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -28,12 +27,12 @@ public class EditCommand extends AbstractEditCommand {
     public EditCommand() {
         setCommand("edit");
         setRequiresPlayer(true);
-        setArg(false, Collections.singletonList("allwool/allore"));
+        setArg(false, "allwool/allore");
         addPermission(Permissions.BUILDER);
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         final HashMap<String, Ore> ores = Ore.ORES;
         if (args.length >= 2) {
 
@@ -43,7 +42,7 @@ public class EditCommand extends AbstractEditCommand {
                         ore.getSpawnPoints().values().forEach(x -> {
                             x.despawn();
                             Location loc = x.location;
-                            loc.getBlock().setType(Material.WOOL);
+                            loc.getBlock().setType(Material.WHITE_WOOL);
                             EDITED.add(loc);
                         });
                     }
@@ -58,7 +57,7 @@ public class EditCommand extends AbstractEditCommand {
                     EDITED.clear();
                     break;
                 default:
-                    return true;
+                    return;
             }
         } else {
             Player player = (Player) sender;
@@ -72,17 +71,16 @@ public class EditCommand extends AbstractEditCommand {
                     locationOptions.scheduleSpawn();
                 } else {
                     EDITED.add(loc);
-                    loc.getBlock().setType(Material.WOOL);
+                    loc.getBlock().setType(Material.WHITE_WOOL);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                return true;
+                return;
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

@@ -1,7 +1,7 @@
 package git.doomshade.professions.placeholder;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Utils;
@@ -78,14 +78,14 @@ public class ProfessionPlaceholders extends PlaceholderExpansion {
             // must add 1 ("primary" vs "primary_")
             sub = id.substring(id.indexOf(PRIMARY)) + 1;
             try {
-                upd = Utils.findInIterable(user.getProfessions(), x -> x.getProfession().getProfessionType() == Profession.ProfessionType.PRIMARY);
+                upd = (UserProfessionData) Utils.findInIterable(user.getProfessions(), x -> x.getProfession().getProfessionType() == Profession.ProfessionType.PRIMARY);
             } catch (Utils.SearchNotFoundException e) {
                 return "";
             }
         } else if (id.startsWith(SECONDARY)) {
             sub = id.substring(id.indexOf(SECONDARY)) + 1;
             try {
-                upd = Utils.findInIterable(user.getProfessions(), x -> x.getProfession().getProfessionType() == Profession.ProfessionType.SECONDARY);
+                upd = (UserProfessionData) Utils.findInIterable(user.getProfessions(), x -> x.getProfession().getProfessionType() == Profession.ProfessionType.SECONDARY);
             } catch (Utils.SearchNotFoundException e) {
                 return "";
             }

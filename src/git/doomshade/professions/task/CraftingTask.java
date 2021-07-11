@@ -2,17 +2,16 @@ package git.doomshade.professions.task;
 
 import git.doomshade.guiapi.CraftingItem;
 import git.doomshade.guiapi.GUI;
-import git.doomshade.guiapi.event.CraftingEvent;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.profession.ICraftable;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
-import git.doomshade.professions.profession.types.CraftableItemType;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.item.ICraftable;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.CraftableItemType;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.entity.Player;
@@ -71,7 +70,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
     private void updateCraftable() {
         this.item = null;
-        for (ItemTypeHolder<?> entry : prof.getItems()) {
+        for (ItemTypeHolder<?, ?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (!(item instanceof CraftableItemType)) {
                     continue;
@@ -128,13 +127,13 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
         // item somehow no longer available
         if (item == null) {
-            Professions.log("A");
+            ProfessionLogger.log("A");
             return;
         }
 
         // player has no inventory space
         if (!hasInventorySpace()) {
-            Professions.log("B");
+            ProfessionLogger.log("B");
             return;
         }
 
@@ -191,7 +190,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
 
             if (repeat || repeatAmount > 0) {
-                Professions.log("Running anoda one");
+                ProfessionLogger.log("Running anoda one");
                 CraftingTask newTask = new CraftingTask(upd, currentItem, slot, gui, false);
                 newTask.setRepeat(repeat);
                 newTask.setRepeatAmount(repeatAmount - 1);

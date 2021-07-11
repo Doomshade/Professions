@@ -2,7 +2,7 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import com.google.common.collect.Maps;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.CraftableItemType;
+import git.doomshade.professions.api.item.CraftableItemType;
 
 import java.util.Map;
 

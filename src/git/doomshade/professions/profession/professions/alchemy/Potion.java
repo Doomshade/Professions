@@ -3,21 +3,25 @@ package git.doomshade.professions.profession.professions.alchemy;
 import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
-import net.minecraft.server.v1_9_R1.NBTTagCompound;
-import net.minecraft.server.v1_9_R1.NBTTagString;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -26,6 +30,11 @@ import java.util.*;
 import static git.doomshade.professions.profession.professions.alchemy.Potion.PotionEnum.*;
 
 public class Potion implements ConfigurationSerializable {
+
+    private static final NamespacedKey NBT_KEY = new NamespacedKey(
+            Professions.getInstance(),
+            "profession_potion"
+    );
 
     private static final HashSet<CustomPotionEffect> CUSTOM_POTION_EFFECTS = new HashSet<>();
 
@@ -36,8 +45,6 @@ public class Potion implements ConfigurationSerializable {
             TEST_POTION_ID,
             PotionType.FIRE_RESISTANCE,
             ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
-
-    private static final String NBT_KEY = "profession_potion";
 
     static final HashSet<Potion> POTIONS = new HashSet<>();
     private static final String SPLIT_CHAR = ":";
@@ -59,7 +66,7 @@ public class Potion implements ConfigurationSerializable {
     }
 
     private static File getFile(Player player) {
-        return new File(Professions.getInstance().getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
+        return new File(IOManager.getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
     }
 
     @Deprecated
@@ -114,22 +121,21 @@ public class Potion implements ConfigurationSerializable {
      */
     @Nullable
     public static Potion getItem(ItemStack potion) {
-        if (potion == null || potion.getType() != Material.POTION) {
+        if (potion == null || potion.getType() != Material.POTION || !(potion.getItemMeta() instanceof PotionMeta)) {
             return null;
         }
-        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(potion);
-        if (!nms.hasTag()) {
+        final PotionMeta pm = (PotionMeta) potion.getItemMeta();
+        final PersistentDataContainer pdc = pm.getPersistentDataContainer();
+
+        if (!pdc.has(NBT_KEY, PersistentDataType.STRING)) {
             return null;
         }
-        NBTTagCompound nbt = nms.getTag();
-        if (!nbt.hasKey(NBT_KEY)) {
-            return null;
-        }
-        String potionId = nbt.getString(NBT_KEY);
+
+        String potionId = pdc.get(NBT_KEY, PersistentDataType.STRING);
         try {
             return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
         } catch (Utils.SearchNotFoundException e) {
-            Professions.log(POTIONS);
+            ProfessionLogger.log(POTIONS);
             throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
         }
     }
@@ -166,8 +172,8 @@ public class Potion implements ConfigurationSerializable {
         ItemStack potion = null;
         try {
             potion = ItemUtils.deserialize(mem.getValues(false));
-        } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+        } catch (ConfigurationException | InitializationException e) {
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize potion ItemStack from file.");
         }
 
@@ -192,7 +198,7 @@ public class Potion implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         return new HashMap<String, Object>() {
             {
                 put(POTION_EFFECTS.s, potionEffects);
@@ -205,18 +211,22 @@ public class Potion implements ConfigurationSerializable {
     }
 
     public Optional<ItemStack> getPotionItem(ItemStack item) {
-        if (item == null || item.getType() != Material.POTION || !item.hasItemMeta()) {
+        if (item == null || !(item.getItemMeta() instanceof PotionMeta) || item.getType() != Material.POTION) {
             return Optional.empty();
         }
+
         ItemStack clone = item.clone();
+        if (!(clone.getItemMeta() instanceof PotionMeta)) {
+            return Optional.empty();
+        }
+
         PotionMeta meta = (PotionMeta) clone.getItemMeta();
         meta.setBasePotionData(new PotionData(potionType));
         clone.setItemMeta(meta);
-        net.minecraft.server.v1_9_R1.ItemStack nms = CraftItemStack.asNMSCopy(clone);
-        NBTTagCompound nbt = nms.hasTag() ? nms.getTag() : new NBTTagCompound();
-        nbt.set(NBT_KEY, new NBTTagString(potionId));
-        nms.setTag(nbt);
-        return Optional.of(CraftItemStack.asBukkitCopy(nms));
+
+        final PersistentDataContainer pds = meta.getPersistentDataContainer();
+        pds.set(NBT_KEY, PersistentDataType.STRING, potionId);
+        return Optional.of(clone);
     }
 
     @Override

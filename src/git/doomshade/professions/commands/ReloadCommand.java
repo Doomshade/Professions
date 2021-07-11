@@ -3,10 +3,8 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,7 +32,7 @@ public class ReloadCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         clear_cache = false;
         Professions plugin = Professions.getInstance();
         if (args.length > 1) {
@@ -49,11 +47,10 @@ public class ReloadCommand extends AbstractCommand {
         } else {
             sender.sendMessage(ChatColor.RED + "Plugin reloaded with errors. Check console for further information.");
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

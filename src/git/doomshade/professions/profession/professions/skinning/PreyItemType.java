@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.skinning;
 
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.entity.EntityType;

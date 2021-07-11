@@ -10,14 +10,13 @@ import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.listeners.PluginProfessionListener;
-import git.doomshade.professions.profession.Profession;
-import git.doomshade.professions.profession.types.ItemType;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -53,11 +52,11 @@ public class ProfessionGUI extends GUI {
 
         String signName = settings.getSignName();
 
-        for (ItemTypeHolder<?> entry : prof.getItems()) {
+        for (ItemTypeHolder<?, ?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (pos == 5 && profHasLore) {
-                    GUIItem infoItem = new GUIItem(Material.SIGN, pos, 1, (short) 0);
-                    final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.SIGN);
+                    GUIItem infoItem = new GUIItem(Material.OAK_SIGN, pos, 1, (short) 0);
+                    final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.OAK_SIGN);
 
                     itemMeta.setDisplayName(signName);
                     itemMeta.setLore(lore);

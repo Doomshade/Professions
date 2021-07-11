@@ -1,11 +1,15 @@
-package git.doomshade.professions.profession.utils;
+package git.doomshade.professions.profession.spawn;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
 
 import java.util.Objects;
 import java.util.logging.Level;
@@ -13,7 +17,7 @@ import java.util.logging.Level;
 /**
  * This class stores the location of spawn point, the
  */
-public class SpawnPoint {
+public abstract class SpawnPoint implements ISpawnPoint {
 
     public static final String CACHE_FOLDER = "spawned";
 
@@ -48,6 +52,14 @@ public class SpawnPoint {
 
     public SpawnTask getSpawnTask() {
         return spawnTask;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public SpawnableElement<?> getSpawnableElement() {
+        return element;
     }
 
     public boolean isSpawned() {
@@ -91,20 +103,25 @@ public class SpawnPoint {
             this.enableSpawn = false;
             throw new SpawnException(new NullPointerException(), SpawnException.SpawnExceptionReason.INVALID_LOCATION, element);
         }
-        final byte materialData = element.getMaterialData();
+        //final byte materialData = element.getMaterialData();
 
-        block.setType(material, false);
-        block.setData(materialData);
-        if (material == Material.DOUBLE_PLANT) {
+        final BlockData blockData = block.getBlockData();
+        if (blockData instanceof Bisected) {
+            final Bisected bdBottom = (Bisected) blockData;
+            bdBottom.setHalf(Bisected.Half.BOTTOM);
             final Block top = location.getWorld().getBlockAt(location.clone().add(0, 1, 0));
             top.setType(material, false);
-            top.setData((byte) 10);
+            final Bisected bdTop = (Bisected) top.getBlockData();
+            bdTop.setHalf(Bisected.Half.TOP);
+            //top.setData((byte) 10);
+        } else {
+            block.setType(material, false);
         }
 
         unscheduleSpawn();
         spawned = true;
 
-        Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
+        ProfessionLogger.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
     private void unscheduleSpawn() {
@@ -119,7 +136,7 @@ public class SpawnPoint {
         unscheduleSpawn();
         spawned = false;
 
-        Professions.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
+        ProfessionLogger.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
     @Override

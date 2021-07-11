@@ -1,7 +1,8 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemAttribute;
 import git.doomshade.professions.utils.ItemAttribute.AttributeType;
 import git.doomshade.professions.utils.ItemUtils;
@@ -46,7 +47,7 @@ public abstract class Enchant implements ConfigurationSerializable {
     }
 
     @SuppressWarnings("unchecked")
-    static Enchant deserialize(Map<String, Object> map) {
+    static Enchant deserialize(Map<String, Object> map) throws InitializationException {
 
         try {
             MemorySection mem = (MemorySection) map.get(ITEMSTACK);
@@ -58,9 +59,9 @@ public abstract class Enchant implements ConfigurationSerializable {
             ench.setCraftExpYield(expYield);
             return ench;
         } catch (ClassNotFoundException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
         }
 
         return null;

@@ -1,20 +1,23 @@
 package git.doomshade.professions.profession.professions.crafting;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.profession.types.ItemType;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftShapedRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 
 import java.util.*;
 import java.util.Map.Entry;
 
-public class CustomRecipe extends ItemType<CraftShapedRecipe> {
+public class CustomRecipe extends ItemType<ShapedRecipe> {
+    public static final NamespacedKey NMS_KEY = new NamespacedKey(Professions.getInstance(), "recipe");
     private static final String RESULT = "result", SHAPE = "shape", INGREDIENTS = "ingredients";
 
     /**
@@ -22,14 +25,14 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
      *
      * @param object
      */
-    public CustomRecipe(CraftShapedRecipe object) {
+    public CustomRecipe(ShapedRecipe object) {
         super(object);
     }
 
     @Override
-    public boolean equalsObject(CraftShapedRecipe t) {
+    public boolean equalsObject(ShapedRecipe t) {
 
-        CraftShapedRecipe current = getObject();
+        ShapedRecipe current = getObject();
         if (current == null) {
             return false;
         }
@@ -59,7 +62,7 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
     @Override
     public Map<String, Object> getSerializedObject() {
         Map<String, Object> map = new HashMap<>();
-        CraftShapedRecipe recipe = getObject();
+        ShapedRecipe recipe = getObject();
         if (recipe == null) {
             return map;
         }
@@ -90,8 +93,8 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
             try {
                 map.put(x.charAt(0),
                         y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
-            } catch (ConfigurationException e) {
-                Professions.logError(e, false);
+            } catch (ConfigurationException | InitializationException e) {
+                ProfessionLogger.logError(e, false);
             }
         });
         return map;
@@ -99,7 +102,7 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected CraftShapedRecipe deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    protected ShapedRecipe deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         Object o = map.get(RESULT);
         Map<String, Object> recipeDes;
         if (o instanceof Map) {
@@ -112,22 +115,24 @@ public class CustomRecipe extends ItemType<CraftShapedRecipe> {
         final ItemStack deserialize;
         try {
             deserialize = ItemUtils.deserialize(recipeDes);
-        } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+        } catch (ConfigurationException | InitializationException e) {
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize recipe ItemStack from file");
         }
-        ShapedRecipe recipe = new ShapedRecipe(deserialize).shape(((ArrayList<String>) map.get(SHAPE)).toArray(new String[0]));
+        ShapedRecipe recipe = new ShapedRecipe(NMS_KEY, deserialize)
+                .shape(((ArrayList<String>) map.get(SHAPE)).toArray(new String[0]));
 
         Map<String, Object> ingredDes = ((MemorySection) map.get(INGREDIENTS)).getValues(false);
         Map<Character, ItemStack> ingredients = deserializeIngredients(ingredDes);
         ingredients.forEach((x, y) -> {
-            if (y != null)
+            if (y != null) {
                 recipe.setIngredient(x, y.getData());
+            }
         });
 
         // must register the recipe
         Bukkit.addRecipe(recipe);
-        return CraftShapedRecipe.fromBukkitRecipe(recipe);
+        return recipe;
     }
 
 }

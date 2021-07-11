@@ -1,8 +1,9 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -59,7 +60,11 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         ConfigurationSection section = getDefaultSection();
 
         this.name = section.getString(NAME);
-        this.icon = ItemUtils.deserialize(section.getConfigurationSection(ICON).getValues(false), false);
+        try {
+            this.icon = ItemUtils.deserialize(section.getConfigurationSection(ICON).getValues(false), false);
+        } catch (InitializationException e) {
+            ProfessionLogger.logError(e, false);
+        }
         this.professionType = Profession.ProfessionType.fromString(section.getString(TYPE));
     }
 
@@ -81,7 +86,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         try {
             clone.setup();
         } catch (ConfigurationException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         return clone;
 

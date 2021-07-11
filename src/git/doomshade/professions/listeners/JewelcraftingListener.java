@@ -3,7 +3,6 @@ package git.doomshade.professions.listeners;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
-import git.doomshade.professions.utils.GetSet;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -46,64 +45,59 @@ public class JewelcraftingListener implements Listener {
             }
             player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.CLICK_ON_ITEM_WITH_GEM_SLOT).build());
             RIGHT_CLICK.put(uniqueId, opt.get());
+            return;
         }
 
-        // did not, check if player clicked before
-        else {
-            final Gem gem = RIGHT_CLICK.remove(uniqueId);
+        // check if player clicked before
+        final Gem gem = RIGHT_CLICK.remove(uniqueId);
 
-            // did not
-            if (gem == null) {
-                return;
-            }
+        // the player did did not
+        if (gem == null) {
+            return;
+        }
 
-            // did but no item in hand afterwards
-            if (hand == null) {
+        // did but no item in hand afterwards
+        if (hand == null || hand.getItemMeta() == null || hand.getType() == Material.AIR) {
+            player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.INVALID_ITEM).build());
+            return;
+        }
+
+        final ItemStack barrier = new ItemStack(Material.BARRIER);
+
+        // clicked a gem before and has an item in hand -> try to insert
+        Gem.InsertResult result = gem.insert(hand);
+
+        switch (result) {
+            case INVALID_ITEM:
                 player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.INVALID_ITEM).build());
-                return;
-            }
+                break;
+            case NO_GEM_SPACE:
+                player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.NO_GEM_SPACE).build());
+                break;
+            case SUCCESS:
 
-            final ItemStack itemStack = new ItemStack(Material.BARRIER);
-
-
-            // clicked a gem before and has an item in hand -> try to insert
-            GetSet<ItemStack> gs = new GetSet<>(hand);
-            Gem.InsertResult result = gem.insert(gs);
-
-            switch (result) {
-                case INVALID_ITEM:
-                    player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.INVALID_ITEM).build());
-                    break;
-                case NO_GEM_SPACE:
-                    player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.NO_GEM_SPACE).build());
-                    break;
-                case SUCCESS:
-
-                    // fill player's armor with barriers so that the right click
-                    // does not equip the armor and then add gem
-                    // after 1 tick delay, remove barriers
-                    ItemStack[] armorContents = inventory.getArmorContents();
-                    ItemStack[] copy = Arrays.copyOf(armorContents, armorContents.length);
-                    for (int i = 0; i < copy.length; i++) {
-                        ItemStack item = copy[i];
-                        if (item == null) {
-                            copy[i] = itemStack;
-                        }
+                // fill player's armor with barriers so that the right click
+                // does not equip the armor and then add gem
+                // after 1 tick delay, remove barriers
+                ItemStack[] armorContents = inventory.getArmorContents();
+                ItemStack[] copy = Arrays.copyOf(armorContents, armorContents.length);
+                for (int i = 0; i < copy.length; i++) {
+                    ItemStack item = copy[i];
+                    if (item == null) {
+                        copy[i] = barrier;
                     }
-                    inventory.setArmorContents(copy);
-                    inventory.removeItem(gem.getGem());
-                    inventory.setItemInMainHand(gs.get());
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            inventory.setArmorContents(armorContents);
-                        }
-                    }.runTaskLater(Professions.getInstance(), 1);
-                    player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.ADDED_GEM_SUCCESSFUL).build());
-                    break;
-            }
-
+                }
+                inventory.setArmorContents(copy);
+                inventory.removeItem(gem.getGem());
+                inventory.setItemInMainHand(hand);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        inventory.setArmorContents(armorContents);
+                    }
+                }.runTaskLater(Professions.getInstance(), 1);
+                player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.ADDED_GEM_SUCCESSFUL).build());
+                break;
         }
-
     }
 }

@@ -1,6 +1,7 @@
 package git.doomshade.professions.data.cache;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class CacheUtils {
      * @throws IOException if cache was unsuccessful
      */
     public static <T extends Cacheable> void cache(Collection<T> data, String fileName, String folder) throws IOException {
-        File dir = new File(Professions.getInstance().getCacheFolder() + File.separator + folder);
+        File dir = new File(IOManager.getCacheFolder() + File.separator + folder);
 
         // create folder and file if they don't exist
         if (!dir.isDirectory()) {
@@ -81,14 +82,14 @@ public class CacheUtils {
     @SuppressWarnings("all")
     public static <T extends Cacheable> Collection<T> readCache(String fileName, String folder) throws IOException {
         Collection<T> coll = new ArrayList<>();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(Professions.getInstance().getCacheFolder() + File.separator + folder, fileName)))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(IOManager.getCacheFolder() + File.separator + folder, fileName)))) {
             try {
                 for (; ; ) {
                     coll.add((T) ois.readObject());
                 }
             } catch (EOFException ignored) {
             } catch (Exception e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
         return coll;
@@ -105,7 +106,7 @@ public class CacheUtils {
         if (folder.isEmpty()) return;
 
 
-        File files = new File(Professions.getInstance().getCacheFolder(), folder);
+        File files = new File(IOManager.getCacheFolder(), folder);
 
         if (files.isDirectory()) {
             for (File f : files.listFiles()) {
@@ -118,7 +119,7 @@ public class CacheUtils {
 
         // ignore empty folder/name
         if (folder.isEmpty() || fileName.isEmpty()) return;
-        File f = new File(Professions.getInstance().getCacheFolder() + File.separator + folder, fileName);
+        File f = new File(IOManager.getCacheFolder() + File.separator + folder, fileName);
 
         if (f.exists()) {
             f.delete();

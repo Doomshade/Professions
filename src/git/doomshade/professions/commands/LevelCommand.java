@@ -1,17 +1,16 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Adds levels or sets the level or player's profession
@@ -31,11 +30,11 @@ public class LevelCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public void onCommand(CommandSender sender, String[] args) {
         Player target;
         if (!(sender instanceof Player)) {
             if (args.length < 5) {
-                return false;
+                return;
             }
             target = Bukkit.getPlayer(args[4]);
         } else {
@@ -45,17 +44,16 @@ public class LevelCommand extends AbstractCommand {
                 target = (Player) sender;
             }
         }
-        Profession prof = Professions.getProfession(args[1]);
+        Optional<Profession> opt = Professions.getProfMan().getProfessionById(args[1]);
+        if (!opt.isPresent()) {
+            return;
+        }
+        Profession prof = opt.get();
         User user = User.getUser(target);
         if (!user.hasProfession(prof)) {
-            return false;
+            return;
         }
         UserProfessionData upd = user.getProfessionData(prof);
-
-        // can't happen, but IDE won't stfu
-        if (upd == null) {
-            return false;
-        }
 
         int level = Integer.parseInt(args[3]);
         switch (args[2].toLowerCase()) {
@@ -66,11 +64,10 @@ public class LevelCommand extends AbstractCommand {
                 upd.addLevel(level);
                 break;
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public List<String> onTabComplete(CommandSender sender, String[] args) {
         return null;
     }
 

@@ -1,13 +1,15 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.profession.types.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.MarkableSpawnableElement;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.profession.spawn.MarkableSpawnableElement;
+import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.utils.SpawnableElement;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
@@ -33,10 +35,9 @@ import static git.doomshade.professions.profession.professions.herbalism.Herb.He
  */
 public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements ConfigurationSerializable {
 
-    public static final HashMap<String, Herb> HERBS = new HashMap<>();
     private static final String EXAMPLE_HERB_ID = "example-herb";
     public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(),
-            ItemUtils.EXAMPLE_RESULT, Material.YELLOW_FLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
+            ItemUtils.EXAMPLE_RESULT, Material.SUNFLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
 
     private final ItemStack gatherItem;
     private final boolean enableSpawn;
@@ -47,8 +48,6 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
         this.gatherItem = gatherItem;
         this.enableSpawn = enableSpawn;
         this.timeGather = gatherTime;
-        if (!rejectedIds().contains(id))
-            HERBS.put(getId(), this);
     }
 
     @Override
@@ -57,17 +56,14 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     }
 
     public static Herb getHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return Utils.findInIterable(HERBS.values(), x -> x.getMaterial() == herb && x.isSpawnPointLocation(location));
+        return Utils.findInIterable(getElements(Herb.class).values(), x -> x.getMaterial() == herb && x.isSpawnPointLocation(location));
     }
 
     @Nullable
-    public static Herb getHerb(String id) {
-        return HERBS.get(id);
-    }
 
     @SuppressWarnings("unused")
     public static boolean isHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return HERBS.containsValue(getHerb(herb, location));
+        return getElements(Herb.class).containsValue(getHerb(herb, location));
     }
 
     public static Herb deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
@@ -81,8 +77,8 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
             ItemStack gatherItem = null;
             try {
                 gatherItem = ItemUtils.deserialize(mem.getValues(false));
-            } catch (ConfigurationException e) {
-                Professions.logError(e, false);
+            } catch (ConfigurationException | InitializationException e) {
+                ProfessionLogger.logError(e, false);
                 return null;
             }
             String displayName = gatherItem.getType().name();
@@ -159,7 +155,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
             try {
                 entry.getKey().getSpawnPoints(entry.getValue()).spawn();
             } catch (SpawnException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
     }
@@ -173,7 +169,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
 
     private static Map<Herb, Location> getHerbsInWorld(World world) {
         HashMap<Herb, Location> herbs = new HashMap<>();
-        for (Herb herb : HERBS.values()) {
+        for (Herb herb : getElements(Herb.class).values()) {
             for (ExtendedLocation spawnPointLocation : herb.getSpawnPointLocations()) {
                 if (spawnPointLocation.getWorld().equals(world)) {
                     herbs.put(herb, spawnPointLocation);
@@ -209,14 +205,14 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     }
 
     @Override
-    protected HerbSpawnPoint createSpawnPoint(Location location) {
+    public HerbSpawnPoint createSpawnPoint(Location location) {
         return new HerbSpawnPoint(location, this);
     }
 
     @NotNull
     @Override
-    protected ItemTypeHolder<HerbItemType> getItemTypeHolder() {
-        return Professions.getProfessionManager().getItemTypeHolder(HerbItemType.class);
+    protected ItemTypeHolder<Herb, HerbItemType> getItemTypeHolder() {
+        return Professions.getProfMan().getItemTypeHolder(HerbItemType.class);
     }
 
     public ItemStack getGatherItem() {

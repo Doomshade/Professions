@@ -1,7 +1,9 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.profession.Profession;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
@@ -10,10 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ import static git.doomshade.professions.data.AbstractSettings.outdated;
  */
 public final class Settings implements ISetup {
 
-    public static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
+    private static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
     private static final String DEFAULT_PROPERTIES = "lang_en.yml";
     protected static FileConfiguration config;
     protected static Professions plugin;
@@ -59,6 +58,10 @@ public final class Settings implements ISetup {
         registerSettings(new MaxProfessionsSettings());
     }
 
+    public static Collection<AbstractSettings> getSettings() {
+        return Collections.unmodifiableCollection(SETTINGS);
+    }
+
     private Settings() {
     }
 
@@ -83,8 +86,9 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) {
-        return getProfessionSettings(Professions.getProfessionManager().getProfession(clazz));
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) throws IllegalArgumentException {
+        final Optional<Profession> opt = Professions.getProfMan().getProfession(clazz);
+        return getProfessionSettings(opt.orElseThrow(() -> new IllegalArgumentException(clazz.getSimpleName() + " is not a registered profession!")));
     }
 
     public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Profession profession) {
@@ -131,14 +135,14 @@ public final class Settings implements ISetup {
 
     protected void printError(String section, Object value) {
         if (!outdated) {
-            Professions.log("Your configuration file is outdated!", LEVEL);
+            ProfessionLogger.log("Your configuration file is outdated!", LEVEL);
             outdated = true;
         }
-        Professions.log(String.format("Missing \"%s\" variable!", section), LEVEL);
+        ProfessionLogger.log(String.format("Missing \"%s\" variable!", section), LEVEL);
         if (value == null)
-            Professions.log("Using default values.", LEVEL);
+            ProfessionLogger.log("Using default values.", LEVEL);
         else
-            Professions.log(String.format("Using %s as default value.", value.toString()), LEVEL);
+            ProfessionLogger.log(String.format("Using %s as default value.", value.toString()), LEVEL);
     }
 
     private <T> T setupVariable(String configPath, T defaultCase, UnaryOperator<T> extraAction) {
@@ -179,15 +183,15 @@ public final class Settings implements ISetup {
     }
 
     private void setupLang() throws IOException {
-        final File langFolder = plugin.getLangFolder();
+        final File langFolder = IOManager.getLangFolder();
         final String langString = setupVariable("lang", DEFAULT_PROPERTIES);
         final File[] langs = langFolder.listFiles((dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null && name.startsWith(langString));
         if (langs != null && langs.length > 0) {
             langFile = langs[0];
         } else {
-            Professions.createResource(Professions.LANG_PATH + DEFAULT_PROPERTIES, false);
-            Professions.log("No language starting with '" + langString + "' exists. Using default language (" + DEFAULT_PROPERTIES + ")");
-            langFile = new File(plugin.getLangFolder(), DEFAULT_PROPERTIES);
+            Professions.createResource(IOManager.LANG_PATH + DEFAULT_PROPERTIES, false);
+            ProfessionLogger.log("No language starting with '" + langString + "' exists. Using default language (" + DEFAULT_PROPERTIES + ")");
+            langFile = new File(langFolder, DEFAULT_PROPERTIES);
         }
         lang = new YamlConfiguration();
         try {

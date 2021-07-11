@@ -1,22 +1,20 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
-import git.doomshade.professions.Professions;
-import git.doomshade.professions.commands.AbstractCommand;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Location;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
-public class DespawnCommand extends AbstractCommand {
+public class DespawnCommand extends AbstractSpawnCommand {
 
     DespawnCommand() {
-        setArg(true, Arrays.asList("herb", "all / spawnpoint id"));
-        setArg(false, Collections.singletonList("disable further spawn"));
+        setArg(true, "herb", "all / spawnpoint id");
+        setArg(false, "disable further spawn");
         setCommand("despawn");
         setDescription("Despawns a herb");
         setRequiresPlayer(false);
@@ -24,11 +22,21 @@ public class DespawnCommand extends AbstractCommand {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Herb herb = Herb.getHerb(args[1]);
+    public void onCommand(CommandSender sender, String[] args) {
+        boolean disableSpawn = false;
+
+        if (args.length >= 4) {
+            try {
+                disableSpawn = Boolean.parseBoolean(args[3]);
+            } catch (Exception e) {
+                sender.sendMessage("Invalid boolean type provided, using false as default.");
+            }
+        }
+
+        Herb herb = Herb.get(Herb.class, args[1]);
         if (herb == null) {
             sender.sendMessage("Herb with ID " + args[1] + " does not exist.");
-            return true;
+            return;
         }
         Object spId;
         try {
@@ -36,7 +44,7 @@ public class DespawnCommand extends AbstractCommand {
         } catch (NumberFormatException e) {
             if (!args[2].equalsIgnoreCase("all")) {
                 sender.sendMessage("Invalid number format.");
-                return true;
+                return;
             } else {
                 spId = "";
             }
@@ -49,18 +57,10 @@ public class DespawnCommand extends AbstractCommand {
             }
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
-            return true;
+            return;
         }
 
-        boolean disableSpawn = false;
 
-        if (args.length >= 4) {
-            try {
-                disableSpawn = Boolean.parseBoolean(args[3]);
-            } catch (Exception e) {
-                sender.sendMessage("Invalid boolean type provided, using false as default.");
-            }
-        }
 
         if (loc == null) {
             for (Map.Entry<Location, HerbSpawnPoint> entry : herb.getSpawnPoints().entrySet()) {
@@ -75,7 +75,7 @@ public class DespawnCommand extends AbstractCommand {
                     }
                 } catch (Exception e) {
                     sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
-                    Professions.logError(e);
+                    ProfessionLogger.logError(e);
                 }
             }
         } else {
@@ -89,48 +89,14 @@ public class DespawnCommand extends AbstractCommand {
                 sender.sendMessage("Successfully despawned herb at " + locName + ".");
             } catch (Exception e) {
                 sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
-        return true;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        List<String> list = new ArrayList<>();
-        switch (args.length) {
-            case 2:
-                list.addAll(Herb.HERBS.values().stream().filter(x -> x.getId().startsWith(args[1])).map(Herb::getId).collect(Collectors.toList()));
-                break;
-            case 3:
-                Herb herb = Herb.getHerb(args[1].trim());
-                if (herb == null) {
-                    sender.sendMessage(args[1] + " is an invalid herb id.");
-                    break;
-                }
-                for (int i = 0; i < herb.getSpawnPointLocations().size(); i++) {
-                    String id = String.valueOf(i);
-                    if (args[2].startsWith(id)) {
-                        list.add(id);
-                    } else if (args[2].isEmpty()) {
-                        list.add(id);
-                    }
-                }
-                break;
-            case 4:
-                final List<String> booleans = Arrays.asList("true", "false");
-                if (args[3].isEmpty()) {
-                    list.addAll(booleans);
-                } else {
-                    booleans.forEach(x -> {
-                        if (x.startsWith(args[3])) {
-                            list.add(x);
-                        }
-                    });
-                }
-                break;
-        }
-        return list.isEmpty() ? null : list;
+    protected Consumer<HerbSpawnPoint> consumer() {
+        return null;
     }
 
     @Override
