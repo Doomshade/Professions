@@ -5,6 +5,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
@@ -62,7 +63,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
     }
 
     @Override
-    public void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+    public void deserialize(int id, Map<String, Object> map) throws InitializationException {
         super.deserialize(id, map);
         this.craftingTime = (double) map.getOrDefault(CRAFTING_TIME.s, 5d);
 

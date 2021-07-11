@@ -2,6 +2,7 @@ package git.doomshade.professions.utils;
 
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -43,7 +44,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return deserialized class
      * @see ConfigurationSerializable
      */
-    public static Requirements deserialize(Map<String, Object> map) throws ConfigurationException {
+    public static Requirements deserialize(Map<String, Object> map) throws ConfigurationException, InitializationException {
         List<ItemStack> items = new ArrayList<>();
         for (Object next : map.values()) {
             if (next instanceof MemorySection)

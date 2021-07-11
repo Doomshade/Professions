@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.professions.crafting;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
@@ -91,7 +92,7 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
             try {
                 map.put(x.charAt(0),
                         y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
-            } catch (ConfigurationException e) {
+            } catch (ConfigurationException | InitializationException e) {
                 Professions.logError(e, false);
             }
         });
@@ -113,7 +114,7 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
         final ItemStack deserialize;
         try {
             deserialize = ItemUtils.deserialize(recipeDes);
-        } catch (ConfigurationException e) {
+        } catch (ConfigurationException | InitializationException e) {
             Professions.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize recipe ItemStack from file");
         }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.spawn.ISpawnableElement;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
@@ -363,7 +364,11 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
      * @param <T>                the desired object type
      * @return the desired object
      */
-    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction) {
+    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(
+            Map<String, Object> map,
+            Class<T> clazz,
+            BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction)
+            throws ProfessionObjectInitializationException {
 
         // get missing keys and initialize exception
         final Set<String> missingKeys = getMissingKeys(map);
@@ -396,7 +401,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
 
     // worst case scenario (if this does not work) - replace BiFunction with Function..
 
-    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) {
+    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) throws ProfessionObjectInitializationException {
         return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
 

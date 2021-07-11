@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.cache.LocationOptionsCache;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.dynmap.MarkerWrapper;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.profession.utils.ExtendedLocation;

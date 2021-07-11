@@ -87,15 +87,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     private static PermissionManager permMan;
     private static Economy econ;
 
-    // 5 minutes
-    private static final int SAVE_DELAY = 5 * 60;
-
-    // 1 hr
-    private static final int BACKUP_DELAY = 60 * 60;
-
-    // 10 minutes
-    private static final int LOG_DELAY = 10 * 60;
-
     private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
     public static PrintStream fos = null;
     private final File PLAYER_FOLDER = new File(getDataFolder(), "playerdata");
@@ -371,9 +362,14 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
      *
      * @throws IOException ex
      */
-    public void saveFiles() throws IOException {
+    public static void saveFiles() throws IOException {
         saveUsers();
-        fos.flush();
+    }
+
+    public static void saveLogFile() {
+        if (fos != null) {
+            fos.flush();
+        }
     }
 
     /**
@@ -441,6 +437,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         });
         hookPlugin("Citizens", x -> {
             CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(TrainerTrait.class));
+            Bukkit.getPluginManager().registerEvents(new TrainerListener(), this);
             return true;
         });
         hookPlugin("SkillAPI", x -> {
@@ -501,7 +498,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         pm.registerEvents(new PluginProfessionListener(), this);
         pm.registerEvents(new OreEditListener(), this);
         pm.registerEvents(new JewelcraftingListener(), this);
-        pm.registerEvents(new TrainerListener(), this);
     }
 
 
@@ -592,11 +588,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             try {
                 setup.setup();
             } catch (Exception e) {
-                try {
-                    throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
-                } catch (ConfigurationException ex) {
-                    Professions.logError(ex);
-                }
+                Professions.log("Could not load " + setup.getSetupName(), Level.SEVERE);
+                Professions.logError(e);
             }
         }
     }
@@ -607,11 +600,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             try {
                 setup.cleanup();
             } catch (Exception e) {
-                try {
-                    throw new ConfigurationException("Could not load " + setup.getSetupName(), e);
-                } catch (ConfigurationException ex) {
-                    Professions.logError(ex);
-                }
+                Professions.log("Could not cleanup " + setup.getSetupName(), Level.SEVERE);
+                Professions.logError(e);
             }
         }
     }
@@ -702,7 +692,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
      */
     public BackupTask.Result backup() {
         BackupTask task = new BackupTask();
-        task.run();
+        task.startTask();
         return task.getResult();
     }
 
@@ -802,9 +792,9 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     }
 
     private void scheduleTasks() {
-        new SaveTask().runTaskTimer(this, SAVE_DELAY * 20L, SAVE_DELAY * 20L);
-        new BackupTask().runTaskTimer(this, BACKUP_DELAY * 20L, BACKUP_DELAY * 20L);
-        new LogTask().runTaskTimer(this, LOG_DELAY * 20L, LOG_DELAY * 20L);
+        new SaveTask().startTask();
+        new BackupTask().startTask();
+        new LogTask().startTask();
     }
 
 

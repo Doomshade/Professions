@@ -4,6 +4,12 @@ import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 
+/**
+ * User's profession data
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public interface IUserProfessionData {
 
     /**

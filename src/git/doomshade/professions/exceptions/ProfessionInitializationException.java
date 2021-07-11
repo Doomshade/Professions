@@ -5,7 +5,7 @@ import git.doomshade.professions.api.item.ItemType;
 import java.util.Collection;
 import java.util.logging.Level;
 
-public class ProfessionInitializationException extends Exception {
+public class ProfessionInitializationException extends InitializationException {
 
     private static final int NO_ID = -1;
 

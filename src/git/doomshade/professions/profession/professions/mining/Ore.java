@@ -2,12 +2,13 @@ package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
-import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.spawn.SpawnableElement;
+import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -81,6 +82,8 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
                     results.add(YieldResult.deserialize(dropSection.getValues(false)));
                 } catch (ConfigurationException e) {
                     e.append("Ore (" + name + ")");
+                    Professions.logError(e, false);
+                } catch (InitializationException e) {
                     Professions.logError(e, false);
                 }
                 i++;

@@ -1,13 +1,15 @@
 package git.doomshade.professions.api.spawn;
 
+import org.dynmap.markers.MarkerAPI;
+
 /**
- * A markable location elemtn
+ * A markable location element
  */
 public interface IMarkableLocationElement extends ILocationElement {
 
     /**
      * @return the icon id of this element
-     * @see org.dynmap.markers.MarkerAPI#getMarkerIcon(String)
+     * @see MarkerAPI#getMarkerIcon(String)
      */
     String getMarkerIcon();
 }

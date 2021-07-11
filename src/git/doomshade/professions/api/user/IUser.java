@@ -10,6 +10,12 @@ import org.bukkit.entity.Player;
 import java.io.IOException;
 import java.util.Collection;
 
+/**
+ * Player with additional data and methods
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public interface IUser {
     /**
      * Unloads the player (used when player is logging off)

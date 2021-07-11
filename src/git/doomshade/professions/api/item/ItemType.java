@@ -10,6 +10,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.trait.TrainerTrait;
@@ -119,7 +120,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     @Nullable
     @SuppressWarnings("all")
-    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws ProfessionInitializationException {
+    public static <A extends ItemType<?>> A deserialize(Class<A> clazz, int id) throws InitializationException {
         try {
             Map<String, Object> map = ItemUtils.getItemTypeMap(clazz, id);
             Constructor<?> c = clazz.getDeclaredConstructors()[0];
@@ -135,8 +136,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             Professions.log("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType(T) constructor!", Level.SEVERE);
             Professions.logError(e);
-        } catch (ProfessionInitializationException ex) {
-            Professions.logError(ex, false);
         }
         return null;
     }
@@ -146,9 +145,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *
      * @param id  the id of this itemtype
      * @param map the map
-     * @throws ProfessionInitializationException if the initialization of this class is unsuccessful
+     * @throws InitializationException if the initialization of this class is unsuccessful
      */
-    protected void deserialize(int id, Map<String, Object> map) throws ProfessionInitializationException {
+    protected void deserialize(int id, Map<String, Object> map) throws InitializationException {
 
         // setup the item type before throwing the ex as we use getOrDefault everywhere
         // and then log what's missing

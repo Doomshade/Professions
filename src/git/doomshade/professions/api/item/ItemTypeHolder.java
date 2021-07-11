@@ -8,7 +8,7 @@ import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
-import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,9 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * Holder for {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
@@ -102,6 +104,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
             Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
+            Professions.logError(e, false);
             return;
         }
         final ImmutableList<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
@@ -169,6 +172,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
             Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
+            Professions.logError(e, false);
             return;
         }
 
@@ -187,31 +191,24 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         this.newItemsMessage = loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
-        Iterator<String> it = itemsSection.getKeys(false).iterator();
-        int i;
+        Collection<Integer> keys = itemsSection.getKeys(false)
+                .stream()
+                .map(Integer::parseInt)
+                .sorted()
+                .collect(Collectors.toList());
         final Class<? extends ItemType> clazz = itemType.getClass();
         boolean successInit = true;
-        while (it.hasNext()) {
-            i = Integer.parseInt(it.next());
-
-            Type deserializedItemType;
+        for (int i : keys) {
             try {
-                deserializedItemType = (Type) ItemType.deserialize(clazz, i);
-            } catch (ProfessionInitializationException e) {
-                Professions.log(e.getMessage(), Level.WARNING);
-                successInit = false;
-                continue;
-            } catch (Exception e) {
-                Professions.logError(e);
-                successInit = false;
-                continue;
-            }
-            if (deserializedItemType != null) {
-                if (!itemTypes.isEmpty() && itemTypes.size() > i) {
-                    itemTypes.set(i, deserializedItemType);
-                } else {
+                Type deserializedItemType = (Type) ItemType.deserialize(clazz, i);
+                if (deserializedItemType != null) {
                     itemTypes.add(deserializedItemType);
                 }
+            } catch (Exception e) {
+                Professions.log("Could not deserialize " + itemType.getClass().getSimpleName());
+                Professions.logError(e, !(e instanceof InitializationException));
+                successInit = false;
+                continue;
             }
         }
 

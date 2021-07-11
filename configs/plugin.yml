@@ -5,7 +5,7 @@ version: 1.0
 description: Best plugin EU
 depend: [GUIApi, ProtocolLib]
 softdepend: [Citizens, Vault, PermissionsEx, SkillAPI, Sinister_LoreAttributes, dynmap, DiabloLike, PlaceholderAPI]
-api-version: 1.14.4
+api-version: 1.14
 
 
 permissions:

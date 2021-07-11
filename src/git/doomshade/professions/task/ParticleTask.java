@@ -18,7 +18,9 @@ public class ParticleTask extends ExtendedBukkitRunnable {
     }
 
     public ParticleTask(ParticleTask copy) {
-        this(copy.particle, copy.location);
+        this.particle = copy.particle;
+        this.location = copy.location;
+        this.particleOffsetLocation = copy.particleOffsetLocation;
     }
 
     @Override

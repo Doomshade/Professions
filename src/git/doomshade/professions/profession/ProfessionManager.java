@@ -123,19 +123,15 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
     }
 
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) {
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolderSupplier(Supplier<T> itemTypeHolder) throws IOException {
         registerItemTypeHolder(itemTypeHolder.get());
     }
 
     @Override
-    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) {
+    public <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException {
         if (itemTypeHolder == null) return;
-        try {
-            itemTypeHolder.update();
-            ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
-        } catch (IOException e) {
-            Professions.logError(e);
-        }
+        itemTypeHolder.update();
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
     }
 
     @Override

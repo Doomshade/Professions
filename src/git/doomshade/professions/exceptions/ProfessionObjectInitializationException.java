@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 
-public class ProfessionObjectInitializationException extends Exception {
+public class ProfessionObjectInitializationException extends InitializationException {
     public static final int NO_ID = -1;
     private Collection<String> keys;
     private Class<?> clazz;

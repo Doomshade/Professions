@@ -3,6 +3,7 @@ package git.doomshade.professions.api;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -16,8 +17,9 @@ public interface IProfessionManager {
     /**
      * @param itemTypeHolder the {@link ItemTypeHolder} to register
      * @param <T>            the {@link ItemTypeHolder}
+     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered
      */
-    <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder);
+    <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException;
 
     /**
      * Registers a profession<br>

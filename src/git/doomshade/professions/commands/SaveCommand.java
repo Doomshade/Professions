@@ -28,7 +28,7 @@ public class SaveCommand extends AbstractCommand {
     public void onCommand(CommandSender sender, String[] args) {
         try {
             sender.sendMessage("Saving files...");
-            Professions.getInstance().saveFiles();
+            Professions.saveFiles();
             sender.sendMessage(ChatColor.GREEN + "Files saved successfully");
         } catch (IOException e) {
             sender.sendMessage(ChatColor.RED + "Error! Check console for error stack trace.");

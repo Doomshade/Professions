@@ -3,6 +3,7 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 import com.google.common.collect.Sets;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -221,7 +222,7 @@ public class Gem implements ConfigurationSerializable {
         ItemStack item = null;
         try {
             item = ItemUtils.deserialize(itemSection.getValues(false));
-        } catch (ConfigurationException e) {
+        } catch (ConfigurationException | InitializationException e) {
             Professions.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize gem ItemStack from file");
         }

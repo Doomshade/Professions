@@ -18,7 +18,6 @@ public class SpawnTask extends ExtendedBukkitRunnable {
     private final SpawnPoint spawnPoint;
     private transient int respawnTime;
     public transient int id = -1;
-    private transient boolean running = false;
 
     // because of cache
     private transient final int generatedRespawnTime;
@@ -81,10 +80,6 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         this(copy.spawnPoint, respawnTime, id);
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
     @Override
     public void run() {
         if (respawnTime <= 0) {
@@ -92,11 +87,13 @@ public class SpawnTask extends ExtendedBukkitRunnable {
                 spawnPoint.spawn();
             } catch (SpawnException e) {
                 Professions.logError(e);
-                cancel();
-                return;
+            } finally {
+                // spawn does cancel this task, however if an exception happened we need to
+                // cancel it here
+                if (isRunning()) {
+                    cancel();
+                }
             }
-            cancel();
-            running = false;
             return;
         }
         respawnTime--;
@@ -109,7 +106,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long period() {
-        return 20;
+        return 20L;
     }
 
     @Override

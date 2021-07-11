@@ -4,6 +4,9 @@ import git.doomshade.diablolike.DiabloLike;
 import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
@@ -79,7 +82,7 @@ public final class ItemUtils implements ISetup {
         return materialData == 0 ? material.name() : material.name() + ":" + materialData;
     }
 
-    public static ItemStack deserializeMaterial(String material) {
+    public static ItemStack deserializeMaterial(String material) throws ProfessionObjectInitializationException {
         String[] split = material.split(":");
         final short damage;
         if (split.length == 2) {
@@ -87,10 +90,16 @@ public final class ItemUtils implements ISetup {
         } else {
             damage = 0;
         }
-        return new ItemStack(Material.valueOf(split[0]), 1, damage);
+        final Material mat;
+        try {
+            mat = Material.valueOf(split[0]);
+        } catch (IllegalArgumentException e) {
+            throw new ProfessionObjectInitializationException("Could not deserialize material " + split[0]);
+        }
+        return new ItemStack(mat, 1, damage);
     }
 
-    public static ItemStack deserialize(Map<String, Object> map) throws ConfigurationException {
+    public static ItemStack deserialize(Map<String, Object> map) throws ConfigurationException, ProfessionObjectInitializationException {
         return deserialize(map, true);
     }
 
@@ -102,7 +111,7 @@ public final class ItemUtils implements ISetup {
      * @return deserialized ItemStack
      */
     @SuppressWarnings("unchecked")
-    public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook) throws ConfigurationException {
+    public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook) throws ConfigurationException, ProfessionObjectInitializationException {
         if (map == null) {
             return null;
         }

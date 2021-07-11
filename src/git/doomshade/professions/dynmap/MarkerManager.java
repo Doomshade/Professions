@@ -8,6 +8,7 @@ import org.dynmap.markers.MarkerSet;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The marker manager that displays icons (herbs only currently) on dynmap
@@ -18,7 +19,7 @@ import java.util.HashMap;
 public final class MarkerManager {
 
     private static MarkerManager instance = null;
-    private static HashMap<String, MarkerSet> MARKERS = new HashMap<>();
+    private static final Map<String, MarkerSet> MARKERS = new HashMap<>();
     private final MarkerAPI markerApi;
 
     private MarkerManager(DynmapPlugin dynmapPlugin) {
@@ -51,7 +52,6 @@ public final class MarkerManager {
     public void register(IMarkable markable, String label) {
         final String markerSetId = markable.getMarkerSetId();
         MarkerSet set = markerApi.getMarkerSet(markerSetId);
-
 
         if (set == null) {
             set = markerApi.createMarkerSet(markerSetId, label, null, true);

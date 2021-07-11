@@ -1,15 +1,29 @@
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
-import org.bukkit.scheduler.BukkitRunnable;
+import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 
-public class LogTask extends BukkitRunnable {
+import java.time.Clock;
+import java.time.Duration;
+
+public class LogTask extends ExtendedBukkitRunnable {
+
+    // 10 minutes
+    private static final long LOG_DELAY = Duration.ofMinutes(10).getSeconds();
 
 
     @Override
     public void run() {
-        if (Professions.fos == null) return;
+        Professions.saveLogFile();
+    }
 
-        Professions.fos.flush();
+    @Override
+    protected long delay() {
+        return LOG_DELAY * 20L;
+    }
+
+    @Override
+    protected long period() {
+        return LOG_DELAY * 20L;
     }
 }
