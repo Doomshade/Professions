@@ -5,6 +5,7 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -93,7 +94,7 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
                 map.put(x.charAt(0),
                         y == null ? null : ItemUtils.deserialize(((MemorySection) ingredients.get(x)).getValues(true)));
             } catch (ConfigurationException | InitializationException e) {
-                Professions.logError(e, false);
+                ProfessionLogger.logError(e, false);
             }
         });
         return map;
@@ -115,7 +116,7 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
         try {
             deserialize = ItemUtils.deserialize(recipeDes);
         } catch (ConfigurationException | InitializationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize recipe ItemStack from file");
         }
         ShapedRecipe recipe = new ShapedRecipe(NMS_KEY, deserialize)

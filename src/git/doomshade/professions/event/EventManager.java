@@ -43,7 +43,7 @@ public final class EventManager {
         }
 
         // search in item type holders
-        for (ItemTypeHolder<?> itemHolder : Professions.getProfMan().getItemTypeHolders()) {
+        for (ItemTypeHolder<?, ?> itemHolder : Professions.getProfMan().getItemTypeHolders()) {
 
             // make sure we got the right item type
             if (!itemHolder.getItemType().getClass().equals(itemTypeClass)) {
@@ -51,7 +51,7 @@ public final class EventManager {
             }
 
             // loop through item types and search for one that equals to the
-            for (ItemType<?> item : itemHolder.getRegisteredItemTypes()) {
+            for (ItemType<?> item : itemHolder) {
                 Item itemReturn = (Item) item;
                 T itemReturnObject = itemReturn.getObject();
                 if (itemReturnObject == null) {

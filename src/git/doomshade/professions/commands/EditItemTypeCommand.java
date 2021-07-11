@@ -1,7 +1,8 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
@@ -46,7 +47,7 @@ public class EditItemTypeCommand extends AbstractCommand {
         setDescription("Edits something in item type file");
         setRequiresPlayer(false);
         files.clear();
-        files.addAll(Arrays.stream(Objects.requireNonNull(Professions.getInstance().getItemsFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
+        files.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
         addPermission(Permissions.ADMIN);
     }
 
@@ -67,7 +68,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                 return s;
             }
         }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
-        return new File(Professions.getInstance().getItemsFolder(), fileName);
+        return new File(IOManager.getItemFolder(), fileName);
     }
 
     @Nullable
@@ -117,7 +118,7 @@ public class EditItemTypeCommand extends AbstractCommand {
             loaderCopy.load(file);
         } catch (IOException | InvalidConfigurationException e) {
             sender.sendMessage("Error loading " + file.getName() + ". Check console for error output.");
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
             return;
         }
         saveUndo(file, loaderCopy);
@@ -208,11 +209,11 @@ public class EditItemTypeCommand extends AbstractCommand {
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         } catch (IOException e) {
             sender.sendMessage("Unexpected error occurred. Check console for further logs.");
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

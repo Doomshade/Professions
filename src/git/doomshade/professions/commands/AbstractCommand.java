@@ -1,6 +1,6 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -49,7 +49,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
              * @param type the method the error occurred in
              */
             private void logDeserializationError(String type) {
-                Professions.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
+                ProfessionLogger.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
             }
 
             private String getDeserializationError(String type) {
@@ -81,7 +81,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                         argTrue = Utils.cast(map.get(ARG_TRUE));
                     } catch (ClassCastException e) {
                         logDeserializationError("true arguments");
-                        Professions.logError(e);
+                        ProfessionLogger.logError(e);
                     }
                     args.put(true, argTrue);
 
@@ -103,7 +103,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 try {
                     st = Utils.cast(map.get(COMMAND));
                 } catch (ClassCastException e) {
-                    Professions.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
+                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
                 }
                 return st;
             }

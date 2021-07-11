@@ -1,8 +1,8 @@
 package git.doomshade.professions.trait;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.EditTraitCommand;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.citizensnpcs.api.event.NPCTraitCommandAttachEvent;
@@ -43,7 +43,7 @@ public class TrainerListener implements Listener {
 
         if (!(sender instanceof Player)) {
             final CommandHandler handler = CommandHandler.getInstance(CommandHandler.class);
-            Professions.log("Attached trainer trait to " + npc.getName() + ". Please use " + handler.infoMessage(handler.getCommand(EditTraitCommand.class)) + ChatColor.RESET + " ingame with the NPC selected.", Level.WARNING);
+            ProfessionLogger.log("Attached trainer trait to " + npc.getName() + ". Please use " + handler.infoMessage(handler.getCommand(EditTraitCommand.class)) + ChatColor.RESET + " ingame with the NPC selected.", Level.WARNING);
         } else {
             trait.openTrainerChooserGUI((Player) sender);
         }

@@ -1,10 +1,10 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.io.IOManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -38,7 +38,7 @@ public class MiningCommandHandler extends AbstractCommandHandler {
 
         AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
         if (acmd instanceof AbstractEditCommand && !isBackedUp) {
-            Professions.getInstance().backup();
+            IOManager.backup();
             isBackedUp = true;
         }
 

@@ -1,8 +1,8 @@
 package git.doomshade.professions.enums;
 
 import com.google.common.collect.Sets;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.placeholder.PlaceholderManager;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.Profession.ProfessionType;
@@ -81,13 +81,13 @@ public class Messages implements ISetup {
         final Sets.SetView<String> missing = Sets.difference(allKeys.stream().map(MessagesHolder::getKey).collect(Collectors.toSet()), propertyNames);
         if (!missing.isEmpty()) {
             try {
-                Professions.log("Your language file is outdated!", Level.WARNING);
-                Professions.log("Adding missing properties to your file. (" + missing + ")");
+                ProfessionLogger.log("Your language file is outdated!", Level.WARNING);
+                ProfessionLogger.log("Adding missing properties to your file. (" + missing + ")");
                 missing.forEach(x -> lang.addDefault(x, ""));
                 lang.options().copyDefaults(true);
                 lang.save(Settings.getLangFile());
             } catch (IOException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
     }

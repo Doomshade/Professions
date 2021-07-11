@@ -1,8 +1,8 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.utils.Permissions;
@@ -28,7 +28,7 @@ public class AddCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         Player player = (Player) sender;
-        Herb herb = Herb.getHerb(args[1]);
+        Herb herb = Herb.get(Herb.class, args[1]);
 
         if (herb == null) {
             player.sendMessage("Invalid herb id");
@@ -44,7 +44,7 @@ public class AddCommand extends AbstractCommand {
         try {
             respawnTime = Range.fromString(args[2]);
         } catch (Exception e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         if (respawnTime == null) {
             player.sendMessage("Invalid respawn time");
@@ -55,7 +55,7 @@ public class AddCommand extends AbstractCommand {
         try {
             herb.getSpawnPoints(lookingAt).spawn();
         } catch (SpawnException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 
@@ -64,10 +64,10 @@ public class AddCommand extends AbstractCommand {
         List<String> list = new ArrayList<>();
         switch (args.length) {
             case 2:
-                list.addAll(Herb.HERBS.values().stream().filter(x -> x.getId().startsWith(args[1])).map(Herb::getId).collect(Collectors.toList()));
+                list.addAll(Herb.getElements(Herb.class).values().stream().filter(x -> x.getId().startsWith(args[1])).map(Herb::getId).collect(Collectors.toList()));
                 break;
             case 3:
-                Herb herb = Herb.getHerb(args[1].trim());
+                Herb herb = Herb.get(Herb.class, args[1].trim());
                 if (herb == null) {
                     sender.sendMessage(args[1] + " is an invalid herb id.");
                 }

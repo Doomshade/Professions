@@ -1,12 +1,12 @@
 package git.doomshade.professions.api.item;
 
 import com.google.common.collect.ImmutableMap;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Requirements;
 import git.doomshade.professions.utils.Strings;
@@ -83,7 +83,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         try {
             setCraftingRequirements(Requirements.deserialize(itemReqSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionInitializationException("Could not deserialize " + this);
         }
 
@@ -91,7 +91,7 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         try {
             setResult(ItemUtils.deserialize(isSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionInitializationException("Could not deserialize a craftable item type");
         }
     }

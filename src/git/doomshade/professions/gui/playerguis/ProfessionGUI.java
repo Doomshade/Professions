@@ -52,7 +52,7 @@ public class ProfessionGUI extends GUI {
 
         String signName = settings.getSignName();
 
-        for (ItemTypeHolder<?> entry : prof.getItems()) {
+        for (ItemTypeHolder<?, ?> entry : prof.getItems()) {
             for (ItemType<?> item : entry) {
                 if (pos == 5 && profHasLore) {
                     GUIItem infoItem = new GUIItem(Material.OAK_SIGN, pos, 1, (short) 0);

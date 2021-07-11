@@ -1,6 +1,6 @@
 package git.doomshade.professions.profession.professions.jewelcrafting;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.utils.EffectUtils;
 import org.bukkit.entity.Player;
 
@@ -31,7 +31,7 @@ public final class GemUtils {
                 } else {
                     s = String.format("Unapplying %s from %s", gem, player.getName());
                 }
-                Professions.log(s, Level.CONFIG);
+                ProfessionLogger.log(s, Level.CONFIG);
             }
 
             @Override

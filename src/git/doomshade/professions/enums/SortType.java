@@ -14,7 +14,9 @@ import java.util.List;
  * @version 1.0
  */
 public enum SortType {
-    NAME("name", Comparator.comparing(ItemType::getName)), EXPERIENCE("exp", Comparator.comparing(o -> -o.getExp())), LEVEL_REQ("level-req", Comparator.comparing(ItemType::getLevelReq));
+    NAME("name", Comparator.comparing(ItemType::getName)),
+    EXPERIENCE("exp", Comparator.comparing(o -> -o.getExp())),
+    LEVEL_REQ("level-req", Comparator.comparing(ItemType::getLevelReq));
 
     /**
      * the sort type ID in text

@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.utils;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Range;
@@ -75,7 +75,7 @@ public class ExtendedLocation extends Location implements ConfigurationSerializa
                 } catch (ProfessionObjectInitializationException e) {
                     ex = new ProfessionObjectInitializationException(ExtendedLocation.class, Collections.emptyList(), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
                     e.setAdditionalMessage("Spawn point ID: " + i);
-                    Professions.logError(e, false);
+                    ProfessionLogger.logError(e, false);
                 }
             }
         }

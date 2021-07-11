@@ -1,10 +1,10 @@
 package git.doomshade.professions.profession.professions.mining;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.user.User;
@@ -75,7 +75,7 @@ public final class MiningProfession extends Profession {
             String message = player.getName() + " mined " + ore.getName();
 
             if (loc == null) {
-                Professions.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" + new RuntimeException().getLocalizedMessage(), Level.WARNING);
+                ProfessionLogger.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" + new RuntimeException().getLocalizedMessage(), Level.WARNING);
                 return;
             }
 
@@ -97,7 +97,7 @@ public final class MiningProfession extends Profession {
             if (addExp(e)) {
                 message = message.concat(Utils.getReceiveXp(e.getExp()));
             }
-            Professions.log(message, Level.CONFIG);
+            ProfessionLogger.log(message, Level.CONFIG);
         }
     }
 

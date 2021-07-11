@@ -29,7 +29,7 @@ public class AddExpCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Optional<Profession> opt = Professions.getProfessionById(args[1]);
+        Optional<Profession> opt = Professions.getProfMan().getProfessionById(args[1]);
         if (!opt.isPresent()) {
             return;
         }

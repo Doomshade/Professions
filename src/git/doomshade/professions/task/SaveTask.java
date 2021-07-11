@@ -1,6 +1,7 @@
 package git.doomshade.professions.task;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
 
@@ -22,10 +23,10 @@ public class SaveTask extends ExtendedBukkitRunnable {
             if (Bukkit.getOnlinePlayers().isEmpty()) {
                 return;
             }
-            Professions.saveFiles();
+            IOManager.saveFiles();
 
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

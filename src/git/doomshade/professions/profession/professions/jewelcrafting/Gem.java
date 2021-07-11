@@ -5,6 +5,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
@@ -99,8 +100,8 @@ public class Gem implements ConfigurationSerializable {
         if (value == null) {
             if (LOGGED_ERROR_GEMS.add(id)) {
                 final String s = "Found a gem but the gem is not registered! (" + id + ")";
-                Professions.log(s, Level.WARNING);
-                Professions.log(s, Level.CONFIG);
+                ProfessionLogger.log(s, Level.WARNING);
+                ProfessionLogger.log(s, Level.CONFIG);
             }
             return empty;
         }
@@ -213,7 +214,7 @@ public class Gem implements ConfigurationSerializable {
         try {
             equipmentSlot = GemEquipmentSlot.valueOf((String) map.get(EQUIPMENT_SLOT.s));
         } catch (IllegalArgumentException e) {
-            Professions.log("Available equipment slots: " + Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
+            ProfessionLogger.log("Available equipment slots: " + Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
             throw new ProfessionObjectInitializationException(GemItemType.class, Collections.singletonList(EQUIPMENT_SLOT.s), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
         }
         String id = (String) map.get(ID.s);
@@ -223,7 +224,7 @@ public class Gem implements ConfigurationSerializable {
         try {
             item = ItemUtils.deserialize(itemSection.getValues(false));
         } catch (ConfigurationException | InitializationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize gem ItemStack from file");
         }
         String displayName = (String) map.get(DISPLAY_NAME.s);

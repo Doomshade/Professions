@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.gui.oregui.OreGUI;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
@@ -38,13 +39,13 @@ public class OreEditListener implements Listener {
             return;
         }
         try {
-            final ItemTypeHolder<OreItemType> itemTypeHolder = Professions.getProfMan().getItemTypeHolder(OreItemType.class);
+            final ItemTypeHolder<Ore, OreItemType> itemTypeHolder = Professions.getProfMan().getItemTypeHolder(OreItemType.class);
             final ItemStack itemInHand = event.getItemInHand();
             if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName()) {
                 return;
             }
             final String displayName = itemInHand.getItemMeta().getDisplayName();
-            OreItemType oreItemType = Utils.findInIterable(itemTypeHolder.getRegisteredItemTypes(), x -> x.getIcon(null).getItemMeta().getDisplayName().equals(displayName));
+            OreItemType oreItemType = Utils.findInIterable(itemTypeHolder, x -> x.getIcon(null).getItemMeta().getDisplayName().equals(displayName));
 
             final Location location = event.getBlock().getLocation();
             final Ore ore = oreItemType.getObject();
@@ -57,7 +58,7 @@ public class OreEditListener implements Listener {
                     try {
                         ore.getSpawnPoints(sp).spawn();
                     } catch (SpawnException e) {
-                        Professions.logError(e);
+                        ProfessionLogger.logError(e);
                     }
                     player.sendMessage("Přidán nový spawn point pro " + ore.getName());
                 } else {
@@ -88,7 +89,7 @@ public class OreEditListener implements Listener {
             try {
                 respawnTime = Range.fromString(event.getMessage());
             } catch (Exception e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
             if (ore != null && respawnTime != null) {
                 final ExtendedLocation sp = new ExtendedLocation(oreLocation.location, respawnTime);
@@ -96,7 +97,7 @@ public class OreEditListener implements Listener {
                 try {
                     ore.getSpawnPoints(sp).spawn();
                 } catch (SpawnException e) {
-                    Professions.logError(e);
+                    ProfessionLogger.logError(e);
                 }
                 player.sendMessage("Přidán nový spawn point pro " + ore.getName());
             } else {

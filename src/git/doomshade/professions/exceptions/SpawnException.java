@@ -1,7 +1,7 @@
 package git.doomshade.professions.exceptions;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.spawn.ILocationElement;
+import git.doomshade.professions.io.ProfessionLogger;
 
 import java.util.logging.Level;
 
@@ -30,17 +30,17 @@ public class SpawnException extends Exception {
     @Override
     public void printStackTrace() {
         String locationElement = this.locationElement == null ? "some element in the world" : this.locationElement.toString();
-        Professions.log("Could not spawn " + locationElement);
+        ProfessionLogger.log("Could not spawn " + locationElement);
 
         String reason = "Reason: ";
         switch (this.reason) {
             case UNKNOWN:
                 break;
             case INVALID_MATERIAL:
-                Professions.log(reason.concat("Invalid material given"), Level.WARNING);
+                ProfessionLogger.log(reason.concat("Invalid material given"), Level.WARNING);
                 break;
             case INVALID_LOCATION:
-                Professions.log(reason.concat("Invalid location given"), Level.WARNING);
+                ProfessionLogger.log(reason.concat("Invalid location given"), Level.WARNING);
                 break;
         }
         super.printStackTrace();

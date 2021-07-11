@@ -1,5 +1,7 @@
 package git.doomshade.professions.exceptions;
 
+import git.doomshade.professions.io.ProfessionLogger;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -58,7 +60,7 @@ public class ProfessionObjectInitializationException extends InitializationExcep
     }
 
     /**
-     * The main constructor of this exception. Consider calling {@link git.doomshade.professions.Professions#log(String, Level)} instead of {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
+     * The main constructor of this exception. Consider calling {@link ProfessionLogger#log(String, Level)} instead of {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
      *
      * @param clazz             the item type class in which the error occurred
      * @param keys              the missing keys
@@ -91,6 +93,9 @@ public class ProfessionObjectInitializationException extends InitializationExcep
 
     @Override
     public String getMessage() {
+        if (clazz == null) {
+            return super.getMessage();
+        }
         String s = String.format("Could not fully deserialize object of %s.<br>Reason(s):<br>",
                 clazz.getSimpleName());
 

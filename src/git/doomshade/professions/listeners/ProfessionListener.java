@@ -6,6 +6,7 @@ import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
@@ -159,17 +160,17 @@ public class ProfessionListener extends AbstractProfessionListener {
         // add the location of ore because of its spawn point
         event.addExtra(location);
 
-        Professions.log("Called event");
+        ProfessionLogger.log("Called event");
         callEvent(event);
         // event is cancelled when the player does not meet requirements
         if (event.isCancelled()) {
-            Professions.log("Cancelling event");
+            ProfessionLogger.log("Cancelling event");
             e.setCancelled(true);
         }
         // destroy the block and disable particles if the requirements are met
         else {
             final SpawnPoint spawnPoint = ore.getSpawnPoints(location);
-            Professions.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
+            ProfessionLogger.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
             spawnPoint.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
@@ -285,12 +286,12 @@ public class ProfessionListener extends AbstractProfessionListener {
             final SpawnPoint spawnPoint = spawnableElement.getSpawnPoints(location);
 
             // log
-            Professions.log(spawnPoint);
+            ProfessionLogger.log(spawnPoint);
 
             final List<ExtendedLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
 
             // log
-            Professions.log(spawnPointLocations.contains(new ExtendedLocation(location)));
+            ProfessionLogger.log(spawnPointLocations.contains(new ExtendedLocation(location)));
             String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
 
             final Player player = e.getPlayer();
@@ -441,8 +442,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        for (EnchantedItemItemType enchItemType : Professions.getProfMan().getItemTypeHolder(EnchantedItemItemType.class)
-                .getRegisteredItemTypes()) {
+        for (EnchantedItemItemType enchItemType : Professions.getProfMan().getItemTypeHolder(EnchantedItemItemType.class)) {
             Enchant eit = enchItemType.getObject();
             if (eit != null && areSimilar(eit.getItem(), mh)) {
                 ENCHANTS.put(player.getUniqueId(), eit);

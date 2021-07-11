@@ -2,6 +2,7 @@ package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -35,14 +36,14 @@ public abstract class AbstractSettings implements ISetup, Serializable {
 
     protected void printError(String section, Object value) {
         if (!outdated) {
-            Professions.log("Your configuration file is outdated!", LEVEL);
+            ProfessionLogger.log("Your configuration file is outdated!", LEVEL);
             outdated = true;
         }
-        Professions.log(String.format("Missing \"%s\" section!", section), LEVEL);
+        ProfessionLogger.log(String.format("Missing \"%s\" section!", section), LEVEL);
         if (value == null)
-            Professions.log("Using default values.", LEVEL);
+            ProfessionLogger.log("Using default values.", LEVEL);
         else
-            Professions.log(String.format("Using %s as default value.", value.toString()), LEVEL);
+            ProfessionLogger.log(String.format("Using %s as default value.", value.toString()), LEVEL);
     }
 
     protected final boolean isSection(String section, Object value) {

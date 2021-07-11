@@ -1,8 +1,8 @@
 package git.doomshade.professions.profession.spawn;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -121,7 +121,7 @@ public abstract class SpawnPoint implements ISpawnPoint {
         unscheduleSpawn();
         spawned = true;
 
-        Professions.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
+        ProfessionLogger.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
     private void unscheduleSpawn() {
@@ -136,7 +136,7 @@ public abstract class SpawnPoint implements ISpawnPoint {
         unscheduleSpawn();
         spawned = false;
 
-        Professions.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
+        ProfessionLogger.log(String.format("Despawned %s at %s", element.getName(), location), Level.CONFIG);
     }
 
     @Override

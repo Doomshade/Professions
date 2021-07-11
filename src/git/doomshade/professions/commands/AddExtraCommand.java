@@ -2,6 +2,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
@@ -32,7 +33,7 @@ public class AddExtraCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Optional<Profession> opt = Professions.getProfessionById(args[2]);
+        Optional<Profession> opt = Professions.getProfMan().getProfessionById(args[2]);
         if (!opt.isPresent()) {
             return;
         }
@@ -48,7 +49,7 @@ public class AddExtraCommand extends AbstractCommand {
         try {
             user.save();
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

@@ -96,7 +96,7 @@ public class HerbItemType extends ItemType<Herb> {
 
     @Override
     public void onDisable() {
-        for (Herb herb : Herb.HERBS.values()) {
+        for (Herb herb : Herb.getElements(Herb.class).values()) {
             Collection<LocationOptionsCache> cache = new ArrayList<>();
             for (Map.Entry<Location, HerbSpawnPoint> entry : herb.getSpawnPoints().entrySet()) {
                 HerbSpawnPoint hlo = entry.getValue();
@@ -109,7 +109,7 @@ public class HerbItemType extends ItemType<Herb> {
             }*/
             herb.despawnAll(true);
         }
-        Herb.HERBS.clear();
+        Herb.getElements(Herb.class).clear();
         ExtendedLocation.SPAWN_POINTS.clear();
     }
 }

@@ -1,6 +1,6 @@
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.Particle;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
@@ -36,7 +36,7 @@ public class ParticleData implements ConfigurationSerializable, git.doomshade.pr
                 field.setAccessible(true);
                 field.set(data, map.get(field.getName()));
             } catch (IllegalAccessException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
         return data;
@@ -85,7 +85,7 @@ public class ParticleData implements ConfigurationSerializable, git.doomshade.pr
                 field.setAccessible(true);
                 map.put(field.getName(), field.get(this));
             } catch (IllegalAccessException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         }
         return map;

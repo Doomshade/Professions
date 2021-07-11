@@ -2,9 +2,12 @@ package git.doomshade.professions.api;
 
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Class responsible for registration of a profession
@@ -15,11 +18,49 @@ import java.util.Optional;
 public interface IProfessionManager {
 
     /**
-     * @param itemTypeHolder the {@link ItemTypeHolder} to register
-     * @param <T>            the {@link ItemTypeHolder}
+     * @param itemType the {@link ItemType} class
+     * @param o        the supplier of an example object of {@link ItemType} argument
+     * @param <T>      the {@link ItemType} argument
+     * @param <IType>  the {@link ItemType}
      * @throws IOException if the {@link ItemTypeHolder} couldn't be registered
      */
-    <T extends ItemTypeHolder<?>> void registerItemTypeHolder(T itemTypeHolder) throws IOException;
+    default <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, Supplier<T> o) throws IOException {
+        registerItemTypeHolder(itemType, o, null);
+    }
+
+    /**
+     * @param itemType          the {@link ItemType} class
+     * @param o                 the supplier of an example object of {@link ItemType} argument
+     * @param additionalCommand the additional commands to be made before registration to file
+     * @param <T>               the {@link ItemType} argument
+     * @param <IType>           the {@link ItemType}
+     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered to file
+     */
+    default <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, Supplier<T> o, Consumer<IType> additionalCommand) throws IOException {
+        registerItemTypeHolder(itemType, o.get(), additionalCommand);
+
+    }
+
+    /**
+     * @param itemType the {@link ItemType} class
+     * @param o        the example object of {@link ItemType} argument
+     * @param <T>      the {@link ItemType} argument
+     * @param <IType>  the {@link ItemType}
+     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered
+     */
+    default <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, T o) throws IOException {
+        registerItemTypeHolder(itemType, o, null);
+    }
+
+    /**
+     * @param itemType          the {@link ItemType} class
+     * @param o                 the example object of {@link ItemType} argument
+     * @param additionalCommand the additional commands to be made before registration to file
+     * @param <T>               the {@link ItemType} argument
+     * @param <IType>           the {@link ItemType}
+     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered to file
+     */
+    <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, T o, Consumer<IType> additionalCommand) throws IOException;
 
     /**
      * Registers a profession<br>
@@ -34,7 +75,7 @@ public interface IProfessionManager {
      * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
      * @return instance of {@link ItemTypeHolder}
      */
-    <A extends ItemType<?>> ItemTypeHolder<A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException;
+    <T, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException;
 
     /**
      * @param id the{@link Profession#getID()} of {@link Profession}
@@ -56,6 +97,20 @@ public interface IProfessionManager {
      * @throws IllegalArgumentException if the name doesn't exist
      */
     Optional<Profession> getProfessionByName(String name);
+
+    /**
+     * Calls {@link #getProfessionById(String)} with the {@link ItemStack}'s display name
+     *
+     * @param item the item to look for the profession from
+     * @return the profession
+     * @see #getProfessionById(String)
+     */
+    default Optional<Profession> getProfession(ItemStack item) {
+        if (item == null || item.getItemMeta() == null || !item.getItemMeta().hasDisplayName()) {
+            return Optional.empty();
+        }
+        return getProfessionById(item.getItemMeta().getDisplayName());
+    }
 
     /**
      * @param idOrName the id or name of the profession

@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.spawn;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
 import git.doomshade.professions.task.ParticleTask;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
@@ -59,7 +59,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
             this.id = id;
 
             // TODO: 09.02.2021 duplicate spawn tasks 
-            Professions.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
+            ProfessionLogger.log("New Spawn Task for " + spawnPoint.location + " with ID" + id);
             this.respawnTime = respawnTime >= 0 ? respawnTime : el.getRespawnTime().getRandom() + 1;
             this.generatedRespawnTime = respawnTime;
             this.particleTask = new ParticleTask(spawnPoint.element.getParticleData(), spawnPoint.location);
@@ -86,7 +86,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
             try {
                 spawnPoint.spawn();
             } catch (SpawnException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             } finally {
                 // spawn does cancel this task, however if an exception happened we need to
                 // cancel it here

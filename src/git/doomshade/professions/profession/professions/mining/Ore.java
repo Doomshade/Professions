@@ -6,6 +6,7 @@ import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
 import git.doomshade.professions.profession.spawn.SpawnableElement;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
@@ -38,11 +39,11 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
     public static final HashMap<String, Ore> ORES = new HashMap<>();
     private static final String EXAMPLE_ORE_ID = "example-ore";
     public static final Ore EXAMPLE_ORE = new Ore(EXAMPLE_ORE_ID, "Example ore name", Material.COAL_ORE, Collections.emptySortedSet(), new ArrayList<>(), new ParticleData());
-    private SortedSet<YieldResult> results;
+    private final SortedSet<YieldResult> results = new TreeSet<>();
 
-    private Ore(String id, String name, Material oreMaterial, SortedSet<YieldResult> results, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
+    private Ore(String id, String name, Material oreMaterial, Collection<YieldResult> results, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
         super(id, name, oreMaterial, (byte) 0, spawnPointLocations, particleData);
-        this.results = results;
+        this.results.addAll(results);
         if (!rejectedIds().contains(id))
             ORES.put(id, this);
     }
@@ -50,11 +51,6 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
     @Override
     protected Set<String> rejectedIds() {
         return Collections.singleton(EXAMPLE_ORE_ID);
-    }
-
-    @Nullable
-    public static Ore getOre(String id) {
-        return ORES.get(id);
     }
 
     /**
@@ -67,7 +63,7 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
     public static Ore deserialize(Map<String, Object> map, final String name) throws ProfessionObjectInitializationException {
 
         AtomicReference<ProfessionObjectInitializationException> ex = new AtomicReference<>();
-        final BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, Ore> func = (x, y) -> {
+        final BiFunction<SpawnableElement<OreSpawnPoint>, ProfessionObjectInitializationException, Ore> func = (x, y) -> {
 
             ex.set(y);
             if (x == null) return null;
@@ -82,9 +78,9 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
                     results.add(YieldResult.deserialize(dropSection.getValues(false)));
                 } catch (ConfigurationException e) {
                     e.append("Ore (" + name + ")");
-                    Professions.logError(e, false);
+                    ProfessionLogger.logError(e, false);
                 } catch (InitializationException e) {
-                    Professions.logError(e, false);
+                    ProfessionLogger.logError(e, false);
                 }
                 i++;
             }
@@ -132,12 +128,12 @@ public class Ore extends SpawnableElement<OreSpawnPoint> implements Configuratio
 
     @NotNull
     @Override
-    protected ItemTypeHolder<OreItemType> getItemTypeHolder() {
+    protected ItemTypeHolder<Ore, OreItemType> getItemTypeHolder() {
         return Professions.getProfMan().getItemTypeHolder(OreItemType.class);
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
 
         final Map<String, Object> map = super.serialize();
 

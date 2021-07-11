@@ -40,7 +40,7 @@ public class RemoveCommand extends AbstractEditCommand {
                 return;
             }
 
-            Ore ore = Ore.getOre(args[1]);
+            Ore ore = Ore.get(Ore.class, args[1]);
 
             if (ore == null) {
                 hrac.sendMessage("Invalid ore id");

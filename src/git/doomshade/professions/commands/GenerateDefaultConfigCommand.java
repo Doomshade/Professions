@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
@@ -28,7 +29,7 @@ public class GenerateDefaultConfigCommand extends AbstractCommand {
             Professions.getInstance().saveResource("config.yml", "defaultconfig.yml", true);
         } catch (Exception e) {
             sender.sendMessage("Error creating default config file");
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
             return;
         }
         sender.sendMessage("Successfully created default config file");

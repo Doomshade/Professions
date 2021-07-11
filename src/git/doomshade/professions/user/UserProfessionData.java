@@ -112,7 +112,7 @@ public class UserProfessionData implements IUserProfessionData {
 
         profession.onLevelUp(this);
         // prints new possible items
-        for (ItemTypeHolder<?> itemTypeHolder : profession.getItems()) {
+        for (ItemTypeHolder<?, ?> itemTypeHolder : profession.getItems()) {
             try {
                 Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel()).forEach(y -> user.sendMessage(builder.setItemType(y).build()));
             } catch (Utils.SearchNotFoundException ignored) {

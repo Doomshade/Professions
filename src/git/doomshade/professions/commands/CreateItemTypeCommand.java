@@ -1,7 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class CreateItemTypeCommand extends AbstractCommand {
             //ItemTypeHolder<?> holder = Professions.getItemTypeHolder(clazz);
             // final ItemType<?> o = holder.getRegisteredItemTypes().get(0);
         } catch (Exception e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

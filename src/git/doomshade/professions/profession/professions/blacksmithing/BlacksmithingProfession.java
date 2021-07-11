@@ -1,10 +1,10 @@
 package git.doomshade.professions.profession.professions.blacksmithing;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 
@@ -32,7 +32,7 @@ public class BlacksmithingProfession extends Profession {
         }
         ItemStack item = event.getItemType().getObject();
         String itemName = item != null ? item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
-        Professions.log(String.format("%s smithed %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
+        ProfessionLogger.log(String.format("%s smithed %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
     }
 
     @Override

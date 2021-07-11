@@ -4,6 +4,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -35,7 +36,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        for (ItemTypeHolder<?> itemTypeHolder : Professions.getProfMan().getItemTypeHolders()) {
+        for (ItemTypeHolder<?, ?> itemTypeHolder : Professions.getProfMan().getItemTypeHolders()) {
             ItemType<?> itemType = itemTypeHolder.getItemType();
 
 
@@ -52,7 +53,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 continue;
             }*/
 
-            File file = itemTypeHolder.getFile();
+            File file = ItemUtils.getItemTypeFile(itemType.getClass());
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
 
             // "items:"
@@ -67,7 +68,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                     // "items: '1': exp"
                     for (Map.Entry<?, Object> entry : en.getDefaultValues().entrySet()) {
                         if (!itemSection.isSet(entry.getKey().toString())) {
-                            Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
+                            ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
                         }
                         //
                         itemSection.addDefault(entry.getKey().toString(), entry.getValue());
@@ -81,11 +82,11 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
                 final Map<String, Object> serializedObject = itemType.getSerializedObject();
                 if (serializedObject == null) {
-                    Professions.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
+                    ProfessionLogger.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
                 } else {
                     for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
                         if (!objectSection.isSet(entry.getKey())) {
-                            Professions.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
+                            ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
                         }
                         objectSection.addDefault(entry.getKey(), entry.getValue());
                     }
@@ -97,7 +98,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             try {
                 loader.save(file);
             } catch (IOException e) {
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
                 return;
             }
 

@@ -8,6 +8,7 @@ import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.listeners.ProfessionListener;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
@@ -21,15 +22,12 @@ import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
-import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -50,35 +48,24 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
-    private HashSet<ItemTypeHolder<?>> items = new HashSet<>();
+    private final HashSet<ItemTypeHolder<?, ?>> items = new HashSet<>();
     private final ItemStack icon;
-    private final File file;
     private final ProfessionSettingsManager professionSettings;
 
-    public Profession() {
+    public Profession() throws IllegalStateException {
         this(false);
     }
 
-    private Profession(boolean ignoreInitializationError) {
+    private Profession(boolean ignoreInitializationError) throws IllegalStateException {
         // make sure only a single instance of this class is created
         ensureNotInitialized(ignoreInitializationError);
-
-        String fileName = getClass().getSimpleName().toLowerCase().replace("profession", "");
-        this.file = new File(Professions.getInstance().getProfessionFolder(), fileName.concat(Utils.YML_EXTENSION));
-        if (!file.exists() && !fileName.isEmpty()) {
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                Professions.logError(e);
-            }
-        }
 
         // initialize settings AFTER initializing file as settings require the profession file!
         ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
         try {
             settings.setup();
         } catch (Exception e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         this.professionSettings = settings;
         ProfessionSpecificDefaultsSettings defaults = settings.getSettings(ProfessionSpecificDefaultsSettings.class);
@@ -87,25 +74,11 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         this.pt = defaults.getProfessionType();
     }
 
-    private void ensureNotInitialized(boolean ignoreError) {
-        if (!ProfessionManager.getInitedProfessions().contains(getClass())) {
-            if (!ignoreError)
-                try {
-                    throw new IllegalAccessException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead");
-                } catch (IllegalAccessException e) {
-                    Professions.logError(e);
-                }
+    private void ensureNotInitialized(boolean ignoreError) throws IllegalStateException {
+        if (ProfessionManager.getInitedProfessions().contains(getClass()) && !ignoreError) {
+            throw new IllegalStateException("Do not access professions by their constructor, use ProfessionManager#getProfession(String) instead");
         }
 
-    }
-
-    /**
-     * Gets the settings file for profession
-     *
-     * @return the settings file for profession
-     */
-    public final File getFile() {
-        return file;
     }
 
     /**
@@ -190,14 +163,14 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      *
      * @param items the items
      */
-    protected final void addItems(Class<? extends ItemType<?>> items) {
+    protected final <T, A extends ItemType<T>> void addItems(Class<A> items) {
         this.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 
     /**
      * @return the handled {@link ItemType}'s holders
      */
-    public final Iterable<ItemTypeHolder<?>> getItems() {
+    public final Iterable<ItemTypeHolder<?, ?>> getItems() {
         return items;
     }
 
@@ -379,7 +352,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
             event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
             return;
         }
-        for (ItemTypeHolder<?> ith : items) {
+        for (ItemTypeHolder<?, ?> ith : items) {
             for (ItemType<?> it : ith) {
                 if (it.getClass().equals(event.getItemType().getClass())) {
                     onEvent(new ProfessionEventWrapper<>(event));

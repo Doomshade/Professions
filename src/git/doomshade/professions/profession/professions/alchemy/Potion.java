@@ -5,6 +5,8 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
@@ -64,7 +66,7 @@ public class Potion implements ConfigurationSerializable {
     }
 
     private static File getFile(Player player) {
-        return new File(Professions.getInstance().getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
+        return new File(IOManager.getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
     }
 
     @Deprecated
@@ -133,7 +135,7 @@ public class Potion implements ConfigurationSerializable {
         try {
             return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
         } catch (Utils.SearchNotFoundException e) {
-            Professions.log(POTIONS);
+            ProfessionLogger.log(POTIONS);
             throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
         }
     }
@@ -171,7 +173,7 @@ public class Potion implements ConfigurationSerializable {
         try {
             potion = ItemUtils.deserialize(mem.getValues(false));
         } catch (ConfigurationException | InitializationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize potion ItemStack from file.");
         }
 

@@ -1,6 +1,6 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
@@ -24,7 +24,7 @@ public class BackupCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        BackupTask.Result result = Professions.getInstance().backup();
+        BackupTask.Result result = IOManager.backup();
         if (result == BackupTask.Result.SUCCESS) {
             sender.sendMessage("Successfully backed up files");
         } else {

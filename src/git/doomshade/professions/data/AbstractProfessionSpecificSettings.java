@@ -1,7 +1,7 @@
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.IOManager;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,7 +27,7 @@ public abstract class AbstractProfessionSpecificSettings extends AbstractSetting
      */
     AbstractProfessionSpecificSettings(Profession profession) {
         this.profession = profession;
-        this.loader = YamlConfiguration.loadConfiguration(profession.getFile());
+        this.loader = YamlConfiguration.loadConfiguration(IOManager.getProfessionFile(profession));
     }
 
     @Override

@@ -10,6 +10,8 @@ import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.MaxProfessionsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionTask;
@@ -48,7 +50,7 @@ public final class User implements IUser {
 
     private User(Player player) throws IOException {
         this.player = player;
-        this.file = new File(Professions.getInstance().getPlayerFolder(), player.getUniqueId().toString() + ".yml");
+        this.file = new File(IOManager.getPlayerFolder(), player.getUniqueId().toString() + ".yml");
         this.loader = YamlConfiguration.loadConfiguration(file);
         if (!file.exists()) {
             this.file.createNewFile();
@@ -95,7 +97,7 @@ public final class User implements IUser {
         try {
             loadUser(player);
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         return USERS.get(player.getUniqueId());
     }
@@ -425,7 +427,7 @@ public final class User implements IUser {
         // filter out subprofessions
         if (professions.values().stream().filter(x -> !(x.getProfession().isSubprofession())).count() > maxProfessions) {
             final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
-            Professions.log(message, Level.SEVERE);
+            ProfessionLogger.log(message, Level.SEVERE);
         }
     }
 

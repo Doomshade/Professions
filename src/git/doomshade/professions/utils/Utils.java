@@ -20,6 +20,31 @@ public final class Utils {
 
     public static final String YML_EXTENSION = ".yml";
 
+    /**
+     * Sorts the map by value
+     *
+     * @param map the map to sort
+     * @return sorted map
+     */
+    public static <K, V> LinkedHashMap<K, V> sortMapByValue(Map<K, V> map, Comparator<V> comparator) {
+        LinkedHashMap<K, V> sortedMap = new LinkedHashMap<>();
+        if (map == null) {
+            return sortedMap;
+        }
+        if (comparator == null) {
+            sortedMap.putAll(map);
+            return sortedMap;
+        }
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+
+        list.sort(Map.Entry.comparingByValue(comparator));
+        for (Map.Entry<K, V> entry : list) {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
+    }
+
     public static String getReceiveXp(int xp) {
         return String.format(" and received %d XP", xp);
     }

@@ -4,9 +4,9 @@ import git.doomshade.diablolike.DiabloLike;
 import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.exceptions.InitializationException;
-import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
@@ -69,7 +69,7 @@ public final class ItemUtils implements ISetup {
 
     private static boolean loggedDiablo = false;
     private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
-    private static final File ITEMS_LOGGED_FILE = new File(Professions.getInstance().getCacheFolder(), "itemutilscache.bin");
+    private static final File ITEMS_LOGGED_FILE = new File(IOManager.getCacheFolder(), "itemutilscache.bin");
 
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
 
@@ -232,14 +232,14 @@ public final class ItemUtils implements ISetup {
 
     private static void logDiablo(Map<String, Object> map) {
         if (!loggedDiablo) {
-            Professions.log("Found items that are not a DiabloItem.");
-            Professions.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
-            Professions.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
+            ProfessionLogger.log("Found items that are not a DiabloItem.");
+            ProfessionLogger.log("To use diablo item, replace display-name, lore, ..., with \"diabloitem: <config_name>\"");
+            ProfessionLogger.log("To update the logs file, use command: " + ChatColor.stripColor(AbstractCommandHandler.infoMessage(CommandHandler.class, SaveCommand.class)), Level.INFO);
             loggedDiablo = true;
         }
         if (!ITEMS_LOGGED.contains(map)) {
-            Professions.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
-            Professions.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
+            ProfessionLogger.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.", Level.WARNING);
+            ProfessionLogger.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
             ITEMS_LOGGED.add(map);
         }
     }
@@ -308,8 +308,8 @@ public final class ItemUtils implements ISetup {
             // we found more than one diablo item with the same name and material (this shit should not happen btw)
             if (items.size() > 1) {
                 // log that we found the diablo item but there were duplicates
-                Professions.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
-                Professions.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
+                ProfessionLogger.log("Found multiple DiabloItems for a single itemstack, diablo item must both have unique display and config name" + displayName, Level.WARNING);
+                ProfessionLogger.log("Duplicates: " + items.stream().map(DiabloItem::getConfigName).collect(Collectors.joining(", ")), Level.WARNING);
             }
             // there was only one of a kind diabloitem
             else {
@@ -432,7 +432,8 @@ public final class ItemUtils implements ISetup {
                 desc.set(i, ChatColor.translateAlternateColorCodes('&', (s.replaceAll(regex, replacement))));
             }
         }
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(itemType.getFile());
+        final File f = getItemTypeFile(itemType.getClass());
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
         // gem.yml -> items.1
         final String itemSection = ItemType.KEY + "." + itemType.getFileId() + ".";
@@ -450,8 +451,8 @@ public final class ItemUtils implements ISetup {
 
             // TODO log some error
             if (obj == null) {
-                Professions.log("Could not replace patterns in item type lore because no section " + section + " was found in " + itemType.getFile().getName() + " file.", Level.SEVERE);
-                Professions.log("\"" + s + "\"", Level.INFO);
+                ProfessionLogger.log("Could not replace patterns in item type lore because no section " + section + " was found in " + f.getName() + " file.", Level.SEVERE);
+                ProfessionLogger.log("\"" + s + "\"", Level.INFO);
                 continue;
             }
 
@@ -545,8 +546,8 @@ public final class ItemUtils implements ISetup {
      * @param clazz the {@link ItemType} class
      * @return the file of {@link ItemType}
      */
-    public static File getItemTypeFile(Class<?> clazz) {
-        return new File(Professions.getInstance().getItemsFolder(), clazz.getSimpleName().toLowerCase().replace("itemtype", "").concat(Utils.YML_EXTENSION));
+    public static File getItemTypeFile(Class<? extends ItemType> clazz) {
+        return new File(IOManager.getItemFolder(), clazz.getSimpleName().toLowerCase().replace("itemtype", "").concat(Utils.YML_EXTENSION));
     }
 
     /**
@@ -598,7 +599,7 @@ public final class ItemUtils implements ISetup {
                 try {
                     oos.writeObject(x);
                 } catch (IOException e) {
-                    Professions.logError(e);
+                    ProfessionLogger.logError(e);
                 }
             });
         }

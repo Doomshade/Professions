@@ -1,6 +1,8 @@
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 
 import java.io.*;
@@ -32,10 +34,10 @@ public class BackupTask extends ExtendedBukkitRunnable {
     public void run() {
 
         try {
-            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(Professions.getInstance().getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(IOManager.getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 

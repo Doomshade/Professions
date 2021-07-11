@@ -6,6 +6,7 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -83,7 +84,7 @@ public class HerbalismProfession extends Profession {
                 case UNKNOWN:
                     break;
             }
-            Professions.log(msg, Level.CONFIG);
+            ProfessionLogger.log(msg, Level.CONFIG);
         };
 
         // create and run the task

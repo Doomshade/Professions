@@ -1,7 +1,5 @@
 package git.doomshade.professions.api.item;
 
-import com.google.common.collect.ImmutableList;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
@@ -9,6 +7,8 @@ import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,22 +19,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
- * Holder for {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(ItemTypeHolder)}.
+ * Holder for {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class, Object, Consumer)}.
  *
  * @param <Type> the ItemType
  * @author Doomshade
  * @version 1.0
  * @see IProfessionManager
  */
-public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> {
+public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Type> {
 
     /**
      * Keys in item type file
@@ -44,12 +42,10 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
     /**
      * List required for the ordering of item types
      */
-    private final List<Type> itemTypes = new ArrayList<>();
+    private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
 
-    /**
-     * The sorting order
-     */
-    private final List<SortType> sortTypes = new ArrayList<>();
+    private Comparator<Type> comparator = null;
+
     /**
      * The example item type (this item type should have an ID of -1)
      */
@@ -69,46 +65,51 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
      *
      * @param itemType the ItemType to create a holder for
      */
-    public ItemTypeHolder(Type itemType) {
-        this.itemType = itemType;
+    public ItemTypeHolder(Class<Type> itemType, T o) {
+        this(itemType, o, null);
     }
 
     /**
-     * Adds a custom item type that is not in the file into this item holder
+     * The main constructor of a holder of ItemType
+     * <p>Note that the ItemType should have an ID of -1 (i.e. not deserialized from file) !</p>
      *
-     * @param item the ItemType to add
-     * @see #getRegisteredItemTypes()
+     * @param itemType the ItemType to create a holder for
      */
-    public final void registerObject(Type item) {
-        if (!itemTypes.contains(item)) {
-            itemTypes.add(item);
+    public ItemTypeHolder(Class<Type> itemType, T o, Consumer<Type> additionalFunction) {
+        this.itemType = ItemType.getExampleItemType(itemType, o);
+        if (additionalFunction != null) {
+            additionalFunction.accept(this.itemType);
         }
     }
 
     /**
-     * @return all registered item types
+     * Saves and loads the item type holder
+     *
+     * @throws IOException if an error occurs
      */
-    public final List<Type> getRegisteredItemTypes() {
-        return itemTypes;
+    public void update() throws IOException {
+        save(true);
+        load();
     }
 
     /**
      * Adds defaults and saves files
      *
+     * @param override whether to override or only add default
      * @throws IOException if the save is unsuccessful
      */
-    public final void save(boolean safely) throws IOException {
-        File itemFile = itemType.getFile();
+    public final void save(boolean override) throws IOException {
+        File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
-            Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
-            Professions.logError(e, false);
+            ProfessionLogger.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
+            ProfessionLogger.logError(e, false);
             return;
         }
-        final ImmutableList<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
-        if (safely) {
+        final List<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
+        if (override) {
             loader.addDefault(ERROR_MESSAGE, errorMessage);
             loader.addDefault(SORTED_BY, sortedBy);
             loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
@@ -125,13 +126,13 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         }
 
         if (itemsSection != null) {
-            if (safely) {
+            if (override) {
                 itemsSection.addDefault(String.valueOf(0), itemType.serialize());
             }
             if (!itemTypes.isEmpty()) {
                 for (int i = 0; i < itemTypes.size(); i++) {
-                    Type registeredObject = itemTypes.get(i);
-                    if (safely) {
+                    ItemType<?> registeredObject = itemTypes.get(i);
+                    if (override) {
                         itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
                     } else {
                         itemsSection.set(String.valueOf(i), registeredObject.serialize());
@@ -143,21 +144,6 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         loader.save(itemFile);
     }
 
-    /**
-     * @return the example item type this holder holds
-     */
-    public final Type getItemType() {
-        return itemType;
-    }
-
-    /**
-     * @return the file of this item type holder
-     * @see ItemType#getFile()
-     */
-    public final File getFile() {
-        return itemType.getFile();
-    }
-
 
     /**
      * Loads the item type holder from file
@@ -166,26 +152,30 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
      */
     @SuppressWarnings("all")
     public void load() throws IOException {
-        File itemFile = itemType.getFile();
+        File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
-            Professions.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
-            Professions.logError(e, false);
+            ProfessionLogger.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
+            ProfessionLogger.logError(e, false);
             return;
         }
 
         // TODO make a new method for this
         this.errorMessage = loader.getStringList(ERROR_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
 
-        this.sortTypes.clear();
+        this.itemTypes.clear();
+        Comparator<ItemType<?>> comparator = null;
         for (String st : loader.getStringList(SORTED_BY)) {
             SortType sortType = SortType.getSortType(st);
-            if (sortType != null) {
-                this.sortTypes.add(sortType);
+            if (comparator == null) {
+                comparator = sortType.getComparator();
+            } else {
+                comparator = comparator.thenComparing(sortType.getComparator());
             }
         }
+        this.comparator = comparator == null ? (Comparator<Type>) SortType.NAME.getComparator() : (Comparator<Type>) comparator;
 
         // TODO
         this.newItemsMessage = loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
@@ -202,11 +192,11 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             try {
                 Type deserializedItemType = (Type) ItemType.deserialize(clazz, i);
                 if (deserializedItemType != null) {
-                    itemTypes.add(deserializedItemType);
+                    itemTypes.put(i, deserializedItemType);
                 }
             } catch (Exception e) {
-                Professions.log("Could not deserialize " + itemType.getClass().getSimpleName());
-                Professions.logError(e, !(e instanceof InitializationException));
+                ProfessionLogger.log("Could not deserialize " + itemType.getClass().getSimpleName());
+                ProfessionLogger.logError(e, !(e instanceof InitializationException));
                 successInit = false;
                 continue;
             }
@@ -216,7 +206,7 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
             try {
                 final CommandHandler instance = CommandHandler.getInstance(CommandHandler.class);
                 if (instance != null)
-                    Professions.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(instance.getCommand(GenerateDefaultsCommand.class))) + " is advised.");
+                    ProfessionLogger.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(instance.getCommand(GenerateDefaultsCommand.class))) + " is advised.");
             } catch (Utils.SearchNotFoundException ignored) {
             }
         }
@@ -228,27 +218,11 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
      * Sorts from last index to first index as the first sort has the highest priority
      */
     public void sortItems() {
-        for (int j = sortTypes.size() - 1; j >= 0; j--) {
-            final SortType sortType = sortTypes.get(j);
-            itemTypes.sort(sortType.getComparator());
-        }
+        this.itemTypes = Utils.sortMapByValue(this.itemTypes, this.comparator);
     }
 
-    public void sortItems(List<ItemType<?>> items) {
-        for (int j = sortTypes.size() - 1; j >= 0; j--) {
-            final SortType sortType = sortTypes.get(j);
-            items.sort(sortType.getComparator());
-        }
-    }
-
-    /**
-     * Saves and loads the item type holder
-     *
-     * @throws IOException if an error occurs
-     */
-    public void update() throws IOException {
-        save(true);
-        load();
+    public void sortItems(List<Type> items) {
+        items.sort(this.comparator);
     }
 
     /**
@@ -265,8 +239,19 @@ public class ItemTypeHolder<Type extends ItemType<?>> implements Iterable<Type> 
         return newItemsMessage;
     }
 
+    public Comparator<Type> getComparator() {
+        return comparator;
+    }
+
+    /**
+     * @return the example item type this holder holds
+     */
+    public final Type getItemType() {
+        return itemType;
+    }
+
     @Override
     public @NotNull Iterator<Type> iterator() {
-        return itemTypes.iterator();
+        return itemTypes.values().iterator();
     }
 }

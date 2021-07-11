@@ -44,7 +44,7 @@ public class LevelCommand extends AbstractCommand {
                 target = (Player) sender;
             }
         }
-        Optional<Profession> opt = Professions.getProfessionById(args[1]);
+        Optional<Profession> opt = Professions.getProfMan().getProfessionById(args[1]);
         if (!opt.isPresent()) {
             return;
         }

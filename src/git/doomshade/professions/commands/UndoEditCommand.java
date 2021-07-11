@@ -1,6 +1,6 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -42,7 +42,7 @@ public class UndoEditCommand extends AbstractCommand {
                 sender.sendMessage("Undid previous action made to " + file.getName());
             } catch (IOException e) {
                 sender.sendMessage("Could not undo previous actions! Check console for more output.");
-                Professions.logError(e);
+                ProfessionLogger.logError(e);
             }
         } else {
             sender.sendMessage("Nothing to undo");

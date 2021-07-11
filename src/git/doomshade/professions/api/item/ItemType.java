@@ -1,6 +1,5 @@
 package git.doomshade.professions.api.item;
 
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
@@ -13,6 +12,7 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -31,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -59,7 +58,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     private int exp, levelReq;
     private T item;
-    private final File itemFile;
     private String name = "";
     private String configName = "";
     private List<String> description, restrictedWorlds;
@@ -76,14 +74,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @param object the object
      */
     public ItemType(T object) {
-        this.itemFile = getFile(getClass());
-        if (!itemFile.exists()) {
-            try {
-                itemFile.createNewFile();
-            } catch (IOException e) {
-                Professions.logError(e);
-            }
-        }
         this.setLevelReq(1);
         this.setExp(0);
         this.setObject(object);
@@ -133,9 +123,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             instance.deserialize(id, map);
             return instance;
         } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-            Professions.log("Could not deserialize " + clazz.getSimpleName()
+            ProfessionLogger.log("Could not deserialize " + clazz.getSimpleName()
                     + " from file as it does not override an ItemType(T) constructor!", Level.SEVERE);
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
         return null;
     }
@@ -177,7 +167,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             setInventoryRequirements(Requirements.deserialize(invReqSection.getValues(false)));
         } catch (ConfigurationException e) {
-            Professions.logError(e, false);
+            ProfessionLogger.logError(e, false);
         }
 
         // object deserialization
@@ -185,8 +175,8 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             setObject(deserializeObject(objSection.getValues(true)));
         } catch (ProfessionObjectInitializationException e) {
-            Professions.log("Failed to load object from " + getFile().getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
-            Professions.logError(e, false);
+            ProfessionLogger.log("Failed to load object from " + ItemUtils.getItemTypeFile(getClass()).getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
+            ProfessionLogger.logError(e, false);
         }
     }
 
@@ -233,7 +223,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      */
     private void setFileId(int fileId) {
         this.fileId = fileId;
-        final String fileName = getFile().getName();
+        final String fileName = ItemUtils.getItemTypeFile(getClass()).getName();
         this.configName = fileName.substring(0, fileName.lastIndexOf('.')) + "." + fileId;
     }
 
@@ -248,10 +238,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
             throw new UnsupportedOperationException("Cannot get the config name of an example Item Type!");
         }
         return configName;
-    }
-
-    private static <A extends ItemType<?>> File getFile(Class<A> clazz) {
-        return ItemUtils.getItemTypeFile(clazz);
     }
 
     /**
@@ -416,13 +402,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @return the file of this item type
-     */
-    public final File getFile() {
-        return itemFile;
-    }
-
-    /**
      * @return the object (or objective) of this item type
      */
     @Nullable
@@ -517,7 +496,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     @SuppressWarnings("all")
     public String toCompactString() {
-        String name = getFile().getName();
+        String name = ItemUtils.getItemTypeFile(getClass()).getName();
         StringBuilder sb = new StringBuilder("{")
                 .append(name)
                 .append(",")

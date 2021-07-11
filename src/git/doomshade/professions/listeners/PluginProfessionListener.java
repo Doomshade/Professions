@@ -6,6 +6,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.task.CraftingTask;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -58,7 +59,7 @@ public class PluginProfessionListener implements Listener {
             player.sendMessage(new Messages.MessageBuilder(Messages.Global.INVALID_REPEAT_AMOUNT).setPlayer(player).setProfession(task.getUpd().getProfession()).build());
         } catch (Exception e2) {
             player.sendMessage(ChatColor.RED + "Nastala neočekávaná chyba. Kontaktuj prosím admina, napiš mu čas, kdy se stala, a pokus se popsat situaci, která nastala.");
-            Professions.logError(e2);
+            ProfessionLogger.logError(e2);
         }
 
     }

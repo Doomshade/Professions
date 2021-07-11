@@ -40,17 +40,17 @@ public class OreItemType extends ItemType<Ore> {
 
     @Override
     public void onLoad() {
-        for (Ore ore : Ore.ORES.values()) {
+        for (Ore ore : Ore.getElements(Ore.class).values()) {
             ore.scheduleSpawns();
         }
     }
 
     @Override
     public void onDisable() {
-        for (Ore ore : Ore.ORES.values()) {
+        for (Ore ore : Ore.getElements(Ore.class).values()) {
             ore.despawnAll();
         }
-        Ore.ORES.clear();
+        Ore.getElements(Ore.class).clear();
         ExtendedLocation.SPAWN_POINTS.clear();
     }
 }

@@ -3,12 +3,13 @@ package git.doomshade.professions.profession.spawn;
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.ILocationElement;
 import git.doomshade.professions.api.spawn.ISpawnableElement;
-import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.api.spawn.ILocationElement;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -37,8 +38,8 @@ import static git.doomshade.professions.profession.spawn.SpawnableElement.Spawna
  * @author Doomshade
  * @version 1.0
  */
-public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
-        implements ILocationElement, ConfigurationSerializable, ISpawnableElement<SpawnPointType> {
+public abstract class SpawnableElement<SpawnPointType extends SpawnPoint> extends LocationElement
+        implements ConfigurationSerializable, ISpawnableElement<SpawnPointType> {
 
     private final List<ExtendedLocation> spawnPointLocations;
     private final HashMap<Location, SpawnPointType> spawnPoints = new HashMap<>();
@@ -46,11 +47,6 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
             Class<? extends SpawnableElement>,
             HashMap<String, SpawnableElement<? extends SpawnPoint>>
             > SPAWNABLE_ELEMENTS = new HashMap<>();
-    private final String id;
-    private final String name;
-    private final Material material;
-    private final byte materialData;
-    private final ParticleData particleData;
 
     protected SpawnableElement(String id, String name, Material material, byte materialData,
                                List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
@@ -59,12 +55,8 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
 
     private SpawnableElement(String id, String name, Material material, byte materialData,
                              List<ExtendedLocation> spawnPointLocations, ParticleData particleData, boolean registerElement) {
+        super(id, name, material, materialData, particleData);
         this.spawnPointLocations = new ArrayList<>(spawnPointLocations);
-        this.id = id;
-        this.name = name;
-        this.material = material;
-        this.materialData = materialData;
-        this.particleData = particleData;
 
         if (!rejectedIds().contains(id) && registerElement) {
             final HashMap<String, SpawnableElement<? extends SpawnPoint>> map = SPAWNABLE_ELEMENTS.getOrDefault(getClass(), new HashMap<>());
@@ -73,18 +65,26 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         }
     }
 
-    public static ImmutableMap<String, SpawnableElement<? extends SpawnPoint>> getSpawnableElements(Class<? extends SpawnableElement> of) {
-        return ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(of));
+    public static <T extends SpawnPoint, E extends SpawnableElement<T>> Map<String, E> getElements(Class<E> of) {
+        return (Map<String, E>) SPAWNABLE_ELEMENTS.get(of);
     }
 
-    public static ImmutableMap<String, SpawnableElement<? extends SpawnPoint>> getSpawnableElements() {
+    public static <T extends SpawnPoint, E extends SpawnableElement<T>> ImmutableMap<String, E> getAllElements() {
         final Collection<HashMap<String, SpawnableElement<? extends SpawnPoint>>> values = SPAWNABLE_ELEMENTS.values();
 
         final HashMap<String, SpawnableElement<? extends SpawnPoint>> map = new HashMap<>();
         for (HashMap<String, SpawnableElement<? extends SpawnPoint>> v : values) {
             map.putAll(v);
         }
-        return ImmutableMap.copyOf(map);
+        return (ImmutableMap<String, E>) ImmutableMap.copyOf(map);
+    }
+
+    public <E extends SpawnableElement<SpawnPointType>> Map<String, E> getElements() {
+        return (Map<String, E>) SPAWNABLE_ELEMENTS.get(getClass());
+    }
+
+    public static <T extends SpawnPoint, E extends SpawnableElement<T>> E get(Class<E> of, String id) {
+        return getElements(of).get(id);
     }
 
     /**
@@ -168,12 +168,12 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         if (sp == null || !isSpawnPointLocation(sp)) {
             return;
         }
-        final BackupTask.Result result = Professions.getInstance().backupFirst();
+        final BackupTask.Result result = IOManager.backupFirst();
         if (result != null) {
             if (result == BackupTask.Result.SUCCESS)
-                Professions.log(ChatColor.GREEN + "Backed up files before editing file.");
+                ProfessionLogger.log(ChatColor.GREEN + "Backed up files before editing file.");
             else
-                Professions.log(ChatColor.RED + "Failed to back up files. Contact admins to check console output!");
+                ProfessionLogger.log(ChatColor.RED + "Failed to back up files. Contact admins to check console output!");
         }
         spawnPointLocations.remove(sp);
         getSpawnPoints(sp).despawn();
@@ -187,7 +187,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         try {
             getItemTypeHolder().save(false);
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 
@@ -208,7 +208,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
      * @return the item type holder of this class
      */
     @NotNull
-    protected abstract ItemTypeHolder<?> getItemTypeHolder();
+    protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();
 
     /**
      * @param location the location to check for
@@ -299,32 +299,12 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
             Location location = block.getLocation();
             for (HashMap<String, SpawnableElement<? extends SpawnPoint>> v : SPAWNABLE_ELEMENTS.values()) {
                 try {
-                    return Utils.findInIterable(v.values(), x -> x.material == mat && x.isSpawnPointLocation(location));
+                    return Utils.findInIterable(v.values(), x -> x.getMaterial() == mat && x.isSpawnPointLocation(location));
                 } catch (Utils.SearchNotFoundException ignored) {
                 }
             }
             return null;
         };
-    }
-
-    @Override
-    public final String getId() {
-        return id;
-    }
-
-    @Override
-    public final Material getMaterial() {
-        return material;
-    }
-
-    @Override
-    public final byte getMaterialData() {
-        return materialData;
-    }
-
-    @Override
-    public final ParticleData getParticleData() {
-        return particleData;
     }
 
     @Override
@@ -364,10 +344,10 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
      * @param <T>                the desired object type
      * @return the desired object
      */
-    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(
+    public static <A extends SpawnPoint, T extends SpawnableElement<A>> T deserialize(
             Map<String, Object> map,
             Class<T> clazz,
-            BiFunction<SpawnableElement<?>, ProfessionObjectInitializationException, T> conversionFunction)
+            BiFunction<SpawnableElement<A>, ProfessionObjectInitializationException, T> conversionFunction)
             throws ProfessionObjectInitializationException {
 
         // get missing keys and initialize exception
@@ -385,7 +365,11 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         }
 
 
-        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(clazz, missingKeys, ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
+        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(
+                clazz,
+                missingKeys,
+                ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS
+        );
         if (!missingKeys.isEmpty()) {
             return conversionFunction.apply(null, ex);
         }
@@ -394,14 +378,25 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         ItemStack material = ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s));
         MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
         final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
-        SpawnableElement<?> spawnableElement = new SpawnableElementImpl<>(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(), spawnPointLocations, particleData);
+        SpawnableElement<A> spawnableElement = new SpawnableElement<>(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(), spawnPointLocations, particleData) {
+
+            @Override
+            public A createSpawnPoint(Location location) {
+                return null;
+            }
+
+            @Override
+            protected @NotNull ItemTypeHolder<?, ?> getItemTypeHolder() {
+                return null;
+            }
+        };
 
         return conversionFunction.apply(spawnableElement, ex);
     }
 
     // worst case scenario (if this does not work) - replace BiFunction with Function..
 
-    public static <T extends SpawnableElement<? extends SpawnPoint>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<?>, T> conversionFunction) throws ProfessionObjectInitializationException {
+    public static <A extends SpawnPoint, T extends SpawnableElement<A>> T deserialize(Map<String, Object> map, Class<T> clazz, Function<SpawnableElement<A>, T> conversionFunction) throws ProfessionObjectInitializationException {
         return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
 
@@ -439,11 +434,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
 
     }
 
-    @Override
-    public final String getName() {
-        return name;
-    }
-
+    @Deprecated
     private static class SpawnableElementImpl<T extends SpawnPoint> extends SpawnableElement<T> {
 
         protected SpawnableElementImpl(String id, String name, Material material, byte materialData, List<ExtendedLocation> spawnPointLocations, ParticleData particleData) {
@@ -456,7 +447,7 @@ public abstract class SpawnableElement<SpawnPointType extends SpawnPoint>
         }
 
         @Override
-        protected @NotNull ItemTypeHolder<?> getItemTypeHolder() {
+        protected @NotNull ItemTypeHolder<?, ?> getItemTypeHolder() {
             return null;
         }
 

@@ -2,6 +2,8 @@ package git.doomshade.professions.listeners;
 
 import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.user.User;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -62,9 +64,9 @@ public class UserListener implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         try {
-            Professions.unloadUser(Professions.getUserr(e.getPlayer()));
+            User.unloadUser(User.getUser(e.getPlayer()));
         } catch (IOException e1) {
-            Professions.logError(e1);
+            ProfessionLogger.logError(e1);
         }
     }
 
@@ -72,9 +74,9 @@ public class UserListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         final Player player = e.getPlayer();
         try {
-            Professions.loadUser(player);
+            User.loadUser(player);
         } catch (IOException ex) {
-            Professions.logError(ex);
+            ProfessionLogger.logError(ex);
         }
 
         //

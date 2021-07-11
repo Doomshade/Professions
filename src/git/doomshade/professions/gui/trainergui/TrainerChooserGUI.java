@@ -2,6 +2,7 @@ package git.doomshade.professions.gui.trainergui;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.utils.Utils;
 import net.citizensnpcs.api.CitizensAPI;
@@ -38,8 +39,7 @@ public class TrainerChooserGUI extends GUI {
             getHolder().sendMessage(selectedNpc.getName() + ChatColor.RESET + " does not have Trainer Trait!");
             throw new GUIInitializationException();
         }
-        final Professions plugin = Professions.getInstance();
-        File[] files = plugin.getTrainerFolder().listFiles();
+        File[] files = IOManager.getTrainerFolder().listFiles();
 
         if (files == null) throw new GUIInitializationException();
         GUIInventory.Builder builder = getInventoryBuilder().size(9).title("Trainer chooser");

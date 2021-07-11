@@ -1,9 +1,8 @@
 package git.doomshade.professions.task;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 
-import java.time.Clock;
 import java.time.Duration;
 
 public class LogTask extends ExtendedBukkitRunnable {
@@ -14,7 +13,7 @@ public class LogTask extends ExtendedBukkitRunnable {
 
     @Override
     public void run() {
-        Professions.saveLogFile();
+        IOManager.saveLogFile();
     }
 
     @Override

@@ -6,6 +6,8 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
@@ -13,6 +15,7 @@ import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
+import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
@@ -29,13 +32,13 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 
-public class TrainerGUI extends GUI implements ISetup {
+public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISetup {
 
     private static final HashMap<String, List<ItemType<?>>> CACHE = new HashMap<>();
     private static final HashMap<String, Profession> CACHE_PROFESSIONS = new HashMap<>();
     private static boolean inited = false;
     private String trainerId;
-    private List<ItemType<?>> trainableItems = new ArrayList<>();
+    private List<Type> trainableItems = new ArrayList<>();
     private Profession eligibleProfession;
 
     protected TrainerGUI(Player guiHolder, GUIManager manager) {
@@ -51,8 +54,8 @@ public class TrainerGUI extends GUI implements ISetup {
         }
         this.trainerId = getContext().getContext(TrainerTrait.KEY_TRAINER_ID);
 
-        if (CACHE.containsKey(trainerId)) {
-            trainableItems = CACHE.get(trainerId);
+        if (!CACHE.isEmpty()) {
+            trainableItems = (List<Type>) CACHE.get(trainerId);
             eligibleProfession = CACHE_PROFESSIONS.get(trainerId);
         } else {
             loadFromFile();
@@ -61,9 +64,9 @@ public class TrainerGUI extends GUI implements ISetup {
         if (trainableItems == null || trainableItems.isEmpty()) {
             final String message = "Could not load trainer GUI somehow.. Call DANKSEJD";
             getHolder().sendMessage(message);
-            Professions.log(message, Level.SEVERE);
+            ProfessionLogger.log(message, Level.SEVERE);
             final GUIInitializationException ex = new GUIInitializationException();
-            Professions.log(message + "\n" + Arrays.toString(ex.getStackTrace()), Level.CONFIG);
+            ProfessionLogger.log(message + "\n" + Arrays.toString(ex.getStackTrace()), Level.CONFIG);
             throw ex;
         }
 
@@ -155,7 +158,7 @@ public class TrainerGUI extends GUI implements ISetup {
         trainableItems.clear();
         eligibleProfession = null;
 
-        File trainerFile = new File(Professions.getInstance().getTrainerFolder(), trainerId.concat(".yml"));
+        File trainerFile = new File(IOManager.getTrainerFolder(), trainerId.concat(".yml"));
         FileConfiguration loader = YamlConfiguration.loadConfiguration(trainerFile);
 
         final ProfessionManager profMan = Professions.getProfMan();
@@ -173,30 +176,33 @@ public class TrainerGUI extends GUI implements ISetup {
                 try {
                     range = Range.fromString(split[1]);
                 } catch (Exception e) {
-                    Professions.logError(e);
+                    ProfessionLogger.logError(e);
                     return;
                 }
             }
 
             // 2) get item type holder
-            ItemTypeHolder<?> holder;
+            ItemTypeHolder<T, Type> holder;
             try {
-                holder = Utils.findInIterable(
+                holder = (ItemTypeHolder<T, Type>) Utils.findInIterable(
                         profMan.getItemTypeHolders(),
-                        x -> x.getFile().getName().substring(0, x.getFile().getName().lastIndexOf('.'))
-                                .equalsIgnoreCase(configName));
+                        x -> {
+                            final String s = ItemUtils.getItemTypeFile(x.getItemType().getClass()).getName();
+                            return s.substring(0, s.lastIndexOf('.'))
+                                    .equalsIgnoreCase(configName);
+                        });
             } catch (Utils.SearchNotFoundException e) {
                 throw new RuntimeException(e);
             }
 
             // 3) add and filter
             if (range.getMin() == -1) {
-                for (ItemType<?> itemType : holder) {
+                for (Type itemType : holder) {
                     trainableItems.add(itemType);
 
                 }
             } else {
-                for (ItemType<?> itemType : holder) {
+                for (Type itemType : holder) {
                     if (range.isInRange(itemType.getFileId(), true))
                         trainableItems.add(itemType);
 
@@ -209,12 +215,12 @@ public class TrainerGUI extends GUI implements ISetup {
         // now professions
         final String profession = loader.getString("profession");
         if (profession == null) {
-            Professions.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)", Level.WARNING);
+            ProfessionLogger.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)", Level.WARNING);
             throw new GUIInitializationException();
         }
-        this.eligibleProfession = Professions.getProfessionById(profession)
+        this.eligibleProfession = Professions.getProfMan().getProfessionById(profession)
                 .orElseThrow(GUIInitializationException::new);
-        CACHE.put(trainerId, trainableItems);
+        CACHE.put(trainerId, (List<ItemType<?>>) trainableItems);
         CACHE_PROFESSIONS.put(trainerId, eligibleProfession);
     }
 

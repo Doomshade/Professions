@@ -1,6 +1,7 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -45,7 +46,7 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
             cancel();
 
             // TODO
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
             throw e;
         }
     }

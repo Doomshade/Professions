@@ -1,6 +1,7 @@
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.Professions;
+import git.doomshade.professions.io.IOManager;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
@@ -54,15 +55,14 @@ public class LogFilterCommand extends AbstractCommand {
         }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
 
         final Pattern pattern = Pattern.compile(thePattern);
-        final Professions instance = Professions.getInstance();
         if (args.length >= 3) {
             String logFileName = String.join(" ", Arrays.asList(args).subList(i[0], args.length));
-            logFile = new File(instance.getLogsFolder(), logFileName);
+            logFile = new File(IOManager.getLogsFolder(), logFileName);
             if (!logFile.exists()) {
-                logFile = new File(instance.getFilteredLogsFolder(), logFileName);
+                logFile = new File(IOManager.getFilteredLogsFolder(), logFileName);
             }
         } else {
-            logFile = instance.getLogFile();
+            logFile = IOManager.getLogFile();
             i[0]++;
         }
         if (!logFile.exists()) {
@@ -72,7 +72,7 @@ public class LogFilterCommand extends AbstractCommand {
         sender.sendMessage("Iterating through " + logFile.getName() + " with pattern: " + pattern.pattern());
 
         try (Scanner sc = new Scanner(logFile)) {
-            final File filteredLogsFolder = instance.getFilteredLogsFolder();
+            final File filteredLogsFolder = IOManager.getFilteredLogsFolder();
             File customLog = new File(filteredLogsFolder, pattern.pattern().concat("-log-".concat(System.currentTimeMillis() + ".txt")));
             if (!customLog.exists()) {
                 customLog.createNewFile();
@@ -87,9 +87,9 @@ public class LogFilterCommand extends AbstractCommand {
             sender.sendMessage("Successfully created " + customLog.getName() + " in folder " + filteredLogsFolder.getName());
         } catch (FileNotFoundException ex) {
             sender.sendMessage("File does not exist.");
-            Professions.logError(ex);
+            ProfessionLogger.logError(ex);
         } catch (IOException e) {
-            Professions.logError(e);
+            ProfessionLogger.logError(e);
         }
     }
 
