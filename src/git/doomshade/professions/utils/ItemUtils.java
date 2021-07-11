@@ -432,7 +432,7 @@ public final class ItemUtils implements ISetup {
                 desc.set(i, ChatColor.translateAlternateColorCodes('&', (s.replaceAll(regex, replacement))));
             }
         }
-        final File f = getItemTypeFile(itemType.getClass());
+        final File f = getItemTypeFile((Class<? extends ItemType<?>>) itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
         // gem.yml -> items.1
@@ -546,7 +546,7 @@ public final class ItemUtils implements ISetup {
      * @param clazz the {@link ItemType} class
      * @return the file of {@link ItemType}
      */
-    public static File getItemTypeFile(Class<? extends ItemType> clazz) {
+    public static <T extends ItemType<?>> File getItemTypeFile(Class<T> clazz) {
         return new File(IOManager.getItemFolder(), clazz.getSimpleName().toLowerCase().replace("itemtype", "").concat(Utils.YML_EXTENSION));
     }
 

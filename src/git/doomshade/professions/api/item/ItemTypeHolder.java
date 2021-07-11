@@ -195,7 +195,7 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
                     itemTypes.put(i, deserializedItemType);
                 }
             } catch (Exception e) {
-                ProfessionLogger.log("Could not deserialize " + itemType.getClass().getSimpleName());
+                ProfessionLogger.log("Could not deserialize " + ItemUtils.getItemTypeFile(itemType.getClass()).getName() + " with id " + i, Level.WARNING);
                 ProfessionLogger.logError(e, !(e instanceof InitializationException));
                 successInit = false;
                 continue;
