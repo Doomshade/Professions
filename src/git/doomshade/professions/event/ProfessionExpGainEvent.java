@@ -5,6 +5,7 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Called when a player receives exp
@@ -48,7 +49,7 @@ public class ProfessionExpGainEvent extends AbstractProfessionEvent implements C
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlerList;
     }
 

@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class GemEffectListCommand extends AbstractCommand {
 
     public GemEffectListCommand() {

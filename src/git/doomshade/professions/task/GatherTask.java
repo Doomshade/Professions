@@ -1,10 +1,11 @@
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.profession.spawn.SpawnPoint;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,10 +22,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -36,40 +37,42 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
-public class GatherTask extends BukkitRunnable {
+public class GatherTask extends ExtendedBukkitRunnable {
 
     /**
-     * The tasks for event calling. A task is added in {@link #runTaskLater(Plugin, long)} and removed in {@link #cancel()}
+     * The tasks for event calling. A task is added in {@link #onStart()} and removed in {@link #onCancel()}
      */
     private static final HashMap<UUID, GatherTask> TASKS = new HashMap<>();
 
     // let these be protected for further polymorphism purposes
-    protected final SpawnPoint spawnPoint;
+    protected final ISpawnPoint spawnPoint;
     protected final ItemStack result;
     protected final UserProfessionData gatherer;
     protected final Consumer<GatherResult> endResultAction;
     protected final BossBarOptions bossBarOptions;
     // create a reference for the player so the gatherer.getUser().getPlayer() is not called so often
     protected final Player player;
+    protected final long gatherTime;
     protected BossBar bossBar;
-
     private Predicate<EntityDamageEvent> damageEventPredicate;
     private Predicate<Double> movePredicate;
 
     /**
-     * @param spawnPoint the location options containing location and spawn methods
+     * @param spawnPoint      the location options containing location and spawn methods
      * @param gatherer        the gathering player to call this task upon
      * @param result          the expected result of the gathering task
      * @param endResultAction the action to be performed depending on the gather result
      * @param bossBarOptions  the bossbar options of gathering task
      */
-    public GatherTask(SpawnPoint spawnPoint, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions) {
+    public GatherTask(ISpawnPoint spawnPoint, UserProfessionData gatherer, ItemStack result,
+                      Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions, long gatherTime) {
         this.result = result;
         this.spawnPoint = spawnPoint;
         this.gatherer = gatherer;
         this.bossBarOptions = bossBarOptions;
         this.endResultAction = endResultAction;
         this.player = gatherer.getUser().getPlayer();
+        this.gatherTime = gatherTime;
     }
 
     /**
@@ -82,49 +85,31 @@ public class GatherTask extends BukkitRunnable {
 
         // check if the damaged entity was actually a player
         final Entity entity = damageEvent.getEntity();
-        if (!(entity instanceof Player)) return;
+        if (!(entity instanceof Player)) {
+            return;
+        }
         Player damagedPlayer = (Player) entity;
 
         GatherTask gatherTask = TASKS.get(damagedPlayer.getUniqueId());
 
         // check for gather task
-        if (gatherTask == null) return;
+        if (gatherTask == null) {
+            return;
+        }
 
         // check for damage event
         final Predicate<EntityDamageEvent> predicate = gatherTask.damageEventPredicate;
-        if (predicate == null) return;
+        if (predicate == null) {
+            return;
+        }
 
         // there is a damage event and the gatherer of this task was damaged -> check
         gatherTask.onEvent(predicate, damageEvent, GatherResult.CANCELLED_BY_DAMAGE);
     }
 
     /**
-     * Calls the event for the gatherer's current task if there's one
-     *
-     * @param movedPlayer the gatherer
-     * @param length      the length walked from the gathering point
-     */
-    public static void onGathererMoved(Player movedPlayer, double length) {
-
-        GatherTask gatherTask = TASKS.get(movedPlayer.getUniqueId());
-
-        // check for gather task
-        if (gatherTask == null) return;
-
-        // check for move event
-        final Predicate<Double> predicate = gatherTask.movePredicate;
-        if (predicate == null) return;
-
-        // there is a move event and the gatherer of this task moved -> check
-        gatherTask.onEvent(predicate, length, GatherResult.CANCELLED_BY_MOVE);
-    }
-
-    public static boolean isActive(Player player) {
-        return TASKS.containsKey(player.getUniqueId());
-    }
-
-    /**
-     * Calls the given predicate, sets the gather tasks result if the predicate returns {@code true} and cancels the event.
+     * Calls the given predicate, sets the gather tasks result if the predicate returns {@code true} and cancels the
+     * event.
      *
      * @param predicate the predicate
      * @param testedArg the tested arg in the predicate
@@ -139,96 +124,84 @@ public class GatherTask extends BukkitRunnable {
     }
 
     /**
-     * Sets the action to be performed when the gatherer is damaged.<br>
-     * The predicate should return {@code true} should the event be cancelled, {@code false} otherwise.<br>
-     * This allows you to perform an action before the task is cancelled such as cleanup or, for example, check for the damage amount and cancel the event based on that.
-     *
-     * @param damageEventPredicate the action to be performed
-     */
-    public void setOnGathererDamaged(Predicate<EntityDamageEvent> damageEventPredicate) {
-        this.damageEventPredicate = damageEventPredicate;
-    }
-
-    /**
-     * Sets the action to be performed when the gatherer moves.<br>
-     * The predicate should return {@code true} should the event be cancelled, {@code false} otherwise.
-     * <p>Note that the parameter could be a double, but for the API's reasons it shall remain a {@link Predicate}</p>
-     *
-     * @param movePredicate the acceptable distance
-     */
-    public void setOnMoved(Predicate<Double> movePredicate) {
-        this.movePredicate = movePredicate;
-    }
-
-    /**
-     * Calls the result action to be performed once the task is done. If the result is unknown, a message is logged and sent to the gatherer.
+     * Calls the result action to be performed once the task is done. If the result is unknown, a message is logged and
+     * sent to the gatherer.
      *
      * @param gatherResult the result of this task
      */
     private void setResult(GatherResult gatherResult) {
-        if (endResultAction != null && gatherResult != null)
+        if (endResultAction != null && gatherResult != null) {
             endResultAction.accept(gatherResult);
+        }
         if (gatherResult == null || gatherResult == GatherResult.UNKNOWN) {
-            final String msg = ChatColor.RED + "The block was not gathered for unknown reasons. Contact the admins and try to describe the problem thoroughly.";
+            final String msg = ChatColor.RED +
+                    "The block was not gathered for unknown reasons. Contact the admins and try to describe the " +
+                    "problem thoroughly.";
             player.sendMessage(msg);
             ProfessionLogger.log(msg, Level.CONFIG);
         }
     }
 
-    @Override
-    public final void run() {
-        cancelTask();
-        Location location = spawnPoint.location;
+    /**
+     * Calls the event for the gatherer's current task if there's one
+     *
+     * @param movedPlayer the gatherer
+     * @param length      the length walked from the gathering point
+     */
+    public static void onGathererMoved(Player movedPlayer, double length) {
 
-        // someone has already gathered the expected block
-        // this does not fully prevent the duplication of gathering but should suffice
-        if (location.getBlock().getType() == Material.AIR) {
-            setResult(GatherResult.LOCATION_AIR);
+        GatherTask gatherTask = TASKS.get(movedPlayer.getUniqueId());
+
+        // check for gather task
+        if (gatherTask == null) {
             return;
         }
 
-        // the player has no empty space in inventory but the task was successful, so drop the item on the ground
-        final PlayerInventory inventory = player.getInventory();
-        final Item item = location.getWorld().dropItemNaturally(location.clone().add(0.5, 0.5, 0.5), result);
-        if (inventory.firstEmpty() == -1 && !inventory.contains(result)) {
-            try {
-                spawnPoint.despawn();
-                spawnPoint.scheduleSpawn();
-                setResult(GatherResult.FULL_INVENTORY);
-            } catch (Exception e) {
-                setResult(GatherResult.UNKNOWN);
-                ProfessionLogger.logError(e);
-            }
+        // check for move event
+        final Predicate<Double> predicate = gatherTask.movePredicate;
+        if (predicate == null) {
             return;
         }
 
-        try {
-            spawnPoint.despawn();
-            spawnPoint.scheduleSpawn();
-            inventory.addItem(result);
-
-            // set the pickup delay of the item on the ground so the player can't duplicate the herbs
-            item.setPickupDelay(5000);
-            new BukkitRunnable() {
-
-                @Override
-                public void run() {
-                    item.remove();
-                }
-            }.runTaskLater(Professions.getInstance(), 20L);
-
-            setResult(GatherResult.SUCCESS);
-        } catch (Exception e) {
-            setResult(GatherResult.UNKNOWN);
-            ProfessionLogger.logError(e);
-        }
+        // there is a move event and the gatherer of this task moved -> check
+        gatherTask.onEvent(predicate, length, GatherResult.CANCELLED_BY_MOVE);
     }
 
     @Override
-    public synchronized void cancel() throws IllegalStateException {
-        // cancel the task
-        super.cancel();
+    protected void onStart() {
+        // if ANY gather task is active on this player, do not run the task
+        if (isActive(player)) {
+            throw new IllegalStateException();
+        }
+
+        // creates a bossbar with the bossbar options provided
+        final BarFlag[] barFlags = bossBarOptions.barFlags;
+        bossBar = Bukkit.createBossBar(bossBarOptions.title, bossBarOptions.barColor, bossBarOptions.barStyle,
+                Arrays.stream(barFlags).filter(Objects::nonNull).toArray(BarFlag[]::new));
+
+        // check if we use bossbars
+        // normally with the settings there should be 2 tasks - one that uses bossbars and one that does not
+        // (so we don't call the Settings.isUseBossBar() repeatedly; this is not a big performance issue so i'll
+        // leave it at that)
+        if (bossBarOptions.useBossBar && Settings.isUseBossBar()) {
+            setupBossBar(Professions.getInstance(), delay());
+        }
+        TASKS.put(player.getUniqueId(), this);
+    }
+
+    @Override
+    protected void onCancel() {
         cancelTask();
+    }
+
+    @Override
+    protected long delay() {
+        return gatherTime;
+    }
+
+    @Override
+    protected long period() {
+        return 0;
     }
 
     /**
@@ -237,35 +210,15 @@ public class GatherTask extends BukkitRunnable {
     private void cancelTask() {
         TASKS.remove(player.getUniqueId());
 
-        if (bossBar == null) return;
+        if (bossBar == null) {
+            return;
+        }
         bossBar.removeAll();
         bossBar = null;
     }
 
-    @Override
-    public final synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
-
-        // if ANY gather task is active on this player, do not run the task
-        if (isActive(player)) return null;
-
-        // creates a bossbar with the bossbar options provided
-        final BarFlag[] barFlags = bossBarOptions.barFlags;
-        final ArrayList<BarFlag> barFlagsList = new ArrayList<>();
-        for (final BarFlag barFlag : barFlags) {
-            if (barFlag != null) {
-                barFlagsList.add(barFlag);
-            }
-        }
-        bossBar = Bukkit.createBossBar(bossBarOptions.title, bossBarOptions.barColor, bossBarOptions.barStyle, barFlagsList.toArray(new BarFlag[0]));
-
-        // check if we use bossbars
-        // normally with the settings there should be 2 tasks - one that uses bossbars and one that does not
-        // (so we don't call the Settings.isUseBossBar() repeatedly; this is not a big performance issue so i'll leave it at that)
-        if (bossBarOptions.useBossBar && Settings.isUseBossBar()) {
-            setupBossBar(plugin, delay);
-        }
-        TASKS.put(player.getUniqueId(), this);
-        return super.runTaskLater(plugin, delay);
+    public static boolean isActive(Player player) {
+        return TASKS.containsKey(player.getUniqueId());
     }
 
     /**
@@ -310,6 +263,78 @@ public class GatherTask extends BukkitRunnable {
     }
 
     /**
+     * Sets the action to be performed when the gatherer is damaged.<br> The predicate should return {@code true} should
+     * the event be cancelled, {@code false} otherwise.<br> This allows you to perform an action before the task is
+     * cancelled such as cleanup or, for example, check for the damage amount and cancel the event based on that.
+     *
+     * @param damageEventPredicate the action to be performed
+     */
+    public void setOnGathererDamaged(Predicate<EntityDamageEvent> damageEventPredicate) {
+        this.damageEventPredicate = damageEventPredicate;
+    }
+
+    /**
+     * Sets the action to be performed when the gatherer moves.<br> The predicate should return {@code true} should the
+     * event be cancelled, {@code false} otherwise.
+     * <p>Note that the parameter could be a double, but for the API's reasons it shall remain a {@link Predicate}</p>
+     *
+     * @param movePredicate the acceptable distance
+     */
+    public void setOnMoved(Predicate<Double> movePredicate) {
+        this.movePredicate = movePredicate;
+    }
+
+    @Override
+    public final void run() {
+        cancelTask();
+        Location location = spawnPoint.getLocation();
+
+        // someone has already gathered the expected block
+        // this does not fully prevent the duplication of gathering but should suffice
+        if (location.getBlock().getType() == Material.AIR) {
+            setResult(GatherResult.LOCATION_AIR);
+            return;
+        }
+
+        // the player has no empty space in inventory but the task was successful, so drop the item on the ground
+        final PlayerInventory inventory = player.getInventory();
+        final Item item = Objects.requireNonNull(location.getWorld())
+                .dropItemNaturally(location.clone().add(0.5, 0.5, 0.5), result);
+        if (inventory.firstEmpty() == -1 && !inventory.contains(result)) {
+            try {
+                spawnPoint.despawn();
+                spawnPoint.scheduleSpawn();
+                setResult(GatherResult.FULL_INVENTORY);
+            } catch (Exception e) {
+                setResult(GatherResult.UNKNOWN);
+                ProfessionLogger.logError(e);
+            }
+            return;
+        }
+
+        try {
+            spawnPoint.despawn();
+            spawnPoint.scheduleSpawn();
+            inventory.addItem(result);
+
+            // set the pickup delay of the item on the ground so the player can't duplicate the herbs
+            item.setPickupDelay(5000);
+            new BukkitRunnable() {
+
+                @Override
+                public void run() {
+                    item.remove();
+                }
+            }.runTaskLater(Professions.getInstance(), 20L);
+
+            setResult(GatherResult.SUCCESS);
+        } catch (Exception e) {
+            setResult(GatherResult.UNKNOWN);
+            ProfessionLogger.logError(e);
+        }
+    }
+
+    /**
      * The possible gather results
      */
     public enum GatherResult {
@@ -350,8 +375,7 @@ public class GatherTask extends BukkitRunnable {
     public static class BossBarOptions {
 
         /**
-         * boolean for the API (coder) not the user! <br>
-         * this boolean is defined by the person coding this
+         * boolean for the API (coder) not the user! <br> this boolean is defined by the person coding this
          */
         public boolean useBossBar = false;
 
@@ -374,40 +398,6 @@ public class GatherTask extends BukkitRunnable {
          * The bar flags. Initial array length is 0.
          */
         public BarFlag[] barFlags = new BarFlag[0];
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Deprecating other tasks
-    ///////////////////////////////////////////////////////////////////////////
-
-    @Override
-    @Deprecated
-    public final synchronized BukkitTask runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public final synchronized BukkitTask runTaskAsynchronously(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public final synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
-        return null;
-    }
-
-    @Override
-    @Deprecated
-    public final synchronized BukkitTask runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
-        return null;
     }
 
 

@@ -8,6 +8,7 @@ import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Objects;
 import java.util.logging.Level;
 
 public class BlacksmithingProfession extends Profession {
@@ -31,7 +32,7 @@ public class BlacksmithingProfession extends Profession {
             expMsg = Utils.getReceiveXp(event.getExp());
         }
         ItemStack item = event.getItemType().getObject();
-        String itemName = item != null ? item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
+        String itemName = item != null ? item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
         ProfessionLogger.log(String.format("%s smithed %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
     }
 

@@ -1,12 +1,13 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
 import java.util.function.Consumer;
 
+@SuppressWarnings("ALL")
 public class SpawnCommand extends AbstractSpawnCommand {
 
     private boolean force = false;
@@ -34,7 +35,7 @@ public class SpawnCommand extends AbstractSpawnCommand {
     }
 
     @Override
-    protected Consumer<HerbSpawnPoint> consumer() {
+    protected Consumer<ISpawnPoint> consumer() {
         return x -> {
             try {
                 if (force) {

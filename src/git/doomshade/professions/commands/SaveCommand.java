@@ -15,6 +15,7 @@ import java.util.List;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class SaveCommand extends AbstractCommand {
 
     public SaveCommand() {

@@ -1,7 +1,6 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.guiapi.GUI;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.User;
 import org.bukkit.entity.Player;
@@ -89,7 +88,7 @@ public class UserListener implements Listener {
 
     public static void askUser(Player user, String message, ValidInputType type, GUI gui) {
         user.closeInventory();
-        PLAYER_INPUT.put(user.getUniqueId(), new HashMap<ValidInputType, GUI>() {
+        PLAYER_INPUT.put(user.getUniqueId(), new HashMap<>() {
             {
                 put(type, gui);
             }

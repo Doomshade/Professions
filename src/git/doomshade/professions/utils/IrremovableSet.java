@@ -1,5 +1,7 @@
 package git.doomshade.professions.utils;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.function.Predicate;
@@ -47,7 +49,7 @@ public class IrremovableSet<E> extends HashSet<E> {
 
     @Deprecated
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(@NotNull Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 }

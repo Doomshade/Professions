@@ -2,13 +2,13 @@ package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.Range;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.gui.oregui.OreGUI;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.utils.Range;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -21,6 +21,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,24 +40,28 @@ public class OreEditListener implements Listener {
             return;
         }
         try {
-            final ItemTypeHolder<Ore, OreItemType> itemTypeHolder = Professions.getProfMan().getItemTypeHolder(OreItemType.class);
+            final ItemTypeHolder<Ore, OreItemType> itemTypeHolder =
+                    Professions.getProfMan().getItemTypeHolder(OreItemType.class);
             final ItemStack itemInHand = event.getItemInHand();
-            if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName()) {
+            if (!itemInHand.hasItemMeta() || !Objects.requireNonNull(itemInHand.getItemMeta()).hasDisplayName()) {
                 return;
             }
             final String displayName = itemInHand.getItemMeta().getDisplayName();
-            OreItemType oreItemType = Utils.findInIterable(itemTypeHolder, x -> x.getIcon(null).getItemMeta().getDisplayName().equals(displayName));
+            OreItemType oreItemType = Utils.findInIterable(itemTypeHolder, x -> Objects.requireNonNull(
+                    x.getIcon(null).getItemMeta()).getDisplayName().equals(displayName));
 
             final Location location = event.getBlock().getLocation();
             final Ore ore = oreItemType.getObject();
             if (ore != null) {
                 final PersistentDataContainer pdc = itemInHand.getItemMeta().getPersistentDataContainer();
 
-                if (pdc.has(OreGUI.NBT_KEY, PersistentDataType.BYTE) && pdc.get(OreGUI.NBT_KEY, PersistentDataType.BYTE) == 1) {
-                    final ExtendedLocation sp = new ExtendedLocation(location, new Range(0));
+                final Byte b = pdc.get(OreGUI.NBT_KEY,
+                        PersistentDataType.BYTE);
+                if (pdc.has(OreGUI.NBT_KEY, PersistentDataType.BYTE) && b != null && b == 1) {
+                    final SpawnPoint sp = new SpawnPoint(location, new Range(0), ore);
                     ore.addSpawnPoint(sp);
                     try {
-                        ore.getSpawnPoints(sp).spawn();
+                        sp.spawn();
                     } catch (SpawnException e) {
                         ProfessionLogger.logError(e);
                     }
@@ -87,15 +92,17 @@ public class OreEditListener implements Listener {
             Ore ore = oreLocation.ore;
             Range respawnTime = null;
             try {
-                respawnTime = Range.fromString(event.getMessage());
+                respawnTime = Range.fromString(event.getMessage()).orElseThrow(() -> new IllegalArgumentException(
+                                String.format("Could not get " +
+                                        "range from '%s'", event.getMessage())));
             } catch (Exception e) {
                 ProfessionLogger.logError(e);
             }
             if (ore != null && respawnTime != null) {
-                final ExtendedLocation sp = new ExtendedLocation(oreLocation.location, respawnTime);
+                final SpawnPoint sp = new SpawnPoint(oreLocation.location, respawnTime, oreLocation.ore);
                 ore.addSpawnPoint(sp);
                 try {
-                    ore.getSpawnPoints(sp).spawn();
+                    sp.spawn();
                 } catch (SpawnException e) {
                     ProfessionLogger.logError(e);
                 }

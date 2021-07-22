@@ -17,6 +17,7 @@ import java.util.Map;
  * @author Doomshade
  * @version TEST_VERSION
  */
+@SuppressWarnings("ALL")
 public class TestCommand extends AbstractCommand {
 
     public TestCommand() {

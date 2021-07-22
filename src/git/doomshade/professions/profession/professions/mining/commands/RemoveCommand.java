@@ -1,7 +1,7 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class RemoveCommand extends AbstractEditCommand {
 
     public RemoveCommand() {
@@ -28,12 +29,12 @@ public class RemoveCommand extends AbstractEditCommand {
             Location loc = Utils.getLookingAt(hrac).getLocation();
             Ore ore;
             try {
-                ore = Utils.findInIterable(Ore.ORES.values(), x -> x.isSpawnPointLocation(loc));
+                ore = Utils.findInIterable(Spawnable.getElements(Ore.class).values(), x -> x.isSpawnPoint(loc));
             } catch (Utils.SearchNotFoundException e) {
                 hrac.sendMessage("Block you are looking at is no ore");
                 return;
             }
-            ore.removeSpawnPoint(new ExtendedLocation(loc));
+            ore.removeSpawnPoint(loc);
         } else {
             if (args.length < 3) {
                 hrac.sendMessage("You must enter both ore and spawn point id!");
@@ -47,21 +48,22 @@ public class RemoveCommand extends AbstractEditCommand {
                 return;
             }
 
-            int spawnPointId;
+            int serialNumber;
 
-            final String message = "Invalid spawn point id (number required)";
             try {
-                spawnPointId = Integer.parseInt(args[2]);
-                if (spawnPointId >= ore.getSpawnPointLocations().size()) {
-                    hrac.sendMessage(message);
+                serialNumber = Integer.parseInt(args[2]);
+
+                if (!ore.isSpawnPoint(serialNumber)) {
+                    hrac.sendMessage(String.format("The serial number %d of ore %s does not exist!", serialNumber,
+                            ore.getName()));
                     return;
                 }
             } catch (NumberFormatException e) {
-                hrac.sendMessage(message);
+                hrac.sendMessage("Invalid serial number (number required)");
                 return;
             }
 
-            ore.removeSpawnPoint(spawnPointId);
+            ore.removeSpawnPoint(serialNumber);
         }
         sender.sendMessage("Successfully removed spawn point");
 

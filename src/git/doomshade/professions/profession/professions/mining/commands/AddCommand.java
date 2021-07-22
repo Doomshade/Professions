@@ -1,12 +1,12 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
+import git.doomshade.professions.api.spawn.Range;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.spawn.SpawnableElement;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.utils.Permissions;
-import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class AddCommand extends AbstractEditCommand {
 
     public AddCommand() {
@@ -28,7 +29,7 @@ public class AddCommand extends AbstractEditCommand {
     public void onCommand(CommandSender sender, String[] args) {
 
         Player player = (Player) sender;
-        Ore ore = SpawnableElement.get(Ore.class, args[1]);
+        Ore ore = Spawnable.get(Ore.class, args[1]);
 
         if (ore == null) {
             player.sendMessage("Invalid ore id");
@@ -42,7 +43,9 @@ public class AddCommand extends AbstractEditCommand {
 
         Range respawnTime = null;
         try {
-            respawnTime = Range.fromString(args[2]);
+            respawnTime = Range.fromString(args[2]).orElseThrow(() -> new IllegalArgumentException(
+                    String.format("Could not get " +
+                            "range from '%s'", args[2])));;
         } catch (Exception e) {
             ProfessionLogger.logError(e);
         }
@@ -51,9 +54,10 @@ public class AddCommand extends AbstractEditCommand {
             return;
         }
 
-        ore.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
+        final SpawnPoint sp = new SpawnPoint(lookingAt, respawnTime, ore);
+        ore.addSpawnPoint(sp);
         try {
-            ore.getSpawnPoints(lookingAt).spawn();
+            sp.spawn();
         } catch (SpawnException e) {
             ProfessionLogger.logError(e);
         }

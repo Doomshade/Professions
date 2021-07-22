@@ -5,6 +5,8 @@ import git.doomshade.professions.utils.ParticleData;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 
+import java.util.Objects;
+
 public class ParticleTask extends ExtendedBukkitRunnable {
     private final ParticleData particle;
     private final Location location;
@@ -25,7 +27,7 @@ public class ParticleTask extends ExtendedBukkitRunnable {
 
     @Override
     public void run() {
-        location.getWorld().spawnParticle(
+        Objects.requireNonNull(location.getWorld()).spawnParticle(
                 Particle.valueOf(particle.getParticle()),
                 particleOffsetLocation,
                 particle.getCount(),

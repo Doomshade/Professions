@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.logging.Level;
 
 /**
@@ -31,6 +32,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         this.profession = profession;
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends AbstractProfessionSpecificSettings> T getSettings(Class<T> settingsClass) {
 
         T theSettings = null;
@@ -84,7 +86,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         final File f = IOManager.getProfessionFile(profession);
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
         for (AbstractProfessionSpecificSettings settings : SETTINGS) {
-            loader.addDefaults(settings.getDefaultSection().getRoot());
+            loader.addDefaults(Objects.requireNonNull(settings.getDefaultSection().getRoot()));
         }
         loader.options().copyDefaults(true);
         loader.save(f);

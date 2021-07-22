@@ -5,7 +5,6 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

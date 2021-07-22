@@ -1,12 +1,16 @@
 package git.doomshade.professions.enums;
 
 import com.google.common.collect.Sets;
-import git.doomshade.professions.data.Settings;
-import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.placeholder.PlaceholderManager;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.Profession.ProfessionType;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.placeholder.PlaceholderManager;
+import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
+import git.doomshade.professions.profession.professions.enchanting.EnchantingProfession;
+import git.doomshade.professions.profession.professions.herbalism.HerbalismProfession;
+import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
@@ -27,15 +31,11 @@ import java.util.stream.Collectors;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class Messages implements ISetup {
 
-    private static Messages instance;
+    private static final Messages instance = new Messages();
     private static FileConfiguration lang;
-    static final HashSet<MessagesHolder> MESSAGE_HOLDERS = new HashSet<>();
-
-    static {
-        instance = new Messages();
-    }
 
     private Messages() {
     }
@@ -45,8 +45,13 @@ public class Messages implements ISetup {
     }
 
 
+    /**
+     * Collection builder for adding multiple collections
+     *
+     * @param <T> the collection type
+     */
     private static class CollectionBuilder<T> {
-        private Collection<T> collection;
+        private final Collection<T> collection;
 
         private CollectionBuilder(Collection<T> defaultCollection) {
             this.collection = defaultCollection;
@@ -70,7 +75,11 @@ public class Messages implements ISetup {
     @Override
     public void setup() {
         lang = Settings.getLang();
+
+        // current lang
         final Set<String> propertyNames = lang.getKeys(false);
+
+        // all lang keys
         final Collection<MessagesHolder> allKeys = new CollectionBuilder<MessagesHolder>(new HashSet<>())
                 .add(HerbalismMessages.values())
                 .add(EnchantingMessages.values())
@@ -78,7 +87,16 @@ public class Messages implements ISetup {
                 .add(JewelcraftingMessages.values())
                 .add(Global.values())
                 .build();
-        final Sets.SetView<String> missing = Sets.difference(allKeys.stream().map(MessagesHolder::getKey).collect(Collectors.toSet()), propertyNames);
+
+        // the disjoint set
+        final Sets.SetView<String> missing = Sets.difference(
+                allKeys.stream()
+                        .map(MessagesHolder::getKey)
+                        .collect(Collectors.toSet()),
+                propertyNames
+        );
+
+        // there are some missing keys in the current lang, inform about that and add defaults
         if (!missing.isEmpty()) {
             try {
                 ProfessionLogger.log("Your language file is outdated!", Level.WARNING);
@@ -92,6 +110,9 @@ public class Messages implements ISetup {
         }
     }
 
+    /**
+     * Messages for {@link JewelcraftingProfession}
+     */
     public enum JewelcraftingMessages implements MessagesHolder {
         INVALID_ITEM("invalid-item"),
         NO_GEM_SPACE("no-space-for-gem"),
@@ -110,6 +131,9 @@ public class Messages implements ISetup {
         }
     }
 
+    /**
+     * Messages for {@link EnchantingProfession}
+     */
     public enum EnchantingMessages implements MessagesHolder {
         LOW_ITEM_LEVEL("item-level-too-low");
 
@@ -125,6 +149,9 @@ public class Messages implements ISetup {
         }
     }
 
+    /**
+     * Messages for {@link AlchemyProfession}
+     */
     public enum AlchemyMessages implements MessagesHolder {
         POTION_ALREADY_ACTIVE("potion-already-active");
 
@@ -141,6 +168,9 @@ public class Messages implements ISetup {
 
     }
 
+    /**
+     * Messages for {@link HerbalismProfession}
+     */
     public enum HerbalismMessages implements MessagesHolder {
         GATHERING_CANCELLED_BY_DAMAGE("gathering-cancelled-by-damage"),
         GATHERING_CANCELLED_BY_MOVEMENT("gathering-cancelled-by-movement");
@@ -158,6 +188,9 @@ public class Messages implements ISetup {
 
     }
 
+    /**
+     * Global messages for all {@link Profession}s
+     */
     public enum Global implements MessagesHolder {
         EXP_GAIN("exp-gain"),
         EXP_LOSE("exp-lose"),
@@ -194,7 +227,13 @@ public class Messages implements ISetup {
     }
 
     private enum Pattern {
-        P_PROFESSION("prof"), P_PLAYER("player"), P_EXP("exp"), P_LEVEL("level"), P_PROFESSION_TYPE("proftype"), P_PROFESSION_NO_COLOR("prof_no_color"), P_ITEM("item");
+        P_PROFESSION("prof"),
+        P_PLAYER("player"),
+        P_EXP("exp"),
+        P_LEVEL("level"),
+        P_PROFESSION_TYPE("proftype"),
+        P_PROFESSION_NO_COLOR("prof_no_color"),
+        P_ITEM("item");
 
         private final String pattern;
 
@@ -204,16 +243,15 @@ public class Messages implements ISetup {
     }
 
     public static class MessageBuilder {
-        private String message;
-        private Map<Pattern, String> replacements = new HashMap<>();
+        private String message = "";
+        private final Map<Pattern, String> replacements = new HashMap<>();
         private Player player = null;
 
         public MessageBuilder() {
-            this.message = "";
         }
 
         public MessageBuilder(MessagesHolder message) {
-            setMessage(message);
+            message(message);
         }
 
         private MessageBuilder replace(Pattern regex, String replacement) {
@@ -221,50 +259,49 @@ public class Messages implements ISetup {
             return this;
         }
 
-        public MessageBuilder setMessage(MessagesHolder m) {
+        public MessageBuilder message(MessagesHolder m) {
             this.message = Messages.lang.getString(m.getKey());
             return this;
         }
 
-        public MessageBuilder setProfession(Profession prof) {
-            setProfessionType(prof.getProfessionType());
+        public MessageBuilder profession(Profession prof) {
+            professionType(prof.getProfessionType());
             replace(Pattern.P_PROFESSION_NO_COLOR, ChatColor.stripColor(prof.getColoredName()));
             return replace(Pattern.P_PROFESSION, prof.getColoredName());
         }
 
-        public MessageBuilder setProfessionType(ProfessionType type) {
+        public MessageBuilder professionType(ProfessionType type) {
             return replace(Pattern.P_PROFESSION_TYPE, type.toString());
         }
 
-        // can be redone via Function class, but that would make it unnecessarily hard
-        public MessageBuilder setPlayer(User user) {
-            return setPlayer(user.getPlayer());
+        public MessageBuilder player(User user) {
+            return player(user.getPlayer());
         }
 
-        public MessageBuilder setPlayer(Player player) {
+        public MessageBuilder player(Player player) {
             this.player = player;
             return replace(Pattern.P_PLAYER, player.getDisplayName());
         }
 
-        public MessageBuilder setExp(double exp) {
+        public MessageBuilder exp(double exp) {
             return replace(Pattern.P_EXP, String.valueOf(exp));
         }
 
-        public MessageBuilder setExp(int exp) {
-            return replace(Pattern.P_EXP, String.valueOf(exp));
+        public MessageBuilder exp(int exp) {
+            return exp((double) exp);
         }
 
-        public MessageBuilder setLevel(int level) {
+        public MessageBuilder level(int level) {
             return replace(Pattern.P_LEVEL, String.valueOf(level));
         }
 
-        public MessageBuilder setItemType(ItemType<?> itemType) {
+        public MessageBuilder itemType(ItemType<?> itemType) {
             return replace(Pattern.P_ITEM, itemType.getName());
         }
 
-        public MessageBuilder setUserProfessionData(UserProfessionData upd) {
-            setProfession(upd.getProfession());
-            setPlayer(upd.getUser());
+        public MessageBuilder userProfessionData(UserProfessionData upd) {
+            profession(upd.getProfession());
+            player(upd.getUser());
             return this;
         }
 
@@ -274,7 +311,7 @@ public class Messages implements ISetup {
             }
 
             if (PlaceholderManager.usesPlaceholders()) {
-                PlaceholderAPI.setPlaceholders(player, message);
+                message = PlaceholderAPI.setPlaceholders(player, message);
             }
 
             // don't delete this as the PlaceholderAPI extension does not have to be necessarily available

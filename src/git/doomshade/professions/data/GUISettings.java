@@ -4,6 +4,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Objects;
+
 /**
  * GUI settings
  *
@@ -65,7 +67,7 @@ public class GUISettings extends AbstractSettings {
         } else {
             str = section.getString(path);
         }
-        if (!str.isEmpty()) {
+        if (!Objects.requireNonNull(str).isEmpty()) {
             str = ChatColor.translateAlternateColorCodes('&', str);
         }
         return str;

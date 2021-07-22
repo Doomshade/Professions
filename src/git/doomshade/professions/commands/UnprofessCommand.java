@@ -18,6 +18,7 @@ import java.util.*;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class UnprofessCommand extends AbstractCommand {
 
     public UnprofessCommand() {
@@ -34,17 +35,17 @@ public class UnprofessCommand extends AbstractCommand {
     public void onCommand(CommandSender sender, String[] args) {
         User user = User.getUser((Player) sender);
         Optional<Profession> opt = Professions.getProfMan().getProfession(args[1]);
-        Messages.MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
+        Messages.MessageBuilder builder = new Messages.MessageBuilder().player(user);
         if (opt.isEmpty()) {
-            user.sendMessage(builder.setMessage(Messages.Global.PROFESSION_DOESNT_EXIST).build());
+            user.sendMessage(builder.message(Messages.Global.PROFESSION_DOESNT_EXIST).build());
             return;
         }
         Profession prof = opt.get();
-        builder = builder.setProfession(prof);
+        builder = builder.profession(prof);
         if (user.unprofess(prof)) {
-            user.sendMessage(builder.setMessage(Messages.Global.SUCCESSFULLY_UNPROFESSED).build());
+            user.sendMessage(builder.message(Messages.Global.SUCCESSFULLY_UNPROFESSED).build());
         } else {
-            user.sendMessage(builder.setMessage(Messages.Global.NOT_PROFESSED).build());
+            user.sendMessage(builder.message(Messages.Global.NOT_PROFESSED).build());
         }
     }
 

@@ -17,6 +17,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
+import java.util.Objects;
 
 public class OreGUI extends GUI {
 
@@ -38,8 +39,9 @@ public class OreGUI extends GUI {
             GUIItem item = new GUIItem(ore.getGuiMaterial().getType(), ++i, 1, ore.getGuiMaterial().getDurability());
             final ItemStack click = ore.getIcon(null).clone();
             final ItemMeta itemMeta = click.getItemMeta();
-            final List<String> lore = itemMeta.getLore();
-            lore.add(ChatColor.BLUE + "Ignores range: " + (ignore ? ChatColor.GREEN : ChatColor.RED) + ignore);
+            final List<String> lore = Objects.requireNonNull(itemMeta).getLore();
+            Objects.requireNonNull(lore)
+                    .add(ChatColor.BLUE + "Ignores range: " + (ignore ? ChatColor.GREEN : ChatColor.RED) + ignore);
             final String s = Strings.ItemTypeEnum.LEVEL_REQ_COLOR.s;
             lore.replaceAll(x -> x.contains(s) ? x.replaceAll("\\{" + s + "}", ChatColor.GREEN + "") : x);
             itemMeta.setLore(lore);
@@ -62,15 +64,15 @@ public class OreGUI extends GUI {
         try {
             Utils.findInIterable(Professions.getProfMan()
                             .getItemTypeHolder(OreItemType.class),
-                    x -> x.getIcon(null)
-                            .getItemMeta()
+                    x -> Objects.requireNonNull(x.getIcon(null)
+                            .getItemMeta())
                             .getDisplayName()
                             .equals(click.getItemMeta().getDisplayName()));
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
 
-        final PersistentDataContainer pdc = click.getItemMeta().getPersistentDataContainer();
+        final PersistentDataContainer pdc = Objects.requireNonNull(click.getItemMeta()).getPersistentDataContainer();
         pdc.set(NBT_KEY, PersistentDataType.BYTE, ignore ? (byte) 1 : 0);
         event.getWhoClicked().getInventory().addItem(click);
     }

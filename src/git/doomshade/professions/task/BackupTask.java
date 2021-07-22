@@ -23,7 +23,8 @@ public class BackupTask extends ExtendedBukkitRunnable {
     private static final long BACKUP_DELAY = Duration.ofHours(1).getSeconds();
 
     private static final String BACKUP = "backup";
-    private static final FilenameFilter FILE_FILTER = (dir, name) -> !(name.contains(BACKUP) || dir.getName().contains(BACKUP));
+    private static final FilenameFilter FILE_FILTER =
+            (dir, name) -> !(name.contains(BACKUP) || dir.getName().contains(BACKUP));
 
     /**
      * Defaults to failure
@@ -34,7 +35,8 @@ public class BackupTask extends ExtendedBukkitRunnable {
     public void run() {
 
         try {
-            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()), new File(IOManager.getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
+            writeZipFile(getAllFiles(Professions.getInstance().getDataFolder()),
+                    new File(IOManager.getBackupFolder(), "backup-" + System.currentTimeMillis() + ".zip"));
             result = Result.SUCCESS;
         } catch (IOException e) {
             ProfessionLogger.logError(e);
@@ -52,6 +54,7 @@ public class BackupTask extends ExtendedBukkitRunnable {
      * Writes the
      *
      * @param outputFile
+     *
      * @throws IOException
      */
     private void writeZipFile(Collection<File> fileList, File outputFile) throws IOException {
@@ -81,6 +84,7 @@ public class BackupTask extends ExtendedBukkitRunnable {
 
     /**
      * @param dir the directory
+     *
      * @return the list of files in a directory
      */
     private Collection<File> getAllFiles(File dir) {
@@ -88,10 +92,14 @@ public class BackupTask extends ExtendedBukkitRunnable {
     }
 
     private Collection<File> getAllFiles(File dir, Collection<File> currentFiles) {
-        if (dir == null) return currentFiles;
+        if (dir == null) {
+            return currentFiles;
+        }
 
         final File[] files = dir.listFiles(FILE_FILTER);
-        if (files == null) return currentFiles;
+        if (files == null) {
+            return currentFiles;
+        }
 
         for (File file : files) {
             if (file.isDirectory()) {
@@ -114,6 +122,7 @@ public class BackupTask extends ExtendedBukkitRunnable {
     }
 
     public enum Result {
-        SUCCESS, FAILURE
+        SUCCESS,
+        FAILURE
     }
 }

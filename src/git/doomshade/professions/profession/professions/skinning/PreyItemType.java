@@ -67,7 +67,7 @@ public class PreyItemType extends ItemType<Mob> {
 
         @Override
         public EnumMap<PreyEnum, Object> getDefaultValues() {
-            return new EnumMap<PreyEnum, Object>(PreyEnum.class) {
+            return new EnumMap<>(PreyEnum.class) {
                 {
                     put(ENTITY, EntityType.SKELETON.name());
                     put(CONFIG_NAME, "cfg-name");

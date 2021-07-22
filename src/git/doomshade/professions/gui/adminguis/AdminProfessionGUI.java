@@ -13,8 +13,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Objects;
+
 public class AdminProfessionGUI extends GUI {
-    private Profession prof;
 
     protected AdminProfessionGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -22,13 +23,13 @@ public class AdminProfessionGUI extends GUI {
 
     @Override
     public void init() {
-        this.prof = getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
+        Profession prof = getContext().getContext(AdminProfessionsGUI.ID_PROFESSION);
         GUIInventory.Builder builder = getInventoryBuilder().size(18).title(prof.getColoredName());
 
         int i = -1;
         for (Strings.ItemTypeEnum e : Strings.ItemTypeEnum.values()) {
             ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.CHEST);
-            meta.setDisplayName(e.s);
+            Objects.requireNonNull(meta).setDisplayName(e.s);
             GUIItem item = new GUIItem(Material.CHEST, ++i, 1, (short) 0);
             item.changeItem(this, () -> meta);
 
@@ -42,7 +43,8 @@ public class AdminProfessionGUI extends GUI {
         InventoryClickEvent event = e.getEvent();
         event.setCancelled(true);
         ItemStack currentItem = event.getCurrentItem();
-        if (currentItem == null || currentItem.getType() == Material.AIR || !currentItem.hasItemMeta() || !currentItem.getItemMeta().hasDisplayName()) {
+        if (currentItem == null || currentItem.getType() == Material.AIR || !currentItem.hasItemMeta() || !Objects.requireNonNull(
+                currentItem.getItemMeta()).hasDisplayName()) {
             return;
         }
 

@@ -117,10 +117,4 @@ public interface IUser {
      * @param suppressExpEvent the suppressExpEvent
      */
     void setSuppressExpEvent(boolean suppressExpEvent);
-
-    void applyPotion(Potion potion);
-
-    boolean isActivePotion(Potion potion);
-
-    void unApplyPotion(Potion potion);
 }

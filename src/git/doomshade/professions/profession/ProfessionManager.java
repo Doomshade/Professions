@@ -45,6 +45,7 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
  * A manager regarding registration and queries of {@link Profession}, {@link ItemType}, and {@link ItemTypeHolder}.
@@ -264,9 +265,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         registerItemTypeHolder(
                 PreyItemType.class,
                 new Mob(EntityType.SKELETON),
-                x -> {
-                    x.setName(ChatColor.YELLOW + "Kostlivec");
-                }
+                x -> x.setName(ChatColor.YELLOW + "Kostlivec")
         );
 
 
@@ -274,9 +273,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         registerItemTypeHolder(
                 HerbItemType.class,
                 Herb.EXAMPLE_HERB,
-                x -> {
-                    x.setName(ChatColor.DARK_AQUA + "Test gather item");
-                }
+                x -> x.setName(ChatColor.DARK_AQUA + "Test gather item")
         );
 
         // ENCHANTING
@@ -376,12 +373,10 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     private void registerProfession(Profession prof, boolean logMessage) {
 
         // required plugins of the profession
-        Set<String> requiredPlugins = new HashSet<>();
-        for (String plugin : prof.getRequiredPlugins()) {
-            if (!Bukkit.getPluginManager().isPluginEnabled(plugin)) {
-                requiredPlugins.add(plugin);
-            }
-        }
+        Set<String> requiredPlugins = prof.getRequiredPlugins()
+                .stream()
+                .filter(plugin -> !Bukkit.getPluginManager().isPluginEnabled(plugin))
+                .collect(Collectors.toSet());
         if (!requiredPlugins.isEmpty()) {
             throw new IllegalStateException(String.format("Could not load %s as some plugins are missing!%s\nRequired plugins: %s\nPlugins missing: %s",
                     prof.getColoredName(), ChatColor.RESET, String.join(", ", prof.getRequiredPlugins()), String.join(", ", requiredPlugins)));

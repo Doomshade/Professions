@@ -56,7 +56,7 @@ public class UserProfessionData implements IUserProfessionData {
         this.user = user;
         this.profession = profession;
 
-        this.builder = new Messages.MessageBuilder().setPlayer(user).setProfession(profession);
+        this.builder = new Messages.MessageBuilder().player(user).profession(profession);
     }
 
     @Override
@@ -104,9 +104,9 @@ public class UserProfessionData implements IUserProfessionData {
         }
 
         if (!isMaxLevel()) {
-            user.sendMessage(builder.setMessage(Global.LEVEL_UP).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.message(Global.LEVEL_UP).exp(exp).level(level).build());
         } else {
-            user.sendMessage(builder.setMessage(Global.MAX_LEVEL_REACHED).setExp(exp).setLevel(level).build());
+            user.sendMessage(builder.message(Global.MAX_LEVEL_REACHED).exp(exp).level(level).build());
         }
 
 
@@ -114,7 +114,7 @@ public class UserProfessionData implements IUserProfessionData {
         // prints new possible items
         for (ItemTypeHolder<?, ?> itemTypeHolder : profession.getItems()) {
             try {
-                Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel()).forEach(y -> user.sendMessage(builder.setItemType(y).build()));
+                Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel()).forEach(y -> user.sendMessage(builder.itemType(y).build()));
             } catch (Utils.SearchNotFoundException ignored) {
 
             }
@@ -152,7 +152,7 @@ public class UserProfessionData implements IUserProfessionData {
             return true;
         }
         this.exp += expGained;
-        user.sendMessage(builder.setMessage(Global.EXP_GAIN).setExp(expGained).setLevel(level).build());
+        user.sendMessage(builder.message(Global.EXP_GAIN).exp(expGained).level(level).build());
         checkForLevel();
         return true;
     }
@@ -211,7 +211,7 @@ public class UserProfessionData implements IUserProfessionData {
      * @return the current {@link SkillupColor} of itemType
      */
     public SkillupColor getSkillupColor(ItemType<?> itemType) {
-        return SkillupColor.getSkillupColor(itemType.getLevelReq(), getLevel());
+        return SkillupColor.getSkillupColor(itemType, this);
     }
 
     @Override
@@ -252,7 +252,7 @@ public class UserProfessionData implements IUserProfessionData {
             return;
         }
         this.exp -= Math.abs(event.getExp());
-        user.sendMessage(builder.setMessage(Global.EXP_LOSE).setExp(exp).setLevel(level).build());
+        user.sendMessage(builder.message(Global.EXP_LOSE).exp(exp).level(level).build());
         if (this.exp < 0) {
             this.exp = 0;
         }

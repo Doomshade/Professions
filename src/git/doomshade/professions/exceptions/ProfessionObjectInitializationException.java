@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 public class ProfessionObjectInitializationException extends InitializationException {
     public static final int NO_ID = -1;
-    private Collection<String> keys;
+    private final Collection<String> keys;
     private Class<?> clazz;
     private String additionalMessage = "";
     private ExceptionReason reason;

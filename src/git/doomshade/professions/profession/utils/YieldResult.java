@@ -34,7 +34,7 @@ public class YieldResult implements ConfigurationSerializable, Comparable<YieldR
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put("chance", chance);
         map.put("item", ItemUtils.serialize(drop));

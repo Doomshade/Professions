@@ -2,6 +2,8 @@ package git.doomshade.professions.event;
 
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Called when a player loses exp
  *
@@ -34,7 +36,7 @@ public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlerList;
     }
 

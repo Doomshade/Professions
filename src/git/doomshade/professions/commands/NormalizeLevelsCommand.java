@@ -3,13 +3,13 @@ package git.doomshade.professions.commands;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
  * @author Doomshade
  * @version NOT_YET_IMPLEMENTED
  */
+@SuppressWarnings("ALL")
 public class NormalizeLevelsCommand extends AbstractCommand {
 
     public NormalizeLevelsCommand() {

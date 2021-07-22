@@ -1,13 +1,13 @@
 package git.doomshade.professions.exceptions;
 
-import git.doomshade.professions.api.spawn.ILocationElement;
+import git.doomshade.professions.api.spawn.ISpawnable;
 import git.doomshade.professions.io.ProfessionLogger;
 
 import java.util.logging.Level;
 
 public class SpawnException extends Exception {
     private SpawnExceptionReason reason = SpawnExceptionReason.UNKNOWN;
-    private ILocationElement locationElement = null;
+    private ISpawnable locationElement = null;
 
     public SpawnException(Throwable cause) {
         this(cause, SpawnExceptionReason.UNKNOWN);
@@ -17,7 +17,7 @@ public class SpawnException extends Exception {
         this(cause, reason, null);
     }
 
-    public SpawnException(Throwable cause, SpawnExceptionReason reason, ILocationElement locationElement) {
+    public SpawnException(Throwable cause, SpawnExceptionReason reason, ISpawnable locationElement) {
         super(cause);
         this.reason = reason;
         this.locationElement = locationElement;

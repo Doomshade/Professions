@@ -9,8 +9,10 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("ALL")
 public class GiveCommand extends AbstractCommand {
 
     public GiveCommand() {
@@ -43,7 +45,7 @@ public class GiveCommand extends AbstractCommand {
             return;
         }
 
-        to.getInventory().addItem(gem.getGem());
+        Objects.requireNonNull(to).getInventory().addItem(gem.getGem());
     }
 
     @Override

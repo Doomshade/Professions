@@ -1,7 +1,6 @@
 package git.doomshade.professions.gui.trainergui;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.professions.Professions;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.utils.Utils;
@@ -22,11 +21,12 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class TrainerChooserGUI extends GUI {
     private static final String KEY_NAME = "name";
     public static final String KEY_NPC = "npc";
-    private Map<String, String> NAME_ID_MAP = new HashMap<>();
+    private final Map<String, String> NAME_ID_MAP = new HashMap<>();
 
     protected TrainerChooserGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -48,13 +48,13 @@ public class TrainerChooserGUI extends GUI {
             String id = file.getName().substring(0, file.getName().lastIndexOf('.'));
 
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-            String name = Utils.translateColour(loader.getString(KEY_NAME, "Trainer name"));
+            String name = Utils.translateColour(Objects.requireNonNull(loader.getString(KEY_NAME, "Trainer name")));
 
             NAME_ID_MAP.put(name, id);
             List<String> lore = Utils.translateLore(loader.getStringList("lore"));
             GUIItem item = new GUIItem(Material.CHEST, position++, 1, (short) 0);
             ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.CHEST);
-            meta.setDisplayName(name);
+            Objects.requireNonNull(meta).setDisplayName(name);
             meta.setLore(lore);
             item.changeItem(this, () -> meta);
             builder = builder.withItem(item);
@@ -83,7 +83,7 @@ public class TrainerChooserGUI extends GUI {
             return;
         }
 
-        String name = item.getItemMeta().getDisplayName();
+        String name = Objects.requireNonNull(item.getItemMeta()).getDisplayName();
         String id = NAME_ID_MAP.get(name);
         if (id == null) {
             he.sendMessage("Could not retrieve trainer ID with the trainer name " + name);

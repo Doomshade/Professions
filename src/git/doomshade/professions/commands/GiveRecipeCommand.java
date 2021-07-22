@@ -8,6 +8,7 @@ import java.util.List;
  * @author Doomshade
  * @version NOT_YET_IMPLEMENTED
  */
+@SuppressWarnings("ALL")
 public class GiveRecipeCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {

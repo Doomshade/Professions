@@ -199,7 +199,7 @@ public class Potion implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<String, Object>() {
+        return new HashMap<>() {
             {
                 put(POTION_EFFECTS.s, potionEffects);
                 put(POTION_DURATION.s, duration);
@@ -264,7 +264,7 @@ public class Potion implements ConfigurationSerializable {
 
         @Override
         public EnumMap<PotionEnum, Object> getDefaultValues() {
-            return new EnumMap<PotionEnum, Object>(PotionEnum.class) {
+            return new EnumMap<>(PotionEnum.class) {
                 {
                     put(POTION_EFFECTS, Arrays.asList(
                             String.format("kriticky_utok%s10", SPLIT_CHAR),

@@ -4,7 +4,7 @@ import com.sucy.skill.SkillAPI;
 import com.sucy.skill.manager.AttributeManager;
 import git.doomshade.professions.profession.professions.enchanting.Enchant;
 import git.doomshade.professions.utils.ItemAttribute;
-import git.doomshade.professions.utils.Range;
+import git.doomshade.professions.api.spawn.Range;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class RandomAttributeEnchant extends Enchant {
-    private static final HashMap<Integer, Range> INTENSITY_VALUES = new HashMap<Integer, Range>(){
+    private static final HashMap<Integer, Range> INTENSITY_VALUES = new HashMap<>() {
         {
             put(DEFAULT_INTENSITY, new Range(1, 5));
             put(1, new Range(5, 10));

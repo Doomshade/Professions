@@ -23,6 +23,7 @@ import java.util.Optional;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class ProfessCommand extends AbstractCommand {
 
     public ProfessCommand() {
@@ -51,19 +52,19 @@ public class ProfessCommand extends AbstractCommand {
             return;
         }
         Optional<Profession> opt = Professions.getProfMan().getProfession(args[1]);
-        MessageBuilder builder = new Messages.MessageBuilder().setPlayer(user);
+        MessageBuilder builder = new Messages.MessageBuilder().player(user);
         if (opt.isEmpty()) {
-            user.sendMessage(builder.setMessage(Global.PROFESSION_DOESNT_EXIST).build());
+            user.sendMessage(builder.message(Global.PROFESSION_DOESNT_EXIST).build());
             return;
         }
         Profession prof = opt.get();
-        builder = builder.setProfession(prof);
+        builder = builder.profession(prof);
         if (user.profess(prof)) {
-            user.sendMessage(builder.setMessage(Global.SUCCESSFULLY_PROFESSED).build());
+            user.sendMessage(builder.message(Global.SUCCESSFULLY_PROFESSED).build());
         } else if (user.hasProfession(prof)) {
-            user.sendMessage(builder.setMessage(Global.ALREADY_PROFESSED).build());
+            user.sendMessage(builder.message(Global.ALREADY_PROFESSED).build());
         } else {
-            user.sendMessage(builder.setMessage(Global.ALREADY_PROFESSED_TYPE).build());
+            user.sendMessage(builder.message(Global.ALREADY_PROFESSED_TYPE).build());
         }
     }
 

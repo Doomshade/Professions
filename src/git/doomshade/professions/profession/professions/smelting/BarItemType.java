@@ -31,6 +31,6 @@ public class BarItemType extends CraftableItemType<ItemStack> {
 
     @Override
     public Function<ItemStack, ItemStack> getExtraInEvent() {
-        return x -> x;
+        return Function.identity();
     }
 }

@@ -10,6 +10,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Class for {@link Profession} drop settings.
@@ -40,13 +41,12 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
      */
     public int getDropAmount(UserProfessionData upd, ItemType<?> item) {
 
-        for (Drop drop : DROPS) {
-            if (Math.random() < drop.getDropChance(upd.getLevel(), item.getLevelReq())) {
-                return drop.drop;
-            }
-        }
+        return DROPS.stream()
+                .filter(drop -> Math.random() < drop.getDropChance(upd.getLevel(), item.getLevelReq()))
+                .findFirst()
+                .map(drop -> drop.drop)
+                .orElse(1);
 
-        return 1;
     }
 
     @Override
@@ -85,7 +85,7 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
         // add all drops to the list
         for (String s : section.getKeys(false)) {
             ConfigurationSection dropSection = section.getConfigurationSection(s);
-            DROPS.add(new Drop(Integer.parseInt(s), dropSection.getInt(INCREMENT_SINCE), dropSection.getDouble(INCREMENT_BY)));
+            DROPS.add(new Drop(Integer.parseInt(s), Objects.requireNonNull(dropSection).getInt(INCREMENT_SINCE), dropSection.getDouble(INCREMENT_BY)));
         }
 
         // sort the list in descending order

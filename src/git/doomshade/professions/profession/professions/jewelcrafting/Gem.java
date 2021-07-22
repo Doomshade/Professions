@@ -156,7 +156,7 @@ public class Gem implements ConfigurationSerializable {
 
         final PlayerInventory inventory = player.getInventory();
         for (ItemStack item : inventory.getArmorContents()) {
-            if (item == null || item.getType() == Material.AIR) {
+            if (item.getType() == Material.AIR) {
                 continue;
             }
             if (hasGem(item)) {
@@ -287,7 +287,7 @@ public class Gem implements ConfigurationSerializable {
         }
 
         final List<String> lore = meta.getLore();
-        final List<String> loreCopy = new ArrayList<>(lore)
+        final List<String> loreCopy = new ArrayList<>(Objects.requireNonNull(lore))
                 .stream()
                 .map(ChatColor::stripColor)
                 .collect(Collectors.toList());
@@ -348,8 +348,8 @@ public class Gem implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
-        return new HashMap<String, Object>() {
+    public @NotNull Map<String, Object> serialize() {
+        return new HashMap<>() {
             {
                 put(ID.s, id);
                 put(GEM_EFFECT.s, gemEffect.toString());
@@ -407,7 +407,7 @@ public class Gem implements ConfigurationSerializable {
 
         @Override
         public EnumMap<GemEnum, Object> getDefaultValues() {
-            return new EnumMap<GemEnum, Object>(GemEnum.class) {
+            return new EnumMap<>(GemEnum.class) {
                 {
                     put(ID, "some-id");
                     put(GEM_EFFECT, "add");

@@ -1,5 +1,7 @@
 package git.doomshade.professions.enums;
 
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
 
 /**
@@ -28,16 +30,24 @@ public enum SkillupColor {
         this.chance = chance;
     }
 
-    public static SkillupColor getSkillupColor(int itemTypeLvl, int userProfessionLvl) {
-        int difference = userProfessionLvl - itemTypeLvl;
-        int curr = 0;
+    /**
+     * @param itemType the item type lvl
+     * @param upd      the user's profession lvl
+     *
+     * @return the skillup color based on item type lvl and user's current profession lvl
+     */
+    public static SkillupColor getSkillupColor(ItemType<?> itemType, UserProfessionData upd) {
         SkillupColor color = SkillupColor.RED;
-        int pos = 0;
-        for (int i = difference; i >= 0 && pos != values().length; ) {
-            color = SkillupColor.values()[pos++];
-            curr += color.changeAfter;
-            i -= curr;
+
+        // calc the difference between the profession lvl and item type lvl
+        // subtract the change after attribute from the change after attribute
+        // if the lvl is still >=0, change the skillup color and repeat until
+        // we hit the lowest skillup color
+        for (int lvl = upd.getLevel() - itemType.getLevelReq(), curr, pos = 0;
+             lvl >= 0 && pos != values().length;
+             curr = color.changeAfter, lvl -= curr, color = SkillupColor.values()[pos++]) {
         }
+
         return color;
     }
 

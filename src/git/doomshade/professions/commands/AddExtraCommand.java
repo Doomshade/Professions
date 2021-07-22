@@ -21,6 +21,7 @@ import java.util.Optional;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class AddExtraCommand extends AbstractCommand {
 
     public AddExtraCommand() {
@@ -44,7 +45,7 @@ public class AddExtraCommand extends AbstractCommand {
         HashSet<String> extras = new HashSet<>(Arrays.asList(args).subList(3, args.length));
 
         UserProfessionData upd = user.getProfessionData(prof);
-        String extra = extras.toString().replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("[,]", "");
+        String extra = extras.toString().replaceAll("\\[", "").replaceAll("]", "").replaceAll("[,]", "");
         upd.addExtra(extra);
         try {
             user.save();

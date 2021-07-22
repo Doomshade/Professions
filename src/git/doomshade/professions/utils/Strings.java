@@ -34,9 +34,10 @@ public final class Strings {
 
         @Override
         public EnumMap<ICraftableEnum, Object> getDefaultValues() {
-            return new EnumMap<ICraftableEnum, Object>(ICraftableEnum.class) {
+            return new EnumMap<>(ICraftableEnum.class) {
                 {
-                    put(CRAFTABLE_ITEM_REQ, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(CRAFTABLE_ITEM_REQ,
+                            new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(CRAFTING_TIME, 5d);
                     put(SOUND_CRAFTING, "block.fire.ambient");
@@ -76,7 +77,7 @@ public final class Strings {
 
         @Override
         public EnumMap<ItemTypeEnum, Object> getDefaultValues() {
-            return new EnumMap<ItemTypeEnum, Object>(ItemTypeEnum.class) {
+            return new EnumMap<>(ItemTypeEnum.class) {
                 {
                     put(LEVEL_REQ, 0);
                     put(EXP, 0);
@@ -84,7 +85,8 @@ public final class Strings {
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));
                     put(MATERIAL, Material.CHEST);
                     put(RESTRICTED_WORLDS, Arrays.asList("some_world", "some_other_world"));
-                    put(INVENTORY_REQUIREMENTS, new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
+                    put(INVENTORY_REQUIREMENTS,
+                            new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(IGNORE_SKILLUP_COLOR, true);
                     put(TRAINABLE, false);
                     put(TRAINABLE_COST, 0);

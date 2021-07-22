@@ -30,7 +30,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -45,10 +44,10 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * <p>{@link ProfessionEvent} returns an instance of this to handle in a {@link Profession}</p>
  * <p>If you want to make your own type, make a class extend this and override all constructors</p>
  * <p>To make a specialized item type (e.g. making this item craftable - yields a result in a time with
- * given prerequisites or trainable from an NPC with {@link TrainerTrait}) trait,
- * see extensions</p>
+ * given prerequisites or trainable from an NPC with {@link TrainerTrait}) trait, see extensions</p>
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
+ *
  * @author Doomshade
  * @see CraftableItemType
  */
@@ -87,15 +86,20 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @param object the ItemType generic argument
      * @param <T>
      * @param <Obj>
+     *
      * @return an example instance of the ItemType
-     * @throws IllegalArgumentException if the ItemType class does not implement {@link ItemType#ItemType(Object)} constructor
+     *
+     * @throws IllegalArgumentException if the ItemType class does not implement {@link ItemType#ItemType(Object)}
+     *                                  constructor
      */
     @SuppressWarnings("all")
-    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object) throws IllegalArgumentException {
+    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object)
+            throws IllegalArgumentException {
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
         } catch (Exception e) {
-            throw new IllegalArgumentException(clazz.getSimpleName() + " does not implement ItemType(T) constructor!", e);
+            throw new IllegalArgumentException(clazz.getSimpleName() + " does not implement ItemType(T) constructor!",
+                    e);
         }
     }
 
@@ -105,7 +109,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @param clazz the {@link ItemType} class
      * @param id    the id of {@link ItemType}
      * @param <A>   the {@link ItemType}
+     *
      * @return the {@link ItemType} if found deserialization was successful, null otherwise
+     *
      * @throws ProfessionInitializationException when the deserialization is unsuccessful
      */
     @Nullable
@@ -135,6 +141,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *
      * @param id  the id of this itemtype
      * @param map the map
+     *
      * @throws InitializationException if the initialization of this class is unsuccessful
      */
     protected void deserialize(int id, Map<String, Object> map) throws InitializationException {
@@ -157,7 +164,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         setTrainableCost((int) map.getOrDefault(TRAINABLE_COST.s, -1));
 
         // check for missing keys
-        Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values()).stream().filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s)).collect(Collectors.toSet());
+        Set<String> list = Utils.getMissingKeys(map, Strings.ItemTypeEnum.values())
+                .stream()
+                .filter(x -> !x.equalsIgnoreCase(LEVEL_REQ_COLOR.s))
+                .collect(Collectors.toSet());
         if (!list.isEmpty()) {
             throw new ProfessionInitializationException(getClass(), list, getFileId());
         }
@@ -175,37 +185,18 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         try {
             setObject(deserializeObject(objSection.getValues(true)));
         } catch (ProfessionObjectInitializationException e) {
-            ProfessionLogger.log("Failed to load object from " + ItemUtils.getItemTypeFile(getClass()).getName() + " with id " + getFileId() + " (" + getConfigName() + ")", Level.WARNING);
+            ProfessionLogger.log(
+                    "Failed to load object from " + ItemUtils.getItemTypeFile(getClass()).getName() + " with id " +
+                            getFileId() + " (" + getConfigName() + ")", Level.WARNING);
             ProfessionLogger.logError(e, false);
         }
-    }
-
-    /**
-     * Serializes the ItemType
-     *
-     * @return serialized item type
-     */
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(OBJECT.s, getSerializedObject());
-        map.put(EXP.s, exp);
-        map.put(LEVEL_REQ.s, levelReq);
-        map.put(NAME.s, name);
-        map.put(DESCRIPTION.s, description);
-        map.put(MATERIAL.s, guiMaterial.getType().name() + (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
-        map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
-        map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
-        map.put(TRAINABLE.s, isTrainable());
-        map.put(TRAINABLE_COST.s, getTrainableCost());
-        map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
-        return map;
     }
 
     /**
      * Represents the number ID in the item type file.
      *
      * @return the ID number in the file
+     *
      * @throws UnsupportedOperationException if this method is called on the example ItemType
      * @see ItemType#getExampleItemType(Class, Object)
      */
@@ -228,8 +219,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Represents the config name of this item type in a "filename.fileId" format (filename without the .yml extension).
-     * <p>Note that this method was created for consistent IDs of item types, this is only a generated ID from the file.</p>
+     * Represents the config name of this item type in a "filename.fileId" format (filename without the .yml
+     * extension).
+     * <p>Note that this method was created for consistent IDs of item types, this is only a generated ID from the
+     * file.</p>
      *
      * @return the config name
      */
@@ -241,34 +234,13 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * This is basically a {@link ConfigurationSerializable#serialize()} but for the specific object.
-     *
-     * @return the map of serialization of the object
-     */
-    public abstract Map<String, Object> getSerializedObject();
-
-    /**
      * @param map the map of serialized object
+     *
      * @return the object
+     *
      * @throws ProfessionObjectInitializationException if the object deserialization was unsuccessful
      */
     protected abstract T deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException;
-
-    /**
-     * @return the description of this item type (used mainly for visual representation in an item)
-     */
-    public final List<String> getDescription() {
-        return description;
-    }
-
-    /**
-     * Sets the description of this item type
-     *
-     * @param description the description to set
-     */
-    public final void setDescription(List<String> description) {
-        this.description = description;
-    }
 
     /**
      * @return the name of this item type (used mainly for visual representation in an item)
@@ -287,87 +259,34 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @return the material in a GUI (used for visual representation in an item)
-     */
-    public final ItemStack getGuiMaterial() {
-        return guiMaterial;
-    }
-
-    /**
-     * Sets the material of this item type in a GUI
+     * Serializes the ItemType
      *
-     * @param guiMaterial the material to set
+     * @return serialized item type
      */
-    public final void setGuiMaterial(ItemStack guiMaterial) {
-        this.guiMaterial = guiMaterial;
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(OBJECT.s, getSerializedObject());
+        map.put(EXP.s, exp);
+        map.put(LEVEL_REQ.s, levelReq);
+        map.put(NAME.s, name);
+        map.put(DESCRIPTION.s, description);
+        map.put(MATERIAL.s, guiMaterial.getType().name() +
+                (guiMaterial.getDurability() != 0 ? ":" + guiMaterial.getDurability() : ""));
+        map.put(RESTRICTED_WORLDS.s, restrictedWorlds);
+        map.put(IGNORE_SKILLUP_COLOR.s, ignoreSkillupColor);
+        map.put(TRAINABLE.s, isTrainable());
+        map.put(TRAINABLE_COST.s, getTrainableCost());
+        map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
+        return map;
     }
 
     /**
-     * @return the restricted worlds this item type will not be handled in events
-     */
-    public final List<String> getRestrictedWorlds() {
-        return restrictedWorlds;
-    }
-
-    /**
-     * Sets the restricted worlds in which this item type will not be handled in events
+     * This is basically a {@link ConfigurationSerializable#serialize()} but for the specific object.
      *
-     * @param restrictedWorlds the restricted worlds
+     * @return the map of serialization of the object
      */
-    public final void setRestrictedWorlds(List<String> restrictedWorlds) {
-        this.restrictedWorlds = restrictedWorlds;
-    }
-
-    /**
-     * @return {@code true} if this item type ignores the skillup color exp modifications
-     * @see ProfessionExpSettings
-     */
-    public final boolean isIgnoreSkillupColor() {
-        return ignoreSkillupColor;
-    }
-
-    /**
-     * Sets whether or not this item type should ignore the skillup color exp modifications
-     *
-     * @param ignoreSkillupColor whether or not to ignore skillup color
-     * @see ProfessionExpSettings
-     */
-    public final void setIgnoreSkillupColor(boolean ignoreSkillupColor) {
-        this.ignoreSkillupColor = ignoreSkillupColor;
-    }
-
-    /**
-     * @param upd the {@link User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
-     * @return the itemstack (icon) representation of this item type used in a GUI
-     */
-    public ItemStack getIcon(@Nullable IUserProfessionData upd) {
-        ItemStack icon = new ItemStack(getGuiMaterial());
-        ItemMeta meta = icon.getItemMeta();
-
-        if (meta == null) {
-            return icon;
-        }
-
-        meta.setDisplayName(getName());
-        final List<String> lore = ItemUtils.getDescription(this, getDescription(), (UserProfessionData) upd);
-
-        if (upd != null) {
-            Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
-            for (int i = 0; i < lore.size(); i++) {
-                String s = lore.get(i);
-                Matcher m = regex.matcher(s);
-                if (!m.find()) {
-                    continue;
-                }
-                s = s.replaceAll(regex.pattern(),
-                        getInventoryRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN, ChatColor.RED));
-                lore.set(i, s);
-            }
-        }
-        meta.setLore(lore);
-        icon.setItemMeta(meta);
-        return icon;
-    }
+    public abstract Map<String, Object> getSerializedObject();
 
     /**
      * @return the cost for training this item
@@ -402,16 +321,134 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
+     * @return the inventory requirements
+     */
+    public final Requirements getInventoryRequirements() {
+        return inventoryRequirements;
+    }
+
+    /**
+     * Sets the inventory requirements, overriding existing ones
+     *
+     * @param inventoryRequirements the inventory requirements
+     */
+    public final void setInventoryRequirements(Requirements inventoryRequirements) {
+        this.inventoryRequirements = inventoryRequirements;
+    }
+
+    /**
+     * @return the restricted worlds this item type will not be handled in events
+     */
+    public final List<String> getRestrictedWorlds() {
+        return restrictedWorlds;
+    }
+
+    /**
+     * Sets the restricted worlds in which this item type will not be handled in events
+     *
+     * @param restrictedWorlds the restricted worlds
+     */
+    public final void setRestrictedWorlds(List<String> restrictedWorlds) {
+        this.restrictedWorlds = restrictedWorlds;
+    }
+
+    /**
+     * @return {@code true} if this item type ignores the skillup color exp modifications
+     *
+     * @see ProfessionExpSettings
+     */
+    public final boolean isIgnoreSkillupColor() {
+        return ignoreSkillupColor;
+    }
+
+    /**
+     * Sets whether or not this item type should ignore the skillup color exp modifications
+     *
+     * @param ignoreSkillupColor whether or not to ignore skillup color
+     *
+     * @see ProfessionExpSettings
+     */
+    public final void setIgnoreSkillupColor(boolean ignoreSkillupColor) {
+        this.ignoreSkillupColor = ignoreSkillupColor;
+    }
+
+    /**
+     * @param upd the {@link User}'s {@link Profession} data to base the lore and {@link SkillupColor} around
+     *
+     * @return the itemstack (icon) representation of this item type used in a GUI
+     */
+    public ItemStack getIcon(@Nullable IUserProfessionData upd) {
+        ItemStack icon = new ItemStack(getGuiMaterial());
+        ItemMeta meta = icon.getItemMeta();
+
+        if (meta == null) {
+            return icon;
+        }
+
+        meta.setDisplayName(getName());
+        final List<String> lore = ItemUtils.getDescription(this, getDescription(), (UserProfessionData) upd);
+
+        if (upd != null) {
+            Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
+            for (int i = 0; i < lore.size(); i++) {
+                String s = lore.get(i);
+                Matcher m = regex.matcher(s);
+                if (!m.find()) {
+                    continue;
+                }
+                s = s.replaceAll(regex.pattern(),
+                        getInventoryRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN,
+                                ChatColor.RED));
+                lore.set(i, s);
+            }
+        }
+        meta.setLore(lore);
+        icon.setItemMeta(meta);
+        return icon;
+    }
+
+    /**
+     * @return the description of this item type (used mainly for visual representation in an item)
+     */
+    public final List<String> getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the description of this item type
+     *
+     * @param description the description to set
+     */
+    public final void setDescription(List<String> description) {
+        this.description = description;
+    }
+
+    /**
+     * @return the material in a GUI (used for visual representation in an item)
+     */
+    public final ItemStack getGuiMaterial() {
+        return guiMaterial;
+    }
+
+    /**
+     * Sets the material of this item type in a GUI
+     *
+     * @param guiMaterial the material to set
+     */
+    public final void setGuiMaterial(ItemStack guiMaterial) {
+        this.guiMaterial = guiMaterial;
+    }
+
+    /**
      * @return the object (or objective) of this item type
      */
-    @Nullable
     public final T getObject() {
         return item;
     }
 
-
     /**
-     * Sets the object (or objective) of this item type and also sets the name of this item type to {@code item.toString()}.
+     * Sets the object (or objective) of this item type and also sets the name of this item type to {@code
+     * item.toString()}.
      *
      * @param item the object to set
      */
@@ -438,13 +475,12 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         this.exp = exp;
     }
 
-
     /**
-     * You may override this method for more complex logic.
-     * This method is called during events, ensures that we got the correct item type
-     * that gets further passed to profession
+     * You may override this method for more complex logic. This method is called during events, ensures that we got the
+     * correct item type that gets further passed to profession
      *
      * @param object the object
+     *
      * @return {@code true} if the object equals to this generic argument object
      */
     public boolean equalsObject(T object) {
@@ -453,29 +489,11 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * @param professionLevel the profession level
+     *
      * @return {@code true} if the profession level meets {@link #getLevelReq()}
      */
     public final boolean meetsLevelReq(int professionLevel) {
         return professionLevel >= levelReq;
-    }
-
-    /**
-     * @return the level requirement of this item type
-     */
-    public final int getLevelReq() {
-        return levelReq;
-    }
-
-    /**
-     * Sets the level requirement of this item type
-     *
-     * @param levelReq the level to set
-     */
-    public final void setLevelReq(int levelReq) {
-        int cap = Settings.getSettings(ExpSettings.class).getLevelCap();
-
-        // sets the level req to 0 <= req <= global level cap
-        this.levelReq = Math.min(Math.max(levelReq, 0), cap);
     }
 
     @Override
@@ -515,24 +533,10 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * @return the inventory requirements
-     */
-    public final Requirements getInventoryRequirements() {
-        return inventoryRequirements;
-    }
-
-    /**
-     * Sets the inventory requirements, overriding existing ones
-     *
-     * @param inventoryRequirements the inventory requirements
-     */
-    public final void setInventoryRequirements(Requirements inventoryRequirements) {
-        this.inventoryRequirements = inventoryRequirements;
-    }
-
-    /**
      * @param player the player to check for
-     * @return {@code true} if the player meets requirements to proceed with the event, {@code false} otherwise. Does not check for level requirements!
+     *
+     * @return {@code true} if the player meets requirements to proceed with the event, {@code false} otherwise. Does
+     * not check for level requirements!
      */
     public boolean meetsRequirements(Player player) {
         return inventoryRequirements.meetsRequirements(player);
@@ -540,7 +544,9 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
 
     /**
      * @param o the item type to compare to
-     * @return {@link Integer#compare(int, int)} where the arguments are: {@link #getLevelReq()} and {@code o.}{@link #getLevelReq()}
+     *
+     * @return {@link Integer#compare(int, int)} where the arguments are: {@link #getLevelReq()} and {@code o.}{@link
+     * #getLevelReq()}
      */
     @Override
     public int compareTo(ItemType<T> o) {
@@ -548,31 +554,49 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     }
 
     /**
-     * Called after plugin is reloaded. Useful for reassigning objects to memory. Calls {@link #onLoad()} by default.
+     * @return the level requirement of this item type
      */
-    public void onReload() {
-        onLoad();
+    public final int getLevelReq() {
+        return levelReq;
+    }
+
+    /**
+     * Sets the level requirement of this item type
+     *
+     * @param levelReq the level to set
+     */
+    public final void setLevelReq(int levelReq) {
+        int cap = Settings.getSettings(ExpSettings.class).getLevelCap();
+
+        // sets the level req to 0 <= req <= global level cap
+        this.levelReq = Math.min(Math.max(levelReq, 0), cap);
+    }
+
+    /**
+     * Called after plugin is reloaded. Useful for reassigning objects to memory. Calls {@link #onPluginEnable()} by
+     * default.
+     */
+    public void onPluginAfterReload() {
     }
 
 
     /**
-     * Called before plugin is reloaded. Useful for cleanups. Calls {@link #onDisable()} by default.
+     * Called before plugin is reloaded. Useful for cleanups. Calls {@link #onPluginDisable()} by default.
      */
-    public void onPreReload() {
-        onDisable();
+    public void onPluginBeforeReload() {
     }
 
     /**
      * Called once plugin is fully loaded
      */
-    public void onLoad() {
+    public void onPluginEnable() {
 
     }
 
     /**
      * Called once plugin is being disabled
      */
-    public void onDisable() {
+    public void onPluginDisable() {
 
     }
 }

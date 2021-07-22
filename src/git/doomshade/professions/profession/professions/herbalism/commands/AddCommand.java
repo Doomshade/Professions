@@ -1,12 +1,12 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.api.spawn.Range;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.spawn.SpawnPoint;
 import git.doomshade.professions.utils.Permissions;
-import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("ALL")
 public class AddCommand extends AbstractCommand {
     public AddCommand() {
         setCommand("add");
@@ -42,7 +43,9 @@ public class AddCommand extends AbstractCommand {
 
         Range respawnTime = null;
         try {
-            respawnTime = Range.fromString(args[2]);
+            respawnTime = Range.fromString(args[2]).orElseThrow(() -> new IllegalArgumentException(
+                    String.format("Could not get " +
+                            "range from '%s'", args[2])));
         } catch (Exception e) {
             ProfessionLogger.logError(e);
         }
@@ -51,9 +54,10 @@ public class AddCommand extends AbstractCommand {
             return;
         }
 
-        herb.addSpawnPoint(new ExtendedLocation(lookingAt, respawnTime));
+        // TODO marker set id
+        final SpawnPoint sp = new SpawnPoint(lookingAt, respawnTime, herb, "herbs");
         try {
-            herb.getSpawnPoints(lookingAt).spawn();
+            sp.spawn();
         } catch (SpawnException e) {
             ProfessionLogger.logError(e);
         }

@@ -1,11 +1,14 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
@@ -20,11 +23,7 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.profession.spawn.SpawnPoint;
-import git.doomshade.professions.profession.spawn.MarkableSpawnPoint;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
-import git.doomshade.professions.profession.spawn.SpawnableElement;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;
@@ -55,12 +54,11 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
- * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further handled in {@link Profession#onEvent(ProfessionEventWrapper)}.
+ * A listener that calls {@link ProfessionEvent} based on the event called. Called events by this class are further
+ * handled in {@link Profession#onEvent(ProfessionEventWrapper)}.
  * <p>Note that this will most likely be separated for each profession later on if this class gets too big</p>
  *
  * @author Doomshade
@@ -79,147 +77,6 @@ public class ProfessionListener extends AbstractProfessionListener {
     ///////////////////////////////////////////////////////////////////////////
 
     /**
-     * Determines whether the two items are similar based on display name and lore
-     *
-     * @param one the first one
-     * @param two the second one
-     * @return {@code true} if they are similar
-     */
-    private static boolean areSimilar(ItemStack one, ItemStack two) {
-
-        // either one of them null -> don't compare
-        if (one == null || two == null) {
-            return false;
-        }
-
-        // both no metas -> return the base ItemStack #isSimilar method
-        if (!one.hasItemMeta() && !two.hasItemMeta()) {
-            return one.isSimilar(two);
-        }
-        ItemMeta oneMeta = one.getItemMeta();
-        ItemMeta twoMeta = two.getItemMeta();
-
-        boolean displayName = true;
-        boolean lore = true;
-
-        if (oneMeta.hasDisplayName() && twoMeta.hasDisplayName()) {
-            displayName = oneMeta.getDisplayName().equals(twoMeta.getDisplayName());
-        }
-
-        if (oneMeta.hasLore() && twoMeta.hasLore()) {
-            final List<String> lore1 = oneMeta.getLore();
-            final List<String> lore2 = twoMeta.getLore();
-
-            lore = lore1.size() == lore2.size() && lore1.equals(lore2);
-        }
-
-        return displayName && lore;
-    }
-
-    /**
-     * Mine event for {@link git.doomshade.professions.profession.professions.mining.MiningProfession}
-     *
-     * @param e the block break event
-     */
-    @Override
-    @EventHandler(ignoreCancelled = true)
-    public void onMine(BlockBreakEvent e) {
-
-        final Block block = e.getBlock();
-        final Location location = block.getLocation();
-
-        final Ore ore;
-        final Player player = e.getPlayer();
-        // is the destroyed block an ore?
-        try {
-
-            // yes, continue
-            ore = SpawnableElement.of(block, Ore.class);
-        } catch (Utils.SearchNotFoundException ex) {
-
-            // no, if the world is a mining world AND also if the plugin should handle the event, cancel the event if the player is not ranked >=builder
-            final boolean world = Settings.getMiningWorlds().contains(location.getWorld().getName().toLowerCase());
-
-            final boolean permission = Permissions.has(e.getPlayer(), Permissions.BUILDER);
-            final boolean handleEvents = Settings.isHandleMineEvents();
-
-            if (world && !permission && handleEvents) {
-
-                // keep the e.setCancelled(true) because we ONLY want to cancel the event if the requirements are met
-                e.setCancelled(true);
-            }
-            return;
-        }
-
-        // ore found, let's call the event and let the profession handle it
-        ProfessionEvent<OreItemType> event = getEvent(player, ore, OreItemType.class);
-        if (event == null) {
-            return;
-        }
-
-        // add the location of ore because of its spawn point
-        event.addExtra(location);
-
-        ProfessionLogger.log("Called event");
-        callEvent(event);
-        // event is cancelled when the player does not meet requirements
-        if (event.isCancelled()) {
-            ProfessionLogger.log("Cancelling event");
-            e.setCancelled(true);
-        }
-        // destroy the block and disable particles if the requirements are met
-        else {
-            final SpawnPoint spawnPoint = ore.getSpawnPoints(location);
-            ProfessionLogger.log("Despawning... " + spawnPoint.element.getName() + " with location " + spawnPoint.location);
-            spawnPoint.despawn();
-
-            // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
-            if (!Permissions.has(player, Permissions.BUILDER) && player.getGameMode() != GameMode.CREATIVE) {
-                spawnPoint.scheduleSpawn();
-            }
-        }
-    }
-
-    /**
-     * Gets the maximum amount of items that can be crafted
-     *
-     * @param result the result to check for
-     * @param hrac   the player to check the inventory for
-     * @param e      the event to check in
-     * @return ItemStack amount * Math#min(possible craftings, possible creations)
-     */
-    private int getAmountOfItems(ItemStack result, Player hrac, CraftItemEvent e) {
-        int possibleCraftings = 1;
-        int possibleCreations = 0;
-        if (e.isShiftClick()) {
-            int itemsChecked = 0;
-            for (ItemStack item : e.getInventory().getMatrix()) {
-                if (item != null && !item.getType().equals(Material.AIR)) {
-                    if (itemsChecked == 0)
-                        possibleCraftings = item.getAmount();
-                    else
-                        possibleCraftings = Math.min(possibleCraftings, item.getAmount());
-                    itemsChecked++;
-                }
-            }
-        }
-        for (ItemStack itemm : hrac.getInventory().getStorageContents()) {
-            if (itemm == null) {
-                possibleCreations += result.getMaxStackSize();
-                continue;
-            }
-            if (itemm.isSimilar(result)) {
-                possibleCreations += result.getMaxStackSize() - itemm.getAmount();
-            }
-        }
-        return result.getAmount() * Math.min(possibleCraftings, possibleCreations);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Herbalism
-    ///////////////////////////////////////////////////////////////////////////
-
-    /**
      * The crafitng event for future crafting professions, currently creating {@link CustomRecipe}
      *
      * @param e the craft item event
@@ -234,7 +91,8 @@ public class ProfessionListener extends AbstractProfessionListener {
         Recipe recipe = e.getRecipe();
 
         // some fuckery, basically makes sure the crafting goes well
-        if (cursor.getType() != Material.AIR && !recipe.getResult().isSimilar(cursor) && !e.isShiftClick()) {
+        if (Objects.requireNonNull(cursor).getType() != Material.AIR && !recipe.getResult().isSimilar(cursor) &&
+                !e.isShiftClick()) {
             return;
         }
 
@@ -268,98 +126,107 @@ public class ProfessionListener extends AbstractProfessionListener {
     }
 
     /**
-     * Spawnable destroy event for admins due to possible breaking of the herb - need to remove particles from the location
+     * Gets the maximum amount of items that can be crafted
      *
-     * @param e the block break event
+     * @param result the result to check for
+     * @param hrac   the player to check the inventory for
+     * @param e      the event to check in
+     *
+     * @return ItemStack amount * Math#min(possible craftings, possible creations)
      */
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
-    public void onSpawnableDestroy(BlockBreakEvent e) {
-
-        if (e.getPlayer().getGameMode() != GameMode.CREATIVE) return;
-
-        try {
-            final Block block = e.getBlock();
-            final Location location = block.getLocation();
-
-            SpawnableElement<? extends SpawnPoint> spawnableElement = SpawnableElement.of(block);
-
-            final SpawnPoint spawnPoint = spawnableElement.getSpawnPoints(location);
-
-            // log
-            ProfessionLogger.log(spawnPoint);
-
-            final List<ExtendedLocation> spawnPointLocations = spawnableElement.getSpawnPointLocations();
-
-            // log
-            ProfessionLogger.log(spawnPointLocations.contains(new ExtendedLocation(location)));
-            String message = String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(), ChatColor.GRAY, spawnableElement.getId());
-
-            final Player player = e.getPlayer();
-            try {
-                // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
-                final ExtendedLocation sp = Utils.findInIterable(spawnPointLocations, x -> x.equals(location));
-                player.sendMessage(message.concat(" Removed spawn point."));
-                spawnableElement.removeSpawnPoint(sp);
-            } catch (Utils.SearchNotFoundException ignored) {
-                player.sendMessage(message);
-            } finally {
-                e.setCancelled(true);
-                if (spawnPoint instanceof MarkableSpawnPoint) {
-                    ((MarkableSpawnPoint) spawnPoint).despawn(true);
-                } else {
-                    spawnPoint.despawn();
+    private int getAmountOfItems(ItemStack result, Player hrac, CraftItemEvent e) {
+        int possibleCraftings = 1;
+        int possibleCreations = 0;
+        if (e.isShiftClick()) {
+            int itemsChecked = 0;
+            for (ItemStack item : e.getInventory().getMatrix()) {
+                if (!item.getType().equals(Material.AIR)) {
+                    if (itemsChecked == 0) {
+                        possibleCraftings = item.getAmount();
+                    } else {
+                        possibleCraftings = Math.min(possibleCraftings, item.getAmount());
+                    }
+                    itemsChecked++;
                 }
             }
-        } catch (Utils.SearchNotFoundException ex) {
-            //Professions.logError(ex);
         }
+        for (ItemStack itemm : hrac.getInventory().getStorageContents()) {
+            if (itemm.isSimilar(result)) {
+                possibleCreations += result.getMaxStackSize() - itemm.getAmount();
+            }
+        }
+        return result.getAmount() * Math.min(possibleCraftings, possibleCreations);
     }
 
-    /**
-     * Spawns herbs in the world during initialization
-     *
-     * @param e the world init event
-     */
-    @EventHandler
-    public void onWorldLoad(WorldInitEvent e) {
-        Herb.spawnHerbs(e.getWorld());
-    }
-
-    /**
-     * Calls an event to gather task to further handle. The damage event is handled inside gather task, so no need to do anything but call it with the right parameter
-     *
-     * @param event the damage event
-     */
+    @Override
     @EventHandler(ignoreCancelled = true)
-    public void onGathererDamaged(EntityDamageEvent event) {
-        GatherTask.onGathererDamaged(event);
-    }
+    public void onEnchant(PlayerInteractEvent e) {
 
-    /**
-     * Calls an even to gather task to further handle. The move event is handled inside gather task.
-     *
-     * @param event the move event
-     */
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerMoveFromHerb(PlayerMoveEvent event) {
-        final Player player = event.getPlayer();
-        final UUID uuid = player.getUniqueId();
+        Player player = e.getPlayer();
 
-        // the player has no task active, do not add to MOVE_LEN hashmap for performance reasons and remove if there was a player move
-        if (!GatherTask.isActive(player)) {
-            MOVE_LEN.remove(uuid);
+        ItemStack mh = player.getInventory().getItemInMainHand();
+
+        if (ENCHANTS.containsKey(player.getUniqueId())) {
+            Enchant enchant = ENCHANTS.remove(player.getUniqueId());
+            ProfessionEvent<EnchantedItemItemType> event = callEvent(player, enchant, EnchantedItemItemType.class,
+                    new PreEnchantedItem(enchant, mh));
+            if (event != null && !event.isCancelled()) {
+                // don't delete the item!
+            }
             return;
         }
 
-        final PlayerMove playerMove = MOVE_LEN.get(uuid);
+        for (EnchantedItemItemType enchItemType : Professions.getProfMan()
+                .getItemTypeHolder(EnchantedItemItemType.class)) {
+            Enchant eit = enchItemType.getObject();
+            if (eit != null && areSimilar(eit.getItem(), mh)) {
+                ENCHANTS.put(player.getUniqueId(), eit);
+                break;
+            }
+        }
+    }
 
-        // we call Map#put in the onGather method
-        // this should not happen just to make sure no errors are thrown
-        if (playerMove == null) return;
+    ///////////////////////////////////////////////////////////////////////////
+    // Herbalism
+    ///////////////////////////////////////////////////////////////////////////
 
-        final double length = playerMove.computeLength();
-        GatherTask.onGathererMoved(player, length);
-        MOVE_LEN.put(uuid, playerMove);
+    /**
+     * Determines whether the two items are similar based on display name and lore
+     *
+     * @param one the first one
+     * @param two the second one
+     *
+     * @return {@code true} if they are similar
+     */
+    private static boolean areSimilar(ItemStack one, ItemStack two) {
+
+        // either one of them null -> don't compare
+        if (one == null || two == null) {
+            return false;
+        }
+
+        // both no metas -> return the base ItemStack #isSimilar method
+        if (!one.hasItemMeta() && !two.hasItemMeta()) {
+            return one.isSimilar(two);
+        }
+        ItemMeta oneMeta = one.getItemMeta();
+        ItemMeta twoMeta = two.getItemMeta();
+
+        boolean displayName = true;
+        boolean lore = true;
+
+        if (Objects.requireNonNull(oneMeta).hasDisplayName() && Objects.requireNonNull(twoMeta).hasDisplayName()) {
+            displayName = oneMeta.getDisplayName().equals(twoMeta.getDisplayName());
+        }
+
+        if (oneMeta.hasLore() && Objects.requireNonNull(twoMeta).hasLore()) {
+            final List<String> lore1 = oneMeta.getLore();
+            final List<String> lore2 = twoMeta.getLore();
+
+            lore = Objects.requireNonNull(lore1).size() == Objects.requireNonNull(lore2).size() && lore1.equals(lore2);
+        }
+
+        return displayName && lore;
     }
 
     /**
@@ -381,7 +248,7 @@ public class ProfessionListener extends AbstractProfessionListener {
         try {
 
             // Checks whether or not the right clicked block is a herb
-            herb = SpawnableElement.of(block, Herb.class);
+            herb = Spawnable.of(block, Herb.class);
         } catch (Utils.SearchNotFoundException ex) {
             return;
         }
@@ -392,10 +259,198 @@ public class ProfessionListener extends AbstractProfessionListener {
         if (event == null) {
             return;
         }
-        event.addExtra(block.getLocation());
+        event.addExtra(Objects.requireNonNull(block).getLocation());
         callEvent(event);
         MOVE_LEN.put(player.getUniqueId(), new PlayerMove(player, block.getLocation()));
     }
+
+    @Override
+    @EventHandler
+    public void onKill(EntityDeathEvent e) {
+        LivingEntity entity = e.getEntity();
+        if (entity.getKiller() == null) {
+            return;
+        }
+        callEvent(entity.getKiller(), new Mob(entity.getType()), PreyItemType.class);
+    }
+
+    /**
+     * Mine event for {@link git.doomshade.professions.profession.professions.mining.MiningProfession}
+     *
+     * @param e the block break event
+     */
+    @Override
+    @EventHandler(ignoreCancelled = true)
+    public void onMine(BlockBreakEvent e) {
+
+        final Block block = e.getBlock();
+        final Location location = block.getLocation();
+
+        final Ore ore;
+        final Player player = e.getPlayer();
+        // is the destroyed block an ore?
+        try {
+
+            // yes, continue
+            ore = Spawnable.of(block, Ore.class);
+        } catch (Utils.SearchNotFoundException ex) {
+
+            // no, if the world is a mining world AND also if the plugin should handle the event, cancel the event if
+            // the player is not ranked >=builder
+            final boolean world = Settings.getMiningWorlds().contains(
+                    Objects.requireNonNull(location.getWorld()).getName().toLowerCase());
+
+            final boolean permission = Permissions.has(e.getPlayer(), Permissions.BUILDER);
+            final boolean handleEvents = Settings.isHandleMineEvents();
+
+            if (world && !permission && handleEvents) {
+
+                // keep the e.setCancelled(true) because we ONLY want to cancel the event if the requirements are met
+                e.setCancelled(true);
+            }
+            return;
+        }
+
+        // ore found, let's call the event and let the profession handle it
+        ProfessionEvent<OreItemType> event = getEvent(player, ore, OreItemType.class);
+        if (event == null) {
+            return;
+        }
+
+        // add the location of ore because of its spawn point
+        event.addExtra(location);
+
+        ProfessionLogger.log("Called event");
+        callEvent(event);
+        // event is cancelled when the player does not meet requirements
+        if (event.isCancelled()) {
+            ProfessionLogger.log("Cancelling event");
+            e.setCancelled(true);
+        }
+        // destroy the block and disable particles if the requirements are met
+        else {
+            final ISpawnPoint spawnPoint = ore.getSpawnPoint(location);
+            ProfessionLogger.log("Despawning... " + ore.getName() + " with location " + location);
+            spawnPoint.despawn();
+
+            // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
+            if (!Permissions.has(player, Permissions.BUILDER) && player.getGameMode() != GameMode.CREATIVE) {
+                try {
+                    spawnPoint.scheduleSpawn();
+                } catch (SpawnException e1) {
+                    ProfessionLogger.logError(e1);
+                }
+            }
+        }
+    }
+
+    /**
+     * Spawnable destroy event for admins due to possible breaking of the herb - need to remove particles from the
+     * location
+     *
+     * @param e the block break event
+     */
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
+    public void onSpawnableDestroy(BlockBreakEvent e) {
+
+        if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            return;
+        }
+
+        try {
+            final Block block = e.getBlock();
+            final Location location = block.getLocation();
+
+            Spawnable spawnableElement = Spawnable.of(block);
+
+            final ISpawnPoint spawnPoint = spawnableElement.getSpawnPoint(location);
+
+            // log
+            ProfessionLogger.log(spawnPoint);
+
+            final Collection<ISpawnPoint> spawnPointLocations = spawnableElement.getSpawnPoints();
+
+            // log
+            ProfessionLogger.log(spawnPointLocations.contains(spawnPoint));
+            String message =
+                    String.format("%sYou have destroyed %s%s (id = %s).", ChatColor.GRAY, spawnableElement.getName(),
+                            ChatColor.GRAY, spawnableElement.getId());
+
+            final Player player = e.getPlayer();
+            try {
+                // MUST BE new SpawnPoint BECAUSE OF EQUALS!!!!
+                final ISpawnPoint sp = Utils.findInIterable(spawnPointLocations, x -> x.equals(spawnPoint));
+                player.sendMessage(message.concat(" Removed spawn point."));
+                spawnableElement.removeSpawnPoint(sp);
+            } catch (Utils.SearchNotFoundException ignored) {
+                player.sendMessage(message);
+            } finally {
+                e.setCancelled(true);
+                spawnPoint.despawn();
+            }
+        } catch (Utils.SearchNotFoundException ex) {
+            //Professions.logError(ex);
+        }
+    }
+
+    /**
+     * Spawns herbs in the world during initialization
+     *
+     * @param e the world init event
+     */
+    @EventHandler
+    public void onWorldLoad(WorldInitEvent e) {
+        Herb.spawnHerbs(e.getWorld());
+    }
+
+    /**
+     * Calls an event to gather task to further handle. The damage event is handled inside gather task, so no need to do
+     * anything but call it with the right parameter
+     *
+     * @param event the damage event
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onGathererDamaged(EntityDamageEvent event) {
+        GatherTask.onGathererDamaged(event);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Enchanting
+    ///////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Calls an even to gather task to further handle. The move event is handled inside gather task.
+     *
+     * @param event the move event
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerMoveFromHerb(PlayerMoveEvent event) {
+        final Player player = event.getPlayer();
+        final UUID uuid = player.getUniqueId();
+
+        // the player has no task active, do not add to MOVE_LEN hashmap for performance reasons and remove if there
+        // was a player move
+        if (!GatherTask.isActive(player)) {
+            MOVE_LEN.remove(uuid);
+            return;
+        }
+
+        final PlayerMove playerMove = MOVE_LEN.get(uuid);
+
+        // we call Map#put in the onGather method
+        // this should not happen just to make sure no errors are thrown
+        if (playerMove == null) {
+            return;
+        }
+
+        final double length = playerMove.computeLength();
+        GatherTask.onGathererMoved(player, length);
+        MOVE_LEN.put(uuid, playerMove);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Alchemy
+    ///////////////////////////////////////////////////////////////////////////
 
     @EventHandler(ignoreCancelled = true)
     public void onPotionDrink(PlayerItemConsumeEvent e) {
@@ -408,61 +463,13 @@ public class ProfessionListener extends AbstractProfessionListener {
             } else {
                 user.sendMessage(new Messages.MessageBuilder(
                         Messages.AlchemyMessages.POTION_ALREADY_ACTIVE)
-                        .setPlayer(user)
-                        .setItemType(ItemType.getExampleItemType(PotionItemType.class, potion))
+                        .player(user)
+                        .itemType(ItemType.getExampleItemType(PotionItemType.class, potion))
                         .build()
                 );
                 e.setCancelled(true);
             }
         }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Enchanting
-    ///////////////////////////////////////////////////////////////////////////
-
-    @Override
-    @EventHandler(ignoreCancelled = true)
-    public void onEnchant(PlayerInteractEvent e) {
-
-        Player player = e.getPlayer();
-
-        ItemStack mh = player.getInventory().getItemInMainHand();
-        if (mh == null) {
-            return;
-        }
-
-        if (ENCHANTS.containsKey(player.getUniqueId())) {
-            Enchant enchant = ENCHANTS.remove(player.getUniqueId());
-            ProfessionEvent<EnchantedItemItemType> event = callEvent(player, enchant, EnchantedItemItemType.class,
-                    new PreEnchantedItem(enchant, mh));
-            if (event != null && !event.isCancelled()) {
-                // don't delete the item!
-            }
-            return;
-        }
-
-        for (EnchantedItemItemType enchItemType : Professions.getProfMan().getItemTypeHolder(EnchantedItemItemType.class)) {
-            Enchant eit = enchItemType.getObject();
-            if (eit != null && areSimilar(eit.getItem(), mh)) {
-                ENCHANTS.put(player.getUniqueId(), eit);
-                break;
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Alchemy
-    ///////////////////////////////////////////////////////////////////////////
-
-    @Override
-    @EventHandler
-    public void onKill(EntityDeathEvent e) {
-        LivingEntity entity = e.getEntity();
-        if (entity == null || entity.getKiller() == null) {
-            return;
-        }
-        callEvent(entity.getKiller(), new Mob(entity.getType()), PreyItemType.class);
     }
 
 
@@ -495,12 +502,26 @@ public class ProfessionListener extends AbstractProfessionListener {
         update((Player) e.getPlayer());
     }
 
+    private void update(Player player) {
+        Gem.update(player);
+    }
+
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player)) {
             return;
         }
         updateLater((Player) e.getWhoClicked());
+    }
+
+    private void updateLater(Player player) {
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                update(player);
+            }
+        }.runTaskLater(Professions.getInstance(), 1L);
     }
 
     @EventHandler
@@ -518,20 +539,6 @@ public class ProfessionListener extends AbstractProfessionListener {
     @EventHandler
     public void onThrow(PlayerDropItemEvent e) {
         update(e.getPlayer());
-    }
-
-    private void update(Player player) {
-        Gem.update(player);
-    }
-
-    private void updateLater(Player player) {
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                update(player);
-            }
-        }.runTaskLater(Professions.getInstance(), 1L);
     }
 
     @EventHandler
