@@ -3,6 +3,8 @@ package git.doomshade.professions.data;
 import git.doomshade.professions.utils.ExpFormula;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Objects;
+
 /**
  * Exp settings of professions and SkillAPI
  *
@@ -40,7 +42,7 @@ public class ExpSettings extends AbstractSettings {
         if (isSection(XP_CURVE)) {
             ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
 
-            if (!expSection.isDouble(MULTIPLIER)) {
+            if (!Objects.requireNonNull(expSection).isDouble(MULTIPLIER)) {
                 this.setExpMultiplier(N_DEFAULT_MULTIPLIER);
                 printError(MULTIPLIER, N_DEFAULT_MULTIPLIER);
             } else {
@@ -64,7 +66,7 @@ public class ExpSettings extends AbstractSettings {
             if (!expSection.isConfigurationSection(FORMULA)) {
                 printError(FORMULA, 0);
             }
-            int x = formulaSection.getInt(X);
+            int x = Objects.requireNonNull(formulaSection).getInt(X);
             int y = formulaSection.getInt(Y);
             int z = formulaSection.getInt(Z);
             this.expFormula = new ExpFormula(x, y, z);
@@ -88,7 +90,7 @@ public class ExpSettings extends AbstractSettings {
     public void setExpMultiplier(double expMultiplier) {
         this.expMultiplier = expMultiplier;
         ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
-        expSection.set(MULTIPLIER, expMultiplier);
+        Objects.requireNonNull(expSection).set(MULTIPLIER, expMultiplier);
     }
 
     public double getSkillapiExpMultiplier() {
@@ -98,7 +100,7 @@ public class ExpSettings extends AbstractSettings {
     public void setSkillapiExpMultiplier(double skillapiExpMultiplier) {
         this.skillapiExpMultiplier = skillapiExpMultiplier;
         ConfigurationSection expSection = config.getConfigurationSection(XP_CURVE);
-        expSection.set(SAPI_MULTIPLIER, expMultiplier);
+        Objects.requireNonNull(expSection).set(SAPI_MULTIPLIER, expMultiplier);
     }
 
     @Override

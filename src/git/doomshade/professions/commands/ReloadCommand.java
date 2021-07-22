@@ -13,6 +13,7 @@ import java.util.List;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class ReloadCommand extends AbstractCommand {
 
     private static boolean clear_cache = true;

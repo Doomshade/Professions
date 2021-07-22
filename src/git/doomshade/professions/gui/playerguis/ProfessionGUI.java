@@ -25,6 +25,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ProfessionGUI extends GUI {
@@ -58,7 +59,7 @@ public class ProfessionGUI extends GUI {
                     GUIItem infoItem = new GUIItem(Material.OAK_SIGN, pos, 1, (short) 0);
                     final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.OAK_SIGN);
 
-                    itemMeta.setDisplayName(signName);
+                    Objects.requireNonNull(itemMeta).setDisplayName(signName);
                     itemMeta.setLore(lore);
                     infoItem.changeItem(this, () -> itemMeta);
                     builder = builder.withItem(infoItem);
@@ -121,7 +122,7 @@ public class ProfessionGUI extends GUI {
                 player.closeInventory();
                 final UUID uniqueId = player.getUniqueId();
                 PluginProfessionListener.PENDING_REPEAT_AMOUNT.put(uniqueId, task);
-                user.sendMessage(new Messages.MessageBuilder(Messages.Global.REPEAT_AMOUNT).setPlayer(user).setProfession(upd.getProfession()).build());
+                user.sendMessage(new Messages.MessageBuilder(Messages.Global.REPEAT_AMOUNT).player(user).profession(upd.getProfession()).build());
 
                 // cancel the task after one minute
                 new BukkitRunnable() {

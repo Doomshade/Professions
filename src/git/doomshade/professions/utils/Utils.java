@@ -1,6 +1,7 @@
 package git.doomshade.professions.utils;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -20,10 +21,13 @@ public final class Utils {
 
     public static final String YML_EXTENSION = ".yml";
 
+    public static final String EXAMPLE_ID = "example-id";
+
     /**
      * Sorts the map by value
      *
      * @param map the map to sort
+     *
      * @return sorted map
      */
     public static <K, V> LinkedHashMap<K, V> sortMapByValue(Map<K, V> map, Comparator<V> comparator) {
@@ -51,6 +55,7 @@ public final class Utils {
 
     /**
      * @param player the player
+     *
      * @return the block the player is currently looking at
      */
     public static Block getLookingAt(Player player) {
@@ -62,11 +67,14 @@ public final class Utils {
      * @param iterable  the iterable (e.g. {@link Collection})
      * @param condition the condition based on which the method should query
      * @param <A>       the generic type
+     *
      * @return a {@link Set} of {@code <A>} with given {@code condition}
+     *
      * @throws SearchNotFoundException when nothing is found under the given condition
      */
     @NotNull
-    public static <A> Collection<A> findAllInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
+    public static <A> Collection<A> findAllInIterable(Iterable<A> iterable, Predicate<A> condition)
+            throws SearchNotFoundException {
         Collection<A> arr = new ArrayList<>();
         for (A a : iterable) {
             if (condition.test(a)) {
@@ -84,7 +92,9 @@ public final class Utils {
      * @param iterable  the iterable (e.g. {@link Collection})
      * @param condition the condition based on which the method should query
      * @param <A>       the generic type
+     *
      * @return an {@code <A>} with given {@code condition}
+     *
      * @throws SearchNotFoundException when nothing is found under the given condition
      */
     public static <A> A findInIterable(Iterable<A> iterable, Predicate<A> condition) throws SearchNotFoundException {
@@ -101,6 +111,7 @@ public final class Utils {
      *
      * @param obj the object to class
      * @param <T> the class to cast to
+     *
      * @return the casted class
      */
     @SuppressWarnings("unchecked")
@@ -109,12 +120,13 @@ public final class Utils {
     }
 
     /**
-     * Gets the missing keys of a map based on enum values.
-     * Useful for deserialization - checking if all keys are present
+     * Gets the missing keys of a map based on enum values. Useful for deserialization - checking if all keys are
+     * present
      *
      * @param map     the {@link ConfigurationSerializable#serialize()} map
      * @param values  the {@link Enum} values ({@code Enum.values()})
      * @param ignored the ignored enum values
+     *
      * @return a {@link Set} of {@link String}s
      */
     @NotNull
@@ -123,12 +135,13 @@ public final class Utils {
     }
 
     /**
-     * Gets the missing keys of a map based on enum values.
-     * Useful for deserialization - checking if all keys are present
+     * Gets the missing keys of a map based on enum values. Useful for deserialization - checking if all keys are
+     * present
      *
      * @param map     the {@link ConfigurationSerializable#serialize()} map
      * @param values  the {@link Enum} values ({@code Enum.values()})
      * @param ignored the ignored enum values
+     *
      * @return a {@link Set} of {@link FileEnum}s
      */
     public static Set<FileEnum> getMissingKeysEnum(Map<String, Object> map, FileEnum[] values, FileEnum... ignored) {
@@ -154,10 +167,13 @@ public final class Utils {
      * Translates the colour in lore
      *
      * @param lore the lore
+     *
      * @return translated lore
      */
     public static List<String> translateLore(List<String> lore) {
-        if (lore == null) return new ArrayList<>();
+        if (lore == null) {
+            return new ArrayList<>();
+        }
         List<String> newLore = new ArrayList<>(lore);
         for (int i = 0; i < newLore.size(); i++) {
             final String s = newLore.get(i);
@@ -170,10 +186,15 @@ public final class Utils {
      * Replaces '&' with in-game colour codes
      *
      * @param s the string
+     *
      * @return translated string
      */
     public static String translateColour(String s) {
         return s.isEmpty() ? s : ChatColor.translateAlternateColorCodes('&', s);
+    }
+
+    public static String locationToString(Location loc) {
+        return loc.getBlock().getLocation().toVector().toString();
     }
 
     /**

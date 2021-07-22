@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -63,37 +64,37 @@ public class PotionTask extends BukkitRunnable implements Serializable {
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTask(@NotNull Plugin plugin) throws IllegalArgumentException, IllegalStateException {
         return super.runTask(plugin);
     }
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTaskAsynchronously(Plugin plugin) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTaskAsynchronously(@NotNull Plugin plugin) throws IllegalArgumentException, IllegalStateException {
         return super.runTaskAsynchronously(plugin);
     }
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTaskLater(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTaskLater(@NotNull Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
         return super.runTaskLater(plugin, delay);
     }
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTaskLaterAsynchronously(Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTaskLaterAsynchronously(@NotNull Plugin plugin, long delay) throws IllegalArgumentException, IllegalStateException {
         return super.runTaskLaterAsynchronously(plugin, delay);
     }
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTaskTimer(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTaskTimer(@NotNull Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
         return super.runTaskTimer(plugin, delay, period);
     }
 
     @Deprecated
     @Override
-    public synchronized BukkitTask runTaskTimerAsynchronously(Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
+    public synchronized @NotNull BukkitTask runTaskTimerAsynchronously(@NotNull Plugin plugin, long delay, long period) throws IllegalArgumentException, IllegalStateException {
         return super.runTaskTimerAsynchronously(plugin, delay, period);
     }
 

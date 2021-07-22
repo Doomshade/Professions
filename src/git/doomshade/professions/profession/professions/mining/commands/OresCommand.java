@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("ALL")
 public class OresCommand extends AbstractEditCommand {
 
     public OresCommand() {

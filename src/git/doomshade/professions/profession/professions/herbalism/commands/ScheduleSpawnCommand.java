@@ -1,7 +1,8 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
-import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
-import git.doomshade.professions.profession.spawn.SpawnPoint;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;
 
 import java.util.function.Consumer;
@@ -26,7 +27,13 @@ public class ScheduleSpawnCommand extends AbstractSpawnCommand {
     }
 
     @Override
-    protected Consumer<HerbSpawnPoint> consumer() {
-        return SpawnPoint::scheduleSpawn;
+    protected Consumer<ISpawnPoint> consumer() {
+        return x -> {
+            try {
+                x.scheduleSpawn();
+            } catch (SpawnException e) {
+                ProfessionLogger.logError(e);
+            }
+        };
     }
 }

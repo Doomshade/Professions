@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @see git.doomshade.professions.profession.professions.mining.commands.EditCommand
  */
+@SuppressWarnings("ALL")
 public class UndoEditCommand extends AbstractCommand {
 
     public UndoEditCommand() {

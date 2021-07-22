@@ -126,7 +126,7 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
         Map<Character, ItemStack> ingredients = deserializeIngredients(ingredDes);
         ingredients.forEach((x, y) -> {
             if (y != null) {
-                recipe.setIngredient(x, y.getData());
+                recipe.setIngredient(x, Objects.requireNonNull(y.getData()));
             }
         });
 

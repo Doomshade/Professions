@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @see ItemType
  */
+@SuppressWarnings("ALL")
 public class EditItemTypeCommand extends AbstractCommand {
 
     static final HashSet<String> files = new HashSet<>();
@@ -163,7 +164,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                                 String materialName;
                                 materialName = hand.getType().name();
                                 setValue = "item ";
-                                if (hand.hasItemMeta() && hand.getItemMeta().hasDisplayName()) {
+                                if (hand.hasItemMeta() && Objects.requireNonNull(hand.getItemMeta()).hasDisplayName()) {
                                     setValue += hand.getItemMeta().getDisplayName();
                                 } else {
                                     setValue += materialName;
@@ -199,7 +200,7 @@ public class EditItemTypeCommand extends AbstractCommand {
         }
         try {
             loader.save(file);
-            sender.sendMessage(String.format("Successfuly set %s to %s", path, setValue));
+            sender.sendMessage(String.format("Successfully set %s to %s", path, setValue));
 
             final CommandHandler handler = CommandHandler.getInstance(CommandHandler.class);
             try {

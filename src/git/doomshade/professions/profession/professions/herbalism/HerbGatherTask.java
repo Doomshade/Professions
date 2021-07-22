@@ -1,5 +1,6 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.boss.BarColor;
@@ -18,8 +19,9 @@ public class HerbGatherTask extends GatherTask {
         bossBarOptions.barStyle = BarStyle.SOLID;
     }
 
-    public HerbGatherTask(HerbSpawnPoint location, UserProfessionData gatherer, ItemStack result, Consumer<GatherResult> endResultAction, String title) {
-        super(location, gatherer, result, endResultAction, bossBarOptions);
+    public HerbGatherTask(ISpawnPoint location, UserProfessionData gatherer, ItemStack result,
+                          Consumer<GatherResult> endResultAction, String title, long gatherTime) {
+        super(location, gatherer, result, endResultAction, bossBarOptions, gatherTime);
         bossBarOptions.title = title;
         setOnGathererDamaged(x -> true);
         setOnMoved(x -> x >= 5d);

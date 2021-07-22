@@ -43,12 +43,12 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
     @Override
     public Function<ItemStack, ItemStack> getExtraInEvent() {
-        return itemStack -> itemStack;
+        return Function.identity();
     }
 
 
     @Override
-    public void onDisable() {
+    public void onPluginDisable() {
         for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.cache(p);
         }
@@ -56,14 +56,14 @@ public class PotionItemType extends CraftableItemType<Potion> {
     }
 
     @Override
-    public void onReload() {
+    public void onPluginAfterReload() {
         for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.loadFromCache(p);
         }
     }
 
     @Override
-    public void onLoad() {
+    public void onPluginEnable() {
 
         Potion.registerCustomPotionEffect((potionEffect, player, negated) -> EffectUtils.addAttributes(player, negated, potionEffect));
     }

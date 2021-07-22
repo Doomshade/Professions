@@ -7,6 +7,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.io.IOManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Custom command handler for mining
@@ -31,7 +32,7 @@ public class MiningCommandHandler extends AbstractCommandHandler {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String[] args) {
         if (args.length == 0) {
             return super.onCommand(sender, cmd, label, args);
         }

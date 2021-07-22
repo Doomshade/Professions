@@ -32,6 +32,7 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
  * An {@link ItemType} that allows for crafting an ItemStack
  *
  * @param <T> the item type to look for in {@link ProfessionEvent}
+ *
  * @author Doomshade
  * @version 1.0
  */
@@ -49,17 +50,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
      */
     public CraftableItemType(T object) {
         super(object);
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        final Map<String, Object> map = super.serialize();
-        map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
-        map.put(RESULT.s, ItemUtils.serialize(getResult()));
-        map.put(CRAFTING_TIME.s, getCraftingTime());
-        map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
-        map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
-        return map;
     }
 
     @Override
@@ -96,34 +86,15 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         }
     }
 
-    /**
-     * Consumes crafting requirements from a player's inventory
-     *
-     * @param player the player to remove the items from
-     */
-    public void consumeCraftingRequirements(Player player) {
-        getCraftingRequirements().consumeRequiredItems(player);
-    }
-
-    /**
-     * Adds an additional crafting requirement for this item type
-     *
-     * @param item the crafting requirement to add
-     */
-    public void addCraftingRequirement(ItemStack item) {
-        getCraftingRequirements().addRequirement(item);
-    }
-
-
-    /**
-     * Determines whether or not the player meets crafting requirements
-     *
-     * @param player the player to check for
-     * @return {@code true} if the player meets crafting requirements, {@code false} otherwise
-     */
     @Override
-    public boolean meetsRequirements(Player player) {
-        return super.meetsRequirements(player) && getCraftingRequirements().meetsRequirements(player);
+    public @NotNull Map<String, Object> serialize() {
+        final Map<String, Object> map = super.serialize();
+        map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
+        map.put(RESULT.s, ItemUtils.serialize(getResult()));
+        map.put(CRAFTING_TIME.s, getCraftingTime());
+        map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
+        map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
+        return map;
     }
 
     @Override
@@ -159,12 +130,26 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder()
-                .append("\ncrafting time: " + getCraftingTime())
-                .append("\ncrafting result: " + getResult())
-                .append("\ncrafting reqs: " + getCraftingRequirements())
-                .append("\ninv reqs: " + getInventoryRequirements());
-        return sb.toString();
+        return "\ncrafting time: " +
+                getCraftingTime() +
+                "\ncrafting result: " +
+                getResult() +
+                "\ncrafting reqs: " +
+                getCraftingRequirements() +
+                "\ninv reqs: " +
+                getInventoryRequirements();
+    }
+
+    /**
+     * Determines whether or not the player meets crafting requirements
+     *
+     * @param player the player to check for
+     *
+     * @return {@code true} if the player meets crafting requirements, {@code false} otherwise
+     */
+    @Override
+    public boolean meetsRequirements(Player player) {
+        return super.meetsRequirements(player) && getCraftingRequirements().meetsRequirements(player);
     }
 
     @Override
@@ -182,7 +167,6 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         this.result = result;
     }
 
-
     @Override
     public final Requirements getCraftingRequirements() {
         return craftingRequirements;
@@ -197,6 +181,23 @@ public abstract class CraftableItemType<T> extends ItemType<T> implements ICraft
         return ImmutableMap.copyOf(sounds);
     }
 
+    /**
+     * Consumes crafting requirements from a player's inventory
+     *
+     * @param player the player to remove the items from
+     */
+    public void consumeCraftingRequirements(Player player) {
+        getCraftingRequirements().consumeRequiredItems(player);
+    }
+
+    /**
+     * Adds an additional crafting requirement for this item type
+     *
+     * @param item the crafting requirement to add
+     */
+    public void addCraftingRequirement(ItemStack item) {
+        getCraftingRequirements().addRequirement(item);
+    }
 
     public Function<ItemStack, ?> getExtraInEvent() {
         return null;

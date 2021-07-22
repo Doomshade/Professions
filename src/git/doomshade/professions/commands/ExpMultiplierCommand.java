@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @Deprecated
 public class ExpMultiplierCommand extends AbstractCommand {
 
@@ -29,7 +30,7 @@ public class ExpMultiplierCommand extends AbstractCommand {
             case "skillapi":
                 settings.setSkillapiExpMultiplier(expMultiplier);
                 break;
-            case "git/doomshade/professions":
+            case "professions":
                 settings.setExpMultiplier(expMultiplier);
                 break;
         }

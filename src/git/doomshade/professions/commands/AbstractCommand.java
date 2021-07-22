@@ -17,6 +17,7 @@ import java.util.logging.Level;
  * @version 1.0
  * @see AbstractCommandHandler
  */
+@SuppressWarnings("ALL")
 public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
 
     // path names in commands.yml
@@ -279,7 +280,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(COMMAND, getCommand());
         map.put(DESCRIPTION, getDescription());

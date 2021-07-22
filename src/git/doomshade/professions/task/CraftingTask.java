@@ -113,8 +113,8 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     private boolean hasInventorySpace() {
         if (user.getPlayer().getInventory().firstEmpty() == -1) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Global.NO_INVENTORY_SPACE)
-                    .setPlayer(user).setProfession(upd.getProfession())
-                    .setProfessionType(upd.getProfession().getProfessionType())
+                    .player(user).profession(upd.getProfession())
+                    .professionType(upd.getProfession().getProfessionType())
                     .build());
             cancel();
             return false;
@@ -151,8 +151,8 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         // item available and has space -> check for requirements
         if (!item.meetsRequirements(player)) {
             user.sendMessage(new Messages.MessageBuilder(Messages.Global.REQUIREMENTS_NOT_MET)
-                    .setPlayer(user)
-                    .setProfession(prof)
+                    .player(user)
+                    .profession(prof)
                     .build());
             return;
         }

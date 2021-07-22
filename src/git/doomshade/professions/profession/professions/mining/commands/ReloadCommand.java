@@ -11,6 +11,7 @@ import java.util.List;
  *
  * @author Doomshade
  */
+@SuppressWarnings("ALL")
 public class ReloadCommand extends AbstractCommand {
 
     public ReloadCommand() {

@@ -19,7 +19,7 @@ import java.util.logging.Level;
 public abstract class AbstractSettings implements ISetup, Serializable {
     transient static final Level LEVEL = Level.WARNING;
     protected transient static FileConfiguration config;
-    private transient static Professions plugin = Professions.getInstance();
+    private final transient static Professions plugin = Professions.getInstance();
     transient static boolean outdated = false;
 
     static {

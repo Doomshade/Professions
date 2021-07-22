@@ -1,15 +1,16 @@
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.profession.professions.herbalism.HerbSpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
-import java.util.*;
+import java.util.Objects;
 import java.util.function.Consumer;
 
+@SuppressWarnings("ALL")
 public class DespawnCommand extends AbstractSpawnCommand {
 
     DespawnCommand() {
@@ -25,6 +26,7 @@ public class DespawnCommand extends AbstractSpawnCommand {
     public void onCommand(CommandSender sender, String[] args) {
         boolean disableSpawn = false;
 
+        // TODO redo this
         if (args.length >= 4) {
             try {
                 disableSpawn = Boolean.parseBoolean(args[3]);
@@ -50,10 +52,10 @@ public class DespawnCommand extends AbstractSpawnCommand {
             }
         }
 
-        Location loc = null;
+        ISpawnPoint sp = null;
         try {
             if (spId instanceof Integer) {
-                loc = herb.getSpawnPointLocations().get((Integer) spId);
+                sp = herb.getSpawnPoint((Integer) spId);
             }
         } catch (IndexOutOfBoundsException e) {
             sender.sendMessage("Spawn point with ID " + spId + " does not exist.");
@@ -61,41 +63,45 @@ public class DespawnCommand extends AbstractSpawnCommand {
         }
 
 
-
-        if (loc == null) {
-            for (Map.Entry<Location, HerbSpawnPoint> entry : herb.getSpawnPoints().entrySet()) {
-                final HerbSpawnPoint hlo = entry.getValue();
-                Location hloLoc = hlo.location;
-                String locName = String.format("%s: %d,%d,%d", hloLoc.getWorld().getName(), hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
+        if (sp == null) {
+            for (ISpawnPoint spp : herb.getSpawnPoints()) {
+                Location hloLoc = spp.getLocation();
+                String locName = String.format("%s: %d,%d,%d", Objects.requireNonNull(hloLoc.getWorld()).getName(),
+                        hloLoc.getBlockX(), hloLoc.getBlockY(), hloLoc.getBlockZ());
                 try {
-                    hlo.despawn();
+                    spp.despawn();
                     sender.sendMessage("Successfully despawned herb at " + locName + ".");
                     if (!disableSpawn) {
-                        hlo.scheduleSpawn();
+                        spp.scheduleSpawn();
                     }
                 } catch (Exception e) {
-                    sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
+                    sender.sendMessage(
+                            "Could not despawn herb at " + locName + ". Check console for error stacktrace.");
                     ProfessionLogger.logError(e);
                 }
             }
-        } else {
-            String locName = String.format("%s: %d,%d,%d", loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-            try {
-                final HerbSpawnPoint hlo = herb.getSpawnPoints(loc);
-                hlo.despawn();
-                if (!disableSpawn) {
-                    hlo.scheduleSpawn();
-                }
-                sender.sendMessage("Successfully despawned herb at " + locName + ".");
-            } catch (Exception e) {
-                sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
-                ProfessionLogger.logError(e);
-            }
+            return;
         }
+
+        Location loc = sp.getLocation();
+        String locName =
+                String.format("%s: %d,%d,%d", Objects.requireNonNull(loc.getWorld()).getName(), loc.getBlockX(),
+                        loc.getBlockY(), loc.getBlockZ());
+        try {
+            sp.despawn();
+            if (!disableSpawn) {
+                sp.scheduleSpawn();
+            }
+            sender.sendMessage("Successfully despawned herb at " + locName + ".");
+        } catch (Exception e) {
+            sender.sendMessage("Could not despawn herb at " + locName + ". Check console for error stacktrace.");
+            ProfessionLogger.logError(e);
+        }
+
     }
 
     @Override
-    protected Consumer<HerbSpawnPoint> consumer() {
+    protected Consumer<ISpawnPoint> consumer() {
         return null;
     }
 

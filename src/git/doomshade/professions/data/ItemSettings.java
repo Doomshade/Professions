@@ -4,6 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Item default settings for item types
@@ -25,7 +26,7 @@ public class ItemSettings extends AbstractSettings {
             return;
         }
         ConfigurationSection section = config.getConfigurationSection(SECTION);
-        if (section.isSet(LORE)) {
+        if (Objects.requireNonNull(section).isSet(LORE)) {
             this.defaultLore = section.getStringList(LORE);
         }
     }

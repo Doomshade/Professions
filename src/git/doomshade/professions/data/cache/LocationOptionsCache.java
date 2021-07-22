@@ -10,11 +10,11 @@ public class LocationOptionsCache implements Serializable {
     private final int generatedRespawnTime, spawnPointIndex;
 
     public LocationOptionsCache(SpawnPoint spawnPoint) {
-        this.elementId = spawnPoint.element.getId();
+        this.elementId = spawnPoint.getSpawnableElement().getId();
         SpawnTask task = spawnPoint.getSpawnTask();
 
         this.generatedRespawnTime = task.getGeneratedRespawnTime();
-        this.spawnPointIndex = task.id;
+        this.spawnPointIndex = task.getId();
     }
 
     public int getGeneratedRespawnTime() {

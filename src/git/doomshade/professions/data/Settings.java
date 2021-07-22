@@ -31,7 +31,7 @@ public final class Settings implements ISetup {
     private static final String DEFAULT_PROPERTIES = "lang_en.yml";
     protected static FileConfiguration config;
     protected static Professions plugin;
-    private static Settings instance;
+    private static final Settings instance;
     private static FileConfiguration lang;
     private static File langFile;
     private static Material editItem = Material.GOLD_NUGGET;
@@ -145,6 +145,7 @@ public final class Settings implements ISetup {
             ProfessionLogger.log(String.format("Using %s as default value.", value.toString()), LEVEL);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T setupVariable(String configPath, T defaultCase, UnaryOperator<T> extraAction) {
         T value = (T) config.get(configPath, defaultCase);
         if (extraAction != null) {

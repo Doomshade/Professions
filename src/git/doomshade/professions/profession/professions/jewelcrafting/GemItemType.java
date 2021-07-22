@@ -29,7 +29,7 @@ public class GemItemType extends CraftableItemType<Gem> {
     }
 
     @Override
-    public void onDisable() {
+    public void onPluginDisable() {
         Gem.GEMS.clear();
     }
 }

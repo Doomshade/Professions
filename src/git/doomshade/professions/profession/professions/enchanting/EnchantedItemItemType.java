@@ -14,7 +14,7 @@ import java.util.function.Function;
  * @author Doomshade
  */
 public class EnchantedItemItemType extends CraftableItemType<Enchant> {
-    private static String ENCHANT = "enchant";
+    private static final String ENCHANT = "enchant";
 
     /**
      * Constructor for creation of the item type object

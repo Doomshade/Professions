@@ -40,9 +40,9 @@ public final class User implements IUser {
     private static final String KEY_PROFESSIONS = "professions";
     private static final Map<UUID, User> USERS = new HashMap<>();
     private final Player player;
-    private FileConfiguration loader;
-    private File file;
-    private ConfigurationSection profSection;
+    private final FileConfiguration loader;
+    private final File file;
+    private final ConfigurationSection profSection;
     private Map<Class<?>, UserProfessionData> professions;
     private Map<ProfessionType, Integer> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
@@ -366,7 +366,6 @@ public final class User implements IUser {
         this.suppressExpEvent = suppressExpEvent;
     }
 
-    @Override
     public void applyPotion(Potion potion) {
         if (isActivePotion(potion)) {
             return;
@@ -376,12 +375,10 @@ public final class User implements IUser {
         ACTIVE_POTIONS.put(potion.getPotionId(), potionTask);
     }
 
-    @Override
     public boolean isActivePotion(Potion potion) {
         return ACTIVE_POTIONS.containsKey(potion.getPotionId());
     }
 
-    @Override
     public void unApplyPotion(Potion potion) {
         if (!isActivePotion(potion)) {
             return;
@@ -402,10 +399,11 @@ public final class User implements IUser {
 
     private void loadProfessions() {
         this.professions = new HashMap<>();
-        profSection.getKeys(false).forEach(x -> {
-            Optional<Profession> opt = Professions.getProfMan().getProfession(x);
-            opt.ifPresent(prof -> professions.put(prof.getClass(), new UserProfessionData(this, prof)));
-        });
+        profSection.getKeys(false)
+                .stream()
+                .map(x -> Professions.getProfMan().getProfession(x))
+                .forEach(opt -> opt.ifPresent(
+                        prof -> professions.put(prof.getClass(), new UserProfessionData(this, prof))));
         usedProfessionTypes = new HashMap<>();
         for (ProfessionType type : ProfessionType.values()) {
             usedProfessionTypes.put(type, 0);

@@ -11,10 +11,12 @@ import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * The generic type of EnchantedItemType. Used for modifying (enchanting) items.
@@ -77,7 +79,7 @@ public abstract class Enchant implements ConfigurationSerializable {
             return false;
         }
         ItemMeta meta = item.getItemMeta();
-        if ((hasDisplay && !meta.hasDisplayName()) || (hasLore && !meta.hasLore())) {
+        if ((hasDisplay && !Objects.requireNonNull(meta).hasDisplayName()) || (hasLore && !Objects.requireNonNull(meta).hasLore())) {
             return false;
         }
         if (hasAttributes) {
@@ -94,25 +96,18 @@ public abstract class Enchant implements ConfigurationSerializable {
 
         ItemMeta meta = item.getItemMeta();
 
-        if (!meta.hasLore()) {
+        if (!Objects.requireNonNull(meta).hasLore()) {
             return attributes;
         }
 
-        List<String> lore = new ArrayList<>(meta.getLore());
-        for (String s : lore) {
-            if (s.isEmpty()) {
-                continue;
-            }
-            String copy = ChatColor.stripColor(s);
-            if (copy.startsWith("-----------------")) {
-                break;
-            }
-            ItemAttribute attribute = getAttribute(copy);
-            if (attribute == null) {
-                continue;
-            }
-            attributes.add(attribute);
-        }
+        List<String> lore = new ArrayList<>(Objects.requireNonNull(meta.getLore()));
+        attributes = lore.stream()
+                .filter(s -> !s.isEmpty())
+                .map(ChatColor::stripColor)
+                .takeWhile(copy -> !copy.startsWith("-----------------"))
+                .map(Enchant::getAttribute)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         return attributes;
     }
 
@@ -141,11 +136,11 @@ public abstract class Enchant implements ConfigurationSerializable {
             return;
         }
         ItemMeta meta = on.getItemMeta();
-        if (!meta.hasLore()) {
+        if (!Objects.requireNonNull(meta).hasLore()) {
             return;
         }
 
-        List<String> lore = new ArrayList<>(meta.getLore());
+        List<String> lore = new ArrayList<>(Objects.requireNonNull(meta.getLore()));
         List<String> noColorLore = new ArrayList<>(meta.getLore());
         for (int i = 0; i < noColorLore.size(); i++) {
             String s = noColorLore.get(i);
@@ -183,7 +178,7 @@ public abstract class Enchant implements ConfigurationSerializable {
     }
 
     @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(ITEMSTACK, ItemUtils.serialize(item));
         map.put(CLASS, getClass().getName());

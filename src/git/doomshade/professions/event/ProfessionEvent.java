@@ -9,34 +9,39 @@ import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An event that professions handle
  *
  * @param <T> an item type
+ *
  * @author Doomshade
  * @version 1.0
  * @see Profession#onEvent(ProfessionEventWrapper)
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
-    private static HandlerList handlerList = new HandlerList();
+    private static final HandlerList handlerList = new HandlerList();
     private final User user;
     private final Collection<Object> extras = new ArrayList<>();
+    private final List<String> errorMessage = new ArrayList<>();
     private T t;
     private boolean cancel = false;
     private int exp;
-    private List<String> errorMessage;
 
     public ProfessionEvent(T t, User user) {
         this.t = t;
         this.user = user;
         this.exp = t.getExp();
-        this.errorMessage = Professions.getProfMan().getItemTypeHolder(t.getClass()).getErrorMessage();
+        @SuppressWarnings("all") final List<String> errMessages =
+                Professions.getProfMan().getItemTypeHolder(t.getClass()).getErrorMessage();
+        this.errorMessage.addAll(errMessages);
     }
 
     public static HandlerList getHandlerList() {
@@ -51,10 +56,6 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         this.exp = exp;
     }
 
-    public List<String> getErrorMessage(UserProfessionData upd) {
-        return ItemUtils.getDescription(t, errorMessage, upd);
-    }
-
     public void printErrorMessage(UserProfessionData upd) {
         List<String> message = getErrorMessage(upd);
         if (message.isEmpty()) {
@@ -63,12 +64,8 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         upd.getUser().sendMessage(message.toArray(new String[0]));
     }
 
-    public void addExtra(Object extra) {
-        extras.add(extra);
-    }
-
-    public void addExtras(Collection<?> extraObjects) {
-        extras.addAll(extraObjects);
+    public List<String> getErrorMessage(UserProfessionData upd) {
+        return ItemUtils.getDescription(t, errorMessage, upd);
     }
 
     public void addExtras(Iterable<?> iterable) {
@@ -77,40 +74,42 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
         }
     }
 
+    public void addExtra(Object extra) {
+        extras.add(extra);
+    }
+
     public Collection<?> getExtras() {
         return extras;
     }
-
 
     public void setExtras(Collection<?> extras) {
         this.extras.clear();
         addExtras(extras);
     }
 
+    public void addExtras(Collection<?> extraObjects) {
+        extras.addAll(extraObjects);
+    }
+
     @SuppressWarnings("unchecked")
     public <A> Iterable<A> getExtras(Class<A> clazz) {
-        Collection<A> coll = new ArrayList<>();
-        for (Object o : extras) {
-            if (o.getClass().getName().equals(clazz.getName())) {
-                coll.add((A) o);
-            }
-        }
-        return coll;
+        return extras.stream()
+                .filter(o -> o.getClass().getName().equals(clazz.getName()))
+                .map(o -> (A) o)
+                .collect(Collectors.toList());
+    }
+
+    public boolean hasExtra(Class<?> clazz) {
+        return getExtra(clazz) != null;
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
     public <A> A getExtra(Class<A> clazz) {
-        for (Object o : extras) {
-            if (o.getClass().getName().equals(clazz.getName())) {
-                return (A) o;
-            }
-        }
-        return null;
-    }
-
-    public boolean hasExtra(Class<?> clazz) {
-        return getExtra(clazz) != null;
+        return (A) extras.stream()
+                .filter(o -> o.getClass().getName().equals(clazz.getName()))
+                .findFirst()
+                .orElse(null);
     }
 
     public T getItemType() {
@@ -126,7 +125,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
     }
 
     @Override
-    public HandlerList getHandlers() {
+    public @NotNull HandlerList getHandlers() {
         return handlerList;
     }
 

@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Allows a player to bypass level requirement restrictions
@@ -14,6 +15,7 @@ import java.util.List;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class BypassCommand extends AbstractCommand {
 
     public BypassCommand() {
@@ -38,7 +40,7 @@ public class BypassCommand extends AbstractCommand {
         User user = User.getUser(target);
         boolean bypass = Boolean.parseBoolean(args[1]);
         user.setBypass(bypass);
-        String message = "Hraci " + target.getDisplayName() + " nastaven bypass na " + bypass;
+        String message = "Hraci " + Objects.requireNonNull(target).getDisplayName() + " nastaven bypass na " + bypass;
         if (args.length >= 4) {
             boolean suppress = Boolean.parseBoolean(args[3]);
             user.setSuppressExpEvent(suppress);

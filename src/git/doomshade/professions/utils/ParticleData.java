@@ -1,21 +1,28 @@
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.api.IParticleData;
 import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.Particle;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParticleData implements ConfigurationSerializable, git.doomshade.professions.api.IParticleData {
+public class ParticleData implements ConfigurationSerializable, IParticleData {
 
     private final String particle;
     private final int count;
     private final int period;
     private final double xOffset, yOffset, zOffset, speed;
 
-    public ParticleData(String particle, int count, int period, double xOffset, double yOffset, double zOffset, double speed) {
+    public ParticleData() {
+        this(Particle.EXPLOSION_NORMAL.name(), 0, 0, 0, 0, 0, 0);
+    }
+
+    public ParticleData(String particle, int count, int period, double xOffset, double yOffset, double zOffset,
+                        double speed) {
         this.particle = particle;
         this.count = count;
         this.period = period;
@@ -23,10 +30,6 @@ public class ParticleData implements ConfigurationSerializable, git.doomshade.pr
         this.yOffset = yOffset;
         this.zOffset = zOffset;
         this.speed = speed;
-    }
-
-    public ParticleData() {
-        this(Particle.EXPLOSION_NORMAL.name(), 0, 0, 0, 0, 0, 0);
     }
 
     public static ParticleData deserialize(Map<String, Object> map) {
@@ -58,6 +61,11 @@ public class ParticleData implements ConfigurationSerializable, git.doomshade.pr
     }
 
     @Override
+    public double getSpeed() {
+        return speed;
+    }
+
+    @Override
     public double getXOffset() {
         return xOffset;
     }
@@ -73,12 +81,7 @@ public class ParticleData implements ConfigurationSerializable, git.doomshade.pr
     }
 
     @Override
-    public double getSpeed() {
-        return speed;
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         for (Field field : getClass().getDeclaredFields()) {
             try {

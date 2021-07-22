@@ -1,9 +1,7 @@
 package git.doomshade.professions.profession.professions.mining;
 
-import git.doomshade.professions.exceptions.InitializationException;
-import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,21 +34,5 @@ public class OreItemType extends ItemType<Ore> {
     @Override
     protected Ore deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Ore.deserialize(map, getName());
-    }
-
-    @Override
-    public void onLoad() {
-        for (Ore ore : Ore.getElements(Ore.class).values()) {
-            ore.scheduleSpawns();
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        for (Ore ore : Ore.getElements(Ore.class).values()) {
-            ore.despawnAll();
-        }
-        Ore.getElements(Ore.class).clear();
-        ExtendedLocation.SPAWN_POINTS.clear();
     }
 }

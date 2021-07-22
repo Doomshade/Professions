@@ -34,6 +34,7 @@ import git.doomshade.professions.profession.professions.herbalism.commands.Herba
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.LogTask;
 import git.doomshade.professions.task.SaveTask;
@@ -175,7 +176,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         // Hook dynmap after setups as it uses config
         hookPlugin("dynmap", x -> {
             // sets the dynmap plugin to marker manager
-            MarkerManager.getInstance(DynmapPlugin.plugin);
+            MarkerManager.createInstance(DynmapPlugin.plugin);
             return true;
         });
         scheduleTasks();
@@ -184,7 +185,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
 
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
-                itemType.onLoad();
+                itemType.onPluginEnable();
             }
         }
     }
@@ -193,9 +194,10 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     public void onDisable() {
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
-                itemType.onDisable();
+                itemType.onPluginDisable();
             }
         }
+        Spawnable.despawnAll(x -> true);
         cleanup();
         Bukkit.getScheduler().cancelTasks(this);
         try {
@@ -213,11 +215,12 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     public boolean reload() {
         boolean successful = true;
 
-        // call pre reload
+        // call before reload
+        Spawnable.despawnAll(x -> true);
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 try {
-                    itemType.onPreReload();
+                    itemType.onPluginBeforeReload();
                 } catch (Exception e) {
                     logExError("Failed to reload itemtype " + itemType.getName() + ".", e);
                     successful = false;
@@ -241,11 +244,12 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         // then setup
         setup();
 
-        // call reload
+        // call after reload
+        Spawnable.scheduleSpawnAll(x -> true);
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 try {
-                    itemType.onReload();
+                    itemType.onPluginAfterReload();
                 } catch (Exception e) {
                     logExError("Failed to reload itemtype " + itemType.getName(), e);
                     successful = false;

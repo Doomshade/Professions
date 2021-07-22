@@ -36,14 +36,14 @@ public class JewelcraftingListener implements Listener {
         final UUID uniqueId = player.getUniqueId();
 
         Messages.MessageBuilder msg = new Messages.MessageBuilder()
-                .setPlayer(player);
+                .player(player);
 
         // right clicked with a gem in hand
         if (opt.isPresent()) {
             if (RIGHT_CLICK.containsKey(uniqueId)) {
                 return;
             }
-            player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.CLICK_ON_ITEM_WITH_GEM_SLOT).build());
+            player.sendMessage(msg.message(Messages.JewelcraftingMessages.CLICK_ON_ITEM_WITH_GEM_SLOT).build());
             RIGHT_CLICK.put(uniqueId, opt.get());
             return;
         }
@@ -57,8 +57,8 @@ public class JewelcraftingListener implements Listener {
         }
 
         // did but no item in hand afterwards
-        if (hand == null || hand.getItemMeta() == null || hand.getType() == Material.AIR) {
-            player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.INVALID_ITEM).build());
+        if (hand.getItemMeta() == null || hand.getType() == Material.AIR) {
+            player.sendMessage(msg.message(Messages.JewelcraftingMessages.INVALID_ITEM).build());
             return;
         }
 
@@ -69,10 +69,10 @@ public class JewelcraftingListener implements Listener {
 
         switch (result) {
             case INVALID_ITEM:
-                player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.INVALID_ITEM).build());
+                player.sendMessage(msg.message(Messages.JewelcraftingMessages.INVALID_ITEM).build());
                 break;
             case NO_GEM_SPACE:
-                player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.NO_GEM_SPACE).build());
+                player.sendMessage(msg.message(Messages.JewelcraftingMessages.NO_GEM_SPACE).build());
                 break;
             case SUCCESS:
 
@@ -96,7 +96,7 @@ public class JewelcraftingListener implements Listener {
                         inventory.setArmorContents(armorContents);
                     }
                 }.runTaskLater(Professions.getInstance(), 1);
-                player.sendMessage(msg.setMessage(Messages.JewelcraftingMessages.ADDED_GEM_SUCCESSFUL).build());
+                player.sendMessage(msg.message(Messages.JewelcraftingMessages.ADDED_GEM_SUCCESSFUL).build());
                 break;
         }
     }

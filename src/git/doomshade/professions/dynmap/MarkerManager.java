@@ -1,14 +1,15 @@
 package git.doomshade.professions.dynmap;
 
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import org.bukkit.Location;
 import org.dynmap.bukkit.DynmapPlugin;
 import org.dynmap.markers.Marker;
 import org.dynmap.markers.MarkerAPI;
 import org.dynmap.markers.MarkerSet;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The marker manager that displays icons (herbs only currently) on dynmap
@@ -18,84 +19,88 @@ import java.util.Map;
  */
 public final class MarkerManager {
 
-    private static MarkerManager instance = null;
     private static final Map<String, MarkerSet> MARKERS = new HashMap<>();
+    public static String EMPTY_MARKER_SET_ID = "";
+    private static MarkerManager instance = null;
     private final MarkerAPI markerApi;
 
     private MarkerManager(DynmapPlugin dynmapPlugin) {
         this.markerApi = dynmapPlugin.getMarkerAPI();
     }
 
-    private static void createInstance(DynmapPlugin dynmapPlugin) {
+    public static MarkerManager getInstance() {
+        return instance;
+    }
+
+    public static void createInstance(DynmapPlugin dynmapPlugin) {
         if (instance == null) {
             instance = new MarkerManager(dynmapPlugin);
         }
     }
 
-    @Nullable
-    public static MarkerManager getInstance() {
-        return instance;
-    }
-
-    @Nullable
-    public static MarkerManager getInstance(DynmapPlugin dynmapPlugin) {
-        createInstance(dynmapPlugin);
-        return instance;
-    }
-
     /**
      * Registers an icon on dynmap
      *
-     * @param markable the icon
-     * @param label    the label of icon
+     * @param exampleSpawnPoint the example spawn point
      */
-    public void register(IMarkable markable, String label) {
-        final String markerSetId = markable.getMarkerSetId();
-        MarkerSet set = markerApi.getMarkerSet(markerSetId);
+    public void register(ISpawnPoint exampleSpawnPoint, String globalLabel) {
+        final String id = exampleSpawnPoint.getMarkerSetId();
+        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+            return;
+        }
 
+        MarkerSet set = markerApi.getMarkerSet(id);
         if (set == null) {
-            set = markerApi.createMarkerSet(markerSetId, label, null, true);
+            set = markerApi.createMarkerSet(id, globalLabel,
+                    null, true);
         }
         set.setHideByDefault(true);
         set.setLabelShow(false);
-        MARKERS.put(markerSetId, set);
+
+        MARKERS.put(id, set);
     }
 
     /**
      * Shows the icon on dynmap
      *
-     * @param markable the icon
+     * @param spawnPoint the icon
      */
-    public void show(IMarkable markable) {
-        MarkerSet set = MARKERS.get(markable.getMarkerSetId());
+    public void show(ISpawnPoint spawnPoint) {
+        final String id = spawnPoint.getMarkerSetId();
+        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+            return;
+        }
 
+        MarkerSet set = MARKERS.get(id);
         if (set == null) {
             return;
         }
 
-        final MarkerWrapper markerWrapper = markable.getMarker();
-        if (markerWrapper == null) {
-            return;
-        }
-
-        final Location location = markerWrapper.location;
-        set.createMarker(markerWrapper.id, markerWrapper.getLabel(), location.getWorld().getName(), location.getX(), location.getY(), location.getZ(), markerApi.getMarkerIcon(markerWrapper.markerIcon), false);
+        final Location location = spawnPoint.getLocation();
+        set.createMarker(spawnPoint.getMarkerId(), spawnPoint.getMarkerLabel(),
+                Objects.requireNonNull(location.getWorld()).getName(), location.getX(), location.getY(),
+                location.getZ(), markerApi.getMarkerIcon(spawnPoint.getMarkerIcon()), false);
     }
 
     /**
      * Hides the icon on dynmap
      *
-     * @param markable the icon
+     * @param spawn the icon
      */
-    public void hide(IMarkable markable) {
-        MarkerSet set = MARKERS.get(markable.getMarkerSetId());
+    public void hide(ISpawnPoint spawn) {
+        final String id = spawn.getMarkerSetId();
+        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+            return;
+        }
+
+        MarkerSet set = MARKERS.get(id);
         if (set == null) {
             return;
         }
 
-        final MarkerWrapper markerWrapper = markable.getMarker();
-        if (markerWrapper == null) return;
-        final Marker marker = set.findMarker(markerWrapper.id);
-        if (marker != null) marker.deleteMarker();
+        final Marker marker = set.findMarker(spawn.getMarkerId());
+        if (marker != null) {
+            marker.deleteMarker();
+        }
     }
 }

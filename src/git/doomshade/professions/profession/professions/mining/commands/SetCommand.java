@@ -4,6 +4,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public class SetCommand extends AbstractEditCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {

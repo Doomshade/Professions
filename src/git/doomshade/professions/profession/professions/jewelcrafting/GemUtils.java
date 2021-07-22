@@ -41,7 +41,7 @@ public final class GemUtils {
         };
 
 
-        IDS = new HashMap<String, GemEffect>() {
+        IDS = new HashMap<>() {
             {
                 put(ADD_ATTRIBUTE_EFFECT.toString(), ADD_ATTRIBUTE_EFFECT);
             }

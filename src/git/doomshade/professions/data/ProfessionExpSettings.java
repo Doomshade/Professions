@@ -5,6 +5,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.Objects;
+
 /**
  * Profession specific exp settings
  *
@@ -32,7 +34,11 @@ public class ProfessionExpSettings extends AbstractProfessionSettings {
                 ConfigurationSection colorSection = expSection.getConfigurationSection(key);
                 for (SkillupColor skillupColor : SkillupColor.values()) {
                     if (skillupColor.name().equalsIgnoreCase(key)) {
-                        skillupColor.setSkillupColor(ChatColor.getByChar(colorSection.getString(COLOR).charAt(0)), colorSection.getInt(COLOR_CHANGE_AFTER), colorSection.getDouble(CHANCE));
+                        skillupColor.setSkillupColor(
+                                ChatColor.getByChar(Objects.requireNonNull(colorSection.getString(COLOR)).charAt(0)),
+                                colorSection.getInt(COLOR_CHANGE_AFTER),
+                                colorSection.getDouble(CHANCE)
+                        );
                     }
                 }
             }

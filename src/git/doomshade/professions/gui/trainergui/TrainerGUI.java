@@ -2,21 +2,21 @@ package git.doomshade.professions.gui.trainergui;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.Range;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
-import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.ProfessionManager;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -46,6 +46,7 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init() throws GUIInitializationException {
 
         if (!inited) {
@@ -79,17 +80,19 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
         TrainableSettings settings = Settings.getSettings(TrainableSettings.class);
         for (ItemType<?> trainable : trainableItems) {
             final ItemStack guiMaterial = trainable.getIcon(upd);
-            GUIItem item = new GUIItem(guiMaterial.getType(), pos++, guiMaterial.getAmount(), guiMaterial.getDurability());
+            GUIItem item =
+                    new GUIItem(guiMaterial.getType(), pos++, guiMaterial.getAmount(), guiMaterial.getDurability());
             item.changeItem(this, () -> {
                 ItemMeta meta = guiMaterial.getItemMeta();
                 List<String> lore;
-                if (meta.hasLore()) {
+                if (Objects.requireNonNull(meta).hasLore()) {
                     lore = meta.getLore();
                 } else {
                     lore = new ArrayList<>();
                 }
 
-                lore.addAll(settings.calculateAdditionalLore(trainable, user, eligibleProfession));
+                Objects.requireNonNull(lore)
+                        .addAll(settings.calculateAdditionalLore(trainable, user, eligibleProfession));
                 meta.setLore(lore);
                 return meta;
             });
@@ -104,7 +107,9 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
         final InventoryClickEvent event = e.getEvent();
         event.setCancelled(true);
         final ItemStack currentItem = event.getCurrentItem();
-        if (currentItem == null || currentItem.getType() == Material.AIR || !currentItem.hasItemMeta() || !currentItem.getItemMeta().hasDisplayName()) {
+        if (currentItem == null || currentItem.getType() == Material.AIR || !currentItem.hasItemMeta() ||
+                !Objects.requireNonNull(
+                        currentItem.getItemMeta()).hasDisplayName()) {
             return;
         }
 
@@ -128,7 +133,8 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
             itemType = Utils.findInIterable(trainableItems, x ->
             {
                 final ItemStack icon = x.getIcon(upd);
-                return ChatColor.stripColor(icon.getItemMeta().getDisplayName()).equals(displayName)
+                return ChatColor.stripColor(Objects.requireNonNull(icon.getItemMeta()).getDisplayName())
+                        .equals(displayName)
                         && icon.getType() == mat;
             });
         } catch (Utils.SearchNotFoundException ex) {
@@ -143,8 +149,8 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
 
         // log
         user.sendMessage(new Messages.MessageBuilder(Messages.Global.SUCCESSFULLY_TRAINED)
-                .setUserProfessionData(upd)
-                .setItemType(itemType)
+                .userProfessionData(upd)
+                .itemType(itemType)
                 .build());
 
     }
@@ -154,6 +160,7 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
     // 1) split ":"
     // 2) getId - herb -> get item type holder
     // 3) add and filter
+    @SuppressWarnings("unchecked")
     private void loadFromFile() throws GUIInitializationException {
         trainableItems.clear();
         eligibleProfession = null;
@@ -174,7 +181,9 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
                 range = new Range(-1);
             } else {
                 try {
-                    range = Range.fromString(split[1]);
+                    range = Range.fromString(split[1]).orElseThrow(() -> new IllegalArgumentException(
+                            String.format("Could not get " +
+                                    "range from '%s'", split[1])));
                 } catch (Exception e) {
                     ProfessionLogger.logError(e);
                     return;
@@ -203,8 +212,9 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
                 }
             } else {
                 for (Type itemType : holder) {
-                    if (range.isInRange(itemType.getFileId(), true))
+                    if (range.isInRange(itemType.getFileId(), true)) {
                         trainableItems.add(itemType);
+                    }
 
                 }
             }
@@ -215,7 +225,8 @@ public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISet
         // now professions
         final String profession = loader.getString("profession");
         if (profession == null) {
-            ProfessionLogger.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)", Level.WARNING);
+            ProfessionLogger.log("Missing eligible profession in " + trainerFile.getName() + " file. (profession:___)",
+                    Level.WARNING);
             throw new GUIInitializationException();
         }
         this.eligibleProfession = Professions.getProfMan().getProfessionById(profession)

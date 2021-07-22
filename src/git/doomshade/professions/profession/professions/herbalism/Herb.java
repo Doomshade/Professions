@@ -2,19 +2,17 @@ package git.doomshade.professions.profession.professions.herbalism;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.profession.spawn.MarkableSpawnableElement;
-import git.doomshade.professions.profession.spawn.SpawnableElement;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
 import git.doomshade.professions.utils.Utils;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.MemorySection;
@@ -23,7 +21,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 import static git.doomshade.professions.profession.professions.herbalism.Herb.HerbEnum.*;
@@ -33,37 +30,24 @@ import static git.doomshade.professions.profession.professions.herbalism.Herb.He
  *
  * @author Doomshade
  */
-public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements ConfigurationSerializable {
+public class Herb extends Spawnable implements ConfigurationSerializable {
 
-    private static final String EXAMPLE_HERB_ID = "example-herb";
-    public static final Herb EXAMPLE_HERB = new Herb(EXAMPLE_HERB_ID, ItemUtils.EXAMPLE_RESULT.getItemMeta().getDisplayName(),
-            ItemUtils.EXAMPLE_RESULT, Material.SUNFLOWER, (byte) 0, new ArrayList<>(), false, new ParticleData(), 5, "flower");
+    public static final Herb EXAMPLE_HERB = new Herb(Utils.EXAMPLE_ID, Objects.requireNonNull(
+            ItemUtils.EXAMPLE_RESULT.getItemMeta()).getDisplayName(),
+            ItemUtils.EXAMPLE_RESULT, Material.SUNFLOWER, (byte) 0, false, new ParticleData(), 5,
+            "flower");
 
     private final ItemStack gatherItem;
     private final boolean enableSpawn;
     private final int timeGather;
 
-    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, List<ExtendedLocation> spawnPointLocations, boolean enableSpawn, ParticleData particleData, int gatherTime, String markerIcon) {
-        super(id, name, herbMaterial, materialData, spawnPointLocations, particleData, markerIcon);
+    private Herb(String id, String name, ItemStack gatherItem, Material herbMaterial, byte materialData, boolean enableSpawn, ParticleData particleData,
+                 int gatherTime,
+                 String markerIcon) {
+        super(id, name, herbMaterial, materialData, particleData, markerIcon);
         this.gatherItem = gatherItem;
         this.enableSpawn = enableSpawn;
         this.timeGather = gatherTime;
-    }
-
-    @Override
-    protected Set<String> rejectedIds() {
-        return Collections.singleton(EXAMPLE_HERB_ID);
-    }
-
-    public static Herb getHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return Utils.findInIterable(getElements(Herb.class).values(), x -> x.getMaterial() == herb && x.isSpawnPointLocation(location));
-    }
-
-    @Nullable
-
-    @SuppressWarnings("unused")
-    public static boolean isHerb(Material herb, Location location) throws Utils.SearchNotFoundException {
-        return getElements(Herb.class).containsValue(getHerb(herb, location));
     }
 
     public static Herb deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
@@ -71,10 +55,11 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
-        final Herb herb = SpawnableElement.deserialize(map, Herb.class, x -> {
+
+        final Herb herb = Spawnable.deserialize(map, Herb.class, x -> {
             int gatherTime = (int) map.get(TIME_GATHER.s);
             MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-            ItemStack gatherItem = null;
+            ItemStack gatherItem;
             try {
                 gatherItem = ItemUtils.deserialize(mem.getValues(false));
             } catch (ConfigurationException | InitializationException e) {
@@ -84,14 +69,18 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
             String displayName = gatherItem.getType().name();
             if (gatherItem.hasItemMeta()) {
                 ItemMeta meta = gatherItem.getItemMeta();
-                if (meta.hasDisplayName()) {
+                if (Objects.requireNonNull(meta).hasDisplayName()) {
                     displayName = meta.getDisplayName();
                 }
             }
             // TODO: 26.01.2020 make implementation of custom marker icons
-            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), x.getSpawnPointLocations(), (boolean) map.get(ENABLE_SPAWN.s), x.getParticleData(), gatherTime, "flower");
+            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(), (boolean) map.get(ENABLE_SPAWN.s),
+                    x.getParticleData(), gatherTime,
+                    "flower");
         });
-        if (herb == null) throw new ProfessionObjectInitializationException("Could not deserialize herb");
+        if (herb == null) {
+            throw new ProfessionObjectInitializationException("Could not deserialize herb");
+        }
         return herb;
     }
         /*
@@ -112,7 +101,8 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
         while ((spawnSection = (MemorySection) map.get(SPAWN_POINT.s.concat("-" + i))) != null) {
             SpawnPoint sp = SpawnPoint.deserialize(spawnSection.getValues(false));
             if (sp.location.clone().add(0, -1, 0).getBlock().getType() == Material.AIR) {
-                final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a block below the herb!", i, herbId);
+                final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a
+                block below the herb!", i, herbId);
                 Professions.log(message, Level.INFO);
                 Professions.log(message, Level.CONFIG);
             }
@@ -135,25 +125,26 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
             }
         }
 
-        return new Herb(herbId, displayName, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(), spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
+        return new Herb(herbId, displayName, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(),
+         spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
     }*/
 
-    @SuppressWarnings("unused")
-    public static Map<Herb, Location> getSpawnedHerbs(World world) {
-        HashMap<Herb, Location> herbs = new HashMap<>();
-        for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
-            Herb herb = entry.getKey();
-            if (herb.getSpawnPoints(entry.getValue()).isSpawned()) {
-                herbs.put(herb, entry.getValue());
+    private static Map<Herb, ? extends ISpawnPoint> getHerbsInWorld(World world) {
+        HashMap<Herb, ISpawnPoint> herbs = new HashMap<>();
+        for (Herb herb : getElements(Herb.class).values()) {
+            for (ISpawnPoint sp : herb.getSpawnPoints()) {
+                if (Objects.requireNonNull(sp.getLocation().getWorld()).equals(world)) {
+                    herbs.put(herb, sp);
+                }
             }
         }
         return herbs;
     }
 
     public static void spawnHerbs(World world) {
-        for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
+        for (Map.Entry<Herb, ? extends ISpawnPoint> entry : getHerbsInWorld(world).entrySet()) {
             try {
-                entry.getKey().getSpawnPoints(entry.getValue()).spawn();
+                entry.getValue().spawn();
             } catch (SpawnException e) {
                 ProfessionLogger.logError(e);
             }
@@ -162,39 +153,19 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
 
     @SuppressWarnings("unused")
     public static void despawnHerbs(World world) {
-        for (Map.Entry<Herb, Location> entry : getHerbsInWorld(world).entrySet()) {
-            entry.getKey().getSpawnPoints(entry.getValue()).despawn();
+        for (Map.Entry<Herb, ? extends ISpawnPoint> entry : getHerbsInWorld(world).entrySet()) {
+            entry.getValue().despawn();
         }
     }
 
-    private static Map<Herb, Location> getHerbsInWorld(World world) {
-        HashMap<Herb, Location> herbs = new HashMap<>();
-        for (Herb herb : getElements(Herb.class).values()) {
-            for (ExtendedLocation spawnPointLocation : herb.getSpawnPointLocations()) {
-                if (spawnPointLocation.getWorld().equals(world)) {
-                    herbs.put(herb, spawnPointLocation);
-                }
-            }
-        }
-        return herbs;
-    }
-
-    boolean isSpawnEnabled() {
-        return enableSpawn;
+    @NotNull
+    @Override
+    protected ItemTypeHolder<Herb, HerbItemType> getItemTypeHolder() {
+        return Professions.getProfMan().getItemTypeHolder(HerbItemType.class);
     }
 
     @Override
-    public boolean equals(Object o) {
-        return super.equals(o) && gatherItem != null && gatherItem.equals(((Herb) o).gatherItem);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(gatherItem, getMaterial(), getId());
-    }
-
-    @Override
-    public Map<String, Object> serialize() {
+    public @NotNull Map<String, Object> serialize() {
         final Map<String, Object> map = super.serialize();
 
         map.put(GATHER_ITEM.s, ItemUtils.serialize(gatherItem));
@@ -205,14 +176,18 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
     }
 
     @Override
-    public HerbSpawnPoint createSpawnPoint(Location location) {
-        return new HerbSpawnPoint(location, this);
+    public int hashCode() {
+        return Objects.hash(gatherItem, getMaterial(), getId());
     }
 
-    @NotNull
     @Override
-    protected ItemTypeHolder<Herb, HerbItemType> getItemTypeHolder() {
-        return Professions.getProfMan().getItemTypeHolder(HerbItemType.class);
+    public boolean equals(Object o) {
+        return super.equals(o) && gatherItem != null && gatherItem.equals(((Herb) o).gatherItem);
+    }
+
+    @Override
+    public boolean canSpawn() {
+        return enableSpawn;
     }
 
     public ItemStack getGatherItem() {
@@ -221,7 +196,8 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
 
     @Override
     public String toString() {
-        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(), this.getMaterial().name());
+        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(),
+                this.getMaterial().name());
     }
 
     public int getGatherTime() {
@@ -246,7 +222,7 @@ public class Herb extends MarkableSpawnableElement<HerbSpawnPoint> implements Co
 
         @Override
         public EnumMap<HerbEnum, Object> getDefaultValues() {
-            return new EnumMap<HerbEnum, Object>(HerbEnum.class) {
+            return new EnumMap<>(HerbEnum.class) {
                 {
                     ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
                     put(GATHER_ITEM, exampleResult.serialize());

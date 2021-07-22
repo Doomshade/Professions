@@ -7,7 +7,6 @@ import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.user.User;
-import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

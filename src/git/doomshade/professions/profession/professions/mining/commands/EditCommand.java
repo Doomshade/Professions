@@ -1,8 +1,10 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
+import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.professions.mining.spawn.OreSpawnPoint;
-import git.doomshade.professions.profession.utils.ExtendedLocation;
+import git.doomshade.professions.profession.spawn.Spawnable;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -10,13 +12,17 @@ import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Command for editing mining areas
  *
  * @author Doomshade
  */
+@SuppressWarnings("ALL")
 public class EditCommand extends AbstractEditCommand {
 
     private final HashSet<Location> EDITED = new HashSet<>();
@@ -33,15 +39,15 @@ public class EditCommand extends AbstractEditCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        final HashMap<String, Ore> ores = Ore.ORES;
+        final Map<String, Ore> ores = Spawnable.getElements(Ore.class);
         if (args.length >= 2) {
 
             switch (args[1].toLowerCase()) {
                 case "allwool":
                     for (Ore ore : ores.values()) {
-                        ore.getSpawnPoints().values().forEach(x -> {
+                        ore.getSpawnPoints().forEach(x -> {
                             x.despawn();
-                            Location loc = x.location;
+                            Location loc = x.getLocation();
                             loc.getBlock().setType(Material.WHITE_WOOL);
                             EDITED.add(loc);
                         });
@@ -49,9 +55,13 @@ public class EditCommand extends AbstractEditCommand {
                     break;
                 case "allore":
                     for (Ore ore : ores.values()) {
-                        ore.getSpawnPoints().values().forEach(x -> {
+                        ore.getSpawnPoints().forEach(x -> {
                             x.despawn();
-                            x.scheduleSpawn();
+                            try {
+                                x.scheduleSpawn();
+                            } catch (SpawnException e) {
+                                ProfessionLogger.logError(e);
+                            }
                         });
                     }
                     EDITED.clear();
@@ -61,10 +71,10 @@ public class EditCommand extends AbstractEditCommand {
             }
         } else {
             Player player = (Player) sender;
-            Location loc = player.getTargetBlock((Set<Material>) null, 5).getLocation();
+            Location loc = Utils.getLookingAt(player).getLocation();
             try {
-                Ore ore = Utils.findInIterable(ores.values(), x -> x.getSpawnPointLocations().contains(new ExtendedLocation(loc)));
-                final OreSpawnPoint locationOptions = ore.getSpawnPoints(loc);
+                Ore ore = Utils.findInIterable(ores.values(), x -> x.isSpawnPoint(loc));
+                final ISpawnPoint locationOptions = ore.getSpawnPoint(loc);
                 locationOptions.despawn();
 
                 if (EDITED.remove(loc)) {
@@ -73,6 +83,8 @@ public class EditCommand extends AbstractEditCommand {
                     EDITED.add(loc);
                     loc.getBlock().setType(Material.WHITE_WOOL);
                 }
+            } catch (SpawnException e) {
+                ProfessionLogger.logError(e);
             } catch (Utils.SearchNotFoundException e) {
                 return;
             }

@@ -12,6 +12,7 @@ import java.util.List;
  * @author Doomshade
  * @version NOT_YET_IMPLEMENTED
  */
+@SuppressWarnings("all")
 public class CreateItemTypeCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {

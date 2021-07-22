@@ -2,8 +2,6 @@ package git.doomshade.professions.profession.professions.enchanting;
 
 import org.bukkit.inventory.ItemStack;
 
-import java.util.function.Consumer;
-
 /**
  * Class for storing an {@link Enchant} and {@link ItemStack} before enchanting
  *

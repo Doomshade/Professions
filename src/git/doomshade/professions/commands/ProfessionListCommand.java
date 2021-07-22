@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Prints the list of all professions
@@ -16,6 +17,7 @@ import java.util.*;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class ProfessionListCommand extends AbstractCommand {
 
     public ProfessionListCommand() {
@@ -28,12 +30,12 @@ public class ProfessionListCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         ProfessionManager profMan = Professions.getProfMan();
-        Map<ProfessionType, Integer> profTypes = new TreeMap<>();
+        Map<ProfessionType, Integer> profTypes;
         List<Profession> profs = new ArrayList<>(profMan.getProfessionsById().values());
         profs.sort(Comparator.naturalOrder());
         List<ProfessionType> pt = Arrays.asList(ProfessionType.values());
         pt.sort(Comparator.naturalOrder());
-        pt.forEach(x -> profTypes.put(x, 0));
+        profTypes = pt.stream().collect(Collectors.toMap(x -> x, x -> 0, (a, b) -> b, TreeMap::new));
         profMan.getProfessionsById().forEach((y, x) -> {
             if (x.getProfessionType() != null)
                 profTypes.put(x.getProfessionType(), profTypes.get(x.getProfessionType()) + 1);

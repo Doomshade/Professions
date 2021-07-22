@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -24,6 +25,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  */
+@SuppressWarnings("ALL")
 public class GenerateDefaultsCommand extends AbstractCommand {
     private static final String OBJECT = String.valueOf(Strings.ItemTypeEnum.OBJECT.s);
 
@@ -59,7 +61,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             // "items:"
             ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
 
-            for (String s : itemsSection.getKeys(false)) {
+            for (String s : Objects.requireNonNull(itemsSection).getKeys(false)) {
 
                 // "items: '1':"
                 ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
@@ -67,7 +69,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
                     // "items: '1': exp"
                     for (Map.Entry<?, Object> entry : en.getDefaultValues().entrySet()) {
-                        if (!itemSection.isSet(entry.getKey().toString())) {
+                        if (!Objects.requireNonNull(itemSection).isSet(entry.getKey().toString())) {
                             ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
                         }
                         //
@@ -78,14 +80,14 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
 
                 // "items: '1': object:"
-                ConfigurationSection objectSection = itemSection.isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
+                ConfigurationSection objectSection = Objects.requireNonNull(itemSection).isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
 
                 final Map<String, Object> serializedObject = itemType.getSerializedObject();
                 if (serializedObject == null) {
                     ProfessionLogger.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
                 } else {
                     for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
-                        if (!objectSection.isSet(entry.getKey())) {
+                        if (!Objects.requireNonNull(objectSection).isSet(entry.getKey())) {
                             ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
                         }
                         objectSection.addDefault(entry.getKey(), entry.getValue());

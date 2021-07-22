@@ -10,11 +10,7 @@ import javax.annotation.Nullable;
  * @author Doomshade
  */
 public class EnchantManager {
-    private static EnchantManager instance;
-
-    static {
-        instance = new EnchantManager();
-    }
+    private static final EnchantManager instance = new EnchantManager();
 
     private EnchantManager() {
     }
@@ -29,22 +25,23 @@ public class EnchantManager {
     /**
      * @param item the ItemStack
      * @param <T>  the Enchant
+     *
      * @return an Enchant if the ItemStack is one, {@code null} otherwise
      */
     @Nullable
     @SuppressWarnings("unchecked")
     public <T extends Enchant> T getEnchantFromItem(ItemStack item) {
-        for (Enchant ench : Enchant.ENCHANTS.values()) {
-            if (ench.getItem().isSimilar(item)) {
-                return (T) ench;
-            }
-        }
-        return null;
+        return (T) Enchant.ENCHANTS.values()
+                .stream()
+                .filter(ench -> ench.getItem().isSimilar(item))
+                .findFirst()
+                .orElse(null);
     }
 
     /**
      * @param enchant the enchant class
      * @param <T>     the enchant
+     *
      * @return an Enchant instance
      */
     @SuppressWarnings("unchecked")
@@ -67,6 +64,7 @@ public class EnchantManager {
      *
      * @param enchant the enchant
      * @param on      the item
+     *
      * @see Enchant#use(ItemStack)
      */
     public void enchant(Enchant enchant, ItemStack on) {
@@ -79,6 +77,7 @@ public class EnchantManager {
      * @param enchant   the enchant
      * @param on        the item
      * @param intensity the intensity of enchant
+     *
      * @see Enchant#use(ItemStack, int)
      */
     public void enchant(Enchant enchant, ItemStack on, int intensity) {

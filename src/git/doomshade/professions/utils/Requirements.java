@@ -9,8 +9,11 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * A class managing requirements of a player.
@@ -24,13 +27,6 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     private final List<ItemStack> items;
 
     /**
-     * @param items the requirements
-     */
-    public Requirements(List<ItemStack> items) {
-        this.items = items;
-    }
-
-    /**
      * Calls {@link Requirements#Requirements(List)} with an empty {@link ArrayList}.
      */
     public Requirements() {
@@ -38,29 +34,37 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     }
 
     /**
+     * @param items the requirements
+     */
+    public Requirements(List<ItemStack> items) {
+        this.items = items;
+    }
+
+    /**
      * Deserialization method
      *
      * @param map the {@link ConfigurationSerializable#serialize()}
+     *
      * @return deserialized class
+     *
      * @see ConfigurationSerializable
      */
-    public static Requirements deserialize(Map<String, Object> map) throws ConfigurationException, InitializationException {
+    public static Requirements deserialize(Map<String, Object> map)
+            throws ConfigurationException, InitializationException {
         List<ItemStack> items = new ArrayList<>();
         for (Object next : map.values()) {
-            if (next instanceof MemorySection)
+            if (next instanceof MemorySection) {
                 items.add(ItemUtils.deserialize(((MemorySection) next).getValues(true)));
+            }
         }
         return new Requirements(items);
     }
 
     @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-
-        for (int i = 0; i < items.size(); i++) {
-            map.put(String.valueOf(i), ItemUtils.serialize(items.get(i)));
-        }
-        return map;
+    public @NotNull Map<String, Object> serialize() {
+        return IntStream.range(0, items.size())
+                .boxed()
+                .collect(Collectors.toMap(String::valueOf, i -> ItemUtils.serialize(items.get(i)), (a, b) -> b));
     }
 
     /**
@@ -81,6 +85,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
 
     /**
      * @param player the player to check the requirements for
+     *
      * @return {@code true} if player meets requirements, {@code false} otherwise
      */
     public boolean meetsRequirements(Player player) {
@@ -108,6 +113,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
 
     /**
      * @param player the player to check the requirements for
+     *
      * @return the missing requirements of player
      */
     public Collection<ItemStack> getMissingRequirements(Player player) {
@@ -126,11 +132,6 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
         items.forEach(inv::removeItem);
     }
 
-    @Override
-    public Iterator<ItemStack> iterator() {
-        return items.iterator();
-    }
-
     /**
      * Calls {@link #toString(Player, ChatColor, ChatColor)} with all null arguments.
      *
@@ -145,6 +146,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @param player            the player to base this {@link String} representation about
      * @param requirementMet    the custom met requirement color
      * @param requirementNotMet the custom not met requirement color
+     *
      * @return the {@link String} representation of this class
      */
     public String toString(Player player, ChatColor requirementMet, ChatColor requirementNotMet) {
@@ -159,13 +161,21 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
             } else if (requirementNotMet != null) {
                 sb.append(requirementNotMet);
             }
-            sb.append(item.getAmount() + "x "
-                    + (item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName()
-                    : item.getType().toString()));
-            if (iterator.hasNext())
+            sb.append(item.getAmount())
+                    .append("x ")
+                    .append(item.getItemMeta() != null && item.getItemMeta().hasDisplayName()
+                            ? item.getItemMeta().getDisplayName()
+                            : item.getType().toString());
+            if (iterator.hasNext()) {
                 sb.append(", ");
+            }
         }
         return sb.toString();
+    }
+
+    @Override
+    public @NotNull Iterator<ItemStack> iterator() {
+        return items.iterator();
     }
 
 }

@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
 public final class MiningProfession extends Profession {
@@ -89,7 +90,7 @@ public final class MiningProfession extends Profession {
                 ItemStack miningResult = ore.getMiningResult();
 
                 if (miningResult != null) {
-                    world.dropItem(dropLocation, miningResult);
+                    Objects.requireNonNull(world).dropItem(dropLocation, miningResult);
                 }
             }
 

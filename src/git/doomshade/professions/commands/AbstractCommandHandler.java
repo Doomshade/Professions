@@ -13,16 +13,17 @@ import org.bukkit.command.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 /**
- * A command handler and executor/tab completer
- * Command is referred to<br><b>/[cmd_executor_name] [command_name] [args]</b><br>
- * Command handler has the same meaning as command executor in the java doc comments
+ * A command handler and executor/tab completer Command is referred to<br><b>/[cmd_executor_name] [command_name]
+ * [args]</b><br> Command handler has the same meaning as command executor in the java doc comments
  *
  * @author Doomshade
  * @version 1.0
@@ -30,7 +31,8 @@ import java.util.logging.Level;
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
 
     // cache instances of all command handlers
-    private static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES = new HashMap<>();
+    private static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES =
+            new HashMap<>();
 
     // only need one reference of plugin
     // honestly not needed, but it does not eat that much memory
@@ -48,6 +50,13 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     private PluginCommand cmd = null;
     private File file = null;
 
+    // just make sure the folder is an actual directory every time a new instance is created
+    {
+        if (!FOLDER.isDirectory()) {
+            FOLDER.mkdirs();
+        }
+    }
+
     /**
      * Keep in mind that this method CREATES a copy of the command handlers
      *
@@ -57,48 +66,6 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         return ImmutableSet.copyOf(INSTANCES.values());
     }
 
-
-    // just make sure the folder is an actual directory every time a new instance is created
-    {
-        if (!FOLDER.isDirectory()) {
-            FOLDER.mkdirs();
-        }
-    }
-
-    /**
-     * Validates the command execution
-     *
-     * @param sender the sender of command
-     * @param acmd   the command to send
-     * @return {@code true} if sender is either op or meets command requirements, {@code false} otherwise
-     */
-    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
-
-        // invalid cmd
-        if (acmd == null) return false;
-
-        // cmd requires player
-        if (acmd.requiresPlayer() && !(sender instanceof Player)) {
-            return false;
-        }
-
-        // sender is op, don't give a shit about perm
-        if (sender.isOp()) {
-            return true;
-        }
-
-        // we can cast do player as the console command sender is OP by default
-        // check perms
-        // we can keep this loop as high permissions inherit the lower ones
-        final Player player = (Player) sender;
-        for (String perm : acmd.getPermissions()) {
-            if (!Permissions.has(player, perm)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /**
      * Registers a command handler
      *
@@ -106,6 +73,32 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      */
     public static void register(AbstractCommandHandler commandHandler) {
         INSTANCES.putIfAbsent(commandHandler.getClass(), commandHandler);
+    }
+
+    public static String infoMessage(Class<? extends AbstractCommandHandler> ch, Class<? extends AbstractCommand> ac) {
+        try {
+            final AbstractCommandHandler ach = getInstance(ch);
+            if (ach != null) {
+                return ach.infoMessage(ach.getCommand(ac));
+            }
+        } catch (Utils.SearchNotFoundException ignored) {
+        }
+        return "";
+    }
+
+    /**
+     * This performs in O(n) as we only cache commands' name and its class
+     *
+     * @param clazz the command class
+     * @param <T>   the command
+     *
+     * @return the command based on class given
+     *
+     * @throws Utils.SearchNotFoundException if there is no such command registered
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends AbstractCommand> T getCommand(Class<T> clazz) throws Utils.SearchNotFoundException {
+        return (T) Utils.findInIterable(getCommands().values(), x -> x.getClass().equals(clazz));
     }
 
     /**
@@ -119,24 +112,16 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     }
 
     /**
-     * This performs in O(n) as we only cache commands' name and its class
-     *
-     * @param clazz the command class
-     * @param <T>   the command
-     * @return the command based on class given
-     * @throws Utils.SearchNotFoundException if there is no such command registered
-     */
-    public <T extends AbstractCommand> T getCommand(Class<T> clazz) throws Utils.SearchNotFoundException {
-        return (T) Utils.findInIterable(getCommands().values(), x -> x.getClass().equals(clazz));
-    }
-
-    /**
      * @param commandHandlerClass the command handler class
      * @param <T>                 the command handler
+     *
      * @return the command handler
+     *
      * @throws RuntimeException if the command handler is not registered
      */
-    public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass) throws RuntimeException {
+    @SuppressWarnings("unchecked")
+    public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass)
+            throws RuntimeException {
         if (INSTANCES.containsKey(commandHandlerClass)) {
             return (T) INSTANCES.get(commandHandlerClass);
         } else {
@@ -144,23 +129,35 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         }
     }
 
-
     /**
-     * @return the command executor (handler) name (/[command_executor_name] [command_name] [args])
+     * This method is implemented here as we have only private access to the command executor name
+     *
+     * @param acmd the command
+     *
+     * @return a string representation of command
      */
-    protected abstract String getCommandExecutorName();
+    public String infoMessage(AbstractCommand acmd) {
+        StringBuilder args = new StringBuilder();
+        final Map<Boolean, List<String>> args1 = acmd.getArgs();
+        if (args1 != null) {
+            if (args1.containsKey(true) && args1.get(true) != null) {
+                args1.get(true).forEach(x -> {
+                    args.append(" <");
+                    args.append(x);
+                    args.append(">");
+                });
+            }
+            if (args1.containsKey(false) && args1.get(false) != null) {
+                args1.get(false).forEach(x -> {
+                    args.append(" [");
+                    args.append(x);
+                    args.append("]");
+                });
+            }
+        }
 
-    /**
-     * Registers the commands <br>
-     * Please use {@link AbstractCommandHandler#registerCommand(AbstractCommand)} in this method to register <b>all</b> commands
-     */
-    public abstract void registerCommands();
-
-    /**
-     * Deprecated method, calls updateCommands
-     */
-    private void postRegisterCommands() {
-        updateCommands();
+        return ChatColor.DARK_AQUA + "/" + cmd.getName() + " " + acmd.getCommand() + args + ChatColor.GOLD
+                + " - " + acmd.getDescription();
     }
 
     /**
@@ -170,6 +167,49 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      */
     protected final void registerCommand(AbstractCommand cmd) {
         INSTANCE_COMMANDS.put(cmd.getCommand(), cmd);
+    }
+
+    /**
+     * @see ISetup#setup()
+     */
+    @Override
+    public final void setup() throws IOException {
+        if (cmd == null || file == null) {
+            String commandName = getCommandExecutorName();
+            try {
+                file = new File(FOLDER, String.format("%s.yml", commandName));
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+            } catch (IOException e) {
+                ProfessionLogger.logError(e);
+            }
+            cmd = Bukkit.getPluginCommand(commandName);
+            Objects.requireNonNull(cmd).setExecutor(this);
+        }
+        INSTANCE_COMMANDS.clear();
+        registerCommands();
+
+        setupCommandFile();
+        postRegisterCommands();
+    }
+
+    /**
+     * @return the command executor (handler) name (/[command_executor_name] [command_name] [args])
+     */
+    protected abstract String getCommandExecutorName();
+
+    /**
+     * Registers the commands <br> Please use {@link AbstractCommandHandler#registerCommand(AbstractCommand)} in this
+     * method to register <b>all</b> commands
+     */
+    public abstract void registerCommands();
+
+    /**
+     * Deprecated method, calls updateCommands
+     */
+    private void postRegisterCommands() {
+        updateCommands();
     }
 
     /**
@@ -191,15 +231,18 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                 throw new NullPointerException("Null ID of " + cmd.getClass().getSimpleName() + " found!");
             }
 
-            // there is a possibility that somebody made a mistake in file and overrode the ID of command, let them know!
-            // this will VERY LIKELY not happen, but if I happen to call this method somewhere else but the setup method, then I need to know :)
+            // there is a possibility that somebody made a mistake in file and overrode the ID of command, let them
+            // know!
+            // this will VERY LIKELY not happen, but if I happen to call this method somewhere else but the setup
+            // method, then I need to know :)
             if (!keys.contains(id)) {
-                ProfessionLogger.log("Could not find command with " + id + " ID, please reload the plugin!", Level.WARNING);
+                ProfessionLogger.log("Could not find command with " + id + " ID, please reload the plugin!",
+                        Level.WARNING);
                 continue;
             }
             // lastly, partly deserialize the command
             AbstractCommand fileCommand = AbstractCommand
-                    .partlyDeserialize(loader.getConfigurationSection(id).getValues(false));
+                    .partlyDeserialize(Objects.requireNonNull(loader.getConfigurationSection(id)).getValues(false));
             final String command = fileCommand.getCommand();
             if (command == null || command.isEmpty()) {
                 ProfessionLogger.log("Could not deserialize " + id + ".", Level.WARNING);
@@ -217,8 +260,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     }
 
     /**
-     * Sets up the command file, adding the command serialization as defaults.
-     * This will add missing commands
+     * Sets up the command file, adding the command serialization as defaults. This will add missing commands
      *
      * @throws IOException if there's an error saving to file
      */
@@ -233,61 +275,9 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         loader.save(file);
     }
 
-    /**
-     * This method is implemented here as we have only private access to the command executor name
-     *
-     * @param acmd the command
-     * @return a string representation of command
-     */
-    public String infoMessage(AbstractCommand acmd) {
-        StringBuilder args = new StringBuilder();
-        final Map<Boolean, List<String>> args1 = acmd.getArgs();
-        if (args1 != null) {
-            if (args1.containsKey(true) && args1.get(true) != null)
-                args1.get(true).forEach(x -> {
-                    args.append(" <");
-                    args.append(x);
-                    args.append(">");
-                });
-            if (args1.containsKey(false) && args1.get(false) != null)
-                args1.get(false).forEach(x -> {
-                    args.append(" [");
-                    args.append(x);
-                    args.append("]");
-                });
-        }
-
-        return ChatColor.DARK_AQUA + "/" + cmd.getName() + " " + acmd.getCommand() + args + ChatColor.GOLD
-                + " - " + acmd.getDescription();
-    }
-
-    /**
-     * @see ISetup#setup()
-     */
     @Override
-    public final void setup() throws IOException {
-        if (cmd == null || file == null) {
-            String commandName = getCommandExecutorName();
-            try {
-                file = new File(FOLDER, String.format("%s.yml", commandName));
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-            } catch (IOException e) {
-                ProfessionLogger.logError(e);
-            }
-            cmd = Bukkit.getPluginCommand(commandName);
-            cmd.setExecutor(this);
-        }
-        INSTANCE_COMMANDS.clear();
-        registerCommands();
-
-        setupCommandFile();
-        postRegisterCommands();
-    }
-
-    @Override
-    public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+    public final List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label,
+                                            String[] args) {
         List<String> tab = new ArrayList<>();
         if (args.length == 0) {
             INSTANCE_COMMANDS.forEach((y, x) -> {
@@ -303,34 +293,50 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             return acmd.onTabComplete(sender, args);
         }
 
-        for (AbstractCommand instanceCmd : INSTANCE_COMMANDS.values()) {
-            if (instanceCmd.getCommand().startsWith(args[0])) {
-                tab.add(instanceCmd.getCommand());
-            }
-        }
+        tab.addAll(INSTANCE_COMMANDS.values()
+                .stream()
+                .filter(instanceCmd -> instanceCmd.getCommand().startsWith(args[0]))
+                .map(AbstractCommand::getCommand)
+                .collect(Collectors.toList()));
 
         return tab.isEmpty() ? null : tab;
     }
 
-    private void printValidCommands(CommandSender sender) {
-        sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" + ChatColor.RED
-                + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
-        for (AbstractCommand acmd : INSTANCE_COMMANDS.values()) {
-            if (isValid(sender, acmd)) {
-                sender.sendMessage(infoMessage(acmd));
-            }
-            // TODO add pages
-                /*amnt++;
-                if (amnt % 6 == 0) {
-                    int page = amnt / 6;
-                    break;
-                }
-                 */
+    /**
+     * Validates the command execution
+     *
+     * @param sender the sender of command
+     * @param acmd   the command to send
+     *
+     * @return {@code true} if sender is either op or meets command requirements, {@code false} otherwise
+     */
+    private static boolean isValid(CommandSender sender, AbstractCommand acmd) {
+
+        // invalid cmd
+        if (acmd == null) {
+            return false;
         }
+
+        // cmd requires player
+        if (acmd.requiresPlayer() && !(sender instanceof Player)) {
+            return false;
+        }
+
+        // sender is op, don't give a shit about perm
+        if (sender.isOp()) {
+            return true;
+        }
+
+        // we can cast do player as the console command sender is OP by default
+        // check perms
+        // we can keep this loop as high permissions inherit the lower ones
+        final Player player = (Player) sender;
+        return acmd.getPermissions().stream().allMatch(perm -> Permissions.has(player, perm));
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label,
+                             String[] args) {
         if (args.length == 0) {
             //int amnt = 0;
             printValidCommands(sender);
@@ -349,20 +355,30 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             return true;
         }
         acmd.onCommand(sender, args);
-        if ((acmd.getPermissions().contains(Permissions.HELPER) || acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
-            ProfessionLogger.log(String.format("%s issued %s command with arguments: %s", sender.getName(), acmd.getCommand(), Arrays.toString(args)), Level.CONFIG);
+        if ((acmd.getPermissions().contains(Permissions.HELPER) ||
+                acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
+            ProfessionLogger.log(
+                    String.format("%s issued %s command with arguments: %s", sender.getName(), acmd.getCommand(),
+                            Arrays.toString(args)), Level.CONFIG);
         }
         return true;
     }
 
-    public static String infoMessage(Class<? extends AbstractCommandHandler> ch, Class<? extends AbstractCommand> ac) {
-        try {
-            final AbstractCommandHandler ach = getInstance(ch);
-            if (ach != null) {
-                return ach.infoMessage(ach.getCommand(ac));
+    private void printValidCommands(CommandSender sender) {
+        sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" +
+                ChatColor.RED
+                + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
+        for (AbstractCommand acmd : INSTANCE_COMMANDS.values()) {
+            if (isValid(sender, acmd)) {
+                sender.sendMessage(infoMessage(acmd));
             }
-        } catch (Utils.SearchNotFoundException ignored) {
+            // TODO add pages
+                /*amnt++;
+                if (amnt % 6 == 0) {
+                    int page = amnt / 6;
+                    break;
+                }
+                 */
         }
-        return "";
     }
 }
