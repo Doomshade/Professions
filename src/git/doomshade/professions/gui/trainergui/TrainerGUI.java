@@ -22,6 +22,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -32,7 +33,7 @@ import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 
-public class TrainerGUI<T, Type extends ItemType<T>> extends GUI implements ISetup {
+public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemType<T>> extends GUI implements ISetup {
 
     private static final HashMap<String, List<ItemType<?>>> CACHE = new HashMap<>();
     private static final HashMap<String, Profession> CACHE_PROFESSIONS = new HashMap<>();

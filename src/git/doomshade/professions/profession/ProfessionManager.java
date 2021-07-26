@@ -26,6 +26,7 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
+import git.doomshade.professions.profession.professions.smelting.BarItemStack;
 import git.doomshade.professions.profession.professions.smelting.BarItemType;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
 import git.doomshade.professions.utils.ISetup;
@@ -35,6 +36,7 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
@@ -55,19 +57,17 @@ import java.util.stream.Collectors;
  */
 public final class ProfessionManager implements ISetup, IProfessionManager {
     private static final ProfessionManager instance = new ProfessionManager();
-
+    private static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
     /**
      * Using IrremovableSet here so that the registered professions never get deleted (they are intended not to!)
      */
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
-
     @SuppressWarnings("rawtypes")
     private final HashMap<ItemTypeHolder<?, ?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
     private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
-    private static final HashSet<Class<? extends Profession>> INITED_PROFESSIONS = new HashSet<>();
 
     private ProfessionManager() {
     }
@@ -79,97 +79,29 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         return instance;
     }
 
-    /**
-     * @return all registered {@link ItemTypeHolder}s
-     */
-    public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
-        return ImmutableSet.copyOf(ITEMS.keySet());
-    }
-
     public static Collection<Class<? extends Profession>> getInitedProfessions() {
         return ImmutableSet.copyOf(INITED_PROFESSIONS);
-    }
-
-    @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(Class<A> clazz) throws IllegalArgumentException {
-        for (Entry<ItemTypeHolder<?, ?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
-            if (entry.getValue().equals(clazz)) {
-                return (ItemTypeHolder<T, A>) entry.getKey();
-            }
-        }
-        throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
     }
 
     /**
      * @return all registered {@link Profession}s
      */
-    public ImmutableSet<Class<? extends Profession>> getRegisteredProfessions() {
+    public Set<Class<? extends Profession>> getRegisteredProfessions() {
         return ImmutableSet.copyOf(REGISTERED_PROFESSIONS);
     }
 
     /**
      * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getID()}
      */
-    public ImmutableMap<String, Profession> getProfessionsById() {
+    public Map<String, Profession> getProfessionsById() {
         return ImmutableMap.copyOf(PROFESSIONS_ID);
     }
 
     /**
      * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getName()}
      */
-    public ImmutableMap<String, Profession> getProfessionsByName() {
+    public Map<String, Profession> getProfessionsByName() {
         return ImmutableMap.copyOf(PROFESSIONS_NAME);
-    }
-
-    @Override
-    public <T, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType, T o, Consumer<IType> additionalCommand) throws IOException {
-        ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
-        itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
-    }
-
-    @Override
-    public Optional<Profession> getProfessionById(String id) {
-        if (id == null || id.isEmpty()) {
-            return Optional.empty();
-        }
-        Profession prof = PROFESSIONS_ID.get(id.toLowerCase());
-        if (prof == null) {
-            return Optional.empty();
-        }
-        return Optional.of(prof);
-    }
-
-    @Override
-    public Optional<Profession> getProfessionByName(String name) {
-        if (name == null || name.isEmpty()) {
-            return Optional.empty();
-        }
-
-        Profession prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
-
-        if (prof == null) {
-            try {
-                prof = Utils.findInIterable(PROFESSIONS_ID.values(),
-                        x -> x.getIcon() != null
-                                && x.getIcon().getItemMeta() != null
-                                && ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName()).equalsIgnoreCase(ChatColor.stripColor(name)));
-            } catch (Utils.SearchNotFoundException e) {
-                return Optional.empty();
-            }
-        }
-        return Optional.of(prof);
-    }
-
-    @Override
-    public Optional<Profession> getProfession(Class<? extends Profession> profession) {
-        for (Profession prof : PROFESSIONS_ID.values()) {
-            if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
-                return Optional.of(prof);
-            }
-        }
-        return Optional.empty();
     }
 
     @Override
@@ -177,45 +109,6 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         register();
         registerProfessions();
         //detectDuplicates();
-    }
-
-    /**
-     * Detects config ID duplicates
-     *
-     * @deprecated as the config ID is automatically generated via file name + number id
-     */
-    @Deprecated
-    private void detectDuplicates() {
-        boolean loggedDuplicate = false;
-        HashMap<String, ItemType<?>> map = new HashMap<>();
-        LinkedList<ItemType<?>> duplicates = new LinkedList<>();
-        for (ItemTypeHolder<?, ?> holder : getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                final ItemType<?> put = map.putIfAbsent(itemType.getConfigName(), itemType);
-                if (put != null) {
-                    if (!loggedDuplicate) {
-                        final String errorMsg = "Found duplicates of config names.";
-                        ProfessionLogger.log(errorMsg, Level.CONFIG);
-                        ProfessionLogger.log(errorMsg, Level.SEVERE);
-                        loggedDuplicate = true;
-                    }
-                    duplicates.add(put);
-                    duplicates.add(itemType);
-                }
-            }
-        }
-
-        StringBuilder duplicatesString = new StringBuilder();
-        if (loggedDuplicate) {
-            ProfessionLogger.log("Duplicates:");
-            ProfessionLogger.log("Duplicates:", Level.CONFIG);
-
-            for (ItemType<?> duplicate : duplicates) {
-                duplicatesString.append("\n").append(duplicate.toCompactString());
-            }
-            System.out.println(duplicatesString);
-            ProfessionLogger.log(duplicatesString, Level.CONFIG);
-        }
     }
 
     @Override
@@ -239,7 +132,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
      * Huge method for {@link ItemTypeHolder} registrations
      *
      * @throws IOException if an IO error occurs
-     * @see #registerItemTypeHolder(Class, Object, Consumer)
+     * @see #registerItemTypeHolder(Class, ConfigurationSerializable, Consumer)
      */
     private void registerItemTypeHolders() throws IOException {
 
@@ -328,7 +221,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         // SMELTING
         registerItemTypeHolder(
                 BarItemType.class,
-                ItemUtils.EXAMPLE_RESULT,
+                new BarItemStack(ItemUtils.EXAMPLE_RESULT),
                 x -> {
                     x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
                     x.setName(ChatColor.BLUE + "Test bar");
@@ -346,6 +239,76 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
                 GemItemType.class,
                 Gem.EXAMPLE_GEM
         );
+    }
+
+    @Override
+    public <T extends ConfigurationSerializable, IType extends ItemType<T>> void registerItemTypeHolder(
+            Class<IType> itemType, T o,
+            Consumer<IType> additionalCommand) throws IOException {
+        ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
+        itemTypeHolder.update();
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
+    }
+
+    @Override
+    public void registerProfession(Profession prof) {
+        registerProfession(prof, true);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T extends ConfigurationSerializable, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(
+            Class<A> clazz) throws IllegalArgumentException {
+        for (Entry<ItemTypeHolder<?, ?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
+            if (entry.getValue().equals(clazz)) {
+                return (ItemTypeHolder<T, A>) entry.getKey();
+            }
+        }
+        throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
+    }
+
+    @Override
+    public Optional<Profession> getProfession(Class<? extends Profession> profession) {
+        for (Profession prof : PROFESSIONS_ID.values()) {
+            if (prof.getClass().getSimpleName().equals(profession.getSimpleName())) {
+                return Optional.of(prof);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Profession> getProfessionById(String id) {
+        if (id == null || id.isEmpty()) {
+            return Optional.empty();
+        }
+        Profession prof = PROFESSIONS_ID.get(id.toLowerCase());
+        if (prof == null) {
+            return Optional.empty();
+        }
+        return Optional.of(prof);
+    }
+
+    @Override
+    public Optional<Profession> getProfessionByName(String name) {
+        if (name == null || name.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Profession prof = PROFESSIONS_NAME.get(ChatColor.stripColor(name.toLowerCase()));
+
+        if (prof == null) {
+            try {
+                prof = Utils.findInIterable(PROFESSIONS_ID.values(),
+                        x -> x.getIcon() != null
+                                && x.getIcon().getItemMeta() != null
+                                && ChatColor.stripColor(x.getIcon().getItemMeta().getDisplayName())
+                                .equalsIgnoreCase(ChatColor.stripColor(name)));
+            } catch (Utils.SearchNotFoundException e) {
+                return Optional.empty();
+            }
+        }
+        return Optional.of(prof);
     }
 
     /**
@@ -378,18 +341,22 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
                 .filter(plugin -> !Bukkit.getPluginManager().isPluginEnabled(plugin))
                 .collect(Collectors.toSet());
         if (!requiredPlugins.isEmpty()) {
-            throw new IllegalStateException(String.format("Could not load %s as some plugins are missing!%s\nRequired plugins: %s\nPlugins missing: %s",
-                    prof.getColoredName(), ChatColor.RESET, String.join(", ", prof.getRequiredPlugins()), String.join(", ", requiredPlugins)));
+            throw new IllegalStateException(String.format(
+                    "Could not load %s as some plugins are missing!%s\nRequired plugins: %s\nPlugins missing: %s",
+                    prof.getColoredName(), ChatColor.RESET, String.join(", ", prof.getRequiredPlugins()),
+                    String.join(", ", requiredPlugins)));
         }
 
         if (!INITED_PROFESSIONS.add(prof.getClass())) {
-            throw new IllegalArgumentException(String.format("%s %shas already been registered!", prof.getColoredName(), ChatColor.RESET));
+            throw new IllegalArgumentException(
+                    String.format("%s %shas already been registered!", prof.getColoredName(), ChatColor.RESET));
         }
 
         // make sure the profession is not already registered
         if (PROFESSIONS_ID.containsKey(prof.getID().toLowerCase())) {
-            throw new IllegalArgumentException(String.format("%sERROR: %sA profession with name %s already exists! (%s)",
-                    ChatColor.DARK_RED, ChatColor.RED, prof.getName() + ChatColor.RESET, prof.getID()));
+            throw new IllegalArgumentException(
+                    String.format("%sERROR: %sA profession with name %s already exists! (%s)",
+                            ChatColor.DARK_RED, ChatColor.RED, prof.getName() + ChatColor.RESET, prof.getID()));
         }
 
         // finally the profession is registered
@@ -408,13 +375,9 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 
         // lastly call #onLoad
         prof.onLoad();
-        if (logMessage)
+        if (logMessage) {
             ProfessionLogger.log("Registered " + prof.getColoredName() + ChatColor.RESET + " profession", Level.INFO);
-    }
-
-    @Override
-    public void registerProfession(Profession prof) {
-        registerProfession(prof, true);
+        }
     }
 
     /**
@@ -428,10 +391,58 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     }
 
     /**
+     * Detects config ID duplicates
+     *
+     * @deprecated as the config ID is automatically generated via file name + number id
+     */
+    @Deprecated
+    private void detectDuplicates() {
+        boolean loggedDuplicate = false;
+        HashMap<String, ItemType<?>> map = new HashMap<>();
+        LinkedList<ItemType<?>> duplicates = new LinkedList<>();
+        for (ItemTypeHolder<?, ?> holder : getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                final ItemType<?> put = map.putIfAbsent(itemType.getConfigName(), itemType);
+                if (put != null) {
+                    if (!loggedDuplicate) {
+                        final String errorMsg = "Found duplicates of config names.";
+                        ProfessionLogger.log(errorMsg, Level.CONFIG);
+                        ProfessionLogger.log(errorMsg, Level.SEVERE);
+                        loggedDuplicate = true;
+                    }
+                    duplicates.add(put);
+                    duplicates.add(itemType);
+                }
+            }
+        }
+
+        StringBuilder duplicatesString = new StringBuilder();
+        if (loggedDuplicate) {
+            ProfessionLogger.log("Duplicates:");
+            ProfessionLogger.log("Duplicates:", Level.CONFIG);
+
+            for (ItemType<?> duplicate : duplicates) {
+                duplicatesString.append("\n").append(duplicate.toCompactString());
+            }
+            System.out.println(duplicatesString);
+            ProfessionLogger.log(duplicatesString, Level.CONFIG);
+        }
+    }
+
+    /**
+     * @return all registered {@link ItemTypeHolder}s
+     */
+    public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
+        return ImmutableSet.copyOf(ITEMS.keySet());
+    }
+
+    /**
      * Sorts the map by value
      *
      * @param map the map to sort
+     *
      * @return sorted map
+     *
      * @see Utils#sortMapByValue(Map, Comparator)
      * @deprecated not used anymore
      */

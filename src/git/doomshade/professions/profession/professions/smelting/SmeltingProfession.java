@@ -31,7 +31,7 @@ public class SmeltingProfession extends Profession {
         if (addExp(event)) {
             expMsg = Utils.getReceiveXp(event.getExp());
         }
-        ItemStack item = event.getItemType().getObject();
+        ItemStack item = event.getItemType().getObject().item;
         String itemName = item != null ? item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasDisplayName() ? item.getItemMeta().getDisplayName() : item.getType().name() : "NULL";
         ProfessionLogger.log(String.format("%s smelted %s".concat(expMsg), event.getPlayer().getPlayer().getName(), itemName), Level.CONFIG);
     }

@@ -23,6 +23,7 @@ import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -173,7 +174,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      *
      * @param items the items
      */
-    protected final <T, A extends ItemType<T>> void addItems(Class<A> items) {
+    protected final <T extends ConfigurationSerializable, A extends ItemType<T>> void addItems(Class<A> items) {
         this.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 

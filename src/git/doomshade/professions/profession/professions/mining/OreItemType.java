@@ -23,15 +23,6 @@ public class OreItemType extends ItemType<Ore> {
     }
 
     @Override
-    public Map<String, Object> getSerializedObject() {
-        final Ore ore = getObject();
-        if (ore == null) {
-            return new HashMap<>();
-        }
-        return ore.serialize();
-    }
-
-    @Override
     protected Ore deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Ore.deserialize(map, getName());
     }

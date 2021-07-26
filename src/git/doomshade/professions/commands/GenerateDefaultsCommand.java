@@ -82,7 +82,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 // "items: '1': object:"
                 ConfigurationSection objectSection = Objects.requireNonNull(itemSection).isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
 
-                final Map<String, Object> serializedObject = itemType.getSerializedObject();
+                final Map<String, Object> serializedObject = itemType.serialize();
                 if (serializedObject == null) {
                     ProfessionLogger.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
                 } else {

@@ -43,8 +43,11 @@ import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.SerializationRegistry;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -56,8 +59,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.bukkit.DynmapPlugin;
 import org.jetbrains.annotations.NotNull;
-import ru.tehkode.permissions.PermissionManager;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -74,15 +75,14 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup, IProfessionAPI {
 
+    private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
     private static Professions instance;
     private static boolean diabloLike = false;
     private static ProfessionManager profMan;
     private static EventManager eventMan;
     private static GUIManager guiManager;
-    private static PermissionManager permMan;
+    private static LuckPerms permMan;
     private static Economy econ;
-
-    private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
     private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
 
     private FileConfiguration configLoader;
@@ -110,8 +110,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         return MarkerManager.getInstance();
     }
 
-    @Nullable
-    public static PermissionManager getPermissionManager() {
+    public static LuckPerms getPermissionManager() {
         return permMan;
     }
 
@@ -124,11 +123,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         return instance;
     }
 
-    /**
-     * @return the {@link ProfessionManager} instance
-     */
-    public static ProfessionManager getProfMan() {
-        return profMan;
+    private static void setInstance(Professions instance) {
+        Professions.instance = instance;
     }
 
     /**
@@ -144,7 +140,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
 
 
     /**
-     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
+     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+     * only to save text resources in UTF-8 formatting.
      *
      * @param resource the path of file
      * @param replace  whether or not to replace if the file already exists
@@ -153,69 +150,13 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         instance.saveResource(resource, replace);
     }
 
-    private static void setInstance(Professions instance) {
-        Professions.instance = instance;
-    }
-
-    @Override
-    public void onEnable() {
-        setInstance(this);
-        hookPlugins();
-
-        profMan = ProfessionManager.getInstance();
-        eventMan = EventManager.getInstance();
-
-        try {
-            IOManager.setupFiles();
-            registerSetups();
-            setup();
-        } catch (Exception e) {
-            ProfessionLogger.logError(e);
-        }
-
-        // Hook dynmap after setups as it uses config
-        hookPlugin("dynmap", x -> {
-            // sets the dynmap plugin to marker manager
-            MarkerManager.createInstance(DynmapPlugin.plugin);
-            return true;
-        });
-        scheduleTasks();
-
-        registerListeners();
-
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                itemType.onPluginEnable();
-            }
-        }
-    }
-
-    @Override
-    public void onDisable() {
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                itemType.onPluginDisable();
-            }
-        }
-        Spawnable.despawnAll(x -> true);
-        cleanup();
-        Bukkit.getScheduler().cancelTasks(this);
-        try {
-            IOManager.saveFiles();
-        } catch (IOException e) {
-            ProfessionLogger.logError(e);
-        }
-        IOManager.closeLogFile();
-    }
-
-
     /**
      * Reloads the plugin
      */
     public boolean reload() {
         boolean successful = true;
 
-        // call before reload
+        // call before reload on item types
         Spawnable.despawnAll(x -> true);
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
@@ -271,61 +212,91 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     }
 
     /**
-     * Registers a setup class
+     * Logs an exception error
      *
-     * @param setup the setup to register
+     * @param errMsg the error message
+     * @param e      the exception
      */
-    public void registerSetup(ISetup setup) {
-        if (!SETUPS.contains(setup))
-            SETUPS.add(setup);
+    private void logExError(String errMsg, Throwable e) {
+        ProfessionLogger.log(errMsg.concat(". Check log file for exception message."));
+        ProfessionLogger.logError(e);
+    }
+
+    @Override
+    public @NotNull FileConfiguration getConfig() {
+        return configLoader;
     }
 
     /**
-     * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
-     *
-     * @param resourcePath the path of resource
-     * @param replace      whether or not to replace if the file already exists
-     * @param fileName     the file name
+     * Reloads the config
      */
-    public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
-        if (resourcePath == null || resourcePath.isEmpty()) {
-            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
-        }
+    @Override
+    public void reloadConfig() {
+        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
+    }
 
-        resourcePath = resourcePath.replace('\\', '/');
-        Reader in = this.getTextResource(resourcePath);
-        if (in == null) {
-            throw new IllegalArgumentException("The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
-        }
+    /**
+     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+     * only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of file
+     * @param replace      whether or not to replace if the file already exists
+     */
+    @Override
+    public void saveResource(@NotNull String resourcePath, boolean replace) throws IllegalArgumentException {
+        saveResource(resourcePath, resourcePath, replace);
+    }
 
-        File outFile = new File(this.getDataFolder(), fileName);
-        int lastIndex = resourcePath.lastIndexOf(47);
-        File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
-        if (!outDir.exists()) {
-            outDir.mkdirs();
+    @Override
+    public void onDisable() {
+        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onPluginDisable();
+            }
         }
+        Spawnable.despawnAll(x -> true);
+        cleanup();
+        Bukkit.getScheduler().cancelTasks(this);
+        try {
+            IOManager.saveFiles();
+        } catch (IOException e) {
+            ProfessionLogger.logError(e);
+        }
+        IOManager.closeLogFile();
+    }
+
+    @Override
+    public void onEnable() {
+        setInstance(this);
+        hookPlugins();
+
+        profMan = ProfessionManager.getInstance();
+        eventMan = EventManager.getInstance();
+        SerializationRegistry.init();
 
         try {
-            if (!outFile.exists() || replace) {
-
-                // NOPES: UTF-16, ISO, UTF-16BE
-                OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
-                char[] buf = new char[1024];
-
-                int len;
-
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-
-                out.close();
-                in.close();
-            }
-        } catch (IOException e) {
-            ProfessionLogger.log("Could not save " + outFile.getName() + " to " + outFile);
+            IOManager.setupFiles();
+            registerSetups();
+            setup();
+        } catch (Exception e) {
             ProfessionLogger.logError(e);
         }
 
+        // Hook dynmap after setups as it uses config
+        hookPlugin("dynmap", x -> {
+            // sets the dynmap plugin to marker manager
+            MarkerManager.createInstance(DynmapPlugin.plugin);
+            return true;
+        });
+        scheduleTasks();
+
+        registerListeners();
+
+        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+            for (ItemType<?> itemType : holder) {
+                itemType.onPluginEnable();
+            }
+        }
     }
 
     @Override
@@ -350,41 +321,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
                 ProfessionLogger.logError(e);
             }
         }
-    }
-
-    /**
-     * Reloads the config
-     */
-    @Override
-    public void reloadConfig() {
-        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
-    }
-
-    /**
-     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made only to save text resources in UTF-8 formatting.
-     *
-     * @param resourcePath the path of file
-     * @param replace      whether or not to replace if the file already exists
-     */
-    @Override
-    public void saveResource(@NotNull String resourcePath, boolean replace) throws IllegalArgumentException {
-        saveResource(resourcePath, resourcePath, replace);
-    }
-
-    @Override
-    public @NotNull FileConfiguration getConfig() {
-        return configLoader;
-    }
-
-    /**
-     * Logs an exception error
-     *
-     * @param errMsg the error message
-     * @param e      the exception
-     */
-    private void logExError(String errMsg, Throwable e) {
-        ProfessionLogger.log(errMsg.concat(". Check log file for exception message."));
-        ProfessionLogger.logError(e);
     }
 
     /**
@@ -428,6 +364,11 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         registerSetup(ProfessionManager.getInstance());
     }
 
+    private void registerCommandHandler(AbstractCommandHandler commandHandler) {
+        AbstractCommandHandler.register(commandHandler);
+        registerSetup(commandHandler);
+    }
+
     private void registerListeners() {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new UserListener(), this);
@@ -435,11 +376,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         pm.registerEvents(new PluginProfessionListener(), this);
         pm.registerEvents(new OreEditListener(), this);
         pm.registerEvents(new JewelcraftingListener(), this);
-    }
-
-    private void registerCommandHandler(AbstractCommandHandler commandHandler) {
-        AbstractCommandHandler.register(commandHandler);
-        registerSetup(commandHandler);
     }
 
     private void scheduleTasks() {
@@ -474,7 +410,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             return true;
         });
         hookPlugin("Vault", x -> {
-            RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
+            RegisteredServiceProvider<Economy> rsp =
+                    this.getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp == null) {
                 return false;
             }
@@ -482,8 +419,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             econ = rsp.getProvider();
             return true;
         });
-        hookPlugin("PermissionsEx", x -> {
-            permMan = PermissionsEx.getPermissionManager();
+        hookPlugin("LuckPerms", x -> {
+            permMan = LuckPermsProvider.get();
             return true;
         });
 
@@ -497,6 +434,17 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             return true;
         });
 
+    }
+
+    /**
+     * Registers a setup class
+     *
+     * @param setup the setup to register
+     */
+    public void registerSetup(ISetup setup) {
+        if (!SETUPS.contains(setup)) {
+            SETUPS.add(setup);
+        }
     }
 
     private void hookPlugin(String plugin, Predicate<Plugin> func) {
@@ -520,9 +468,66 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         }
     }
 
+    /**
+     * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+     * only to save text resources in UTF-8 formatting.
+     *
+     * @param resourcePath the path of resource
+     * @param replace      whether or not to replace if the file already exists
+     * @param fileName     the file name
+     */
+    public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
+        if (resourcePath == null || resourcePath.isEmpty()) {
+            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+        }
+
+        resourcePath = resourcePath.replace('\\', '/');
+        Reader in = this.getTextResource(resourcePath);
+        if (in == null) {
+            throw new IllegalArgumentException(
+                    "The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
+        }
+
+        File outFile = new File(this.getDataFolder(), fileName);
+        int lastIndex = resourcePath.lastIndexOf(47);
+        File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
+        if (!outDir.exists()) {
+            outDir.mkdirs();
+        }
+
+        try {
+            if (!outFile.exists() || replace) {
+
+                // NOPES: UTF-16, ISO, UTF-16BE
+                OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
+                char[] buf = new char[1024];
+
+                int len;
+
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+
+                out.close();
+                in.close();
+            }
+        } catch (IOException e) {
+            ProfessionLogger.log("Could not save " + outFile.getName() + " to " + outFile);
+            ProfessionLogger.logError(e);
+        }
+
+    }
+
     @Override
     public IProfessionManager getProfessionManager() {
         return getProfMan();
+    }
+
+    /**
+     * @return the {@link ProfessionManager} instance
+     */
+    public static ProfessionManager getProfMan() {
+        return profMan;
     }
 
     @Override

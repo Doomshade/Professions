@@ -35,18 +35,9 @@ public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     }
 
     @Override
-    public Map<String, Object> getSerializedObject() {
-        Map<String, Object> map = new HashMap<>();
-        Enchant ench = getObject();
-        if (ench != null)
-            map.put(ENCHANT, ench.serialize());
-        return map;
-    }
-
-    @Override
     protected Enchant deserializeObject(Map<String, Object> map) {
         try {
-            return Enchant.deserialize(((MemorySection) map.get(ENCHANT)).getValues(true));
+            return Enchant.deserialize(map);
         } catch (InitializationException e) {
             return null;
         }

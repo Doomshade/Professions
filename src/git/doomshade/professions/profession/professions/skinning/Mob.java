@@ -1,6 +1,14 @@
 package git.doomshade.professions.profession.professions.skinning;
 
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.EntityType;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.CONFIG_NAME;
+import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.ENTITY;
 
 /**
  * Custom class for {@link PreyItemType}
@@ -8,7 +16,7 @@ import org.bukkit.entity.EntityType;
  *
  * @author Doomshade
  */
-public class Mob {
+public class Mob implements ConfigurationSerializable {
     final String configName;
     final EntityType type;
 
@@ -25,4 +33,11 @@ public class Mob {
         return !configName.isEmpty();
     }
 
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        final HashMap<String, Object> map = new HashMap<>();
+        map.put(ENTITY.s, type.name());
+        map.put(CONFIG_NAME.s, configName);
+        return map;
+    }
 }

@@ -195,7 +195,7 @@ public final class ItemUtils implements ISetup {
     public static Map<String, Object> serialize(final ItemStack item) {
 
         if (item == null) {
-            return null;
+            return new HashMap<>();
         }
 
 
@@ -548,6 +548,7 @@ public final class ItemUtils implements ISetup {
         return desc;
     }
 
+    // TODO move this to IO and pass down ConfigurationSection instead of the map
     /**
      * @param clazz the {@link ItemType} class
      * @param id    the {@link ItemType#getFileId()}

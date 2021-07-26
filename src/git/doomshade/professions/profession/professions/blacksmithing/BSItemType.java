@@ -6,33 +6,26 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 import git.doomshade.professions.api.item.CraftableItemType;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
+import org.bukkit.configuration.serialization.DelegateDeserialization;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class BSItemType extends CraftableItemType<ItemStack> {
+public class BSItemType extends CraftableItemType<BSItemStack> {
     /**
      * Constructor for creation of the item type object
      *
      * @param object
      */
-    public BSItemType(ItemStack object) {
+    public BSItemType(BSItemStack object) {
         super(object);
     }
 
     @Override
-    public Map<String, Object> getSerializedObject() {
-        if (getObject() != null) {
-            return ItemUtils.serialize(getObject());
-        }
-        return new HashMap<>();
-    }
-
-    @Override
-    protected ItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    protected BSItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         try {
-            return ItemUtils.deserialize(map);
+            return new BSItemStack(ItemUtils.deserialize(map));
         } catch (ConfigurationException | InitializationException e) {
             ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize blacksmith ItemStack from file.");

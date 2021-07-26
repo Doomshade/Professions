@@ -108,7 +108,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             int amountOfItems = getAmountOfItems(recipe.getResult(), hrac, e);
 
             // get the event to modify it before calling it
-            ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((ShapedRecipe) recipe), CustomRecipe.class);
+            /*ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((ShapedRecipe) recipe), CustomRecipe.class);
             if (event == null) {
                 return;
             }
@@ -120,7 +120,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             callEvent(event);
 
             // check if event was cancelled, cancel the craft event if so
-            e.setCancelled(event.isCancelled());
+            e.setCancelled(event.isCancelled());*/
 
         }
     }

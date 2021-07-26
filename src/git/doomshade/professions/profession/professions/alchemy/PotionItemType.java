@@ -7,7 +7,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -22,14 +21,6 @@ public class PotionItemType extends CraftableItemType<Potion> {
     public PotionItemType(Potion object) {
         super(object);
         setResult(Potion.EXAMPLE_POTION.getItem());
-    }
-
-    @Override
-    public Map<String, Object> getSerializedObject() {
-        if (getObject() != null) {
-            return getObject().serialize();
-        }
-        return new HashMap<>();
     }
 
     @Override

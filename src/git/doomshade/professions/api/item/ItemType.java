@@ -24,6 +24,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -51,7 +52,8 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * @author Doomshade
  * @see CraftableItemType
  */
-public abstract class ItemType<T> implements ConfigurationSerializable, Comparable<ItemType<T>> {
+public abstract class ItemType<T extends ConfigurationSerializable> implements ConfigurationSerializable,
+        Comparable<ItemType<T>> {
 
     public static final String KEY = "items";
 
@@ -93,7 +95,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      *                                  constructor
      */
     @SuppressWarnings("all")
-    public static <T, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object)
+    public static <T extends ConfigurationSerializable, Obj extends ItemType<T>> Obj getExampleItemType(Class<Obj> clazz, T object)
             throws IllegalArgumentException {
         try {
             return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
@@ -183,6 +185,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         // object deserialization
         MemorySection objSection = (MemorySection) map.get(OBJECT.s);
         try {
+            ConfigurationSerialization.deserializeObject(objSection.getValues(true), this.getClass());
             setObject(deserializeObject(objSection.getValues(true)));
         } catch (ProfessionObjectInitializationException e) {
             ProfessionLogger.log(
@@ -198,7 +201,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
      * @return the ID number in the file
      *
      * @throws UnsupportedOperationException if this method is called on the example ItemType
-     * @see ItemType#getExampleItemType(Class, Object)
+     * @see ItemType#getExampleItemType(Class, ConfigurationSerializable)
      */
     public final int getFileId() throws UnsupportedOperationException {
         if (fileId < 0) {
@@ -266,7 +269,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @Override
     public @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(OBJECT.s, getSerializedObject());
+        map.put(OBJECT.s, item.serialize());
         map.put(EXP.s, exp);
         map.put(LEVEL_REQ.s, levelReq);
         map.put(NAME.s, name);
@@ -280,13 +283,6 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
         map.put(INVENTORY_REQUIREMENTS.s, getInventoryRequirements().serialize());
         return map;
     }
-
-    /**
-     * This is basically a {@link ConfigurationSerializable#serialize()} but for the specific object.
-     *
-     * @return the map of serialization of the object
-     */
-    public abstract Map<String, Object> getSerializedObject();
 
     /**
      * @return the cost for training this item
@@ -500,7 +496,7 @@ public abstract class ItemType<T> implements ConfigurationSerializable, Comparab
     @SuppressWarnings("all")
     public String toString() {
         StringBuilder sb = new StringBuilder()
-                .append(OBJECT + ": " + getSerializedObject().toString())
+                .append(OBJECT + ": " + item.serialize().toString())
                 .append("\n")
                 .append(EXP + ": " + exp)
                 .append("\n")

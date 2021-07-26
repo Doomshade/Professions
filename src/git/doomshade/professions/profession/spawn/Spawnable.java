@@ -143,9 +143,9 @@ public abstract class Spawnable
         for (T el : iterable) {
 
             // el.get() = function, that transforms a spawnable element instance into elementClass instance
-            if (el.get() != null) {
-                final Spawnable spawn = el.get().apply(block);
-
+            final Function<Block, ? extends Spawnable> func = el.get();
+            if (func != null) {
+                final Spawnable spawn = func.apply(block);
                 if (spawn != null) {
                     return spawn;
                 }
@@ -172,6 +172,15 @@ public abstract class Spawnable
         };
     }
 
+    /**
+     * Attempts to retrieve a spawnable element based on the block data
+     *
+     * @param block the block to check for
+     *
+     * @return the spawnable element
+     *
+     * @throws Utils.SearchNotFoundException if the block is not a spawnable element
+     */
     public static Spawnable of(Block block) throws Utils.SearchNotFoundException {
         for (HashMap<String, Spawnable> e : SPAWNABLE_ELEMENTS.values()) {
 
@@ -184,6 +193,18 @@ public abstract class Spawnable
         throw new Utils.SearchNotFoundException();
     }
 
+    /**
+     * Deserializes any implementations of this class
+     *
+     * @param map                the serialization map
+     * @param clazz              the class implementing this one that this will convert to
+     * @param conversionFunction the conversion function that converts a spawnable into the given class
+     * @param <T>                the desired class type
+     *
+     * @return the desired object
+     *
+     * @throws ProfessionObjectInitializationException if an exception occured during deserialization
+     */
     public static <T extends Spawnable> T deserialize(
             Map<String, Object> map,
             Class<T> clazz,
@@ -204,9 +225,11 @@ public abstract class Spawnable
      *                           everything else is an non-null, thus usable) If all keys are present, the exception
      *                           argument is {@code null}
      * @param clazz              the class we are converting to (here just for stack trace purposes)
-     * @param <T>                the desired object type
+     * @param <T>                the desired class type
      *
      * @return the desired object
+     *
+     * @throws ProfessionObjectInitializationException if an exception occured during deserialization
      */
     public static <T extends Spawnable> T deserialize(
             Map<String, Object> map,
@@ -289,6 +312,12 @@ public abstract class Spawnable
         doForAllElements(spawnPointFilter, action);
     }
 
+    /**
+     * Performs an action for all elements with a filter
+     *
+     * @param spawnPointFilter the filter
+     * @param action           the action
+     */
     private static void doForAllElements(Predicate<ISpawnPoint> spawnPointFilter, Consumer<ISpawnPoint> action) {
         SPAWNABLE_ELEMENTS.values()
                 .forEach(x -> x.values()
@@ -312,6 +341,9 @@ public abstract class Spawnable
         doForAllElements(spawnPointFilter, action);
     }
 
+    /**
+     * @return all known spawnable elements (e.g. all herbs possible herbs)
+     */
     public Map<String, Spawnable> getElements() {
         return ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(getClass()));
     }
@@ -425,33 +457,21 @@ public abstract class Spawnable
         return markerIcon;
     }
 
-    /**
-     * @return the particle data about this location element if there should be particles played, {@code null} otherwise
-     */
     @Override
     public final ParticleData getParticleData() {
         return particleData;
     }
 
-    /**
-     * @return the material of the location's block
-     */
     @Override
     public final Material getMaterial() {
         return material;
     }
 
-    /**
-     * @return the material data because of special blocks suck as flowers
-     */
     @Override
     public final byte getMaterialData() {
         return materialData;
     }
 
-    /**
-     * @return the name of the element
-     */
     @Override
     public final String getName() {
         return name;
@@ -551,7 +571,7 @@ public abstract class Spawnable
     }
 
     /**
-     * Saves this to file
+     * Saves this object to file
      */
     public final void update() {
         try {
@@ -565,7 +585,7 @@ public abstract class Spawnable
      * We need to save spawn points every time they are modified -  the item type holder provides {@link
      * ItemTypeHolder#save(boolean)} method
      *
-     * @return the item type holder of this class
+     * @return the item type holder of this object
      */
     @NotNull
     protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();

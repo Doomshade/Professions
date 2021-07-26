@@ -26,18 +26,6 @@ public class PreyItemType extends ItemType<Mob> {
     }
 
     @Override
-    public Map<String, Object> getSerializedObject() {
-        Map<String, Object> map = new HashMap<>();
-        final Mob mob = getObject();
-        if (mob == null) {
-            return map;
-        }
-        map.put(ENTITY.s, mob.type.name());
-        map.put(CONFIG_NAME.s, mob.configName);
-        return map;
-    }
-
-    @Override
     protected Mob deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
 
         Set<String> list = Utils.getMissingKeys(map, PreyEnum.values());

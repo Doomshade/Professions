@@ -8,6 +8,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
@@ -15,7 +16,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,32 +27,28 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import static git.doomshade.professions.api.item.ItemTypeHolder.ItemTypeHolderEnum.*;
+
 /**
- * Holder for {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class, Object, Consumer)}.
+ * Manager of {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class,
+ * Object, Consumer)}.
  *
  * @param <Type> the ItemType
+ *
  * @author Doomshade
  * @version 1.0
  * @see IProfessionManager
  */
-public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Type> {
-
-    /**
-     * Keys in item type file
-     */
-    private static final String ERROR_MESSAGE = "error-message", SORTED_BY = "sorted-by", NEW_ITEMS_AVAILABLE_MESSAGE = "new-items-available-message";
-
-    /**
-     * List required for the ordering of item types
-     */
-    private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
-
-    private Comparator<Type> comparator = null;
-
+public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> implements Iterable<Type> {
     /**
      * The example item type (this item type should have an ID of -1)
      */
     private final Type itemType;
+    /**
+     * List required for the ordering of item types
+     */
+    private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
+    private Comparator<Type> comparator = null;
     /**
      * The error message
      */
@@ -96,27 +95,24 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
      * Adds defaults and saves files
      *
      * @param override whether to override or only add default
+     *
      * @throws IOException if the save is unsuccessful
      */
     public final void save(boolean override) throws IOException {
         File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
-        try {
-            loader.load(itemFile);
-        } catch (InvalidConfigurationException e) {
-            ProfessionLogger.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
-            ProfessionLogger.logError(e, false);
+        FileConfiguration loader = getLoader(itemFile);
+        if (loader == null) {
             return;
         }
         final List<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
+        loader.addDefault(ERROR_MESSAGE.s, errorMessage);
+        loader.addDefault(SORTED_BY.s, sortedBy);
+        loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage);
         if (override) {
-            loader.addDefault(ERROR_MESSAGE, errorMessage);
-            loader.addDefault(SORTED_BY, sortedBy);
-            loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
-        } else {
-            loader.set(ERROR_MESSAGE, errorMessage);
-            loader.set(SORTED_BY, sortedBy);
-            loader.set(NEW_ITEMS_AVAILABLE_MESSAGE, newItemsMessage);
+            loader.set(ERROR_MESSAGE.s, errorMessage);
+            loader.set(SORTED_BY.s, sortedBy);
+            loader.set(NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage);
+
         }
         ConfigurationSection itemsSection;
         if (loader.isConfigurationSection(ItemType.KEY)) {
@@ -126,15 +122,12 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
         }
 
         if (itemsSection != null) {
-            if (override) {
-                itemsSection.addDefault(String.valueOf(0), itemType.serialize());
-            }
+            itemsSection.addDefault(String.valueOf(0), itemType.serialize());
             if (!itemTypes.isEmpty()) {
                 for (int i = 0; i < itemTypes.size(); i++) {
                     ItemType<?> registeredObject = itemTypes.get(i);
+                    itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
                     if (override) {
-                        itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
-                    } else {
                         itemsSection.set(String.valueOf(i), registeredObject.serialize());
                     }
                 }
@@ -144,30 +137,42 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
         loader.save(itemFile);
     }
 
-
-    /**
-     * Loads the item type holder from file
-     *
-     * @throws IOException if an IO error occurs
-     */
-    @SuppressWarnings("all")
-    public void load() throws IOException {
-        File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
+    @Nullable
+    private FileConfiguration getLoader(File itemFile) throws IOException {
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
         } catch (InvalidConfigurationException e) {
-            ProfessionLogger.log("Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING extra to the file!)", Level.WARNING);
+            ProfessionLogger.log(
+                    "Could not load file as yaml exception has been thrown (make sure you haven't added ANYTHING " +
+                            "extra to the file!)",
+                    Level.WARNING);
             ProfessionLogger.logError(e, false);
+            return null;
+        }
+        return loader;
+    }
+
+
+    /**
+     * Loads the item type holder from file
+     *
+     * @throws IOException the item type file could not be loaded
+     */
+    public void load() throws IOException {
+        File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
+        FileConfiguration loader = getLoader(itemFile);
+        if (loader == null) {
             return;
         }
 
         // TODO make a new method for this
-        this.errorMessage = loader.getStringList(ERROR_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
+        this.errorMessage = loader.getStringList(
+                ERROR_MESSAGE.s);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
 
         this.itemTypes.clear();
         Comparator<ItemType<?>> comparator = null;
-        for (String st : loader.getStringList(SORTED_BY)) {
+        for (String st : loader.getStringList(SORTED_BY.s)) {
             SortType sortType = SortType.getSortType(st);
             if (comparator == null) {
                 comparator = sortType.getComparator();
@@ -175,10 +180,14 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
                 comparator = comparator.thenComparing(sortType.getComparator());
             }
         }
-        this.comparator = comparator == null ? (Comparator<Type>) SortType.NAME.getComparator() : (Comparator<Type>) comparator;
+        this.comparator =
+                comparator == null ? (Comparator<Type>) SortType.NAME.getComparator() : (Comparator<Type>) comparator;
 
         // TODO
-        this.newItemsMessage = loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE);//ItemUtils.getDescription(itemType, loader.getStringList(NEW_ITEMS_AVAILABLE_MESSAGE), null);
+        this.newItemsMessage = loader.getStringList(
+                NEW_ITEMS_AVAILABLE_MESSAGE.s);
+        //ItemUtils.getDescription(itemType, loader.getStringList
+        // (NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
         Collection<Integer> keys = itemsSection.getKeys(false)
@@ -195,7 +204,9 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
                     itemTypes.put(i, deserializedItemType);
                 }
             } catch (Exception e) {
-                ProfessionLogger.log("Could not deserialize " + ItemUtils.getItemTypeFile(itemType.getClass()).getName() + " with id " + i, Level.WARNING);
+                ProfessionLogger.log(
+                        "Could not deserialize " + ItemUtils.getItemTypeFile(itemType.getClass()).getName() +
+                                " with id " + i, Level.WARNING);
                 ProfessionLogger.logError(e, !(e instanceof InitializationException));
                 successInit = false;
                 continue;
@@ -204,9 +215,14 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
 
         if (!successInit) {
             try {
-                final CommandHandler instance = CommandHandler.getInstance(CommandHandler.class);
-                if (instance != null)
-                    ProfessionLogger.log("Could not deserialize all item types. Usage of " + ChatColor.stripColor(instance.infoMessage(instance.getCommand(GenerateDefaultsCommand.class))) + " is advised.");
+                final CommandHandler cmdHandler = CommandHandler.getInstance(CommandHandler.class);
+                if (cmdHandler != null) {
+                    ProfessionLogger.log(
+                            String.format("Could not deserialize all item types. Usage of %s is advised.",
+                                    ChatColor.stripColor(
+                                            cmdHandler.infoMessage(
+                                                    cmdHandler.getCommand(GenerateDefaultsCommand.class)))));
+                }
             } catch (Utils.SearchNotFoundException ignored) {
             }
         }
@@ -253,5 +269,28 @@ public class ItemTypeHolder<T, Type extends ItemType<T>> implements Iterable<Typ
     @Override
     public @NotNull Iterator<Type> iterator() {
         return itemTypes.values().iterator();
+    }
+
+    enum ItemTypeHolderEnum implements FileEnum {
+        ERROR_MESSAGE("error-message"),
+        SORTED_BY("sorted-by"),
+        NEW_ITEMS_AVAILABLE_MESSAGE("new-items-available-message");
+
+        private final String s;
+
+        ItemTypeHolderEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public EnumMap<ItemTypeHolderEnum, Object> getDefaultValues() {
+            return new EnumMap<>(ItemTypeHolderEnum.class) {
+                {
+                    put(ERROR_MESSAGE, Arrays.asList("some", "error msg"));
+                    put(SORTED_BY, Arrays.asList(SortType.values()));
+                    put(NEW_ITEMS_AVAILABLE_MESSAGE, Arrays.asList("some", "new items message"));
+                }
+            };
+        }
     }
 }

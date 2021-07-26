@@ -8,24 +8,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class BarItemType extends CraftableItemType<ItemStack> {
+public class BarItemType extends CraftableItemType<BarItemStack> {
 
     /**
      * Constructor for creation of the item type object
      *
      * @param object
      */
-    public BarItemType(ItemStack object) {
+    public BarItemType(BarItemStack object) {
         super(object);
     }
 
     @Override
-    public Map<String, Object> getSerializedObject() {
-        return new HashMap<>();
-    }
-
-    @Override
-    protected ItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    protected BarItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return null;
     }
 

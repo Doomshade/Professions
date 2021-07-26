@@ -5,6 +5,7 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.user.User;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.PluginManager;
 
 import javax.annotation.Nullable;
@@ -37,7 +38,7 @@ public final class EventManager {
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    public <T, Item extends ItemType<T>> Item getItemType(T object, Class<Item> itemTypeClass) {
+    public <T extends ConfigurationSerializable, Item extends ItemType<T>> Item getItemType(T object, Class<Item> itemTypeClass) {
         if (object == null) {
             return null;
         }

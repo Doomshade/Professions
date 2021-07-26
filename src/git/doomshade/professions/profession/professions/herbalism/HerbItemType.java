@@ -6,7 +6,6 @@ import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class HerbItemType extends ItemType<Herb> {
@@ -20,14 +19,6 @@ public class HerbItemType extends ItemType<Herb> {
      */
     public HerbItemType(Herb object) {
         super(object);
-    }
-
-    @Override
-    public Map<String, Object> getSerializedObject() {
-        if (getObject() != null) {
-            return getObject().serialize();
-        }
-        return new HashMap<>();
     }
 
     @Override

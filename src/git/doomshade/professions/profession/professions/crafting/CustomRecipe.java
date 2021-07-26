@@ -16,15 +16,11 @@ import org.bukkit.inventory.ShapedRecipe;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class CustomRecipe extends ItemType<ShapedRecipe> {
-    public static final NamespacedKey NMS_KEY = new NamespacedKey(Professions.getInstance(), "recipe");
+@Deprecated
+public class CustomRecipe /*extends ItemType<ShapedRecipe>*/ {
+    /*public static final NamespacedKey NMS_KEY = new NamespacedKey(Professions.getInstance(), "recipe");
     private static final String RESULT = "result", SHAPE = "shape", INGREDIENTS = "ingredients";
 
-    /**
-     * Constructor for creation of the item type object
-     *
-     * @param object
-     */
     public CustomRecipe(ShapedRecipe object) {
         super(object);
     }
@@ -133,6 +129,6 @@ public class CustomRecipe extends ItemType<ShapedRecipe> {
         // must register the recipe
         Bukkit.addRecipe(recipe);
         return recipe;
-    }
+    }*/
 
 }

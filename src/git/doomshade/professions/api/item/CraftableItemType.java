@@ -13,6 +13,7 @@ import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -36,7 +37,7 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
  * @author Doomshade
  * @version 1.0
  */
-public abstract class CraftableItemType<T> extends ItemType<T> implements ICraftable {
+public abstract class CraftableItemType<T extends ConfigurationSerializable> extends ItemType<T> implements ICraftable {
 
     private double craftingTime = 5d;
     private ItemStack result = ItemUtils.EXAMPLE_RESULT;

@@ -2,10 +2,8 @@ package git.doomshade.professions.enums;
 
 import git.doomshade.professions.api.item.ItemType;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * The sort type of item types in a profession GUI
@@ -35,11 +33,13 @@ public enum SortType {
 
     /**
      * @param input the string input that should be a sort type
+     *
      * @return {@code null} if the input is not an id of sort type, otherwise the sort type class
+     *
+     * @throws IllegalArgumentException if the input is invalid
      */
-    @Nullable
-    public static SortType getSortType(String input) {
-        if (input.isEmpty()) {
+    public static SortType getSortType(String input) throws IllegalArgumentException {
+        if (input == null || input.isEmpty()) {
             throw new IllegalArgumentException("Input cannot be empty!");
         }
         String copy = ChatColor.translateAlternateColorCodes('&', input);
@@ -50,13 +50,17 @@ public enum SortType {
                 return st;
             }
         }
-        return null;
+        throw new IllegalArgumentException("No sort type " + input + " found!");
     }
 
-    public void sort(List<ItemType<?>> list) {
-        list.sort(comparator);
+    @Override
+    public String toString() {
+        return s;
     }
 
+    /**
+     * @return the comparator for an item type
+     */
     public Comparator<ItemType<?>> getComparator() {
         return comparator;
     }

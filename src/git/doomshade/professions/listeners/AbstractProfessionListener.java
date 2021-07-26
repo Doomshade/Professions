@@ -5,6 +5,7 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -101,8 +102,8 @@ public abstract class AbstractProfessionListener implements Listener {
      * @return
      */
     @Nullable
-    public final <Obj, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(Player player, Obj item,
-                                                                             Class<T> itemTypeClass, Object... extras) {
+    public final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(Player player, Obj item,
+                                                                                                               Class<T> itemTypeClass, Object... extras) {
 
         if (player == null || item == null) {
             return null;
@@ -128,7 +129,7 @@ public abstract class AbstractProfessionListener implements Listener {
      * @return
      */
     @Nullable
-    protected final <Obj, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(Player player, Obj item,
+    protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(Player player, Obj item,
                                                                                Class<T> itemClass, Object... extras) {
         if (player == null || item == null) {
             return null;

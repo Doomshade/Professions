@@ -1,13 +1,13 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.Professions;
-import org.bukkit.World;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.user.User;
 import org.bukkit.entity.Player;
-import ru.tehkode.permissions.PermissionManager;
 
 public final class Permissions {
 
-    private static final PermissionManager manager = Professions.getPermissionManager();
+    private static final LuckPerms manager = Professions.getPermissionManager();
     public static String
             ADMIN = "prof.*",
             BUILDER = "prof.builder",
@@ -18,13 +18,8 @@ public final class Permissions {
     }
 
     public static boolean has(Player player, String permission) {
-        if (manager != null) {
-            return manager.has(player, permission);
-        }
-        return player.hasPermission(permission);
+        User user = manager.getPlayerAdapter(Player.class).getUser(player);
+        return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 
-    public static boolean has(Player player, String permission, World world) {
-        return manager != null && manager.has(player, permission, world.getName());
-    }
 }
