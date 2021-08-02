@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.user.User;
@@ -8,12 +32,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * <p> Prints information to the sender about a profession. The "message" list must not be an empty array in prof.yml, otherwise this prints nothing.
+ * <p> Prints information to the sender about a profession. The "message" list must not be an empty array in prof.yml,
+ * otherwise this prints nothing.
  * <p> Available arguments:
  * <ul>
  *     <li>level</li>
@@ -74,8 +101,10 @@ public class ProfessionInfoCommand extends AbstractCommand {
 
         // get a  better way of doing this..
         final String firstMessage = messages.get(0);
-        if (!firstMessage.isEmpty())
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage).replaceAll("\\{user}", user.getPlayer().getDisplayName()));
+        if (!firstMessage.isEmpty()) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', firstMessage)
+                    .replaceAll("\\{user}", user.getPlayer().getDisplayName()));
+        }
         Collection<UserProfessionData> profs = user.getProfessions()
                 .stream()
                 .map(x -> (UserProfessionData) x)
@@ -122,7 +151,8 @@ public class ProfessionInfoCommand extends AbstractCommand {
                 String reg = regex.name().toLowerCase().replaceAll("[_]", "-");
                 String replacement = regex.getReplacement(prof);
                 s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "}", replacement));
-                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}", ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
+                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}",
+                        ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
             }
             return s;
         }

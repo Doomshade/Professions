@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.api.item.ItemType;
@@ -48,7 +72,9 @@ public class EditItemTypeCommand extends AbstractCommand {
         setDescription("Edits something in item type file");
         setRequiresPlayer(false);
         files.clear();
-        files.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles())).map(x -> "\"".concat(x.getName()).concat("\"")).collect(Collectors.toSet()));
+        files.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles()))
+                .map(x -> "\"".concat(x.getName()).concat("\""))
+                .collect(Collectors.toSet()));
         addPermission(Permissions.ADMIN);
     }
 
@@ -109,7 +135,8 @@ public class EditItemTypeCommand extends AbstractCommand {
         }
         String[] values = String.join(" ", Arrays.asList(args).subList(i[0], args.length)).split(";");
         if (values.length == 0) {
-            sender.sendMessage("Cannot set " + path + " to empty value like that. If you really want to set it to empty, set the value to NULL");
+            sender.sendMessage("Cannot set " + path +
+                    " to empty value like that. If you really want to set it to empty, set the value to NULL");
             return;
         }
         String setValue = "";
@@ -157,7 +184,8 @@ public class EditItemTypeCommand extends AbstractCommand {
                                 break;
                             case "hand":
                                 if (!(sender instanceof Player)) {
-                                    getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set an item to a path!");
+                                    getAndRemoveLastUndoWithMessage(file, sender,
+                                            "You must be a player to set an item to a path!");
                                     return;
                                 }
                                 ItemStack hand = ((Player) sender).getInventory().getItemInMainHand();
@@ -173,7 +201,8 @@ public class EditItemTypeCommand extends AbstractCommand {
                                 break;
                             case "material":
                                 if (!(sender instanceof Player)) {
-                                    getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set a material to a path!");
+                                    getAndRemoveLastUndoWithMessage(file, sender,
+                                            "You must be a player to set a material to a path!");
                                     return;
                                 }
                                 hand = ((Player) sender).getInventory().getItemInMainHand();
@@ -183,7 +212,8 @@ public class EditItemTypeCommand extends AbstractCommand {
                                 break;
                             case "location":
                                 if (!(sender instanceof Player)) {
-                                    getAndRemoveLastUndoWithMessage(file, sender, "You must be a player to set a location to a path!");
+                                    getAndRemoveLastUndoWithMessage(file, sender,
+                                            "You must be a player to set a location to a path!");
                                     return;
                                 }
                                 setValue = "your current location";
@@ -206,7 +236,8 @@ public class EditItemTypeCommand extends AbstractCommand {
             try {
                 if (handler != null) {
                     final UndoEditCommand acmd = handler.getCommand(UndoEditCommand.class);
-                    String msg = handler.infoMessage(acmd).replaceAll("<" + acmd.args.get(true).get(0) + ">", "\"" + fileName + "\"");
+                    String msg = handler.infoMessage(acmd)
+                            .replaceAll("<" + acmd.args.get(true).get(0) + ">", "\"" + fileName + "\"");
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
@@ -228,7 +259,10 @@ public class EditItemTypeCommand extends AbstractCommand {
         } else if (args.length > i[0]) {
             if (file.exists()) {
                 FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-                list.addAll(loader.getKeys(true).stream().filter(x -> x.startsWith(args[i[0]].replaceAll("\"", ""))).collect(Collectors.toSet()));
+                list.addAll(loader.getKeys(true)
+                        .stream()
+                        .filter(x -> x.startsWith(args[i[0]].replaceAll("\"", "")))
+                        .collect(Collectors.toSet()));
             }
         }
 

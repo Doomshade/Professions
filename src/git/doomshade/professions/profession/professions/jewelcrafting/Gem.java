@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import com.google.common.collect.Sets;
@@ -59,7 +83,8 @@ public class Gem implements ConfigurationSerializable {
     //private static final InsertResult NO_GEM_SPACE_RESULT = new InsertResult(null, ResultEnum.NO_GEM_SPACE);
 
 
-    private Gem(String id, ItemStack gem, GemEffect gemEffect, String displayName, List<String> context, GemEquipmentSlot equipmentSlot) throws IllegalArgumentException {
+    private Gem(String id, ItemStack gem, GemEffect gemEffect, String displayName, List<String> context,
+                GemEquipmentSlot equipmentSlot) throws IllegalArgumentException {
 
         if (GEMS.containsKey(id)) {
             throw new IllegalArgumentException("Cannot register another gem with the same id! (" + id + ")");
@@ -67,7 +92,8 @@ public class Gem implements ConfigurationSerializable {
 
         this.equipmentSlot = equipmentSlot;
         if (equipmentSlot == null) {
-            throw new IllegalArgumentException("Invalid equipment slot. Valid equipment slots: " + Arrays.toString(GemEquipmentSlot.values()));
+            throw new IllegalArgumentException(
+                    "Invalid equipment slot. Valid equipment slots: " + Arrays.toString(GemEquipmentSlot.values()));
         }
         this.id = id;
         this.context = context;
@@ -117,6 +143,7 @@ public class Gem implements ConfigurationSerializable {
      * Checks for the NBT Tag of the ItemStack. If found, returns the gem
      *
      * @param item the item to check for
+     *
      * @return the gem if it actually is one
      */
     public static Optional<Gem> getGem(ItemStack item) {
@@ -208,14 +235,18 @@ public class Gem implements ConfigurationSerializable {
         final Set<FileEnum> missingKeysEnum = Utils.getMissingKeysEnum(map, values());
 
         if (!missingKeysEnum.isEmpty()) {
-            throw new ProfessionObjectInitializationException(GemItemType.class, missingKeysEnum.stream().map(Object::toString).collect(Collectors.toSet()));
+            throw new ProfessionObjectInitializationException(GemItemType.class,
+                    missingKeysEnum.stream().map(Object::toString).collect(Collectors.toSet()));
         }
         GemEquipmentSlot equipmentSlot;
         try {
             equipmentSlot = GemEquipmentSlot.valueOf((String) map.get(EQUIPMENT_SLOT.s));
         } catch (IllegalArgumentException e) {
-            ProfessionLogger.log("Available equipment slots: " + Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
-            throw new ProfessionObjectInitializationException(GemItemType.class, Collections.singletonList(EQUIPMENT_SLOT.s), ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
+            ProfessionLogger.log("Available equipment slots: " +
+                    Arrays.stream(GemEquipmentSlot.values()).map(Enum::name).collect(Collectors.joining(" ")));
+            throw new ProfessionObjectInitializationException(GemItemType.class,
+                    Collections.singletonList(EQUIPMENT_SLOT.s),
+                    ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
         }
         String id = (String) map.get(ID.s);
         String gemEffect = (String) map.get(GEM_EFFECT.s);
@@ -228,7 +259,9 @@ public class Gem implements ConfigurationSerializable {
             throw new ProfessionObjectInitializationException("Could not deserialize gem ItemStack from file");
         }
         String displayName = (String) map.get(DISPLAY_NAME.s);
-        displayName = displayName == null || displayName.isEmpty() ? displayName : ChatColor.translateAlternateColorCodes('&', displayName);
+        displayName = displayName == null || displayName.isEmpty() ?
+                displayName :
+                ChatColor.translateAlternateColorCodes('&', displayName);
 
         List<String> context = (List<String>) map.get(GEM_EFFECT_CONTEXT.s);
         return new Gem(id, item, IDS.get(gemEffect), displayName, context, equipmentSlot);
@@ -344,7 +377,9 @@ public class Gem implements ConfigurationSerializable {
     }
 
     public enum InsertResult {
-        INVALID_ITEM, NO_GEM_SPACE, SUCCESS
+        INVALID_ITEM,
+        NO_GEM_SPACE,
+        SUCCESS
     }
 
     @Override
@@ -363,8 +398,12 @@ public class Gem implements ConfigurationSerializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Gem gem1 = (Gem) o;
         return gem.equals(gem1.gem) &&
                 gemEffect.equals(gem1.gemEffect) &&
@@ -421,6 +460,8 @@ public class Gem implements ConfigurationSerializable {
     }
 
     public enum GemEquipmentSlot {
-        MAINHAND, OFFHAND, ARMOR
+        MAINHAND,
+        OFFHAND,
+        ARMOR
     }
 }

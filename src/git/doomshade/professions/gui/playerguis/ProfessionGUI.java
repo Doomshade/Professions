@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.gui.playerguis;
 
 import git.doomshade.guiapi.GUI;
@@ -6,13 +30,13 @@ import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.guiapi.GUIItem;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.listeners.PluginProfessionListener;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
@@ -122,7 +146,9 @@ public class ProfessionGUI extends GUI {
                 player.closeInventory();
                 final UUID uniqueId = player.getUniqueId();
                 PluginProfessionListener.PENDING_REPEAT_AMOUNT.put(uniqueId, task);
-                user.sendMessage(new Messages.MessageBuilder(Messages.Global.REPEAT_AMOUNT).player(user).profession(upd.getProfession()).build());
+                user.sendMessage(new Messages.MessageBuilder(Messages.Global.REPEAT_AMOUNT).player(user)
+                        .profession(upd.getProfession())
+                        .build());
 
                 // cancel the task after one minute
                 new BukkitRunnable() {

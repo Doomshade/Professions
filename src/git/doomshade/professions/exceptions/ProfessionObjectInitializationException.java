@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.exceptions;
 
 import git.doomshade.professions.io.ProfessionLogger;
@@ -33,12 +57,14 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         this(clazz, keys, NO_ID, reason);
     }
 
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id, ExceptionReason reason) {
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
+                                                   ExceptionReason reason) {
         this(clazz, keys, id, "", reason);
     }
 
     /**
-     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an ID of -1 (Magical number) and empty additional message
+     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an ID of -1 (Magical
+     * number) and empty additional message
      *
      * @param clazz             the item type class in which the error occurred
      * @param keys              the keys of missing keys
@@ -49,7 +75,8 @@ public class ProfessionObjectInitializationException extends InitializationExcep
     }
 
     /**
-     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an empty additional message
+     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an empty additional
+     * message
      *
      * @param clazz the item type class in which the error occurred
      * @param keys  the keys of missing keys
@@ -60,18 +87,21 @@ public class ProfessionObjectInitializationException extends InitializationExcep
     }
 
     /**
-     * The main constructor of this exception. Consider calling {@link ProfessionLogger#log(String, Level)} instead of {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
+     * The main constructor of this exception. Consider calling {@link ProfessionLogger#log(String, Level)} instead of
+     * {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
      *
      * @param clazz             the item type class in which the error occurred
      * @param keys              the missing keys
      * @param id                the ID of {@code ItemType}
      * @param additionalMessage the additional message to add at the end of exception
      */
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id, String additionalMessage) {
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
+                                                   String additionalMessage) {
         this(clazz, keys, id, additionalMessage, ExceptionReason.MISSING_KEYS);
     }
 
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id, String additionalMessage, ExceptionReason reason) {
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
+                                                   String additionalMessage, ExceptionReason reason) {
         super();
         this.reason = reason;
         this.keys = keys;
@@ -99,7 +129,8 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         String s = String.format("Could not fully deserialize object of %s.<br>Reason(s):<br>",
                 clazz.getSimpleName());
 
-        s = s.concat(String.format("- %s (%s)%s %s", reason, keys, id == -1 ? "" : " for id: " + id, additionalMessage));
+        s = s.concat(
+                String.format("- %s (%s)%s %s", reason, keys, id == -1 ? "" : " for id: " + id, additionalMessage));
 
         /*
          s_ids,
@@ -193,7 +224,8 @@ public class ProfessionObjectInitializationException extends InitializationExcep
 
 
     public enum ExceptionReason {
-        MISSING_KEYS("some of the keys are missing"), KEY_ERROR("keys have been assigned wrong value");
+        MISSING_KEYS("some of the keys are missing"),
+        KEY_ERROR("keys have been assigned wrong value");
 
         final String s;
 

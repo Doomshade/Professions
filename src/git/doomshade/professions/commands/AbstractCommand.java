@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.io.ProfessionLogger;
@@ -11,7 +35,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Class representing all the commands. This is not a {@link CommandExecutor}, the executor is the command handler registering this command!
+ * Class representing all the commands. This is not a {@link CommandExecutor}, the executor is the command handler
+ * registering this command!
  *
  * @author Doomshade
  * @version 1.0
@@ -40,6 +65,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * Partly deserializes a command (overrides all but {@code getId()} getter methods)
      *
      * @param map the map
+     *
      * @return partly deserialized command
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
@@ -104,7 +130,8 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 try {
                     st = Utils.cast(map.get(COMMAND));
                 } catch (ClassCastException e) {
-                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
+                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")",
+                            Level.SEVERE);
                 }
                 return st;
             }
@@ -154,6 +181,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * Compares commands to each other based on their command name
      *
      * @param o the other command to compare to
+     *
      * @return a comparison of command names
      */
     @Override
@@ -163,8 +191,12 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         AbstractCommand that = (AbstractCommand) o;
         return requiresPlayer == that.requiresPlayer &&
@@ -296,6 +328,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * Adds a required permissions for this command usage
      *
      * @param permissions the permissions
+     *
      * @see git.doomshade.professions.utils.Permissions
      */
     public final void addPermission(String... permissions) {

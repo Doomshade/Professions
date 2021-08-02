@@ -1,12 +1,36 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.profession.professions.mining;
 
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
-import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.Permissions;
@@ -27,7 +51,7 @@ public final class MiningProfession extends Profession {
 
     @Override
     public void onLoad() {
-        addItems(OreItemType.class);
+        utils.addItems(OreItemType.class);
     }
 
 
@@ -39,13 +63,13 @@ public final class MiningProfession extends Profession {
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
 
-        final ProfessionEvent<OreItemType> e = getEventUnsafe(event, OreItemType.class);
+        final ProfessionEvent<OreItemType> e = utils.getEventUnsafe(event, OreItemType.class);
 
         final User user = e.getPlayer();
         final Player player = user.getPlayer();
 
         // if player does not have profession -> do not continue with experience/drops
-        if (!playerHasProfession(e)) {
+        if (!utils.playerHasProfession(e)) {
 
             // if player at least has a permission of builder, do not cancel the event
             // cancel the event otherwise so players with no mining profession mine the ore!
@@ -55,7 +79,7 @@ public final class MiningProfession extends Profession {
 
         // UserProfessionData does not return null at this point as we checked that the player has this profession
         UserProfessionData upd = user.getProfessionData(getClass());
-        if (!playerMeetsLevelRequirements(e)) {
+        if (!utils.playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(upd);
             return;
@@ -66,7 +90,8 @@ public final class MiningProfession extends Profession {
         if (e.hasExtra(Location.class)) {
             Location loc = e.getExtra(Location.class);
             final OreItemType itemType = e.getItemType();
-            int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class).getDropAmount(upd, itemType);
+            int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class)
+                    .getDropAmount(upd, itemType);
             Ore ore = itemType.getObject();
 
             if (ore == null) {
@@ -76,7 +101,8 @@ public final class MiningProfession extends Profession {
             String message = player.getName() + " mined " + ore.getName();
 
             if (loc == null) {
-                ProfessionLogger.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" + new RuntimeException().getLocalizedMessage(), Level.WARNING);
+                ProfessionLogger.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" +
+                        new RuntimeException().getLocalizedMessage(), Level.WARNING);
                 return;
             }
 
@@ -95,7 +121,7 @@ public final class MiningProfession extends Profession {
             }
 
 
-            if (addExp(e)) {
+            if (utils.addExp(e)) {
                 message = message.concat(Utils.getReceiveXp(e.getExp()));
             }
             ProfessionLogger.log(message, Level.CONFIG);

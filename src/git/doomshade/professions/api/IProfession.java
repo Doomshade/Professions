@@ -22,46 +22,28 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.event;
+package git.doomshade.professions.api;
 
-import git.doomshade.professions.user.UserProfessionData;
-import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.event.ProfessionEventWrapper;
+import org.bukkit.event.Listener;
 
-/**
- * Called when a player loses exp
- *
- * @author Doomshade
- * @version 1.0
- */
-public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
-    private static final HandlerList handlerList = new HandlerList();
-    private double exp;
+public interface IProfession extends Listener, Comparable<Profession> {
+    /**
+     * @return the unique ID of this profession
+     */
+    String getID();
 
-    protected ProfessionExpLoseEvent(UserProfessionData data) {
-        super(data);
-    }
+    /**
+     * Called when an event related to this profession occurs
+     *
+     * @param e       the event
+     * @param <IType> the ItemType
+     */
+    <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> e);
 
-    public ProfessionExpLoseEvent(UserProfessionData data, double exp) {
-        this(data);
-        this.exp = exp;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlerList;
-    }
-
-    public double getExp() {
-        return exp;
-    }
-
-    public void setExp(double exp) {
-        this.exp = exp;
-    }
-
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlerList;
-    }
-
+    /**
+     * @return {@code true} if this profession is a subprofession, {@code false} otherwise
+     */
+    boolean isSubprofession();
 }

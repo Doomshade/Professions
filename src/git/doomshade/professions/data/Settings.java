@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
@@ -38,7 +62,8 @@ public final class Settings implements ISetup {
     private static boolean autoSave = true;
     private static boolean handleMineEvents = false;
 
-    // TODO: 08.04.2020 make this a BossBarOptions and create a new path for bossbars (adding the customizability for BossBars)
+    // TODO: 08.04.2020 make this a BossBarOptions and create a new path for bossbars (adding the customizability for
+    //  BossBars)
     private static boolean useBossBar = false;
     private static Collection<String> miningWorlds = new HashSet<>();
 
@@ -86,12 +111,15 @@ public final class Settings implements ISetup {
         }
     }
 
-    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz) throws IllegalArgumentException {
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Class<A> clazz)
+            throws IllegalArgumentException {
         final Optional<Profession> opt = Professions.getProfMan().getProfession(clazz);
-        return getProfessionSettings(opt.orElseThrow(() -> new IllegalArgumentException(clazz.getSimpleName() + " is not a registered profession!")));
+        return getProfessionSettings(opt.orElseThrow(
+                () -> new IllegalArgumentException(clazz.getSimpleName() + " is not a registered profession!")));
     }
 
-    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(Profession profession) {
+    public static <A extends Profession> AbstractProfessionSpecificSettings getProfessionSettings(
+            Profession profession) {
         try {
             return (AbstractProfessionSpecificSettings) Utils.findInIterable(SETTINGS, x -> {
                 if (x instanceof AbstractProfessionSpecificSettings) {
@@ -101,7 +129,8 @@ public final class Settings implements ISetup {
                 return false;
             });
         } catch (Utils.SearchNotFoundException e) {
-            throw new IllegalArgumentException(profession.getColoredName() + " settings is not a registered profession settings!");
+            throw new IllegalArgumentException(
+                    profession.getColoredName() + " settings is not a registered profession settings!");
         }
     }
 
@@ -139,10 +168,11 @@ public final class Settings implements ISetup {
             outdated = true;
         }
         ProfessionLogger.log(String.format("Missing \"%s\" variable!", section), LEVEL);
-        if (value == null)
+        if (value == null) {
             ProfessionLogger.log("Using default values.", LEVEL);
-        else
-            ProfessionLogger.log(String.format("Using %s as default value.", value.toString()), LEVEL);
+        } else {
+            ProfessionLogger.log(String.format("Using %s as default value.", value), LEVEL);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -186,12 +216,15 @@ public final class Settings implements ISetup {
     private void setupLang() throws IOException {
         final File langFolder = IOManager.getLangFolder();
         final String langString = setupVariable("lang", DEFAULT_PROPERTIES);
-        final File[] langs = langFolder.listFiles((dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null && name.startsWith(langString));
+        final File[] langs = langFolder.listFiles(
+                (dir, name) -> dir != null && dir.getPath().equals(langFolder.getPath()) && name != null &&
+                        name.startsWith(langString));
         if (langs != null && langs.length > 0) {
             langFile = langs[0];
         } else {
             Professions.createResource(IOManager.LANG_PATH + DEFAULT_PROPERTIES, false);
-            ProfessionLogger.log("No language starting with '" + langString + "' exists. Using default language (" + DEFAULT_PROPERTIES + ")");
+            ProfessionLogger.log("No language starting with '" + langString + "' exists. Using default language (" +
+                    DEFAULT_PROPERTIES + ")");
             langFile = new File(langFolder, DEFAULT_PROPERTIES);
         }
         lang = new YamlConfiguration();

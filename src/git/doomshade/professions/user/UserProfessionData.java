@@ -1,6 +1,33 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.user;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.Settings;
@@ -11,9 +38,6 @@ import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.event.ProfessionExpGainEvent;
 import git.doomshade.professions.event.ProfessionExpLoseEvent;
 import git.doomshade.professions.event.ProfessionLevelUpEvent;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.utils.Utils;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -114,7 +138,8 @@ public class UserProfessionData implements IUserProfessionData {
         // prints new possible items
         for (ItemTypeHolder<?, ?> itemTypeHolder : profession.getItems()) {
             try {
-                Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel()).forEach(y -> user.sendMessage(builder.itemType(y).build()));
+                Utils.findAllInIterable(itemTypeHolder, x -> x.getLevelReq() == getLevel())
+                        .forEach(y -> user.sendMessage(builder.itemType(y).build()));
             } catch (Utils.SearchNotFoundException ignored) {
 
             }
@@ -193,7 +218,8 @@ public class UserProfessionData implements IUserProfessionData {
 
     @Override
     public boolean train(ItemType<?> trainable) {
-        EconomyResponse response = Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getTrainableCost());
+        EconomyResponse response =
+                Professions.getEconomy().withdrawPlayer(getUser().getPlayer(), trainable.getTrainableCost());
         if (!response.transactionSuccess() || hasTrained(trainable)) {
             return false;
         }
@@ -208,6 +234,7 @@ public class UserProfessionData implements IUserProfessionData {
 
     /**
      * @param itemType the {@link ItemType} to check for
+     *
      * @return the current {@link SkillupColor} of itemType
      */
     public SkillupColor getSkillupColor(ItemType<?> itemType) {
@@ -216,8 +243,9 @@ public class UserProfessionData implements IUserProfessionData {
 
     @Override
     public void addExtra(String extra) {
-        if (!extra.isEmpty() && !hasExtra(extra))
+        if (!extra.isEmpty() && !hasExtra(extra)) {
             extras.add(translatedExtra(extra));
+        }
     }
 
     @Override

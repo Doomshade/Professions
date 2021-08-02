@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.user;
 
 import com.google.common.collect.ImmutableSet;
@@ -43,14 +67,14 @@ public final class User implements IUser {
     private final FileConfiguration loader;
     private final File file;
     private final ConfigurationSection profSection;
+    private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
     private Map<Class<?>, UserProfessionData> professions;
     private Map<ProfessionType, Integer> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
-    private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
 
     private User(Player player) throws IOException {
         this.player = player;
-        this.file = new File(IOManager.getPlayerFolder(), player.getUniqueId().toString() + ".yml");
+        this.file = new File(IOManager.getPlayerFolder(), player.getUniqueId() + ".yml");
         this.loader = YamlConfiguration.loadConfiguration(file);
         if (!file.exists()) {
             this.file.createNewFile();
@@ -64,10 +88,52 @@ public final class User implements IUser {
         this.setSuppressExpEvent(false);
     }
 
+    private void loadProfessions() {
+        this.professions = new HashMap<>();
+        profSection.getKeys(false)
+                .stream()
+                .map(x -> Professions.getProfMan().getProfession(x))
+                .forEach(opt -> opt.ifPresent(
+                        prof -> professions.put(prof.getClass(), new UserProfessionData(this, prof))));
+        usedProfessionTypes = new HashMap<>();
+        for (ProfessionType type : ProfessionType.values()) {
+            usedProfessionTypes.put(type, 0);
+        }
+
+        for (UserProfessionData upd : professions.values()) {
+            final Profession profession = upd.getProfession();
+
+            // don't register as used type if subprofession
+            if (profession.isSubprofession()) {
+                continue;
+            }
+
+            final ProfessionType professionType = profession.getProfessionType();
+            updateUsedProfessionTypes(professionType, true);
+        }
+
+        final MaxProfessionsSettings settings = Settings.getSettings(MaxProfessionsSettings.class);
+        final int maxProfessions = settings.getMaxProfessions(ProfessionType.PRIMARY) +
+                settings.getMaxProfessions(ProfessionType.SECONDARY);
+
+        // filter out subprofessions
+        if (professions.values().stream().filter(x -> !(x.getProfession().isSubprofession())).count() >
+                maxProfessions) {
+            final String message =
+                    player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
+            ProfessionLogger.log(message, Level.SEVERE);
+        }
+    }
+
+    private void updateUsedProfessionTypes(ProfessionType professionType, boolean add) {
+        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + (add ? 1 : -1));
+    }
+
     /**
      * Saves and unloads user
      *
      * @param player the player
+     *
      * @throws IOException ex
      */
     public static void unloadUser(Player player) throws IOException {
@@ -78,6 +144,7 @@ public final class User implements IUser {
      * Saves and unloads user
      *
      * @param user the user to unload
+     *
      * @throws IOException ex
      */
     public static void unloadUser(User user) throws IOException {
@@ -85,105 +152,10 @@ public final class User implements IUser {
         user.unloadUser();
     }
 
-    /**
-     * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded and then returned from memory.
-     *
-     * @param player the player
-     * @return an instance of {@code User}
-     * @throws IllegalArgumentException if player is null
-     */
-    public static User getUser(Player player) throws IllegalArgumentException {
-        Validate.notNull(player, "Player cannot be null");
-        try {
-            loadUser(player);
-        } catch (IOException e) {
-            ProfessionLogger.logError(e);
-        }
-        return USERS.get(player.getUniqueId());
-    }
-
-    /**
-     * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded and then returned from memory.
-     *
-     * @param uuid the uuid
-     * @return an instance of {@code User}
-     */
-    public static User getUser(UUID uuid) {
-        return getUser(Bukkit.getPlayer(uuid));
-    }
-
-    /**
-     * Returns a player from a [uuid].yml file
-     * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded and then returned from memory.
-     *
-     * @param file the file
-     * @return an instance of {@code User}
-     */
-    public static User getUser(File file) {
-        if (file == null || !file.exists()) {
-            return null;
-        }
-        String fileName = file.getName();
-        String substring = fileName.substring(0, fileName.length() - 4);
-        return getUser(UUID.fromString(substring));
-    }
-
-    /**
-     * Used to load user when logging in.
-     *
-     * @param player the player
-     * @throws IOException ex
-     */
-    public static void loadUser(Player player) throws IOException {
-        if (!isLoaded(player)) {
-            USERS.put(player.getUniqueId(), new User(player));
-        }
-    }
-
-    /**
-     * @param player the player
-     * @return {@code true} if the player is loaded, {@code false} otherwise
-     */
-    public static boolean isLoaded(Player player) {
-        return USERS.containsKey(player.getUniqueId());
-    }
-
-    /**
-     * Saves all loaded users
-     *
-     * @throws IOException ex
-     */
-    public static void saveUsers() throws IOException {
-        for (User user : USERS.values()) {
-            user.save();
-        }
-    }
-
-
     @Override
     public void unloadUser() {
         ACTIVE_POTIONS.forEach((x, y) -> y.cancel());
         USERS.remove(player.getUniqueId());
-    }
-
-    /**
-     * Whether or not this user can profess profession Calls
-     * {@link User#hasProfession(Profession)} and
-     * {@link User#hasProfessionType(ProfessionType)}
-     * {@link Profession#isSubprofession()}
-     *
-     * @param prof the profession to check
-     */
-    public boolean canProfess(Profession prof) {
-        return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType()) && !prof.isSubprofession();
-    }
-
-    /**
-     * @param type the profession type
-     * @return true if this user has already a profession of that type
-     */
-    private boolean hasProfessionType(ProfessionType type) {
-        return usedProfessionTypes.get(type) >= Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
     @Override
@@ -193,7 +165,8 @@ public final class User implements IUser {
             return true;
         } catch (Utils.SearchNotFoundException e) {
             if (profSection.isConfigurationSection(prof.getID())) {
-                throw new IllegalStateException(player.getName() + " has profession written in file but is not loaded!");
+                throw new IllegalStateException(
+                        player.getName() + " has profession written in file but is not loaded!");
             }
             return false;
         }
@@ -209,6 +182,26 @@ public final class User implements IUser {
 
         registerSubProfessions(prof);
         return true;
+    }
+
+    /**
+     * Whether or not this user can profess profession Calls {@link User#hasProfession(Profession)} and {@link
+     * User#hasProfessionType(ProfessionType)} {@link Profession#isSubprofession()}
+     *
+     * @param prof the profession to check
+     */
+    public boolean canProfess(Profession prof) {
+        return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType()) && !prof.isSubprofession();
+    }
+
+    /**
+     * @param type the profession type
+     *
+     * @return true if this user has already a profession of that type
+     */
+    private boolean hasProfessionType(ProfessionType type) {
+        return usedProfessionTypes.get(type) >=
+                Settings.getSettings(MaxProfessionsSettings.class).getMaxProfessions(type);
     }
 
     private void registerSubProfessions(Profession prof) {
@@ -253,22 +246,15 @@ public final class User implements IUser {
         return true;
     }
 
-    private void updateUsedProfessionTypes(ProfessionType professionType, boolean add) {
-        usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + (add ? 1 : -1));
-    }
-
     private void unregisterProfession(Profession prof) {
         professions.remove(prof.getClass());
         profSection.set(prof.getID(), null);
     }
 
-    /**
-     * Sends the user a message
-     *
-     * @param message the message to send
-     */
-    public void sendMessage(String... message) {
-        Arrays.asList(message).forEach(player::sendMessage);
+    @Override
+    public boolean addExp(double exp, Profession prof, ItemType<?> source) throws PlayerHasNoProfessionException {
+        UserProfessionData upd = getProfessionData(prof);
+        return upd.addExp(exp, source);
     }
 
     @Override
@@ -282,56 +268,17 @@ public final class User implements IUser {
     }
 
     @Override
-    public boolean addExp(double exp, Profession prof, ItemType<?> source) throws PlayerHasNoProfessionException {
-        UserProfessionData upd = getProfessionData(prof);
-        return upd.addExp(exp, source);
-    }
-
-    /**
-     * Adds levels to the player.
-     *
-     * @param level the level to add
-     * @param prof  the profession to add the level to
-     * @return {@link UserProfessionData#addLevel(int)}
-     */
-    public boolean addLevel(int level, Profession prof) throws PlayerHasNoProfessionException {
-        UserProfessionData upd = getProfessionData(prof);
-        return upd.addLevel(level);
-    }
-
-    /**
-     * Sets the exp of a profession
-     *
-     * @param exp  the exp to set
-     * @param prof the profession to set the exp for
-     * @see UserProfessionData#setExp(double)
-     */
-    public void setExp(double exp, Profession prof) throws PlayerHasNoProfessionException {
-        UserProfessionData upd = getProfessionData(prof);
-        upd.setExp(exp);
-    }
-
-    /**
-     * Sets the level of a profession
-     *
-     * @param level the level to set
-     * @param prof  the profession to set the level for
-     * @see UserProfessionData#setLevel(int)
-     */
-    public void setLevel(int level, Profession prof) {
-        UserProfessionData upd = getProfessionData(prof);
-        upd.setLevel(level);
-    }
-
-    @Override
     public UserProfessionData getProfessionData(Profession prof) throws PlayerHasNoProfessionException {
         return getProfessionData(prof.getClass());
     }
 
     @Override
-    public UserProfessionData getProfessionData(Class<? extends Profession> profClass) throws PlayerHasNoProfessionException {
+    public UserProfessionData getProfessionData(Class<? extends Profession> profClass)
+            throws PlayerHasNoProfessionException {
         final UserProfessionData upd = professions.get(profClass);
-        if (upd == null) throw new PlayerHasNoProfessionException(this, profClass.getSimpleName());
+        if (upd == null) {
+            throw new PlayerHasNoProfessionException(this, profClass.getSimpleName());
+        }
         return upd;
     }
 
@@ -366,6 +313,139 @@ public final class User implements IUser {
         this.suppressExpEvent = suppressExpEvent;
     }
 
+    /**
+     * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded
+     * and then returned from memory.
+     *
+     * @param player the player
+     *
+     * @return an instance of {@code User}
+     *
+     * @throws IllegalArgumentException if player is null
+     */
+    public static User getUser(Player player) throws IllegalArgumentException {
+        Validate.notNull(player, "Player cannot be null");
+        try {
+            loadUser(player);
+        } catch (IOException e) {
+            ProfessionLogger.logError(e);
+        }
+        return USERS.get(player.getUniqueId());
+    }
+
+    /**
+     * Used to load user when logging in.
+     *
+     * @param player the player
+     *
+     * @throws IOException ex
+     */
+    public static void loadUser(Player player) throws IOException {
+        if (!isLoaded(player)) {
+            USERS.put(player.getUniqueId(), new User(player));
+        }
+    }
+
+    /**
+     * @param player the player
+     *
+     * @return {@code true} if the player is loaded, {@code false} otherwise
+     */
+    public static boolean isLoaded(Player player) {
+        if (player == null) {
+            return false;
+        }
+        return USERS.containsKey(player.getUniqueId());
+    }
+
+    /**
+     * Returns a player from a [uuid].yml file If the player is loaded, this method returns the player from memory. If
+     * the player is not loaded, he is loaded and then returned from memory.
+     *
+     * @param file the file
+     *
+     * @return an instance of {@code User}
+     */
+    public static User getUser(File file) {
+        if (file == null || !file.exists()) {
+            return null;
+        }
+        String fileName = file.getName();
+        String substring = fileName.substring(0, fileName.length() - 4);
+        return getUser(UUID.fromString(substring));
+    }
+
+    /**
+     * If the player is loaded, this method returns the player from memory. If the player is not loaded, he is loaded
+     * and then returned from memory.
+     *
+     * @param uuid the uuid
+     *
+     * @return an instance of {@code User}
+     */
+    public static User getUser(UUID uuid) {
+        return getUser(Bukkit.getPlayer(uuid));
+    }
+
+    /**
+     * Saves all loaded users
+     *
+     * @throws IOException ex
+     */
+    public static void saveUsers() throws IOException {
+        for (User user : USERS.values()) {
+            user.save();
+        }
+    }
+
+    /**
+     * Sends the user a message
+     *
+     * @param message the message to send
+     */
+    public void sendMessage(String... message) {
+        Arrays.asList(message).forEach(player::sendMessage);
+    }
+
+    /**
+     * Adds levels to the player.
+     *
+     * @param level the level to add
+     * @param prof  the profession to add the level to
+     *
+     * @return {@link UserProfessionData#addLevel(int)}
+     */
+    public boolean addLevel(int level, Profession prof) throws PlayerHasNoProfessionException {
+        UserProfessionData upd = getProfessionData(prof);
+        return upd.addLevel(level);
+    }
+
+    /**
+     * Sets the exp of a profession
+     *
+     * @param exp  the exp to set
+     * @param prof the profession to set the exp for
+     *
+     * @see UserProfessionData#setExp(double)
+     */
+    public void setExp(double exp, Profession prof) throws PlayerHasNoProfessionException {
+        UserProfessionData upd = getProfessionData(prof);
+        upd.setExp(exp);
+    }
+
+    /**
+     * Sets the level of a profession
+     *
+     * @param level the level to set
+     * @param prof  the profession to set the level for
+     *
+     * @see UserProfessionData#setLevel(int)
+     */
+    public void setLevel(int level, Profession prof) {
+        UserProfessionData upd = getProfessionData(prof);
+        upd.setLevel(level);
+    }
+
     public void applyPotion(Potion potion) {
         if (isActivePotion(potion)) {
             return;
@@ -395,38 +475,6 @@ public final class User implements IUser {
             return null;
         }
         return profSection.getConfigurationSection(prof.getID());
-    }
-
-    private void loadProfessions() {
-        this.professions = new HashMap<>();
-        profSection.getKeys(false)
-                .stream()
-                .map(x -> Professions.getProfMan().getProfession(x))
-                .forEach(opt -> opt.ifPresent(
-                        prof -> professions.put(prof.getClass(), new UserProfessionData(this, prof))));
-        usedProfessionTypes = new HashMap<>();
-        for (ProfessionType type : ProfessionType.values()) {
-            usedProfessionTypes.put(type, 0);
-        }
-
-        for (UserProfessionData upd : professions.values()) {
-            final Profession profession = upd.getProfession();
-
-            // don't register as used type if subprofession
-            if (profession.isSubprofession()) continue;
-
-            final ProfessionType professionType = profession.getProfessionType();
-            updateUsedProfessionTypes(professionType, true);
-        }
-
-        final MaxProfessionsSettings settings = Settings.getSettings(MaxProfessionsSettings.class);
-        final int maxProfessions = settings.getMaxProfessions(ProfessionType.PRIMARY) + settings.getMaxProfessions(ProfessionType.SECONDARY);
-
-        // filter out subprofessions
-        if (professions.values().stream().filter(x -> !(x.getProfession().isSubprofession())).count() > maxProfessions) {
-            final String message = player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
-            ProfessionLogger.log(message, Level.SEVERE);
-        }
     }
 
     @Override

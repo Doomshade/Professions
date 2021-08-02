@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.io;
 
 import git.doomshade.professions.Professions;
@@ -62,9 +86,11 @@ public class ProfessionLogger {
     }
 
     public static void logError(Throwable e, boolean pluginError) {
-        log((pluginError ? "Internal" : "External") + " plugin error" + (!pluginError ? ", please check logs for further information." : ", please contact author with the stack trace from your log file."), Level.WARNING);
+        log((pluginError ? "Internal" : "External") + " plugin error" + (!pluginError ?
+                ", please check logs for further information." :
+                ", please contact author with the stack trace from your log file."), Level.WARNING);
         if (e != null && e.getStackTrace() != null) {
-            final String ss = e.toString() + "\n" + Arrays.stream(e.getStackTrace())
+            final String ss = e + "\n" + Arrays.stream(e.getStackTrace())
                     .map(StackTraceElement::toString)
                     .collect(Collectors.joining(",\n"));
             if (e.getMessage() != null) {
@@ -76,8 +102,8 @@ public class ProfessionLogger {
     }
 
     /**
-     * Logs a message. Levels >= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file.
-     * Levels >=900 will be displayed in red. Levels <=500 will be displayed in green.
+     * Logs a message. Levels >= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file. Levels
+     * >=900 will be displayed in red. Levels <=500 will be displayed in green.
      *
      * @param message the message to display
      * @param level   the log level
@@ -103,8 +129,9 @@ public class ProfessionLogger {
 
             IOManager.fos.println(time.concat(ChatColor.stripColor(message)));
 
-            if (level == Level.CONFIG)
+            if (level == Level.CONFIG) {
                 return;
+            }
         }
         Ansi.Color color = Ansi.Color.WHITE;
 
@@ -116,7 +143,9 @@ public class ProfessionLogger {
 
         Ansi ansi = Ansi.ansi().boldOff();
 
-        Professions.getInstance().getLogger().log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+        Professions.getInstance()
+                .getLogger()
+                .log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
 
     }
 }
