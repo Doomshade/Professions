@@ -271,7 +271,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
             Consumer<IType> additionalCommand) throws IOException {
         ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
         itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getItemType().getClass());
+        ITEMS.put(itemTypeHolder, itemTypeHolder.getExampleItemType().getClass());
     }
 
     @Override

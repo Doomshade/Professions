@@ -30,6 +30,9 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,15 +45,22 @@ import java.util.HashMap;
  *
  */
 public class IOManager {
+    public static final String LANG_PATH = "lang/";
     private static final Professions plugin = Professions.getInstance();
-
-    static PrintStream fos = null;
     private static final File CACHE_FOLDER = new File(plugin.getDataFolder(), "cache");
     private static final File PLAYER_FOLDER = new File(plugin.getDataFolder(), "playerdata");
     private static final File DATA_FOLDER = new File(plugin.getDataFolder(), "data");
     private static final File BACKUP_FOLDER = new File(plugin.getDataFolder(), "backup");
     private static final File LOGS_FOLDER;
     private static final File LOG_FILE;
+    private static final File FILTERED_LOGS_FOLDER = new File(plugin.getDataFolder(), "filtered logs");
+    private static final File ITEM_FOLDER = new File(plugin.getDataFolder(), "itemtypes");
+    private static final File PROFESSION_FOLDER = new File(plugin.getDataFolder(), "professions");
+    private static final File TRAINER_FOLDER = new File(plugin.getDataFolder(), "trainer gui");
+    private static final File LANG_FOLDER = new File(plugin.getDataFolder(), "lang");
+    private static final HashMap<String, File> FILE_CACHE = new HashMap<>();
+    static PrintStream fos = null;
+    private static boolean FIRST_BACKUP = true;
 
     static {
         LOGS_FOLDER = new File(plugin.getDataFolder(), "logs");
@@ -58,18 +68,12 @@ public class IOManager {
                 String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH_mm"))));
     }
 
-    private static final File FILTERED_LOGS_FOLDER = new File(plugin.getDataFolder(), "filtered logs");
-    private static final File ITEM_FOLDER = new File(plugin.getDataFolder(), "itemtypes");
-    private static final File PROFESSION_FOLDER = new File(plugin.getDataFolder(), "professions");
-    private static final File TRAINER_FOLDER = new File(plugin.getDataFolder(), "trainer gui");
-
-    public static final String LANG_PATH = "lang/";
-    private static final File LANG_FOLDER = new File(plugin.getDataFolder(), "lang");
-
-    private static boolean FIRST_BACKUP = true;
-
-    private static final HashMap<String, File> FILE_CACHE = new HashMap<>();
-
+    /**
+     * @return the cache folder directory
+     */
+    public static File getCacheFolder() {
+        return getFolder(CACHE_FOLDER);
+    }
 
     /**
      * Creates a folder if possible
@@ -83,33 +87,6 @@ public class IOManager {
             file.mkdirs();
         }
         return file;
-    }
-
-    private static File getFile(File dir, String name) {
-        File folder = getFolder(dir);
-        File f = new File(folder, name);
-        if (!f.exists()) {
-            try {
-                f.createNewFile();
-            } catch (IOException e) {
-                ProfessionLogger.logError(e);
-            }
-        }
-        return f;
-    }
-
-    /**
-     * @return the {@link User} folder directory
-     */
-    public static File getPlayerFolder() {
-        return getFolder(PLAYER_FOLDER);
-    }
-
-    /**
-     * @return the cache folder directory
-     */
-    public static File getCacheFolder() {
-        return getFolder(CACHE_FOLDER);
     }
 
     /**
@@ -147,13 +124,6 @@ public class IOManager {
         return getFolder(ITEM_FOLDER);
     }
 
-    /**
-     * @return the {@link Profession} folder directory
-     */
-    public static File getProfessionFolder() {
-        return getFolder(PROFESSION_FOLDER);
-    }
-
     public static File getProfessionFile(Profession prof) {
         return getProfessionFile(prof.getClass());
     }
@@ -163,6 +133,26 @@ public class IOManager {
         final File dir = IOManager.getProfessionFolder();
         final String fName = fileName.concat(Utils.YML_EXTENSION);
         return getFile(dir, fName);
+    }
+
+    private static File getFile(File dir, String name) {
+        File folder = getFolder(dir);
+        File f = new File(folder, name);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                ProfessionLogger.logError(e);
+            }
+        }
+        return f;
+    }
+
+    /**
+     * @return the {@link Profession} folder directory
+     */
+    public static File getProfessionFolder() {
+        return getFolder(PROFESSION_FOLDER);
     }
 
     /**
@@ -224,6 +214,13 @@ public class IOManager {
         User.saveUsers();
     }
 
+    public static void closeLogFile() {
+        if (fos != null) {
+            saveLogFile();
+            fos.close();
+        }
+    }
+
     /**
      * Flushes the log file
      */
@@ -233,11 +230,13 @@ public class IOManager {
         }
     }
 
-    public static void closeLogFile() {
-        if (fos != null) {
-            saveLogFile();
-            fos.close();
-        }
+    /**
+     * Backs up a plugin if it has not been backed up before
+     *
+     * @return the result of backup or {@code null}, if backed up before
+     */
+    public static BackupTask.Result backupFirst() {
+        return FIRST_BACKUP ? backup() : null;
     }
 
     /**
@@ -252,12 +251,24 @@ public class IOManager {
         return task.getResult();
     }
 
+    public static void saveUser(User user) throws IOException {
+        File file = getUserFile(user);
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+    }
+
+    private static File getUserFile(User user) throws IOException {
+        File file = getFile(getPlayerFolder(),
+                user.getPlayer().getUniqueId().toString().concat(Utils.YML_EXTENSION));
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        return file;
+    }
+
     /**
-     * Backs up a plugin if it has not been backed up before
-     *
-     * @return the result of backup or {@code null}, if backed up before
+     * @return the {@link User} folder directory
      */
-    public static BackupTask.Result backupFirst() {
-        return FIRST_BACKUP ? backup() : null;
+    public static File getPlayerFolder() {
+        return getFolder(PLAYER_FOLDER);
     }
 }

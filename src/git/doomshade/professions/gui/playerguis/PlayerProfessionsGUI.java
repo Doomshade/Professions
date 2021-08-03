@@ -47,7 +47,11 @@ public class PlayerProfessionsGUI extends GUI {
     public void init() throws GUIInitializationException {
         Builder builder =
                 getInventoryBuilder().size(9).title(Settings.getSettings(GUISettings.class).getProfessionsGuiName());
-        User user = User.getUser(getHolder());
+        final Player holder = getHolder();
+        if (holder == null) {
+            return;
+        }
+        User user = User.getUser(holder);
         int i = -1;
         for (IUserProfessionData upd : user.getProfessions()) {
             final ItemStack icon = upd.getProfession().getIcon();

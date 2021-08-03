@@ -29,13 +29,10 @@ import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.api.spawn.ISpawnable;
-import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.profession.ProfessionManager;
-import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -246,14 +243,14 @@ public abstract class Spawnable
      * @param map                the serialized version of the spawnable element
      * @param conversionFunction the function that converts a spawnable element into the desired object (you are given a
      *                           SpawnableElement wrapper that returns {@code null} in {@link #getItemTypeHolder()}, but
-     *                           everything else is an non-null, thus usable) If all keys are present, the exception
+     *                           everything else is a non-null, thus usable) If all keys are present, the exception
      *                           argument is {@code null}
      * @param clazz              the class we are converting to (here just for stack trace purposes)
      * @param <T>                the desired class type
      *
      * @return the desired object
      *
-     * @throws ProfessionObjectInitializationException if an exception occured during deserialization
+     * @throws ProfessionObjectInitializationException if an exception occurred during deserialization
      */
     public static <T extends Spawnable> T deserialize(
             Map<String, Object> map,
@@ -261,13 +258,7 @@ public abstract class Spawnable
             BiFunction<Spawnable, ProfessionObjectInitializationException, T> conversionFunction)
             throws ProfessionObjectInitializationException {
 
-        String markerSetId = ProfessionManager.getInstance()
-                .getProfession(MiningProfession.class)
-                .orElseThrow(() -> new ProfessionObjectInitializationException("Sth wrong happened"))
-                .getProfessionSettings()
-                .getSettings(
-                        ProfessionSpecificDefaultsSettings.class)
-                .getMarkerSetId();
+
         // get missing keys and initialize exception
         final Set<String> missingKeys = Utils.getMissingKeys(map, Arrays.stream(SpawnableElementEnum.values())
                 .filter(x -> x != SPAWN_POINT)
@@ -302,10 +293,17 @@ public abstract class Spawnable
         // convert the spawnable to an object of programmer's desire
         final T convertedSpawnable = conversionFunction.apply(spawnable, ex);
 
+        // TODO add marker set ID SOMEHOW
         // add the spawn points to the spawnable
+        /*String markerSetId = ProfessionManager.getInstance()
+                .getProfession(convertedSpawnable.getClass())
+                .orElseThrow(() -> new ProfessionObjectInitializationException("Sth wrong happened"))
+                .getProfessionSettings()
+                .getSettings(ProfessionSpecificDefaultsSettings.class)
+                .getMarkerSetId();*/
         Collection<ISpawnPoint> spawnPointLocations;
         try {
-            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, markerSetId));
+            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, "herbalism"));
         } catch (ProfessionObjectInitializationException e) {
 
             // set the exception class to the deserialization object for further clearance

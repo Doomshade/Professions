@@ -296,7 +296,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
 
         profMan = ProfessionManager.getInstance();
         eventMan = EventManager.getInstance();
-        SerializationRegistry.init();
+        //SerializationRegistry.init();
 
         try {
             IOManager.setupFiles();

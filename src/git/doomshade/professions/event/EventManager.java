@@ -73,7 +73,7 @@ public final class EventManager {
         for (ItemTypeHolder<?, ?> itemHolder : Professions.getProfMan().getItemTypeHolders()) {
 
             // make sure we got the right item type
-            if (!itemHolder.getItemType().getClass().equals(itemTypeClass)) {
+            if (!itemHolder.getExampleItemType().getClass().equals(itemTypeClass)) {
                 continue;
             }
 

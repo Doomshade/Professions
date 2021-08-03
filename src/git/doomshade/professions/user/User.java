@@ -185,7 +185,7 @@ public final class User implements IUser {
     }
 
     /**
-     * Whether or not this user can profess profession Calls {@link User#hasProfession(Profession)} and {@link
+     * Whether this user can profess profession Calls {@link User#hasProfession(Profession)} and {@link
      * User#hasProfessionType(ProfessionType)} {@link Profession#isSubprofession()}
      *
      * @param prof the profession to check
@@ -211,7 +211,7 @@ public final class User implements IUser {
             for (Class<? extends Profession> subProf : subProfs) {
                 final Optional<Profession> opt = profMan.getProfession(subProf);
 
-                if (!opt.isPresent()) {
+                if (opt.isEmpty()) {
                     continue;
                 }
                 Profession profession = opt.get();
@@ -263,7 +263,7 @@ public final class User implements IUser {
     }
 
     @Override
-    public final Player getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 

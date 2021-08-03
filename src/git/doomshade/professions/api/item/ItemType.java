@@ -25,6 +25,7 @@
 package git.doomshade.professions.api.item;
 
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.dynmap.AMarkable;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;
@@ -76,10 +77,10 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * @author Doomshade
  * @see CraftableItemType
  */
-public abstract class ItemType<T extends ConfigurationSerializable> implements ConfigurationSerializable,
+public abstract class ItemType<T extends ConfigurationSerializable> extends AMarkable implements ConfigurationSerializable,
         Comparable<ItemType<T>> {
 
-    public static final String KEY = "items";
+    public static final String KEY_ITEMS = "items";
 
     private int exp, levelReq;
     private T item;
@@ -102,6 +103,8 @@ public abstract class ItemType<T extends ConfigurationSerializable> implements C
         this.setLevelReq(1);
         this.setExp(0);
         this.setObject(object);
+        this.setMarkerSetId("");
+        this.setVisible(false);
         this.description = new ArrayList<>(Settings.getSettings(ItemSettings.class).getDefaultLore());
         this.restrictedWorlds = new ArrayList<>();
         this.setIgnoreSkillupColor(false);
@@ -293,7 +296,7 @@ public abstract class ItemType<T extends ConfigurationSerializable> implements C
      */
     @Override
     public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = super.serialize();
         map.put(OBJECT.s, item.serialize());
         map.put(EXP.s, exp);
         map.put(LEVEL_REQ.s, levelReq);

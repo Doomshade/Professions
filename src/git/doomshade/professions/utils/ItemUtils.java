@@ -483,7 +483,7 @@ public final class ItemUtils implements ISetup {
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
         // gem.yml -> items.1
-        final String itemSection = ItemType.KEY + "." + itemType.getFileId() + ".";
+        final String itemSection = ItemType.KEY_ITEMS + "." + itemType.getFileId() + ".";
         for (int i = 0; i < desc.size(); i++) {
             String s = desc.get(i);
             if (s.isEmpty()) {
@@ -591,11 +591,11 @@ public final class ItemUtils implements ISetup {
         }
         String itemId = String.valueOf(id);
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        if (!loader.isConfigurationSection(ItemType.KEY)) {
+        if (!loader.isConfigurationSection(ItemType.KEY_ITEMS)) {
             throw new IllegalArgumentException(
-                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY + "." + id + ")");
+                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY_ITEMS + "." + id + ")");
         }
-        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
+        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         return ((MemorySection) Objects.requireNonNull(itemsSection.get(itemId))).getValues(false);
     }
 

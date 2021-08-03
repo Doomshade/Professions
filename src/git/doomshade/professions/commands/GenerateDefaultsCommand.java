@@ -28,6 +28,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.dynmap.AMarkable;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.*;
 import org.bukkit.command.CommandSender;
@@ -63,15 +64,18 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         for (ItemTypeHolder<?, ?> itemTypeHolder : Professions.getProfMan().getItemTypeHolders()) {
-            ItemType<?> itemType = itemTypeHolder.getItemType();
+            final ItemType<?> itemType = itemTypeHolder.getExampleItemType();
 
-
-            Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
+            final Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
 
             // get the missing keys
-            Set<FileEnum> missingKeys = Utils.getMissingKeysEnum(map, Strings.ItemTypeEnum.values());
+            final Set<FileEnum> missingKeys = Utils.getMissingKeysEnum(map, Strings.ItemTypeEnum.values());
             if (itemType instanceof ICraftable) {
                 missingKeys.addAll(Utils.getMissingKeysEnum(map, Strings.ICraftableEnum.values()));
+            }
+
+            if (itemType instanceof AMarkable) {
+                missingKeys.addAll(Utils.getMissingKeysEnum(map, AMarkable.MarkableEnum.values()));
             }
 
             // do not uncomment, we want to check for items.object section too!
@@ -79,16 +83,16 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 continue;
             }*/
 
-            File file = ItemUtils.getItemTypeFile(itemType.getClass());
-            FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+            final File file = ItemUtils.getItemTypeFile(itemType.getClass());
+            final FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
 
             // "items:"
-            ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
+            final ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
 
             for (String s : Objects.requireNonNull(itemsSection).getKeys(false)) {
 
                 // "items: '1':"
-                ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
+                final ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
                 for (FileEnum en : missingKeys) {
 
                     // "items: '1': exp"
@@ -106,7 +110,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
 
                 // "items: '1': object:"
-                ConfigurationSection objectSection =
+                final ConfigurationSection objectSection =
                         Objects.requireNonNull(itemSection).isConfigurationSection(OBJECT) ?
                                 itemSection.getConfigurationSection(OBJECT) :
                                 itemSection.createSection(OBJECT);

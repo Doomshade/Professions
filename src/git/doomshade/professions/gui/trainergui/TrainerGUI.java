@@ -221,7 +221,7 @@ public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemTy
                 holder = (ItemTypeHolder<T, Type>) Utils.findInIterable(
                         profMan.getItemTypeHolders(),
                         x -> {
-                            final String s = ItemUtils.getItemTypeFile(x.getItemType().getClass()).getName();
+                            final String s = ItemUtils.getItemTypeFile(x.getExampleItemType().getClass()).getName();
                             return s.substring(0, s.lastIndexOf('.'))
                                     .equalsIgnoreCase(configName);
                         });

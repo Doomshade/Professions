@@ -25,6 +25,7 @@
 package git.doomshade.professions.api.item;
 
 import git.doomshade.professions.api.IProfessionManager;
+import git.doomshade.professions.api.dynmap.AMarkable;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;
@@ -55,7 +56,7 @@ import static git.doomshade.professions.api.item.ItemTypeHolder.ItemTypeHolderEn
 
 /**
  * Manager of {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class,
- * Object, Consumer)}.
+ * ConfigurationSerializable, Consumer)} )}.
  *
  * @param <Type> the ItemType
  *
@@ -63,15 +64,21 @@ import static git.doomshade.professions.api.item.ItemTypeHolder.ItemTypeHolderEn
  * @version 1.0
  * @see IProfessionManager
  */
-public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> implements Iterable<Type> {
+public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends AMarkable
+        implements Iterable<Type> {
     /**
      * The example item type (this item type should have an ID of -1)
      */
     private final Type itemType;
+
     /**
      * List required for the ordering of item types
      */
     private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
+
+    /**
+     * Comparator to sort ItemTypes
+     */
     private Comparator<Type> comparator = null;
     /**
      * The error message
@@ -128,6 +135,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         if (loader == null) {
             return;
         }
+
         final List<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
         loader.addDefault(ERROR_MESSAGE.s, errorMessage);
         loader.addDefault(SORTED_BY.s, sortedBy);
@@ -139,10 +147,10 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
 
         }
         ConfigurationSection itemsSection;
-        if (loader.isConfigurationSection(ItemType.KEY)) {
-            itemsSection = loader.getConfigurationSection(ItemType.KEY);
+        if (loader.isConfigurationSection(ItemType.KEY_ITEMS)) {
+            itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         } else {
-            itemsSection = loader.createSection(ItemType.KEY);
+            itemsSection = loader.createSection(ItemType.KEY_ITEMS);
         }
 
         if (itemsSection != null) {
@@ -193,6 +201,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         // TODO make a new method for this
         this.errorMessage = loader.getStringList(
                 ERROR_MESSAGE.s);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
+        this.setVisible(loader.getBoolean(MarkableEnum.MARKER_VISIBLE.s));
+        this.setMarkerSetId(loader.getString(MarkableEnum.MARKER_SET_ID.s));
 
         this.itemTypes.clear();
         Comparator<ItemType<?>> comparator = null;
@@ -213,7 +223,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         //ItemUtils.getDescription(itemType, loader.getStringList
         // (NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
-        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
+        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         Collection<Integer> keys = itemsSection.getKeys(false)
                 .stream()
                 .map(Integer::parseInt)
@@ -226,6 +236,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
                 Type deserializedItemType = (Type) ItemType.deserialize(clazz, i);
                 if (deserializedItemType != null) {
                     itemTypes.put(i, deserializedItemType);
+                    deserializedItemType.setMarkerSetId(this);
+                    deserializedItemType.setVisible(this);
                 }
             } catch (Exception e) {
                 ProfessionLogger.log(
@@ -241,11 +253,11 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
             try {
                 final CommandHandler cmdHandler = CommandHandler.getInstance(CommandHandler.class);
                 if (cmdHandler != null) {
+                    final String infoCommand = ChatColor.stripColor(
+                            cmdHandler.infoMessage(cmdHandler.getCommand(GenerateDefaultsCommand.class)));
                     ProfessionLogger.log(
                             String.format("Could not deserialize all item types. Usage of %s is advised.",
-                                    ChatColor.stripColor(
-                                            cmdHandler.infoMessage(
-                                                    cmdHandler.getCommand(GenerateDefaultsCommand.class)))));
+                                    infoCommand));
                 }
             } catch (Utils.SearchNotFoundException ignored) {
             }
@@ -255,7 +267,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
     /**
-     * Sorts from last index to first index as the first sort has the highest priority
+     * Sorts the item types by comparator generated from "sorted-by" values
      */
     public void sortItems() {
         this.itemTypes = Utils.sortMapByValue(this.itemTypes, this.comparator);
@@ -285,14 +297,21 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
 
     /**
      * @return the example item type this holder holds
+     *
+     * @apiNote Used for generating defaults
      */
-    public final Type getItemType() {
+    public final Type getExampleItemType() {
         return itemType;
     }
 
     @Override
     public @NotNull Iterator<Type> iterator() {
         return itemTypes.values().iterator();
+    }
+
+    @Override
+    public int getLayer() {
+        return 0;
     }
 
     enum ItemTypeHolderEnum implements FileEnum {

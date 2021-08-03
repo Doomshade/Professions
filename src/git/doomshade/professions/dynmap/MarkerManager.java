@@ -57,6 +57,9 @@ public final class MarkerManager {
     }
 
     public static void createInstance(DynmapPlugin dynmapPlugin) {
+        if (dynmapPlugin == null) {
+            return;
+        }
         if (instance == null) {
             instance = new MarkerManager(dynmapPlugin);
         }
