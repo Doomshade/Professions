@@ -22,11 +22,11 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.spawn;
+package git.doomshade.professions.task;
 
+import git.doomshade.professions.api.spawn.impl.SpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.task.ParticleTask;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
 
@@ -35,16 +35,18 @@ public class SpawnTask extends ExtendedBukkitRunnable {
     private final SpawnPoint spawnPoint;
     // because of cache
     private transient final int generatedRespawnTime;
-    private transient int respawnTime;
     transient int id = -1;
+    private transient int respawnTime;
     /**
      * Particle task that spawns particles periodically
      */
     private ParticleTask particleTask;
 
-    SpawnTask(SpawnPoint spawnPoint) {
+    public SpawnTask(SpawnPoint spawnPoint) {
         this.spawnPoint = spawnPoint;
         this.generatedRespawnTime = spawnPoint.getSpawnTime().getRandom();
+        this.particleTask = new ParticleTask(spawnPoint.getSpawnableElement().getParticleData(),
+                spawnPoint.getLocation());
     }
 
     public int getGeneratedRespawnTime() {

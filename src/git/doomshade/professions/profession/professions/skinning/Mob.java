@@ -31,8 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.CONFIG_NAME;
-import static git.doomshade.professions.profession.professions.skinning.PreyItemType.PreyEnum.ENTITY;
+import static git.doomshade.professions.utils.Strings.PreyEnum.CONFIG_NAME;
+import static git.doomshade.professions.utils.Strings.PreyEnum.ENTITY;
 
 /**
  * Custom class for {@link PreyItemType} Here I needed mob's config name (if the Prey is a MythicMob), I'd have

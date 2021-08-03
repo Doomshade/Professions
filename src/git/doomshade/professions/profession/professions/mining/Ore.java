@@ -31,10 +31,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.profession.spawn.Spawnable;
+import git.doomshade.professions.api.spawn.impl.Spawnable;
 import git.doomshade.professions.profession.utils.YieldResult;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.ParticleData;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
@@ -48,7 +46,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 
-import static git.doomshade.professions.profession.professions.mining.Ore.OreEnum.RESULT;
+import static git.doomshade.professions.utils.Strings.OreEnum.RESULT;
 
 /**
  * Custom class for {@link ItemType}. Here I wanted to have a custom mining result, I'd have otherwise only passed
@@ -156,7 +154,7 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
                             x.getParticleData());
                 };
 
-        final Ore deserialize = Spawnable.deserialize(map, Ore.class, func);
+        final Ore deserialize = Spawnable.deserializeSpawnable(map, Ore.class, func);
         // if there are missing keys, throw ex
         if (deserialize == null) {
             throw ex.get();
@@ -185,30 +183,4 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
                 getSpawnPoints());
     }
 
-    /**
-     * Enum for keys in file
-     */
-    enum OreEnum implements FileEnum {
-        RESULT("drop");
-
-        final String s;
-
-        OreEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public EnumMap<OreEnum, Object> getDefaultValues() {
-            return new EnumMap<>(OreEnum.class) {
-                {
-                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT));
-                }
-            };
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-    }
 }

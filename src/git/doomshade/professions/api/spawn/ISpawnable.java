@@ -38,7 +38,7 @@ import java.util.Iterator;
  * @author Doomshade
  * @version 1.0
  */
-public interface ISpawnable extends Iterable<ISpawnPoint> {
+public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
 
     /**
      * @return whether or not the spawnable can spawn elements
@@ -51,11 +51,6 @@ public interface ISpawnable extends Iterable<ISpawnPoint> {
      * @param canSpawn whether or not it can spawn
      */
     void setCanSpawn(boolean canSpawn);
-
-    /**
-     * @return the id of this spawnable
-     */
-    String getId();
 
     /**
      * @return the marker icon on dynmap for all spawn points
@@ -76,11 +71,6 @@ public interface ISpawnable extends Iterable<ISpawnPoint> {
      * @return the material data because of special blocks suck as flowers
      */
     byte getMaterialData();
-
-    /**
-     * @return the name of the element
-     */
-    String getName();
 
     /**
      * @param location the location to check for

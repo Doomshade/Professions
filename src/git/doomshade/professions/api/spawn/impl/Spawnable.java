@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.spawn;
+package git.doomshade.professions.api.spawn.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,10 +34,7 @@ import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.task.BackupTask;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.ParticleData;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.utils.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -55,7 +52,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static git.doomshade.professions.profession.spawn.Spawnable.SpawnableElementEnum.*;
+import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
 
 /**
  * Manages spawns of spawnable elements. This class already implements {@link ISpawnable} interface.
@@ -63,13 +60,9 @@ import static git.doomshade.professions.profession.spawn.Spawnable.SpawnableElem
  * @author Doomshade
  * @version 1.0
  */
-public abstract class Spawnable
+public abstract class Spawnable extends Element
         implements ConfigurationSerializable, ISpawnable {
 
-    private static final HashMap<
-            Class<? extends Spawnable>,
-            HashMap<String, Spawnable>
-            > SPAWNABLE_ELEMENTS = new HashMap<>();
     //private final List<? extends ISpawnPoint> spawnPointLocations;
     private final HashMap<Location, ISpawnPoint> spawnPoints = new HashMap<>();
 
@@ -90,6 +83,7 @@ public abstract class Spawnable
     private Spawnable(String id, String name, Material material, byte materialData, ParticleData particleData,
                       String markerIcon,
                       boolean registerElement) throws IllegalArgumentException {
+        super(id, registerElement);
         this.id = id;
         this.particleData = particleData;
         this.material = material;
@@ -97,38 +91,16 @@ public abstract class Spawnable
         this.name = name;
         this.markerIcon = markerIcon;
         //this.spawnPoints = new ArrayList<>(spawnPoints);
-
-        if (!Utils.EXAMPLE_ID.equalsIgnoreCase(id) && registerElement) {
-            final HashMap<String, Spawnable> map =
-                    SPAWNABLE_ELEMENTS.getOrDefault(getClass(), new HashMap<>());
-            final Spawnable spEl = map.putIfAbsent(id, this);
-            if (spEl != null) {
-                throw new IllegalArgumentException(String.format("An element %s with ID %s already exists!",
-                        spEl.getName(), id));
-            }
-            SPAWNABLE_ELEMENTS.put(getClass(), map);
-        }
     }
 
-    @SuppressWarnings("unchecked")
-    public static <E extends Spawnable> Map<String, E> getAllElements() {
-        final Collection<HashMap<String, Spawnable>> values = SPAWNABLE_ELEMENTS.values();
-
-        final HashMap<String, Spawnable> map = new HashMap<>();
-        for (HashMap<String, Spawnable> v : values) {
-            map.putAll(v);
-        }
-        return (ImmutableMap<String, E>) ImmutableMap.copyOf(map);
-    }
-
-    public static <E extends Spawnable> E get(Class<E> of, String id) {
+    /*public static <E extends Spawnable> E get(Class<E> of, String id) {
         return getElements(of).get(id);
-    }
+    }*/
 
-    @SuppressWarnings("unchecked")
+    /*@SuppressWarnings("unchecked")
     public static <E extends Spawnable> Map<String, E> getElements(Class<E> of) {
         return (Map<String, E>) ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(of));
-    }
+    }*/
 
     /**
      * <p>Now this might be a little confusing
@@ -150,7 +122,7 @@ public abstract class Spawnable
     public static <T extends Spawnable> T of(Block block, Class<T> elementClass)
             throws Utils.SearchNotFoundException {
 
-        final Spawnable el = iterate(block, SPAWNABLE_ELEMENTS.get(elementClass).values());
+        final Spawnable el = iterate(block, getSpawnableElements(elementClass).values());
 
         if (el != null) {
             return (T) el;
@@ -182,15 +154,26 @@ public abstract class Spawnable
         return block -> {
             Material mat = block.getType();
             Location location = block.getLocation();
-            for (HashMap<String, Spawnable> v : SPAWNABLE_ELEMENTS.values()) {
-                try {
-                    return Utils.findInIterable(v.values(),
-                            x -> x.getMaterial() == mat && x.isSpawnPoint(location));
-                } catch (Utils.SearchNotFoundException ignored) {
-                }
+            try {
+                return Utils.findInIterable(getAllSpawnableElements().values(),
+                        x -> x.getMaterial() == mat && x.isSpawnPoint(location));
+            } catch (Utils.SearchNotFoundException ignored) {
             }
             return null;
         };
+    }
+
+    public static <E extends Spawnable> Map<String, E> getAllSpawnableElements() {
+        final Map<String, E> map = getAllElements().values().stream()
+                .flatMap(m -> m.entrySet().stream())
+                .filter(entry -> entry.getValue() instanceof Spawnable)
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> (E) entry.getValue(), (a, b) -> b,
+                        LinkedHashMap::new));
+        return ImmutableMap.copyOf(map);
+    }
+
+    public static <E extends Spawnable> Map<String, E> getSpawnableElements(Class<E> clazz) {
+        return ImmutableMap.copyOf(getElements(clazz));
     }
 
     /**
@@ -203,13 +186,11 @@ public abstract class Spawnable
      * @throws Utils.SearchNotFoundException if the block is not a spawnable element
      */
     public static Spawnable of(Block block) throws Utils.SearchNotFoundException {
-        for (HashMap<String, Spawnable> e : SPAWNABLE_ELEMENTS.values()) {
 
-            final Spawnable el = iterate(block, e.values());
+        final Spawnable el = iterate(block, getAllSpawnableElements().values());
 
-            if (el != null) {
-                return el;
-            }
+        if (el != null) {
+            return el;
         }
         throw new Utils.SearchNotFoundException();
     }
@@ -226,13 +207,13 @@ public abstract class Spawnable
      *
      * @throws ProfessionObjectInitializationException if an exception occured during deserialization
      */
-    public static <T extends Spawnable> T deserialize(
+    public static <T extends Spawnable> T deserializeSpawnable(
             Map<String, Object> map,
             Class<T> clazz,
             Function<Spawnable, T> conversionFunction)
             throws ProfessionObjectInitializationException {
 
-        return deserialize(map, clazz, (el, e) -> conversionFunction.apply(el));
+        return deserializeSpawnable(map, clazz, (el, e) -> conversionFunction.apply(el));
     }
 
     /**
@@ -252,7 +233,7 @@ public abstract class Spawnable
      *
      * @throws ProfessionObjectInitializationException if an exception occurred during deserialization
      */
-    public static <T extends Spawnable> T deserialize(
+    public static <T extends Spawnable> T deserializeSpawnable(
             Map<String, Object> map,
             Class<T> clazz,
             BiFunction<Spawnable, ProfessionObjectInitializationException, T> conversionFunction)
@@ -260,9 +241,9 @@ public abstract class Spawnable
 
 
         // get missing keys and initialize exception
-        final Set<String> missingKeys = Utils.getMissingKeys(map, Arrays.stream(SpawnableElementEnum.values())
+        final Set<String> missingKeys = Utils.getMissingKeys(map, Arrays.stream(Strings.SpawnableElementEnum.values())
                 .filter(x -> x != SPAWN_POINT)
-                .toArray(SpawnableElementEnum[]::new));
+                .toArray(Strings.SpawnableElementEnum[]::new));
 
         final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(
                 clazz,
@@ -341,12 +322,22 @@ public abstract class Spawnable
      * @param action           the action
      */
     private static void doForAllElements(Predicate<ISpawnPoint> spawnPointFilter, Consumer<ISpawnPoint> action) {
-        SPAWNABLE_ELEMENTS.values()
-                .forEach(x -> x.values()
-                        .forEach(y -> y.getSpawnPoints()
-                                .stream()
-                                .filter(spawnPointFilter)
-                                .forEach(action)));
+        final Map<String, Spawnable> elements = getAllSpawnableElements();
+        for (Map.Entry<String, Spawnable> entry : elements.entrySet()) {
+            Spawnable spawn = entry.getValue();
+            for (ISpawnPoint sp : spawn.getSpawnPoints()) {
+                if (!spawnPointFilter.test(sp)) {
+                    continue;
+                }
+                action.accept(sp);
+            }
+        }
+    }
+
+    public static void unloadSpawnables() {
+        despawnAll(x -> true);
+        SpawnPoint.unloadAll();
+        unloadElements();
     }
 
     /**
@@ -363,11 +354,9 @@ public abstract class Spawnable
         doForAllElements(spawnPointFilter, action);
     }
 
-    /**
-     * @return all known spawnable elements (e.g. all herbs possible herbs)
-     */
-    public Map<String, Spawnable> getElements() {
-        return ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(getClass()));
+    @Override
+    public final String getName() {
+        return name;
     }
 
     /**
@@ -386,21 +375,23 @@ public abstract class Spawnable
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<>() {
-            {
-                put(ID.s, getId());
+        final Map<String, Object> map = new LinkedHashMap<>();
+        map.put(ID.s, getId());
 
-                put(MATERIAL.s, ItemUtils.serializeMaterial(getMaterial(), getMaterialData()));
+        map.put(MATERIAL.s, ItemUtils.serializeMaterial(getMaterial(), getMaterialData()));
 
-                int i = 0;
+        int i = 0;
 
-                for (ISpawnPoint spawnPointLocation : getSpawnPoints()) {
-                    put(SPAWN_POINT.s.concat("-" + i++), spawnPointLocation.serialize());
-                }
-                put(PARTICLE.s, getParticleData().serialize());
-            }
+        for (ISpawnPoint spawnPointLocation : getSpawnPoints()) {
+            map.put(SPAWN_POINT.s.concat("-" + i++), spawnPointLocation.serialize());
+        }
+        map.put(PARTICLE.s, getParticleData().serialize());
+        return map;
+    }
 
-        };
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -422,40 +413,6 @@ public abstract class Spawnable
                 getMaterial() == that.getMaterial();
     }
 
-    /**
-     * Enum for keys in file
-     */
-    public enum SpawnableElementEnum implements FileEnum {
-        SPAWN_POINT("spawnpoint"),
-        ID("id"),
-        MATERIAL("material"),
-        PARTICLE("particle");
-
-        public final String s;
-
-        SpawnableElementEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public EnumMap<SpawnableElementEnum, Object> getDefaultValues() {
-            return new EnumMap<>(SpawnableElementEnum.class) {
-                {
-                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
-                    put(ID, Utils.EXAMPLE_ID);
-                    put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType());
-                    put(PARTICLE, new ParticleData());
-                }
-            };
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-    }
-
     @Override
     public boolean canSpawn() {
         return canSpawn;
@@ -468,11 +425,6 @@ public abstract class Spawnable
         spawnPoints.values().forEach(x -> x.setSpawnable(canSpawn));
     }
 
-
-    @Override
-    public String getId() {
-        return id;
-    }
 
     @Override
     public String getMarkerIcon() {
@@ -492,11 +444,6 @@ public abstract class Spawnable
     @Override
     public final byte getMaterialData() {
         return materialData;
-    }
-
-    @Override
-    public final String getName() {
-        return name;
     }
 
 

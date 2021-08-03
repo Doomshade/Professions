@@ -80,6 +80,7 @@ public abstract class Enchant implements ConfigurationSerializable {
             ItemStack item = ItemUtils.deserialize(mem.getValues(false));
             Class<? extends Enchant> clazz = (Class<? extends Enchant>) Class.forName((String) map.get(CLASS));
             int expYield = (int) map.get(CRAFT_EXP_YIELD);
+
             Enchant ench = EnchantManager.getInstance().getEnchant(clazz);
             ench.setItem(item);
             ench.setCraftExpYield(expYield);

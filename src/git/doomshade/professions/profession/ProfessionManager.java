@@ -87,7 +87,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
      */
     private final IrremovableSet<Class<? extends Profession>> REGISTERED_PROFESSIONS = new IrremovableSet<>();
     @SuppressWarnings("rawtypes")
-    private final HashMap<ItemTypeHolder<?, ?>, Class<? extends ItemType>> ITEMS = new HashMap<>();
+    private final HashMap<Class<? extends ItemType>, ItemTypeHolder<?, ?>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
     private final Professions plugin = Professions.getInstance();
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
@@ -270,8 +270,8 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
             Class<IType> itemType, T o,
             Consumer<IType> additionalCommand) throws IOException {
         ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
+        ITEMS.put(itemTypeHolder.getExampleItemType().getClass(), itemTypeHolder);
         itemTypeHolder.update();
-        ITEMS.put(itemTypeHolder, itemTypeHolder.getExampleItemType().getClass());
     }
 
     @Override
@@ -280,15 +280,14 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     public <T extends ConfigurationSerializable, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(
             Class<A> clazz) throws IllegalArgumentException {
-        for (Entry<ItemTypeHolder<?, ?>, Class<? extends ItemType>> entry : ITEMS.entrySet()) {
-            if (entry.getValue().equals(clazz)) {
-                return (ItemTypeHolder<T, A>) entry.getKey();
-            }
+        final ItemTypeHolder<?, ?> itHolder = ITEMS.get(clazz);
+        if (itHolder == null) {
+            throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
         }
-        throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
+        return (ItemTypeHolder<T, A>) itHolder;
     }
 
     @Override
@@ -457,7 +456,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
      * @return all registered {@link ItemTypeHolder}s
      */
     public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
-        return ImmutableSet.copyOf(ITEMS.keySet());
+        return ImmutableSet.copyOf(ITEMS.values());
     }
 
     /**

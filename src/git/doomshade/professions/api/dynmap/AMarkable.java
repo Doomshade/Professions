@@ -24,11 +24,10 @@
 
 package git.doomshade.professions.api.dynmap;
 
-import git.doomshade.professions.utils.FileEnum;
+import git.doomshade.professions.utils.Strings;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,8 +46,8 @@ public abstract class AMarkable implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
-        map.put(MarkableEnum.MARKER_SET_ID.s, getMarkerSetId());
-        map.put(MarkableEnum.MARKER_VISIBLE.s, isVisible());
+        map.put(Strings.MarkableEnum.MARKER_SET_ID.s, getMarkerSetId());
+        map.put(Strings.MarkableEnum.MARKER_VISIBLE.s, isVisible());
         return map;
     }
 
@@ -123,24 +122,4 @@ public abstract class AMarkable implements ConfigurationSerializable {
         }
     }
 
-    public enum MarkableEnum implements FileEnum {
-        MARKER_SET_ID("dynmap-marker"),
-        MARKER_VISIBLE("marker-visible");
-
-        public final String s;
-
-        MarkableEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public EnumMap<MarkableEnum, Object> getDefaultValues() {
-            return new EnumMap<>(AMarkable.MarkableEnum.class) {
-                {
-                    put(MARKER_SET_ID, "some-marker");
-                    put(MARKER_VISIBLE, false);
-                }
-            };
-        }
-    }
 }

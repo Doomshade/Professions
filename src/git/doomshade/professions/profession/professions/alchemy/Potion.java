@@ -31,8 +31,8 @@ import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -51,7 +51,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
 
-import static git.doomshade.professions.profession.professions.alchemy.Potion.PotionEnum.*;
+import static git.doomshade.professions.utils.Strings.PotionEnum.*;
 
 public class Potion implements ConfigurationSerializable {
 
@@ -71,7 +71,6 @@ public class Potion implements ConfigurationSerializable {
             ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
 
     static final HashSet<Potion> POTIONS = new HashSet<>();
-    private static final String SPLIT_CHAR = ":";
 
     private final ArrayList<String> potionEffects = new ArrayList<>();
     private final int duration;
@@ -186,7 +185,7 @@ public class Potion implements ConfigurationSerializable {
 
     @SuppressWarnings("all")
     static Potion deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        Set<String> missingKeys = Utils.getMissingKeys(map, PotionEnum.values());
+        Set<String> missingKeys = Utils.getMissingKeys(map, Strings.PotionEnum.values());
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(PotionItemType.class, missingKeys);
         }
@@ -279,40 +278,4 @@ public class Potion implements ConfigurationSerializable {
         return duration;
     }
 
-    enum PotionEnum implements FileEnum {
-        POTION_EFFECTS("potion-effects"),
-        POTION_DURATION("duration"),
-        POTION_FLAG("id"),
-        POTION_TYPE("potion-type"),
-        POTION("potion");
-
-        private final String s;
-
-        PotionEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-        @Override
-        public EnumMap<PotionEnum, Object> getDefaultValues() {
-            return new EnumMap<>(PotionEnum.class) {
-                {
-                    put(POTION_EFFECTS, Arrays.asList(
-                            String.format("kriticky_utok%s10", SPLIT_CHAR),
-                            String.format("vyhybani%s5", SPLIT_CHAR),
-                            String.format("sance_na_kriticky_zasah%s80", SPLIT_CHAR),
-                            String.format("poskozeni%s40", SPLIT_CHAR),
-                            String.format("zivoty%s30", SPLIT_CHAR)));
-                    put(POTION_DURATION, 80);
-                    put(POTION_FLAG, "potions unique flag");
-                    put(POTION_TYPE, PotionType.FIRE_RESISTANCE.name());
-                    put(POTION, EXAMPLE_POTION.serialize());
-                }
-            };
-        }
-    }
 }

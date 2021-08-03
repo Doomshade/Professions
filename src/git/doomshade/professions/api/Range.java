@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.api;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;

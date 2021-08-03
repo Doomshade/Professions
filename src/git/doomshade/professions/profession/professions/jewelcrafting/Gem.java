@@ -50,7 +50,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static git.doomshade.professions.profession.professions.jewelcrafting.Gem.GemEnum.*;
+import static git.doomshade.professions.utils.Strings.GemEnum.*;
 import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.*;
 
 
@@ -423,40 +423,6 @@ public class Gem implements ConfigurationSerializable {
                 ", equipmentSlot=" + equipmentSlot +
                 ", displayName='" + displayName + '\'' +
                 '}';
-    }
-
-    enum GemEnum implements FileEnum {
-        ID("id"),
-        GEM_EFFECT("gem-effect"),
-        GEM_EFFECT_CONTEXT("gem-effect-context"),
-        GEM("item"),
-        DISPLAY_NAME("gem-name"),
-        EQUIPMENT_SLOT("equipment-slot");
-
-        private final String s;
-
-        GemEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-        @Override
-        public EnumMap<GemEnum, Object> getDefaultValues() {
-            return new EnumMap<>(GemEnum.class) {
-                {
-                    put(ID, "some-id");
-                    put(GEM_EFFECT, "add");
-                    put(GEM_EFFECT_CONTEXT, Arrays.asList("poskozeni:5", "inteligence:4"));
-                    put(GEM, ItemUtils.EXAMPLE_RESULT.serialize());
-                    put(DISPLAY_NAME, "&cNejhorší gem I");
-                    put(EQUIPMENT_SLOT, GemEquipmentSlot.MAINHAND.name());
-                }
-            };
-        }
     }
 
     public enum GemEquipmentSlot {

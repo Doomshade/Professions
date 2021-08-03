@@ -22,31 +22,17 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.professions.jewelcrafting;
+package git.doomshade.professions.api.spawn;
 
-import git.doomshade.professions.api.item.CraftableItemType;
-import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+public interface IElement {
 
-import java.util.Map;
+    /**
+     * @return the id of the element
+     */
+    String getId();
 
-public class GemItemType extends CraftableItemType<Gem> {
-
-    public GemItemType(Gem object) {
-        super(object);
-    }
-
-    @Override
-    protected Gem deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return Gem.deserialize(map);
-    }
-
-    @Override
-    public void onPluginDisable() {
-        Gem.GEMS.clear();
-    }
-
-    @Override
-    public void onPluginBeforeReload() {
-        Gem.GEMS.clear();
-    }
+    /**
+     * @return the name of the element
+     */
+    String getName();
 }

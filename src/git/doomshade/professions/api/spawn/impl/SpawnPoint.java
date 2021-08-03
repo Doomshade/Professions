@@ -22,17 +22,18 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.spawn;
+package git.doomshade.professions.api.spawn.impl;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
-import git.doomshade.professions.api.spawn.Range;
+import git.doomshade.professions.api.Range;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.FileEnum;
+import git.doomshade.professions.task.SpawnTask;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -46,7 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.logging.Level;
 
-import static git.doomshade.professions.profession.spawn.Spawnable.SpawnableElementEnum.SPAWN_POINT;
+import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.SPAWN_POINT;
 
 
 /**
@@ -135,6 +136,11 @@ public class SpawnPoint implements ISpawnPoint {
         this(location, spawnTime, element, MarkerManager.EMPTY_MARKER_SET_ID, serialNumber);
     }
 
+    public static void unloadAll() {
+        SERIAL_NUMBER_CACHE.clear();
+        SPAWN_POINTS.clear();
+    }
+
     public static Collection<SpawnPoint> deserializeAll(Map<String, Object> map, Spawnable spawnable)
             throws ProfessionObjectInitializationException {
         return deserializeAll(map, spawnable, MarkerManager.EMPTY_MARKER_SET_ID);
@@ -186,7 +192,7 @@ public class SpawnPoint implements ISpawnPoint {
     public static SpawnPoint deserialize(Map<String, Object> map, Spawnable spawnable,
                                          String markerSetId, int serialNumber)
             throws ProfessionObjectInitializationException {
-        final Set<String> missingKeysEnum = Utils.getMissingKeys(map, SpawnPointEnum.values());
+        final Set<String> missingKeysEnum = Utils.getMissingKeys(map, Strings.SpawnPointEnum.values());
         if (!missingKeysEnum.isEmpty()) {
             throw new ProfessionObjectInitializationException(
                     SpawnPoint.class,
@@ -205,9 +211,9 @@ public class SpawnPoint implements ISpawnPoint {
          *      pitch: 0
          *      yaw: 0
          */
-        Range r = Range.fromString((String) map.get(SpawnPointEnum.RESPAWN_TIME.s))
+        Range r = Range.fromString((String) map.get(Strings.SpawnPointEnum.RESPAWN_TIME.s))
                 .orElseThrow(IllegalArgumentException::new);
-        Location loc = Location.deserialize(((MemorySection) map.get(SpawnPointEnum.LOCATION.s)).getValues(false));
+        Location loc = Location.deserialize(((MemorySection) map.get(Strings.SpawnPointEnum.LOCATION.s)).getValues(false));
 
         return new SpawnPoint(loc, r, spawnable, markerSetId, serialNumber);
     }
@@ -384,35 +390,10 @@ public class SpawnPoint implements ISpawnPoint {
     public @NotNull Map<String, Object> serialize() {
         return new HashMap<>() {
             {
-                put(SpawnPointEnum.LOCATION.s, location.serialize());
-                put(SpawnPointEnum.RESPAWN_TIME.s, spawnTime.serialize());
+                put(Strings.SpawnPointEnum.LOCATION.s, location.serialize());
+                put(Strings.SpawnPointEnum.RESPAWN_TIME.s, spawnTime.serialize());
             }
         };
     }
 
-    private enum SpawnPointEnum implements FileEnum {
-        LOCATION("location"),
-        RESPAWN_TIME("respawn-time");
-
-        private final String s;
-
-        SpawnPointEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-        @Override
-        public EnumMap<SpawnPointEnum, Object> getDefaultValues() {
-            return new EnumMap<>(SpawnPointEnum.class) {
-                {
-                    put(LOCATION, ItemUtils.EXAMPLE_LOCATION.serialize());
-                    put(RESPAWN_TIME, new Range(0).serialize());
-                }
-            };
-        }
-    }
 }

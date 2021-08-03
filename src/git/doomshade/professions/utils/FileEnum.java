@@ -24,9 +24,22 @@
 
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.api.item.ItemType;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+
 import java.util.EnumMap;
 
 public interface FileEnum {
 
-    EnumMap<?, Object> getDefaultValues();
+    default boolean testItemType(ItemType<?> itemType) {
+        return itemType != null && testObject(itemType.getObject());
+    }
+
+    default boolean testObject(ConfigurationSerializable object) {
+        return false;
+    }
+
+    String getKey();
+
+    EnumMap<? extends FileEnum, Object> getDefaultValues();
 }

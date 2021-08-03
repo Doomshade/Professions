@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.api.spawn;
 
+import git.doomshade.professions.api.Range;
 import git.doomshade.professions.exceptions.SpawnException;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;

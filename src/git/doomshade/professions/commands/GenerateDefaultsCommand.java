@@ -75,7 +75,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
             }
 
             if (itemType instanceof AMarkable) {
-                missingKeys.addAll(Utils.getMissingKeysEnum(map, AMarkable.MarkableEnum.values()));
+                missingKeys.addAll(Utils.getMissingKeysEnum(map, Strings.MarkableEnum.values()));
             }
 
             // do not uncomment, we want to check for items.object section too!

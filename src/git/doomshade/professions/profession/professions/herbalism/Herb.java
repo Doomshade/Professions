@@ -32,11 +32,8 @@ import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.profession.spawn.Spawnable;
-import git.doomshade.professions.utils.FileEnum;
-import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.ParticleData;
-import git.doomshade.professions.utils.Utils;
+import git.doomshade.professions.api.spawn.impl.Spawnable;
+import git.doomshade.professions.utils.*;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.MemorySection;
@@ -47,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static git.doomshade.professions.profession.professions.herbalism.Herb.HerbEnum.*;
+import static git.doomshade.professions.utils.Strings.HerbEnum.*;
 
 /**
  * A gather item type example for {@link HerbalismProfession}
@@ -76,12 +73,12 @@ public class Herb extends Spawnable implements ConfigurationSerializable {
     }
 
     public static Herb deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        final Set<String> missingKeys = Utils.getMissingKeys(map, HerbEnum.values());
+        final Set<String> missingKeys = Utils.getMissingKeys(map, Strings.HerbEnum.values());
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
         }
 
-        final Herb herb = Spawnable.deserialize(map, Herb.class, x -> {
+        final Herb herb = Spawnable.deserializeSpawnable(map, Herb.class, x -> {
             int gatherTime = (int) map.get(TIME_GATHER.s);
             MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
             ItemStack gatherItem;
@@ -230,32 +227,4 @@ public class Herb extends Spawnable implements ConfigurationSerializable {
         return timeGather;
     }
 
-    enum HerbEnum implements FileEnum {
-        GATHER_ITEM("gather-item"),
-        ENABLE_SPAWN("enable-spawn"),
-        TIME_GATHER("gather-duration");
-
-        private final String s;
-
-        HerbEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public String toString() {
-            return s;
-        }
-
-        @Override
-        public EnumMap<HerbEnum, Object> getDefaultValues() {
-            return new EnumMap<>(HerbEnum.class) {
-                {
-                    ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
-                    put(GATHER_ITEM, exampleResult.serialize());
-                    put(ENABLE_SPAWN, false);
-                    put(TIME_GATHER, 5);
-                }
-            };
-        }
-    }
 }

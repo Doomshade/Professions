@@ -58,7 +58,7 @@ import git.doomshade.professions.profession.professions.herbalism.commands.Herba
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
-import git.doomshade.professions.profession.spawn.Spawnable;
+import git.doomshade.professions.api.spawn.impl.Spawnable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.LogTask;
 import git.doomshade.professions.task.SaveTask;
@@ -67,7 +67,6 @@ import git.doomshade.professions.trait.TrainerTrait;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.ItemUtils;
-import git.doomshade.professions.utils.SerializationRegistry;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.trait.TraitInfo;
 import net.luckperms.api.LuckPerms;
@@ -181,7 +180,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         boolean successful = true;
 
         // call before reload on item types
-        Spawnable.despawnAll(x -> true);
+        Spawnable.unloadSpawnables();
+        //SpawnPoint.unloadAll();
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 try {
@@ -482,7 +482,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             bool = func.test(plug);
         } catch (Exception e) {
             ProfessionLogger.log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
-            ProfessionLogger.logError(e);
+            ProfessionLogger.logError(e, false);
             return;
         }
         if (bool) {

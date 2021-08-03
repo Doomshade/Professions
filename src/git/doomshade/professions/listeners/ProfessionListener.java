@@ -47,7 +47,7 @@ import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
 import git.doomshade.professions.profession.professions.skinning.Mob;
 import git.doomshade.professions.profession.professions.skinning.PreyItemType;
-import git.doomshade.professions.profession.spawn.Spawnable;
+import git.doomshade.professions.api.spawn.impl.Spawnable;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Permissions;

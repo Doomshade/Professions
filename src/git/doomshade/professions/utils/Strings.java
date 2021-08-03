@@ -24,13 +24,25 @@
 
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.api.Range;
+import git.doomshade.professions.api.item.CraftableItemType;
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.spawn.impl.SpawnPoint;
+import git.doomshade.professions.enums.SortType;
+import git.doomshade.professions.profession.professions.alchemy.Potion;
+import git.doomshade.professions.profession.professions.herbalism.Herb;
+import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
+import git.doomshade.professions.profession.professions.mining.Ore;
+import git.doomshade.professions.profession.professions.skinning.Mob;
+import git.doomshade.professions.profession.utils.YieldResult;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionType;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
+import java.util.*;
 
 /**
  * A class of {@code public static final} {@link String}s divided into enums for queries.
@@ -38,6 +50,31 @@ import java.util.EnumMap;
  * @author Doomshade
  */
 public final class Strings {
+    private static final Collection<FileEnum> REGISTERED_FILE_ENUMS = new HashSet<>();
+
+    public static void register() {
+        REGISTERED_FILE_ENUMS.add(ICraftableEnum.CRAFTING_TIME);
+    }
+
+    public static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, ItemType<?> itemType) {
+        Map<FileEnum, Object> enums = new HashMap<>();
+
+        // for each registered file enum
+        for (FileEnum fe : REGISTERED_FILE_ENUMS) {
+            if (!fe.testItemType(itemType)) {
+                continue;
+            }
+
+            // iterate through its enum values
+            for (Map.Entry<? extends FileEnum, Object> e : fe.getDefaultValues().entrySet()) {
+                FileEnum fee = e.getKey();
+                if (!map.containsKey(fee.getKey())) {
+                    enums.put(e.getKey(), e.getValue());
+                }
+            }
+        }
+        return enums;
+    }
 
     /**
      * The enum for {@link ICraftable}
@@ -55,6 +92,20 @@ public final class Strings {
             this.s = s;
         }
 
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType instanceof CraftableItemType;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
 
         @Override
         public EnumMap<ICraftableEnum, Object> getDefaultValues() {
@@ -68,11 +119,6 @@ public final class Strings {
                     put(SOUND_CRAFTED, "block.fire.extinguish");
                 }
             };
-        }
-
-        @Override
-        public String toString() {
-            return s;
         }
     }
 
@@ -100,6 +146,21 @@ public final class Strings {
         }
 
         @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType != null;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
         public EnumMap<ItemTypeEnum, Object> getDefaultValues() {
             return new EnumMap<>(ItemTypeEnum.class) {
                 {
@@ -117,10 +178,384 @@ public final class Strings {
                 }
             };
         }
+    }
+
+    public enum ElementEnum implements FileEnum {
+        ID("id"),
+        NAME("name");
+
+        public final String s;
+
+        ElementEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType != null;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<ElementEnum, Object> getDefaultValues() {
+            return new EnumMap<>(ElementEnum.class) {
+                {
+                    put(ID, Utils.EXAMPLE_ID);
+                    put(NAME, "some-name");
+                }
+            };
+        }
+    }
+
+    public enum GemEnum implements FileEnum {
+        ID("id"),
+        GEM_EFFECT("gem-effect"),
+        GEM_EFFECT_CONTEXT("gem-effect-context"),
+        GEM("item"),
+        DISPLAY_NAME("gem-name"),
+        EQUIPMENT_SLOT("equipment-slot");
+
+        public final String s;
+
+        GemEnum(String s) {
+            this.s = s;
+        }
 
         @Override
         public String toString() {
             return s;
+        }
+
+        @Override
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Gem;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<GemEnum, Object> getDefaultValues() {
+            return new EnumMap<>(GemEnum.class) {
+                {
+                    put(ID, "some-id");
+                    put(GEM_EFFECT, "add");
+                    put(GEM_EFFECT_CONTEXT, Arrays.asList("poskozeni:5", "inteligence:4"));
+                    put(GEM, ItemUtils.EXAMPLE_RESULT.serialize());
+                    put(DISPLAY_NAME, "&cNejhorší gem I");
+                    put(EQUIPMENT_SLOT, Gem.GemEquipmentSlot.MAINHAND.name());
+                }
+            };
+        }
+    }
+
+    public enum HerbEnum implements FileEnum {
+        GATHER_ITEM("gather-item"),
+        ENABLE_SPAWN("enable-spawn"),
+        TIME_GATHER("gather-duration");
+
+        public final String s;
+
+        HerbEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Herb;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<HerbEnum, Object> getDefaultValues() {
+            return new EnumMap<>(HerbEnum.class) {
+                {
+                    ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
+                    put(GATHER_ITEM, exampleResult.serialize());
+                    put(ENABLE_SPAWN, false);
+                    put(TIME_GATHER, 5);
+                }
+            };
+        }
+    }
+
+    public enum ItemTypeHolderEnum implements FileEnum {
+        ERROR_MESSAGE("error-message"),
+        SORTED_BY("sorted-by"),
+        NEW_ITEMS_AVAILABLE_MESSAGE("new-items-available-message");
+
+        public final String s;
+
+        ItemTypeHolderEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<ItemTypeHolderEnum, Object> getDefaultValues() {
+            return new EnumMap<>(ItemTypeHolderEnum.class) {
+                {
+                    put(ERROR_MESSAGE, Arrays.asList("some", "error msg"));
+                    put(SORTED_BY, Arrays.asList(SortType.values()));
+                    put(NEW_ITEMS_AVAILABLE_MESSAGE, Arrays.asList("some", "new items message"));
+                }
+            };
+        }
+    }
+
+    public enum MarkableEnum implements FileEnum {
+        MARKER_SET_ID("dynmap-marker"),
+        MARKER_VISIBLE("marker-visible");
+
+        public final String s;
+
+        MarkableEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType != null;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<MarkableEnum, Object> getDefaultValues() {
+            return new EnumMap<>(MarkableEnum.class) {
+                {
+                    put(MARKER_SET_ID, "some-marker");
+                    put(MARKER_VISIBLE, false);
+                }
+            };
+        }
+    }
+
+    /**
+     * Enum for keys in file
+     */
+    public enum OreEnum implements FileEnum {
+        RESULT("drop");
+
+        public final String s;
+
+        OreEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType.getObject() instanceof Ore;
+        }
+
+        @Override
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Ore;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<OreEnum, Object> getDefaultValues() {
+            return new EnumMap<>(OreEnum.class) {
+                {
+                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT));
+                }
+            };
+        }
+    }
+
+    public enum PotionEnum implements FileEnum {
+        POTION_EFFECTS("potion-effects"),
+        POTION_DURATION("duration"),
+        POTION_FLAG("id"),
+        POTION_TYPE("potion-type"),
+        POTION("potion");
+
+        private static final String SPLIT_CHAR = ":";
+        public final String s;
+
+        PotionEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Potion;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+
+        }
+
+        @Override
+        public EnumMap<PotionEnum, Object> getDefaultValues() {
+            return new EnumMap<>(PotionEnum.class) {
+                {
+                    put(POTION_EFFECTS, Arrays.asList(
+                            String.format("kriticky_utok%s10", SPLIT_CHAR),
+                            String.format("vyhybani%s5", SPLIT_CHAR),
+                            String.format("sance_na_kriticky_zasah%s80", SPLIT_CHAR),
+                            String.format("poskozeni%s40", SPLIT_CHAR),
+                            String.format("zivoty%s30", SPLIT_CHAR)));
+                    put(POTION_DURATION, 80);
+                    put(POTION_FLAG, "potions unique flag");
+                    put(POTION_TYPE, PotionType.FIRE_RESISTANCE.name());
+                    put(POTION, Potion.EXAMPLE_POTION.serialize());
+                }
+            };
+        }
+    }
+
+    public enum PreyEnum implements FileEnum {
+        ENTITY("entity"),
+        CONFIG_NAME("config-name");
+
+        public final String s;
+
+        PreyEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Mob;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<PreyEnum, Object> getDefaultValues() {
+            return new EnumMap<>(PreyEnum.class) {
+                {
+                    put(ENTITY, EntityType.SKELETON.name());
+                    put(CONFIG_NAME, "cfg-name");
+                }
+            };
+        }
+    }
+
+    public enum SpawnPointEnum implements FileEnum {
+        LOCATION("location"),
+        RESPAWN_TIME("respawn-time");
+
+        public final String s;
+
+        SpawnPointEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return false;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<SpawnPointEnum, Object> getDefaultValues() {
+            return new EnumMap<>(SpawnPointEnum.class) {
+                {
+                    put(LOCATION, ItemUtils.EXAMPLE_LOCATION.serialize());
+                    put(RESPAWN_TIME, new Range(0).serialize());
+                }
+            };
+        }
+    }
+
+    /**
+     * Enum for keys in file
+     */
+    public enum SpawnableElementEnum implements FileEnum {
+        SPAWN_POINT("spawnpoint"),
+        ID("id"),
+        MATERIAL("material"),
+        PARTICLE("particle");
+
+        public final String s;
+
+        SpawnableElementEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String toString() {
+            return s;
+        }
+
+        @Override
+        public boolean testItemType(ItemType<?> itemType) {
+            return itemType != null;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<SpawnableElementEnum, Object> getDefaultValues() {
+            return new EnumMap<>(SpawnableElementEnum.class) {
+                {
+                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
+                    put(ID, Utils.EXAMPLE_ID);
+                    put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType());
+                    put(PARTICLE, new ParticleData());
+                }
+            };
         }
     }
 }

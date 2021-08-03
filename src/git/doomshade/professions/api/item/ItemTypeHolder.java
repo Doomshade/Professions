@@ -33,8 +33,8 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -52,7 +52,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static git.doomshade.professions.api.item.ItemTypeHolder.ItemTypeHolderEnum.*;
+import static git.doomshade.professions.utils.Strings.ItemTypeHolderEnum.*;
 
 /**
  * Manager of {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class,
@@ -148,8 +148,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         updateLoader(loader, ERROR_MESSAGE.s, errorMessage, !override);
         updateLoader(loader, SORTED_BY.s, sortedBy, !override);
         updateLoader(loader, NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage, !override);
-        updateLoader(loader, MarkableEnum.MARKER_SET_ID.s, getMarkerSetId(), !override);
-        updateLoader(loader, MarkableEnum.MARKER_VISIBLE.s, isVisible(), !override);
+        updateLoader(loader, Strings.MarkableEnum.MARKER_SET_ID.s, getMarkerSetId(), !override);
+        updateLoader(loader, Strings.MarkableEnum.MARKER_VISIBLE.s, isVisible(), !override);
 
         // get or create a new "items" section
         final ConfigurationSection itemsSection;
@@ -213,8 +213,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         // TODO make a new method for this
         this.errorMessage = loader.getStringList(
                 ERROR_MESSAGE.s);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
-        this.setVisible(loader.getBoolean(MarkableEnum.MARKER_VISIBLE.s));
-        this.setMarkerSetId(loader.getString(MarkableEnum.MARKER_SET_ID.s));
+        this.setVisible(loader.getBoolean(Strings.MarkableEnum.MARKER_VISIBLE.s));
+        this.setMarkerSetId(loader.getString(Strings.MarkableEnum.MARKER_SET_ID.s));
 
         this.itemTypes.clear();
         Comparator<ItemType<?>> comparator = null;
@@ -326,26 +326,4 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         return MARKER_LAYER;
     }
 
-    enum ItemTypeHolderEnum implements FileEnum {
-        ERROR_MESSAGE("error-message"),
-        SORTED_BY("sorted-by"),
-        NEW_ITEMS_AVAILABLE_MESSAGE("new-items-available-message");
-
-        private final String s;
-
-        ItemTypeHolderEnum(String s) {
-            this.s = s;
-        }
-
-        @Override
-        public EnumMap<ItemTypeHolderEnum, Object> getDefaultValues() {
-            return new EnumMap<>(ItemTypeHolderEnum.class) {
-                {
-                    put(ERROR_MESSAGE, Arrays.asList("some", "error msg"));
-                    put(SORTED_BY, Arrays.asList(SortType.values()));
-                    put(NEW_ITEMS_AVAILABLE_MESSAGE, Arrays.asList("some", "new items message"));
-                }
-            };
-        }
-    }
 }
