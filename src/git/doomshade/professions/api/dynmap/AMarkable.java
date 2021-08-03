@@ -32,6 +32,12 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class related to dynmap markers
+ *
+ * @author Doomshade
+ * @version 1.0
+ */
 public abstract class AMarkable implements ConfigurationSerializable {
 
     private String markerSetId = "";
@@ -53,7 +59,12 @@ public abstract class AMarkable implements ConfigurationSerializable {
         return markerSetId;
     }
 
-    protected final void setMarkerSetId(String markerSetId) {
+    /**
+     * Sets the dynmap marker set ID
+     *
+     * @param markerSetId the marker set ID
+     */
+    public final void setMarkerSetId(String markerSetId) {
         this.markerSetId = markerSetId;
     }
 
@@ -93,10 +104,15 @@ public abstract class AMarkable implements ConfigurationSerializable {
      *
      * @param visible {@code true} if the marker should be visible, {@code false} otherwise
      */
-    protected final void setVisible(boolean visible) {
+    public final void setVisible(boolean visible) {
         this.visible = visible;
     }
 
+    /**
+     * Sets whether the marker is visible on dynmap
+     *
+     * @param comparing the comparing layer of the markable
+     */
     public final void setVisible(AMarkable comparing) {
         if (comparing == null) {
             return;

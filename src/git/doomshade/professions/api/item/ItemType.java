@@ -77,11 +77,15 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * @author Doomshade
  * @see CraftableItemType
  */
-public abstract class ItemType<T extends ConfigurationSerializable> extends AMarkable implements ConfigurationSerializable,
+public abstract class ItemType<T extends ConfigurationSerializable> extends AMarkable
+        implements ConfigurationSerializable,
         Comparable<ItemType<T>> {
 
     public static final String KEY_ITEMS = "items";
-
+    /**
+     * The dynmap marker layer
+     */
+    private static final int MARKER_LAYER = 1;
     private int exp, levelReq;
     private T item;
     private String name = "";
@@ -360,6 +364,11 @@ public abstract class ItemType<T extends ConfigurationSerializable> extends AMar
         this.inventoryRequirements = inventoryRequirements;
     }
 
+    @Override
+    public final int getLayer() {
+        return MARKER_LAYER;
+    }
+
     /**
      * @return the restricted worlds this item type will not be handled in events
      */
@@ -414,21 +423,25 @@ public abstract class ItemType<T extends ConfigurationSerializable> extends AMar
 
         if (upd != null) {
             Pattern regex = Pattern.compile("\\{" + INVENTORY_REQUIREMENTS.s + "}");
-            for (int i = 0; i < lore.size(); i++) {
-                String s = lore.get(i);
-                Matcher m = regex.matcher(s);
-                if (!m.find()) {
-                    continue;
-                }
-                s = s.replaceAll(regex.pattern(),
-                        getInventoryRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN,
-                                ChatColor.RED));
-                lore.set(i, s);
-            }
+            updateLore(upd, lore, regex, getInventoryRequirements());
         }
         meta.setLore(lore);
         icon.setItemMeta(meta);
         return icon;
+    }
+
+    protected void updateLore(@NotNull IUserProfessionData upd, List<String> lore, Pattern regex,
+                         Requirements requirements) {
+        lore.replaceAll(s -> {
+            Matcher m = regex.matcher(s);
+            if (!m.find()) {
+                return s;
+            }
+            s = s.replaceAll(regex.pattern(),
+                    requirements.toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN,
+                            ChatColor.RED));
+            return s;
+        });
     }
 
     /**

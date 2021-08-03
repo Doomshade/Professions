@@ -43,10 +43,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -130,6 +127,7 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
         if (meta == null) {
             return icon;
         }
+
         List<String> lore = meta.getLore();
 
         if (lore == null) {
@@ -137,16 +135,8 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
         }
 
         Pattern regex = Pattern.compile("\\{" + CRAFTABLE_ITEM_REQ.s + "}");
-        for (int i = 0; i < lore.size(); i++) {
-            String s = lore.get(i);
-            Matcher m = regex.matcher(s);
-            if (!m.find()) {
-                continue;
-            }
-            s = s.replaceAll(regex.pattern(),
-                    getCraftingRequirements().toString(upd.getUser().getPlayer(), ChatColor.DARK_GREEN, ChatColor.RED));
-            lore.set(i, s);
-        }
+
+        super.updateLore(upd, lore, regex, getCraftingRequirements());
 
         meta.setLore(lore);
         icon.setItemMeta(meta);
@@ -216,7 +206,7 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
     }
 
     /**
-     * Adds an additional crafting requirement for this item type
+     * Adds a crafting requirement for this item type
      *
      * @param item the crafting requirement to add
      */

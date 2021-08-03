@@ -67,12 +67,17 @@ import static git.doomshade.professions.api.item.ItemTypeHolder.ItemTypeHolderEn
 public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends AMarkable
         implements Iterable<Type> {
     /**
+     * The dynmap marker layer
+     */
+    private static final int MARKER_LAYER = 0;
+
+    /**
      * The example item type (this item type should have an ID of -1)
      */
     private final Type itemType;
 
     /**
-     * List required for the ordering of item types
+     * Using linked hashmap as in the file it is not specified that the item type IDs must be consecutive
      */
     private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
 
@@ -80,10 +85,12 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
      * Comparator to sort ItemTypes
      */
     private Comparator<Type> comparator = null;
+
     /**
      * The error message
      */
     private List<String> errorMessage = new ArrayList<>();
+
     /**
      * The new items message
      */
@@ -136,17 +143,16 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
             return;
         }
 
+        // add defaults or set the values to the root based on override value
         final List<String> sortedBy = Settings.getSettings(DefaultsSettings.class).getSortedBy();
-        loader.addDefault(ERROR_MESSAGE.s, errorMessage);
-        loader.addDefault(SORTED_BY.s, sortedBy);
-        loader.addDefault(NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage);
-        if (override) {
-            loader.set(ERROR_MESSAGE.s, errorMessage);
-            loader.set(SORTED_BY.s, sortedBy);
-            loader.set(NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage);
+        updateLoader(loader, ERROR_MESSAGE.s, errorMessage, !override);
+        updateLoader(loader, SORTED_BY.s, sortedBy, !override);
+        updateLoader(loader, NEW_ITEMS_AVAILABLE_MESSAGE.s, newItemsMessage, !override);
+        updateLoader(loader, MarkableEnum.MARKER_SET_ID.s, getMarkerSetId(), !override);
+        updateLoader(loader, MarkableEnum.MARKER_VISIBLE.s, isVisible(), !override);
 
-        }
-        ConfigurationSection itemsSection;
+        // get or create a new "items" section
+        final ConfigurationSection itemsSection;
         if (loader.isConfigurationSection(ItemType.KEY_ITEMS)) {
             itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         } else {
@@ -154,19 +160,25 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         }
 
         if (itemsSection != null) {
+            // add a default serialized example item type
             itemsSection.addDefault(String.valueOf(0), itemType.serialize());
-            if (!itemTypes.isEmpty()) {
-                for (int i = 0; i < itemTypes.size(); i++) {
-                    ItemType<?> registeredObject = itemTypes.get(i);
-                    itemsSection.addDefault(String.valueOf(i), registeredObject.serialize());
-                    if (override) {
-                        itemsSection.set(String.valueOf(i), registeredObject.serialize());
-                    }
-                }
+
+            // serialize all the registered item types
+            for (Map.Entry<Integer, Type> entry : itemTypes.entrySet()) {
+                Type itemType = entry.getValue();
+                updateLoader(itemsSection, entry.getKey().toString(), itemType.serialize(), !override);
             }
         }
         loader.options().copyDefaults(true);
         loader.save(itemFile);
+    }
+
+    private void updateLoader(ConfigurationSection section, String path, Object value, boolean isDefault) {
+        if (isDefault) {
+            section.addDefault(path, value);
+        } else {
+            section.set(path, value);
+        }
     }
 
     @Nullable
@@ -310,8 +322,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
     @Override
-    public int getLayer() {
-        return 0;
+    public final int getLayer() {
+        return MARKER_LAYER;
     }
 
     enum ItemTypeHolderEnum implements FileEnum {
