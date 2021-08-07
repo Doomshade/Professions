@@ -35,6 +35,7 @@ import org.bukkit.event.Event;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 abstract class AbstractProfessionEvent extends Event implements Cancellable {
     protected final User user;

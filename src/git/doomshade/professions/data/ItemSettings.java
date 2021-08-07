@@ -35,6 +35,7 @@ import java.util.Objects;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class ItemSettings extends AbstractSettings {
     private static final String SECTION = "items", LORE = "default-lore";

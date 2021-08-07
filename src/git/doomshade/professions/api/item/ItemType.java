@@ -76,6 +76,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  *
  * @author Doomshade
  * @see CraftableItemType
+ * @since 1.0
  */
 public abstract class ItemType<T extends ConfigurationSerializable> extends AMarkable
         implements ConfigurationSerializable,

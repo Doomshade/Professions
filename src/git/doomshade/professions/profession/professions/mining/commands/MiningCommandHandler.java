@@ -37,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
  * Custom command handler for mining
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class MiningCommandHandler extends AbstractCommandHandler {
 

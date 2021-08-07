@@ -26,6 +26,11 @@ package git.doomshade.professions.profession.professions.alchemy;
 
 import org.bukkit.entity.Player;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PotionPlayerOptions {
     public final Potion potion;
     public final Player player;

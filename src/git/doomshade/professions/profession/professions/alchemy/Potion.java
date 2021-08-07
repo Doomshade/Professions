@@ -53,6 +53,11 @@ import java.util.*;
 
 import static git.doomshade.professions.utils.Strings.PotionEnum.*;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class Potion implements ConfigurationSerializable {
 
     private static final NamespacedKey NBT_KEY = new NamespacedKey(

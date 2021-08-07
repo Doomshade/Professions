@@ -30,6 +30,8 @@ import org.bukkit.inventory.ItemStack;
  * Class for storing an {@link Enchant} and {@link ItemStack} before enchanting
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class PreEnchantedItem {
 

@@ -53,6 +53,8 @@ import static git.doomshade.professions.utils.Strings.OreEnum.RESULT;
  * {@link Material} as a generic argument to {@link OreItemType}.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class Ore extends Spawnable implements ConfigurationSerializable {
 

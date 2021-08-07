@@ -33,6 +33,7 @@ import org.bukkit.ChatColor;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public enum SkillupColor {
     RED(ChatColor.RED),

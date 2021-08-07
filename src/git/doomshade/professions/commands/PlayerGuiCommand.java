@@ -39,6 +39,7 @@ import java.util.List;
  * @version 1.0
  * @see git.doomshade.guiapi.GUI
  * @see git.doomshade.guiapi.GUIApi
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class PlayerGuiCommand extends AbstractCommand {

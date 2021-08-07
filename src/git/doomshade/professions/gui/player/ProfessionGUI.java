@@ -52,6 +52,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ProfessionGUI extends GUI {
     static final String POSITION_GUI = "position";
     private final int levelThreshold;

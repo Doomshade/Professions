@@ -31,7 +31,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 
-
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class OreSpawnManager implements ISetup {
 
 

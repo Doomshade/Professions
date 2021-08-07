@@ -43,7 +43,9 @@ import java.util.stream.IntStream;
  * A class managing requirements of a player.
  *
  * @author Doomshade
+ * @version 1.0
  * @see ICraftable
+ * @since 1.0
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
 

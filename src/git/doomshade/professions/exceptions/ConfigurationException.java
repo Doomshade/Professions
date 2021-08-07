@@ -26,6 +26,11 @@ package git.doomshade.professions.exceptions;
 
 import java.io.IOException;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ConfigurationException extends IOException {
     private String message;
 

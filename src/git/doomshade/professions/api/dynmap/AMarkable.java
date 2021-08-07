@@ -36,6 +36,7 @@ import java.util.Map;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public abstract class AMarkable implements ConfigurationSerializable {
 

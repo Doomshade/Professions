@@ -35,6 +35,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class YieldResult implements ConfigurationSerializable, Comparable<YieldResult> {
     public final double chance;
     public final ItemStack drop;

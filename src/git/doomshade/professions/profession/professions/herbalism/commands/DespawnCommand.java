@@ -34,6 +34,11 @@ import org.bukkit.command.CommandSender;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 @SuppressWarnings("ALL")
 public class DespawnCommand extends AbstractSpawnCommand {
 

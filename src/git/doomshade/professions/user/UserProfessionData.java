@@ -52,6 +52,7 @@ import java.util.List;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class UserProfessionData implements IUserProfessionData {
     private static final String KEY_EXP = "exp", KEY_LEVEL = "level", KEY_EXTRAS = "extras";

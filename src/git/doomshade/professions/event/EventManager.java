@@ -40,6 +40,7 @@ import java.util.Arrays;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class EventManager {
 

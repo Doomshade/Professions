@@ -32,6 +32,8 @@ import javax.annotation.Nullable;
  * Basically an enchant manager
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class EnchantManager {
     private static final EnchantManager instance = new EnchantManager();

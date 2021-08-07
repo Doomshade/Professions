@@ -78,6 +78,7 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class ProfessionManager implements ISetup, IProfessionManager {
     private static final ProfessionManager instance = new ProfessionManager();

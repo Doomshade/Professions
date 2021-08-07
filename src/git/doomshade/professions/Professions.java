@@ -94,6 +94,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class Professions extends JavaPlugin implements ISetup, IProfessionAPI {
 

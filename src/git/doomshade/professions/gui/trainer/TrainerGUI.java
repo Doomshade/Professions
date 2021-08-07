@@ -27,9 +27,9 @@ package git.doomshade.professions.gui.trainer;
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.Range;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.Range;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
@@ -54,9 +54,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 
+/**
+ * @param <T>
+ * @param <Type>
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemType<T>> extends GUI implements ISetup {
 
     private static final HashMap<String, List<ItemType<?>>> CACHE = new HashMap<>();

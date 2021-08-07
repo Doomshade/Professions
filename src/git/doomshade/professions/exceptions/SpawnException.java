@@ -29,6 +29,11 @@ import git.doomshade.professions.io.ProfessionLogger;
 
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class SpawnException extends Exception {
     private SpawnExceptionReason reason = SpawnExceptionReason.UNKNOWN;
     private ISpawnable locationElement = null;

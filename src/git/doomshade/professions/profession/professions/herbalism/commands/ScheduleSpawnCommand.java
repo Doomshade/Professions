@@ -32,7 +32,11 @@ import git.doomshade.professions.utils.Permissions;
 import java.util.function.Consumer;
 
 /**
- * TODO: Make a /prof-herbalism herb subcommand and add an arguemnt of spawn/despawn/schedule
+ * TODO: Make a /prof-herbalism herb subcommand and add an argument of spawn/despawn/schedule
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class ScheduleSpawnCommand extends AbstractSpawnCommand {
 

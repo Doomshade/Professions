@@ -39,6 +39,7 @@ import java.io.Serializable;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public abstract class AbstractProfessionSpecificSettings extends AbstractSettings {
 

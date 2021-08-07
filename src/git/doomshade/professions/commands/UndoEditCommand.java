@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  * @author Doomshade
  * @version 1.0
  * @see git.doomshade.professions.profession.professions.mining.commands.EditCommand
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class UndoEditCommand extends AbstractCommand {

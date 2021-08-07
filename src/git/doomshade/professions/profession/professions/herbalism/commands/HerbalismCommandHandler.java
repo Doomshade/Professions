@@ -27,6 +27,11 @@ package git.doomshade.professions.profession.professions.herbalism.commands;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class HerbalismCommandHandler extends AbstractCommandHandler {
     @Override
     protected String getCommandExecutorName() {

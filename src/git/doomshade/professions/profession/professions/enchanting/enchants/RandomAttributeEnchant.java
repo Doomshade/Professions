@@ -36,6 +36,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class RandomAttributeEnchant extends Enchant {
     private static final HashMap<Integer, Range> INTENSITY_VALUES = new HashMap<>() {
         {

@@ -37,6 +37,8 @@ import java.util.function.Function;
  * An enchant item type example for {@link EnchantingProfession}
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     private static final String ENCHANT = "enchant";

@@ -41,6 +41,7 @@ import java.util.logging.Level;
  * @author Doomshade
  * @version 1.0
  * @see AbstractCommandHandler
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
@@ -240,13 +241,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     public abstract String getID();
 
     /**
-     * @param requiresPlayer the requiresPlayer to set
-     */
-    public final void setRequiresPlayer(boolean requiresPlayer) {
-        this.requiresPlayer = requiresPlayer;
-    }
-
-    /**
      * Sets an argument to the command
      *
      * @param bool use {@code true} if the argument is required, {@code false} otherwise
@@ -358,5 +352,12 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         setRequiresPlayer(other.requiresPlayer());
         setMessages(other.getMessages());
         setPermissions(other.getPermissions());
+    }
+
+    /**
+     * @param requiresPlayer the requiresPlayer to set
+     */
+    public final void setRequiresPlayer(boolean requiresPlayer) {
+        this.requiresPlayer = requiresPlayer;
     }
 }

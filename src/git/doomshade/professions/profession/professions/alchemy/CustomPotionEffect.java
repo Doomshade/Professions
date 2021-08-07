@@ -27,6 +27,11 @@ package git.doomshade.professions.profession.professions.alchemy;
 import git.doomshade.professions.profession.utils.Effect;
 import org.bukkit.entity.Player;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public interface CustomPotionEffect extends Effect<String> {
 
     void apply(String potionEffect, Player player, boolean negated);

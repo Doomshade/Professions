@@ -44,6 +44,8 @@ import java.util.Map;
  * Command for editing mining areas
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class EditCommand extends AbstractEditCommand {

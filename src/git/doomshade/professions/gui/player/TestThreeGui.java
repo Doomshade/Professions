@@ -32,6 +32,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class TestThreeGui extends GUI {
 
     protected TestThreeGui(Player guiHolder, GUIManager manager) {

@@ -39,6 +39,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class AdminProfessionGUI extends GUI {
 
     protected AdminProfessionGUI(Player guiHolder, GUIManager manager) {

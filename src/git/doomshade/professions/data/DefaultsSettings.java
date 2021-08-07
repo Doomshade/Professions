@@ -36,6 +36,7 @@ import java.util.List;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class DefaultsSettings extends AbstractProfessionSettings {
 

@@ -30,7 +30,9 @@ import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 /**
- * Data of a spawn point
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public interface ISpawnPoint extends ConfigurationSerializable {
 

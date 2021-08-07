@@ -27,6 +27,11 @@ package git.doomshade.professions.data.cache;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class CacheHeader implements Serializable {
 
     private final LocalDateTime time = LocalDateTime.now();

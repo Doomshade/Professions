@@ -41,6 +41,7 @@ import static git.doomshade.professions.utils.ItemUtils.getDescription;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class TrainableSettings extends AbstractProfessionSettings {
     private static final String TRAINABLE_SECTION = "trainable",

@@ -49,6 +49,7 @@ import java.util.stream.Collectors;
  * @author Doomshade
  * @version 1.0
  * @see Profession#onEvent(ProfessionEventWrapper)
+ * @since 1.0
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();

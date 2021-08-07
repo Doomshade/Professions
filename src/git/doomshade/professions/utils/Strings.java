@@ -49,6 +49,8 @@ import java.util.function.Predicate;
  * A class of {@code public static final} {@link String}s divided into enums for queries.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public final class Strings {
     private static final Collection<FileEnum> REGISTERED_FILE_ENUMS = new HashSet<>();

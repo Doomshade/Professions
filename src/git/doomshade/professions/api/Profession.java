@@ -64,6 +64,7 @@ import java.util.stream.Collectors;
  * @see JewelcraftingProfession
  * @see MiningProfession
  * @see SmeltingProfession
+ * @since 1.0
  */
 public abstract class Profession implements IProfession {
 
@@ -272,11 +273,6 @@ public abstract class Profession implements IProfession {
             throw new IllegalArgumentException(sb);
         }
 
-        @Override
-        public String toString() {
-            return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
-        }
-
         /**
          * @param id the id
          *
@@ -292,6 +288,11 @@ public abstract class Profession implements IProfession {
                     .map(type -> type.ordinal() + "=" + type)
                     .collect(Collectors.joining("", id + " is not a valid profession id type! (", ")"));
             throw new IllegalArgumentException(sb);
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
 
         @Override

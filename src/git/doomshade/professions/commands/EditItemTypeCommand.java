@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
  * @author Doomshade
  * @version 1.0
  * @see ItemType
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class EditItemTypeCommand extends AbstractCommand {
@@ -78,26 +79,6 @@ public class EditItemTypeCommand extends AbstractCommand {
         addPermission(Permissions.ADMIN);
     }
 
-    static File getFile(String[] args) {
-        i[0] = 1;
-        String fileName = Arrays.asList(args).subList(1, args.length).stream().map(new Function<String, String>() {
-            boolean found = false;
-
-            @Override
-            public String apply(String s) {
-                if (found) {
-                    return "";
-                }
-                i[0]++;
-                if (s.endsWith("\"") || s.endsWith("'")) {
-                    found = true;
-                }
-                return s;
-            }
-        }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
-        return new File(IOManager.getItemFolder(), fileName);
-    }
-
     @Nullable
     static FileConfiguration getAndRemoveLastUndo(File file) {
         return getAndRemoveLastUndoWithMessage(file, null, "");
@@ -112,12 +93,6 @@ public class EditItemTypeCommand extends AbstractCommand {
             sender.sendMessage(message);
         }
         return lastUndo;
-    }
-
-    private static void saveUndo(File file, FileConfiguration loader) {
-        LinkedList<FileConfiguration> pastUndoes = UNDO.getOrDefault(file, new LinkedList<>());
-        pastUndoes.add(loader);
-        UNDO.put(file, pastUndoes);
     }
 
     @Override
@@ -247,6 +222,32 @@ public class EditItemTypeCommand extends AbstractCommand {
             sender.sendMessage("Unexpected error occurred. Check console for further logs.");
             ProfessionLogger.logError(e);
         }
+    }
+
+    static File getFile(String[] args) {
+        i[0] = 1;
+        String fileName = Arrays.asList(args).subList(1, args.length).stream().map(new Function<String, String>() {
+            boolean found = false;
+
+            @Override
+            public String apply(String s) {
+                if (found) {
+                    return "";
+                }
+                i[0]++;
+                if (s.endsWith("\"") || s.endsWith("'")) {
+                    found = true;
+                }
+                return s;
+            }
+        }).collect(Collectors.joining(" ")).trim().replaceAll("\"", "");
+        return new File(IOManager.getItemFolder(), fileName);
+    }
+
+    private static void saveUndo(File file, FileConfiguration loader) {
+        LinkedList<FileConfiguration> pastUndoes = UNDO.getOrDefault(file, new LinkedList<>());
+        pastUndoes.add(loader);
+        UNDO.put(file, pastUndoes);
     }
 
     @Override

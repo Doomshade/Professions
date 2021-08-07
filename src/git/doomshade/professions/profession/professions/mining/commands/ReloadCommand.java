@@ -34,6 +34,8 @@ import java.util.List;
  * Simple reload command
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class ReloadCommand extends AbstractCommand {

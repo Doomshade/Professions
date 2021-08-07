@@ -38,6 +38,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.UUID;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class UserListener implements Listener {
     /*private static final ItemStack ZPET_BUTTON = itemStackBuilder(Material.BOOK).withDisplayName(ChatColor.RED +
     "Zpet").withLore(new ArrayList<>()).build();

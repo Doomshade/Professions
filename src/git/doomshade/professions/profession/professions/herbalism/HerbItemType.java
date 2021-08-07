@@ -32,6 +32,11 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class HerbItemType extends ItemType<Herb> {
 
     public static final String CACHE_FOLDER = "herb";

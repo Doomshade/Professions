@@ -33,8 +33,16 @@ import org.bukkit.entity.Player;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public interface IProfessionAPI {
+
+    /**
+     * @return an implementation of this API
+     */
+    static IProfessionAPI getApi() {
+        return Professions.getInstance();
+    }
 
     /**
      * @return the profession manager
@@ -47,11 +55,4 @@ public interface IProfessionAPI {
      * @return the user
      */
     IUser getUser(Player player);
-
-    /**
-     * @return an implementation of this API
-     */
-    static IProfessionAPI getApi() {
-        return Professions.getInstance();
-    }
 }

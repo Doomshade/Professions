@@ -66,6 +66,8 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  * Utilities for {@link ItemStack}
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public final class ItemUtils implements ISetup {
 

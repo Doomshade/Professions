@@ -47,6 +47,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class TrainerChooserGUI extends GUI {
     private static final String KEY_NAME = "name";
     public static final String KEY_NPC = "npc";

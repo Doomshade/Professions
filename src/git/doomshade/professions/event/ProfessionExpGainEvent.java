@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class ProfessionExpGainEvent extends AbstractProfessionEvent implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();

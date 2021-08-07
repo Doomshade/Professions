@@ -63,6 +63,7 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public abstract class Spawnable extends Element
         implements ConfigurationSerializable, ISpawnable {

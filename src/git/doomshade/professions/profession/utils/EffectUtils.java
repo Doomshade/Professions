@@ -29,6 +29,11 @@ import org.bukkit.entity.Player;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class EffectUtils {
     private static final Pattern ATTRIBUTE_PATTERN = Pattern.compile("([\\w]+):([0-9]+)");
 

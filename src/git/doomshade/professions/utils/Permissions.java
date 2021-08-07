@@ -29,6 +29,11 @@ import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 import org.bukkit.entity.Player;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public final class Permissions {
 
     private static final LuckPerms manager = Professions.getPermissionManager();

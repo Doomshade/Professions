@@ -24,6 +24,11 @@
 
 package git.doomshade.professions.exceptions;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public abstract class InitializationException extends Exception {
     public InitializationException() {
     }

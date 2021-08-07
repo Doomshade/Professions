@@ -34,7 +34,8 @@ import java.util.List;
  * Command for creating of item types
  *
  * @author Doomshade
- * @version NOT_YET_IMPLEMENTED
+ * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("all")
 public class CreateItemTypeCommand extends AbstractCommand {

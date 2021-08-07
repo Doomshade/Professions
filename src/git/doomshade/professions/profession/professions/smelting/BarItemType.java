@@ -31,6 +31,11 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class BarItemType extends CraftableItemType<BarItemStack> {
 
     /**

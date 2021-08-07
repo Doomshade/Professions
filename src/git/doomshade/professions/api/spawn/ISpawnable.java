@@ -37,6 +37,7 @@ import java.util.Iterator;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
 

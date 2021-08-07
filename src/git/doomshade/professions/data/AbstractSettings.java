@@ -40,6 +40,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public abstract class AbstractSettings implements ISetup, Serializable {
     transient static final Level LEVEL = Level.WARNING;

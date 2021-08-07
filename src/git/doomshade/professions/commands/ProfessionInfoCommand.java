@@ -62,6 +62,7 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class ProfessionInfoCommand extends AbstractCommand {

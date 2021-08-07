@@ -34,6 +34,10 @@ import java.util.function.Predicate;
  * This hashset ensures that the elements can be only added and/or read, not removed
  *
  * @param <E> the element type
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class IrremovableSet<E> extends HashSet<E> {
     public IrremovableSet() {

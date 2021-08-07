@@ -24,6 +24,12 @@
 
 package git.doomshade.professions.profession.professions.crafting;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ * @deprecated not used
+ */
 @Deprecated
 public class CustomRecipe /*extends ItemType<ShapedRecipe>*/ {
     /*public static final NamespacedKey NMS_KEY = new NamespacedKey(Professions.getInstance(), "recipe");

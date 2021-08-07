@@ -26,5 +26,10 @@ package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.commands.AbstractCommand;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public abstract class AbstractEditCommand extends AbstractCommand {
 }

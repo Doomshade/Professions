@@ -36,6 +36,11 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PotionTask extends BukkitRunnable implements Serializable {
 
     final Potion potion;

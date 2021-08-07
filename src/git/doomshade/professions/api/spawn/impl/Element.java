@@ -35,6 +35,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public abstract class Element implements IElement, ConfigurationSerializable {
     private static final Map<
             Class<? extends Element>,

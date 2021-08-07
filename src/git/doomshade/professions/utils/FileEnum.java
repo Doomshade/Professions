@@ -29,6 +29,11 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.EnumMap;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public interface FileEnum {
 
     default boolean testItemType(ItemType<?> itemType) {

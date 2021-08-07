@@ -29,6 +29,7 @@ package git.doomshade.professions.commands;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class CommandHandler extends AbstractCommandHandler {
 

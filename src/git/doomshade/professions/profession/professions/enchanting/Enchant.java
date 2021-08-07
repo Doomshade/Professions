@@ -44,15 +44,16 @@ import java.util.stream.Collectors;
 
 /**
  * The generic type of EnchantedItemType. Used for modifying (enchanting) items.
+ *
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public abstract class Enchant implements ConfigurationSerializable {
-    protected final Random random;
-
     public static final int DEFAULT_INTENSITY = 0;
-    private static final List<Pattern> attributePatterns = new ArrayList<>();
     static final HashMap<Class<? extends Enchant>, Enchant> ENCHANTS = new HashMap<>();
+    private static final List<Pattern> attributePatterns = new ArrayList<>();
     private static final String ITEMSTACK = "itemstack", CLASS = "class", CRAFT_EXP_YIELD = "craft-exp-yield";
-    private BiFunction<ItemStack, Integer, ItemStack> function = null;
 
     static {
 
@@ -63,6 +64,8 @@ public abstract class Enchant implements ConfigurationSerializable {
         attributePatterns.add(Pattern.compile("[\\D]+: [0-9]+"));
     }
 
+    protected final Random random;
+    private BiFunction<ItemStack, Integer, ItemStack> function = null;
     private ItemStack item;
     private int craftExpYield;
 
@@ -232,14 +235,13 @@ public abstract class Enchant implements ConfigurationSerializable {
         this.function = func;
     }
 
-    public final ItemStack use(ItemStack item, int intensity) {
-        return function.apply(item, intensity);
-    }
-
     public final ItemStack use(ItemStack item) {
         return use(item, DEFAULT_INTENSITY);
     }
 
+    public final ItemStack use(ItemStack item, int intensity) {
+        return function.apply(item, intensity);
+    }
 
     protected abstract void init();
 }

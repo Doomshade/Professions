@@ -29,6 +29,11 @@ import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 
 import java.time.Duration;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class LogTask extends ExtendedBukkitRunnable {
 
     // 10 minutes

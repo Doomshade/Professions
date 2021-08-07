@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
  * A utility class containing of two {@link Integer}s.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public final class Range implements ConfigurationSerializable {
     public static final Pattern RANGE_PATTERN = Pattern.compile("(\\d+)(-(\\d+))?");

@@ -27,7 +27,10 @@ package git.doomshade.professions.utils;
 /**
  * Formula for calculating exp based on level. This is copied from {@code Eniripsa96}'s code.
  *
+ * @author Doomshade
+ * @version 1.0
  * @see com.sucy.skill.data.ExpFormula
+ * @since 1.0
  */
 public class ExpFormula {
     private final int x, y, z;

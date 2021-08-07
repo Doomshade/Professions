@@ -34,6 +34,8 @@ import java.util.Comparator;
  * @param <E> the type
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class SortedList<E> extends ArrayList<E> {
     private transient final Comparator<? super E> c;

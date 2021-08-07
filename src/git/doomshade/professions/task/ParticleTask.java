@@ -31,6 +31,11 @@ import org.bukkit.Particle;
 
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ParticleTask extends ExtendedBukkitRunnable {
     private final ParticleData particle;
     private final Location location;

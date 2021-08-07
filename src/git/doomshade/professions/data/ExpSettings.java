@@ -34,6 +34,7 @@ import java.util.Objects;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  * @see com.sucy.skill.SkillAPI
  */
 public class ExpSettings extends AbstractSettings {

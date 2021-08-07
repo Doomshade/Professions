@@ -42,6 +42,11 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class JewelcraftingListener implements Listener {
 
     private static final HashMap<UUID, Gem> RIGHT_CLICK = new HashMap<>();

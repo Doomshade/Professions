@@ -37,6 +37,7 @@ import git.doomshade.professions.api.item.ItemType;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class ProfessionEventWrapper<T extends ItemType<?>> {
     public final ProfessionEvent<T> event;

@@ -34,6 +34,11 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ParticleData implements ConfigurationSerializable, IParticleData {
 
     private final String particle;

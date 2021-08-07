@@ -48,6 +48,7 @@ import static git.doomshade.professions.data.AbstractSettings.outdated;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class Settings implements ISetup {
 

@@ -28,6 +28,11 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import org.bukkit.event.Listener;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public interface IProfession extends Listener, Comparable<Profession> {
     /**
      * @return the unique ID of this profession

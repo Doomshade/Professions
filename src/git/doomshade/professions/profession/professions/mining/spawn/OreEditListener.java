@@ -50,6 +50,11 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class OreEditListener implements Listener {
 
     private static final HashMap<UUID, OreLocation> CHAT = new HashMap<>();

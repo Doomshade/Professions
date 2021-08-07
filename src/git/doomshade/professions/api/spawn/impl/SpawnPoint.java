@@ -44,7 +44,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -54,7 +53,9 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.SPAWN
 
 
 /**
- * This class stores the location of spawn point, the
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class SpawnPoint implements ISpawnPoint {
     public static final SpawnPoint EXAMPLE = new SpawnPoint();

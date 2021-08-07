@@ -47,6 +47,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class ProfessionSettingsManager extends AbstractSettings {
     private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();

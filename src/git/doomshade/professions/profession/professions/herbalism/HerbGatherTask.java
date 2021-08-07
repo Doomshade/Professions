@@ -33,6 +33,11 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.function.Consumer;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class HerbGatherTask extends GatherTask {
 
     private static final BossBarOptions bossBarOptions = new BossBarOptions();

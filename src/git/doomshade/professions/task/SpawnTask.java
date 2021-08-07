@@ -32,6 +32,11 @@ import org.bukkit.Bukkit;
 
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class SpawnTask extends ExtendedBukkitRunnable {
 
     private final SpawnPoint spawnPoint;

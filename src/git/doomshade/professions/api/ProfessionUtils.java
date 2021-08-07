@@ -40,6 +40,7 @@ import java.util.Optional;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class ProfessionUtils {
     private final Profession profession;

@@ -27,6 +27,11 @@ package git.doomshade.professions.data.cache;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public abstract class Cacheable implements Serializable {
 
     public abstract Serializable getData();

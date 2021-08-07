@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
     private static final HandlerList handlerList = new HandlerList();

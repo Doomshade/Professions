@@ -28,6 +28,11 @@ import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class AlchemyProfession extends Profession {
 
     @Override

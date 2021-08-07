@@ -39,6 +39,7 @@ import java.util.function.Supplier;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public interface IProfessionManager {
 

@@ -43,6 +43,11 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PluginProfessionListener implements Listener {
     public static final HashMap<UUID, CraftingTask> PENDING_REPEAT_AMOUNT = new HashMap<>();
     private static final Random random = new Random();

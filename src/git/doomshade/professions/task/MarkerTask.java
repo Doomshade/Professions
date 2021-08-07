@@ -26,6 +26,11 @@ package git.doomshade.professions.task;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class MarkerTask extends BukkitRunnable {
     @Override
     public void run() {

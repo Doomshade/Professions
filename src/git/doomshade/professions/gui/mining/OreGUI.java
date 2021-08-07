@@ -43,6 +43,11 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class OreGUI extends GUI {
 
     private boolean ignore = false;

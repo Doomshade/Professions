@@ -40,6 +40,8 @@ import static git.doomshade.professions.utils.Strings.PreyEnum.ENTITY;
  * A prey (mob hunting) example for {@link SkinningProfession}
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class PreyItemType extends ItemType<Mob> {
 

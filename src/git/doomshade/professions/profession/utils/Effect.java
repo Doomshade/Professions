@@ -33,6 +33,7 @@ import org.bukkit.entity.Player;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public interface Effect<T> {
 

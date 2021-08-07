@@ -34,6 +34,7 @@ import java.util.Comparator;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public enum SortType {
     NAME("name", Comparator.comparing(ItemType::getName)),

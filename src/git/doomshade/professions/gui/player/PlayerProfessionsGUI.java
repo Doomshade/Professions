@@ -36,6 +36,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PlayerProfessionsGUI extends GUI {
     static final String ID_PROFESSION = "name";
 

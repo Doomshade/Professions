@@ -45,6 +45,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public final class MiningProfession extends Profession {
 
 

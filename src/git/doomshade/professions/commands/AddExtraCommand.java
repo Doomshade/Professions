@@ -45,6 +45,7 @@ import java.util.Optional;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class AddExtraCommand extends AbstractCommand {

@@ -35,6 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PotionItemType extends CraftableItemType<Potion> {
 
     /**

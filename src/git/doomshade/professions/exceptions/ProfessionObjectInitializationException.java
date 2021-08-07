@@ -31,6 +31,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ProfessionObjectInitializationException extends InitializationException {
     public static final int NO_ID = -1;
     private final Collection<String> keys;

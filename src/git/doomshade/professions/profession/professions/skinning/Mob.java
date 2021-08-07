@@ -39,6 +39,8 @@ import static git.doomshade.professions.utils.Strings.PreyEnum.ENTITY;
  * otherwise only passed {@link EntityType} as a generic argument to {@link PreyItemType}.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class Mob implements ConfigurationSerializable {
     final String configName;

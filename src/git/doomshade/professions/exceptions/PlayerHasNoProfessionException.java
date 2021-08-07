@@ -29,6 +29,11 @@ import git.doomshade.professions.user.User;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class PlayerHasNoProfessionException extends RuntimeException {
 
     public PlayerHasNoProfessionException(User user, Profession profession) {

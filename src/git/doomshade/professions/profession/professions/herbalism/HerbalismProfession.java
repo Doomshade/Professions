@@ -41,6 +41,11 @@ import org.bukkit.entity.Player;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class HerbalismProfession extends Profession {
 
     // TODO add this to config file

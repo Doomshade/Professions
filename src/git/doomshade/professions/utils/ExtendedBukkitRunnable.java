@@ -37,6 +37,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
 

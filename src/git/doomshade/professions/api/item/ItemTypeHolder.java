@@ -63,6 +63,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeHolderEnum.*;
  * @author Doomshade
  * @version 1.0
  * @see IProfessionManager
+ * @since 1.0
  */
 public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends AMarkable
         implements Iterable<Type> {

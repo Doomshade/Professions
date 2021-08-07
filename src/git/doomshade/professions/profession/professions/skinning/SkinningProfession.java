@@ -29,6 +29,11 @@ import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public final class SkinningProfession extends Profession {
 
     @Override

@@ -30,6 +30,12 @@ import org.bukkit.command.CommandSender;
 
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ * @deprecated since 1.0, not used
+ */
 @SuppressWarnings("ALL")
 @Deprecated
 public class ExpMultiplierCommand extends AbstractCommand {

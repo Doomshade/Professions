@@ -30,6 +30,11 @@ import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.user.User;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public final class EnchantingProfession extends Profession {
 
     @Override

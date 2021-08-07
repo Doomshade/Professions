@@ -29,6 +29,11 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 
 import java.util.Map;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class GemItemType extends CraftableItemType<Gem> {
 
     public GemItemType(Gem object) {

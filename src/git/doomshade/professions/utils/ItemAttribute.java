@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
  * Class representing an item attribute (used on my server, not part of the api!)
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class ItemAttribute {
     private final String attribute;

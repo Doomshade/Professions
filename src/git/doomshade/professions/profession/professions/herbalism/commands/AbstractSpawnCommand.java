@@ -38,6 +38,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 @SuppressWarnings("ALL")
 abstract class AbstractSpawnCommand extends AbstractCommand {
     @Override

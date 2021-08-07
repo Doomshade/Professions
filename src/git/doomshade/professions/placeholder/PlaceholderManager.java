@@ -24,20 +24,17 @@
 
 package git.doomshade.professions.placeholder;
 
-import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
-
-import java.util.logging.Level;
 
 /**
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class PlaceholderManager implements ISetup {
     private static final PlaceholderManager instance = new PlaceholderManager();
-    private ProfessionPlaceholders placeholders = null;
     private static boolean registered = false;
+    private ProfessionPlaceholders placeholders = null;
 
     private PlaceholderManager() {
     }

@@ -35,6 +35,7 @@ import java.util.List;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class CommandsCommand extends AbstractCommand {

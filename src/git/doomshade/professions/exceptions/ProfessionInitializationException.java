@@ -30,6 +30,11 @@ import git.doomshade.professions.io.ProfessionLogger;
 import java.util.Collection;
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class ProfessionInitializationException extends InitializationException {
 
     private static final int NO_ID = -1;

@@ -39,7 +39,8 @@ import java.util.Map;
 
 /**
  * @author Doomshade
- * @version TEST_VERSION
+ * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class TestCommand extends AbstractCommand {

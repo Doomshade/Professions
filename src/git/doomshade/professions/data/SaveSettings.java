@@ -28,7 +28,8 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 
 /**
  * @author Doomshade
- * @version NOT_YET_IMPLEMENTED
+ * @version 1.0
+ * @since 1.0
  */
 public class SaveSettings extends AbstractSettings {
     private static final String SAVING = "saving";

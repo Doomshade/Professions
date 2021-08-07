@@ -39,6 +39,11 @@ import org.bukkit.event.Listener;
 
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class TrainerListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onRightClick(NPCRightClickEvent e) {

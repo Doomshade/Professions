@@ -33,6 +33,8 @@ import java.util.Map;
  * An {@link Ore} item type example for {@link MiningProfession}.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class OreItemType extends ItemType<Ore> {
 

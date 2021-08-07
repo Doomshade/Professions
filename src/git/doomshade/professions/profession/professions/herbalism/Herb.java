@@ -50,6 +50,8 @@ import static git.doomshade.professions.utils.Strings.HerbEnum.*;
  * A gather item type example for {@link HerbalismProfession}
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class Herb extends Spawnable implements ConfigurationSerializable {
 

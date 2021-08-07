@@ -24,6 +24,14 @@
 
 package git.doomshade.professions.utils;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ * @param <T>
+ * @deprecated not used
+ */
+@Deprecated
 public class GetSet<T> {
 
     private T t;

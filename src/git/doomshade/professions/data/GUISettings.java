@@ -35,6 +35,7 @@ import java.util.Objects;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  * @see git.doomshade.professions.commands.PlayerGuiCommand
  */
 public class GUISettings extends AbstractSettings {

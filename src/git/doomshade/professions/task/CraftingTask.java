@@ -50,6 +50,8 @@ import java.util.function.Function;
  * Task for crafting items.
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public class CraftingTask extends BukkitRunnable implements Cloneable {
     private static final int UPDATE_INTERVAL = 1;

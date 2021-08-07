@@ -34,6 +34,7 @@ import org.bukkit.configuration.ConfigurationSection;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class MaxProfessionsSettings extends AbstractProfessionSettings {
 

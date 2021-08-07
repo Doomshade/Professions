@@ -29,6 +29,11 @@ import git.doomshade.professions.task.SpawnTask;
 
 import java.io.Serializable;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class LocationOptionsCache implements Serializable {
 
     public LocationOptionsCache(SpawnPoint spawnPoint) {

@@ -53,7 +53,11 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.GemEnum.*;
 import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.*;
 
-
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public class Gem implements ConfigurationSerializable {
 
     public static final HashMap<String, Gem> GEMS = new HashMap<>();

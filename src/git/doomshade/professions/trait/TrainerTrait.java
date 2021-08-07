@@ -37,6 +37,11 @@ import org.bukkit.entity.Player;
 
 import java.util.Optional;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 @TraitName("professiontrainer")
 public class TrainerTrait extends Trait {
 

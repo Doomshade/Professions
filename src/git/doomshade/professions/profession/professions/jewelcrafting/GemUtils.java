@@ -32,6 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 public final class GemUtils {
 
     public static final Map<String, GemEffect> IDS;
