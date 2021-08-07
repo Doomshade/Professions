@@ -123,25 +123,16 @@ public abstract class AbstractProfessionListener implements Listener {
      * @param player        the player that calls this event
      * @param item          the generic object of {@link ItemType}
      * @param itemTypeClass the custom ItemType class
-     * @param extras
+     * @param extras        the extras to retrieve in profession class
      *
-     * @return
+     * @return an event that gets called or {@code null} if invalid parameters were provided
      */
-    @Nullable
-    public final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(
+    protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(
             Player player, Obj item,
             Class<T> itemTypeClass, Object... extras) {
+        final ProfessionEvent<T> event = getEvent(player, item, itemTypeClass, extras);
 
-        if (player == null || item == null) {
-            return null;
-        }
-
-        T itemType = em.getItemType(item, itemTypeClass);
-        if (itemType == null) {
-            return null;
-        }
-
-        return callEvent(itemType, player, extras);
+        return event == null ? null : callEvent(event);
     }
 
     protected final <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
@@ -149,22 +140,22 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     /**
-     * @param item
-     * @param itemClass
-     * @param player
-     * @param extras
+     * @param player        the player that calls this event
+     * @param item          the generic object of {@link ItemType}
+     * @param itemTypeClass the custom ItemType class
+     * @param extras        the extras to retrieve in profession class
      *
-     * @return
+     * @return an event or {@code null} if invalid parameters were provided
      */
     @Nullable
     protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(
             Player player, Obj item,
-            Class<T> itemClass, Object... extras) {
+            Class<T> itemTypeClass, Object... extras) {
         if (player == null || item == null) {
             return null;
         }
 
-        T itemType = em.getItemType(item, itemClass);
+        T itemType = em.getItemType(item, itemTypeClass);
         if (itemType == null) {
             return null;
         }

@@ -61,34 +61,22 @@ public final class EventManager {
      *
      * @return an item type if such exists or {@code null}
      */
-    @SuppressWarnings("unchecked")
     @Nullable
     public <T extends ConfigurationSerializable, Item extends ItemType<T>> Item getItemType(T object,
                                                                                             Class<Item> itemTypeClass) {
-        if (object == null) {
+        if (object == null || itemTypeClass == null) {
             return null;
         }
 
-        // search in item type holders
-        for (ItemTypeHolder<?, ?> itemHolder : Professions.getProfMan().getItemTypeHolders()) {
+        // get the item type holder
+        final ItemTypeHolder<T, Item> itemTypeHolder = Professions.getProfMan().getItemTypeHolder(itemTypeClass);
 
-            // make sure we got the right item type
-            if (!itemHolder.getExampleItemType().getClass().equals(itemTypeClass)) {
-                continue;
+        // loop through item types and search for one that equals to the one provided
+        for (Item it : itemTypeHolder) {
+            final T itObject = it.getObject();
+            if (itObject.equals(object) || it.equalsObject(object)) {
+                return it;
             }
-
-            // loop through item types and search for one that equals to the
-            for (ItemType<?> item : itemHolder) {
-                Item itemReturn = (Item) item;
-                T itemReturnObject = itemReturn.getObject();
-                if (itemReturnObject == null) {
-                    continue;
-                }
-                if (itemReturnObject.equals(object) || itemReturn.equalsObject(object)) {
-                    return itemReturn;
-                }
-            }
-
         }
         return null;
     }
