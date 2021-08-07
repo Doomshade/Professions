@@ -25,7 +25,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.gui.playerguis.PlayerProfessionsGUI;
+import git.doomshade.professions.gui.player.PlayerProfessionsGUI;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.gui.playerguis;
+package git.doomshade.professions.gui.player;
 
 import git.doomshade.guiapi.GUI;
 import git.doomshade.guiapi.GUIClickEvent;

@@ -26,7 +26,7 @@ package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.gui.oregui.OreGUI;
+import git.doomshade.professions.gui.mining.OreGUI;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

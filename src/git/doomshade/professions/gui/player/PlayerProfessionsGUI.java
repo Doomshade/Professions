@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.gui.playerguis;
+package git.doomshade.professions.gui.player;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.guiapi.GUIInventory.Builder;

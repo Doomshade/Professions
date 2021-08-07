@@ -28,7 +28,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.Range;
 import git.doomshade.professions.exceptions.SpawnException;
-import git.doomshade.professions.gui.oregui.OreGUI;
+import git.doomshade.professions.gui.mining.OreGUI;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.gui.oregui;
+package git.doomshade.professions.gui.mining;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;

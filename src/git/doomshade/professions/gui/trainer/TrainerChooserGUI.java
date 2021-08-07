@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.gui.trainergui;
+package git.doomshade.professions.gui.trainer;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.io.IOManager;

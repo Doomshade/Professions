@@ -22,34 +22,50 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.gui.playerguis;
+package git.doomshade.professions.gui.admin;
 
 import git.doomshade.guiapi.*;
-import org.bukkit.Bukkit;
+import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.Profession;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.Objects;
+public class AdminProfessionsGUI extends GUI {
+    static final String ID_PROFESSION = "prof";
 
-public class TestThreeGui extends GUI {
-
-    protected TestThreeGui(Player guiHolder, GUIManager manager) {
+    protected AdminProfessionsGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
     }
 
     @Override
     public void init() throws GUIInitializationException {
-        Integer pos = getContext().getContext(ProfessionGUI.POSITION_GUI);
-        ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.DIAMOND_PICKAXE);
-        Objects.requireNonNull(meta).setDisplayName(getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION));
-        GUIItem guiItem = new GUIItem(Material.DIAMOND_PICKAXE, pos, 1, (short) 0);
-        guiItem.changeItem(this, () -> meta);
-        setInventory(getInventoryBuilder().size(9).withItem(guiItem).title("PERFECTO TOT").size(9 * 4).build());
+        GUIInventory.Builder builder = getInventoryBuilder().size(9);
+
+        int i = -1;
+        for (Profession prof : Professions.getProfMan().getProfessionsById().values()) {
+            ItemStack icon = prof.getIcon();
+            GUIItem item = new GUIItem(icon.getType(), ++i, icon.getAmount(), icon.getDurability());
+            item.changeItem(this, icon::getItemMeta);
+
+            builder = builder.withItem(item);
+        }
+
+        setInventory(builder.build());
+        setNextGui(AdminProfessionGUI.class, Professions.getGUIManager());
     }
 
     @Override
     public void onGuiClick(GUIClickEvent e) {
-        e.getEvent().setCancelled(true);
+        InventoryClickEvent event = e.getEvent();
+        event.setCancelled(true);
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem == null || currentItem.getType() == Material.AIR) {
+            return;
+        }
+        GUI gui = getNextGui();
+        gui.getContext().addContext(ID_PROFESSION, Professions.getProfMan().getProfession(currentItem));
+        Professions.getGUIManager().openGui(gui);
     }
 }
