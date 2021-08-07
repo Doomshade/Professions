@@ -302,6 +302,7 @@ public abstract class Spawnable extends Element
      * @param spawnPointFilter the filter to use
      */
     public static void scheduleSpawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
+        ProfessionLogger.log("Schedule spawn all");
         // for each registered spawnable element
         // for each ID of spawnable elements
         // for each spawn point spawn
@@ -329,6 +330,7 @@ public abstract class Spawnable extends Element
                 if (!spawnPointFilter.test(sp)) {
                     continue;
                 }
+                ProfessionLogger.log(sp);
                 action.accept(sp);
             }
         }
@@ -347,6 +349,8 @@ public abstract class Spawnable extends Element
      * @param spawnPointFilter the filter to use
      */
     public static void despawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
+        ProfessionLogger.log("Despawn all");
+
         // for each registered spawnable element
         // for each ID of spawnable elements
         // for each spawn point spawn
@@ -559,5 +563,14 @@ public abstract class Spawnable extends Element
     @NotNull
     protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();
 
-
+    @Override
+    public String toString() {
+        return "Spawnable{" +
+                "particleData=" + particleData +
+                ", material=" + material +
+                ", materialData=" + materialData +
+                ", name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                '}';
+    }
 }

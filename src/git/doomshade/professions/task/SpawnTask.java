@@ -35,18 +35,11 @@ public class SpawnTask extends ExtendedBukkitRunnable {
     private final SpawnPoint spawnPoint;
     // because of cache
     private transient final int generatedRespawnTime;
-    transient int id = -1;
     private transient int respawnTime;
-    /**
-     * Particle task that spawns particles periodically
-     */
-    private ParticleTask particleTask;
-
     public SpawnTask(SpawnPoint spawnPoint) {
         this.spawnPoint = spawnPoint;
         this.generatedRespawnTime = spawnPoint.getSpawnTime().getRandom();
-        this.particleTask = new ParticleTask(spawnPoint.getSpawnableElement().getParticleData(),
-                spawnPoint.getLocation());
+        this.respawnTime = generatedRespawnTime;
     }
 
     public int getGeneratedRespawnTime() {
@@ -57,10 +50,6 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         return respawnTime;
     }
 
-    public int getId() {
-        return id;
-    }
-
     @Override
     public void run() {
         if (spawnPoint.isSpawned()) {
@@ -68,6 +57,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         }
         if (respawnTime <= 0) {
             try {
+                ProfessionLogger.log("SpawnTask spawning... " + spawnPoint);
                 spawnPoint.spawn();
             } catch (SpawnException e) {
                 ProfessionLogger.logError(e);
@@ -85,38 +75,19 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
     @Override
     protected void onStart() {
-        addParticles();
     }
 
     @Override
     protected void onCancel() {
-        removeParticles();
     }
 
     @Override
     protected long delay() {
-        return 0;
+        return 20L;
     }
 
     @Override
     protected long period() {
         return 20L;
-    }
-
-    private void removeParticles() throws IllegalStateException {
-        if (particleTask.isRunning()) {
-            particleTask.cancel();
-        }
-    }
-
-    private void addParticles() {
-        if (!particleTask.isRunning()) {
-            try {
-                Bukkit.getScheduler().cancelTask(particleTask.getTaskId());
-            } catch (IllegalStateException ignored) {
-            }
-            particleTask = new ParticleTask(particleTask);
-            particleTask.startTask();
-        }
     }
 }

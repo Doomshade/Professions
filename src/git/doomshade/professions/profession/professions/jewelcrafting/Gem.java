@@ -183,7 +183,7 @@ public class Gem implements ConfigurationSerializable {
 
         final PlayerInventory inventory = player.getInventory();
         for (ItemStack item : inventory.getArmorContents()) {
-            if (item.getType() == Material.AIR) {
+            if (item == null || item.getType() == Material.AIR) {
                 continue;
             }
             if (hasGem(item)) {

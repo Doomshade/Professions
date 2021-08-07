@@ -25,16 +25,18 @@
 package git.doomshade.professions.api.spawn.impl;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.api.Range;
+import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.task.ParticleTask;
 import git.doomshade.professions.task.SpawnTask;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,6 +44,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.MemorySection;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -67,6 +70,7 @@ public class SpawnPoint implements ISpawnPoint {
     private final String markerSetId;
     private final String markerIcon;
     private SpawnTask spawnTask;
+    private ParticleTask particleTask;
     private boolean spawned = false;
     private boolean enableSpawn = true;
 
@@ -83,24 +87,38 @@ public class SpawnPoint implements ISpawnPoint {
         this.spawnTime = new Range(0);
         this.element = null;
         this.spawnTask = null;
+        this.particleTask = null;
         this.serialNumber = -1;
+    }
+
+    /**
+     * @param location  the location
+     * @param spawnTime the spawn time
+     * @param spawnable the spawnable element
+     */
+    public SpawnPoint(Location location, Range spawnTime, Spawnable spawnable) {
+        this(location, spawnTime, spawnable, MarkerManager.EMPTY_MARKER_SET_ID);
+    }
+
+    /**
+     * @param location    the location
+     * @param spawnTime   the spawn time
+     * @param spawnable   the spawnable element
+     * @param markerSetId the dynmap marker set ID
+     */
+    public SpawnPoint(Location location, Range spawnTime, Spawnable spawnable, String markerSetId) {
+        this(location, spawnTime, spawnable, markerSetId, generateSerialNumber(spawnable));
     }
 
     /**
      * The main spawn point
      *
-     * @param location
-     * @param spawnTime
-     * @param element
+     * @param location     the location
+     * @param spawnTime    the spawn time
+     * @param spawnable    the spawnable element
+     * @param markerSetId  the dynmap marker set ID
+     * @param serialNumber the serial number of this spawn point
      */
-    public SpawnPoint(Location location, Range spawnTime, Spawnable element) {
-        this(location, spawnTime, element, MarkerManager.EMPTY_MARKER_SET_ID);
-    }
-
-    public SpawnPoint(Location location, Range spawnTime, Spawnable element, String markerSetId) {
-        this(location, spawnTime, element, markerSetId, generateSerialNumber(element));
-    }
-
     public SpawnPoint(Location location, Range spawnTime, Spawnable spawnable, String markerSetId,
                       int serialNumber)
             throws IllegalArgumentException {
@@ -122,6 +140,7 @@ public class SpawnPoint implements ISpawnPoint {
             return v;
         });
         this.spawnTask = new SpawnTask(this);
+        this.particleTask = new ParticleTask(spawnable.getParticleData(), location);
         this.markerSetId = markerSetId;
         this.markerId = spawnable.getId().concat("-").concat(String.valueOf(getSerialNumber()));
         this.markerLabel = ChatColor.stripColor(spawnable.getName());
@@ -213,7 +232,8 @@ public class SpawnPoint implements ISpawnPoint {
          */
         Range r = Range.fromString((String) map.get(Strings.SpawnPointEnum.RESPAWN_TIME.s))
                 .orElseThrow(IllegalArgumentException::new);
-        Location loc = Location.deserialize(((MemorySection) map.get(Strings.SpawnPointEnum.LOCATION.s)).getValues(false));
+        Location loc =
+                Location.deserialize(((MemorySection) map.get(Strings.SpawnPointEnum.LOCATION.s)).getValues(false));
 
         return new SpawnPoint(loc, r, spawnable, markerSetId, serialNumber);
     }
@@ -265,7 +285,8 @@ public class SpawnPoint implements ISpawnPoint {
 
     @Override
     public void scheduleSpawn() {
-        unscheduleSpawn();
+        cancelSpawnTask();
+        removeParticles();
         this.spawnTask = new SpawnTask(this);
         spawnTask.startTask();
     }
@@ -302,6 +323,7 @@ public class SpawnPoint implements ISpawnPoint {
         if (blockData instanceof Bisected) {
             final Bisected bdBottom = (Bisected) blockData;
             bdBottom.setHalf(Bisected.Half.BOTTOM);
+
             final Block top = Objects.requireNonNull(location.getWorld()).getBlockAt(location.clone().add(0, 1, 0));
             top.setType(material, false);
             final Bisected bdTop = (Bisected) top.getBlockData();
@@ -311,11 +333,11 @@ public class SpawnPoint implements ISpawnPoint {
             block.setType(material, false);
         }
 
-        unscheduleSpawn();
-        spawned = true;
+        cancelSpawnTask();
+        addParticles();
         setMarkerVisible(true);
-
         ProfessionLogger.log(String.format("Spawned %s at %s", element.getName(), location), Level.CONFIG);
+        spawned = true;
     }
 
     public void setMarkerVisible(boolean visible) {
@@ -332,8 +354,10 @@ public class SpawnPoint implements ISpawnPoint {
 
     @Override
     public void despawn() {
+        //location.getBlock().breakNaturally(new ItemStack(Material.AIR));
         location.getBlock().setType(Material.AIR);
-        unscheduleSpawn();
+        cancelSpawnTask();
+        removeParticles();
         spawned = false;
         setMarkerVisible(false);
 
@@ -355,17 +379,33 @@ public class SpawnPoint implements ISpawnPoint {
         this.enableSpawn = spawnable;
     }
 
-    private void unscheduleSpawn() {
+    private void addParticles() {
+        if (!particleTask.isRunning()) {
+            try {
+                Bukkit.getScheduler().cancelTask(particleTask.getTaskId());
+            } catch (IllegalStateException ignored) {
+            }
+            particleTask = new ParticleTask(particleTask);
+            particleTask.startTask();
+        }
+    }
+
+    private void cancelSpawnTask() {
         try {
             spawnTask.cancel();
         } catch (Exception ignored) {
         }
     }
 
+    private void removeParticles() throws IllegalStateException {
+        if (particleTask.isRunning()) {
+            particleTask.cancel();
+        }
+    }
+
     public final SpawnTask getSpawnTask() {
         return spawnTask;
     }
-
 
     @Override
     public int hashCode() {
@@ -387,6 +427,16 @@ public class SpawnPoint implements ISpawnPoint {
     }
 
     @Override
+    public String toString() {
+        return "SpawnPoint{" +
+                "location=" + location +
+                ", spawnTime=" + spawnTime +
+                ", serialNumber=" + serialNumber +
+                ", spawnTask=" + spawnTask +
+                '}';
+    }
+
+    @Override
     public @NotNull Map<String, Object> serialize() {
         return new HashMap<>() {
             {
@@ -395,5 +445,4 @@ public class SpawnPoint implements ISpawnPoint {
             }
         };
     }
-
 }

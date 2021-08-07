@@ -46,10 +46,6 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
         return startTask(false);
     }
 
-    public synchronized final BukkitTask startTask() throws IllegalArgumentException, IllegalStateException {
-        return startTask(true);
-    }
-
     public synchronized BukkitTask startTask(boolean sync) throws IllegalArgumentException, IllegalStateException {
         try {
             if (isRunning()) {
@@ -69,8 +65,13 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
                     ? super.runTaskTimer(Professions.getInstance(), delay, period)
                     : super.runTaskTimerAsynchronously(Professions.getInstance(), delay, period);
         } catch (Throwable e) {
-            cancel();
-
+            if (isRunning()) {
+                try {
+                    cancel();
+                } catch (IllegalStateException ex) {
+                    ex.printStackTrace();
+                }
+            }
             // TODO
             ProfessionLogger.logError(e);
             throw e;
@@ -80,11 +81,6 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
     protected void onStart() {
 
     }
-
-    protected void onCancel() {
-
-    }
-
 
     @Override
     public synchronized final void cancel() throws IllegalStateException {
@@ -96,27 +92,8 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
         super.cancel();
     }
 
-    public final boolean isRunning() {
-        return running;
-    }
+    protected void onCancel() {
 
-    /**
-     * @return delay in ticks
-     */
-    protected abstract long delay();
-
-    /**
-     * If the period is <=0, the runnable will run only once
-     *
-     * @return period in ticks
-     */
-    protected abstract long period();
-
-    @Deprecated
-    @Override
-    public final synchronized @NotNull BukkitTask runTaskTimer(@NotNull Plugin plugin, long delay, long period)
-            throws IllegalArgumentException, IllegalStateException {
-        throw new UnsupportedOperationException();
     }
 
     @Deprecated
@@ -149,9 +126,36 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
 
     @Deprecated
     @Override
+    public final synchronized @NotNull BukkitTask runTaskTimer(@NotNull Plugin plugin, long delay, long period)
+            throws IllegalArgumentException, IllegalStateException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    @Override
     public final synchronized @NotNull BukkitTask runTaskTimerAsynchronously(@NotNull Plugin plugin, long delay,
                                                                              long period)
             throws IllegalArgumentException, IllegalStateException {
         throw new UnsupportedOperationException();
+    }
+
+    public final boolean isRunning() {
+        return running;
+    }
+
+    /**
+     * @return delay in ticks
+     */
+    protected abstract long delay();
+
+    /**
+     * If the period is <=0, the runnable will run only once
+     *
+     * @return period in ticks
+     */
+    protected abstract long period();
+
+    public synchronized final BukkitTask startTask() throws IllegalArgumentException, IllegalStateException {
+        return startTask(true);
     }
 }

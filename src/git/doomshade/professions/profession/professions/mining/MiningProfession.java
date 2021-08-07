@@ -90,8 +90,11 @@ public final class MiningProfession extends Profession {
         if (e.hasExtra(Location.class)) {
             Location loc = e.getExtra(Location.class);
             final OreItemType itemType = e.getItemType();
-            int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class)
-                    .getDropAmount(upd, itemType);
+
+            // FIXME npt exception
+            /*int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class)
+                    .getDropAmount(upd, itemType);*/
+            int amount = 1;
             Ore ore = itemType.getObject();
 
             if (ore == null) {

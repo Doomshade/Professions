@@ -43,6 +43,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A class of {@code public static final} {@link String}s divided into enums for queries.
@@ -53,15 +54,39 @@ public final class Strings {
     private static final Collection<FileEnum> REGISTERED_FILE_ENUMS = new HashSet<>();
 
     public static void register() {
-        REGISTERED_FILE_ENUMS.add(ICraftableEnum.CRAFTING_TIME);
+        register(ICraftableEnum.CRAFTING_TIME);
+        register(ItemTypeEnum.NAME);
+        register(ElementEnum.NAME);
+        register(GemEnum.DISPLAY_NAME);
+        register(HerbEnum.ENABLE_SPAWN);
+        register(ItemTypeEnum.NAME);
+        register(MarkableEnum.MARKER_VISIBLE);
+        register(OreEnum.RESULT);
+        register(PotionEnum.POTION_TYPE);
+        register(PreyEnum.CONFIG_NAME);
+        register(SpawnPointEnum.RESPAWN_TIME);
+        register(SpawnableElementEnum.PARTICLE);
     }
 
-    public static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, ItemType<?> itemType) {
+    private static void register(FileEnum e) {
+        REGISTERED_FILE_ENUMS.add(e);
+    }
+
+    public static Map<FileEnum, Object> getMissingKeysItemType(Map<String, Object> map, ItemType<?> itemType) {
+        return getMissingKeys(map, itemType, x -> x.testItemType(itemType));
+
+    }
+
+    public static Map<FileEnum, Object> getMissingKeysObject(Map<String, Object> map, ConfigurationSerializable object) {
+        return getMissingKeys(map, object, x -> x.testObject(object));
+    }
+
+    private static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, Object obj, Predicate<FileEnum> p) {
         Map<FileEnum, Object> enums = new HashMap<>();
 
         // for each registered file enum
         for (FileEnum fe : REGISTERED_FILE_ENUMS) {
-            if (!fe.testItemType(itemType)) {
+            if (!p.test(fe)) {
                 continue;
             }
 
@@ -371,11 +396,6 @@ public final class Strings {
         }
 
         @Override
-        public boolean testItemType(ItemType<?> itemType) {
-            return itemType.getObject() instanceof Ore;
-        }
-
-        @Override
         public boolean testObject(ConfigurationSerializable object) {
             return object instanceof Ore;
         }
@@ -493,11 +513,6 @@ public final class Strings {
         @Override
         public String toString() {
             return s;
-        }
-
-        @Override
-        public boolean testItemType(ItemType<?> itemType) {
-            return false;
         }
 
         @Override

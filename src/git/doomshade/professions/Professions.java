@@ -32,6 +32,7 @@ import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.spawn.impl.Spawnable;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
@@ -58,7 +59,6 @@ import git.doomshade.professions.profession.professions.herbalism.commands.Herba
 import git.doomshade.professions.profession.professions.jewelcrafting.commands.JewelcraftingCommandHandler;
 import git.doomshade.professions.profession.professions.mining.commands.MiningCommandHandler;
 import git.doomshade.professions.profession.professions.mining.spawn.OreEditListener;
-import git.doomshade.professions.api.spawn.impl.Spawnable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.task.LogTask;
 import git.doomshade.professions.task.SaveTask;
@@ -80,7 +80,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.dynmap.bukkit.DynmapPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -309,13 +308,14 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         // Hook dynmap after setups as it uses config
         hookPlugin("dynmap", x -> {
             // sets the dynmap plugin to marker manager
-            MarkerManager.createInstance(DynmapPlugin.plugin);
+            //MarkerManager.createInstance(DynmapPlugin.plugin);
             return true;
         });
         scheduleTasks();
 
         registerListeners();
 
+        Spawnable.scheduleSpawnAll(x -> true);
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 itemType.onPluginEnable();

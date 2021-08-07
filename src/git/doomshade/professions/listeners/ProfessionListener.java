@@ -267,7 +267,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
-        Herb herb;
+        final Herb herb;
         final Block block = e.getClickedBlock();
         try {
 
@@ -284,6 +284,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
         event.addExtra(Objects.requireNonNull(block).getLocation());
+        ProfessionLogger.log("Calling gather event...");
         callEvent(event);
         MOVE_LEN.put(player.getUniqueId(), new PlayerMove(player, block.getLocation()));
     }
@@ -358,7 +359,7 @@ public class ProfessionListener extends AbstractProfessionListener {
             spawnPoint.despawn();
 
             // do not schedule spawn if the player is ranked >=builder AND is in creative mode, schedule otherwise
-            if (!Permissions.has(player, Permissions.BUILDER) && player.getGameMode() != GameMode.CREATIVE) {
+            if (player.getGameMode() != GameMode.CREATIVE) {
                 try {
                     spawnPoint.scheduleSpawn();
                 } catch (SpawnException e1) {
@@ -424,6 +425,7 @@ public class ProfessionListener extends AbstractProfessionListener {
      */
     @EventHandler
     public void onWorldLoad(WorldInitEvent e) {
+        Spawnable.scheduleSpawnAll(x -> Objects.equals(x.getLocation().getWorld(), e.getWorld()));
         Herb.spawnHerbs(e.getWorld());
     }
 

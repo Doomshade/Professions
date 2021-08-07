@@ -30,22 +30,10 @@ import git.doomshade.professions.task.SpawnTask;
 import java.io.Serializable;
 
 public class LocationOptionsCache implements Serializable {
-    private final String elementId;
-    private final int generatedRespawnTime, spawnPointIndex;
 
     public LocationOptionsCache(SpawnPoint spawnPoint) {
-        this.elementId = spawnPoint.getSpawnableElement().getId();
         SpawnTask task = spawnPoint.getSpawnTask();
 
-        this.generatedRespawnTime = task.getGeneratedRespawnTime();
-        this.spawnPointIndex = task.getId();
-    }
-
-    public int getGeneratedRespawnTime() {
-        return generatedRespawnTime;
-    }
-
-    public int getSpawnPointIndex() {
-        return spawnPointIndex;
+        //this.spawnPointIndex = task.getId();
     }
 }

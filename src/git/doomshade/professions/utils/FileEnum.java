@@ -32,7 +32,7 @@ import java.util.EnumMap;
 public interface FileEnum {
 
     default boolean testItemType(ItemType<?> itemType) {
-        return itemType != null && testObject(itemType.getObject());
+        return false;
     }
 
     default boolean testObject(ConfigurationSerializable object) {
