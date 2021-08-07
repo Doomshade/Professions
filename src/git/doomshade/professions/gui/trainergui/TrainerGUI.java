@@ -92,7 +92,8 @@ public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemTy
             getHolder().sendMessage(message);
             ProfessionLogger.log(message, Level.SEVERE);
             final GUIInitializationException ex = new GUIInitializationException();
-            ProfessionLogger.log(message + "\n" + Arrays.toString(ex.getStackTrace()), Level.CONFIG);
+            ProfessionLogger.logError(ex, true);
+            //ProfessionLogger.log(message + "\n" + Arrays.toString(ex.getStackTrace()), Level.CONFIG);
             throw ex;
         }
 

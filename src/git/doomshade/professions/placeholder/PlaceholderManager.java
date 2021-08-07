@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.placeholder;
 
+import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
 
@@ -50,7 +51,7 @@ public class PlaceholderManager implements ISetup {
     }
 
     @Override
-    public void setup() {
+    public void setup() throws Exception {
         if (placeholders != null && registered) {
             return;
         }
@@ -59,8 +60,9 @@ public class PlaceholderManager implements ISetup {
 
         if (!(registered = placeholders.register())) {
             String msg = "Failed to register placeholders";
-            ProfessionLogger.log(msg, Level.CONFIG);
-            ProfessionLogger.log(msg, Level.WARNING);
+            /*ProfessionLogger.log(msg, Level.CONFIG);
+            ProfessionLogger.log(msg, Level.WARNING);*/
+            throw new Exception(msg);
         }
     }
 }

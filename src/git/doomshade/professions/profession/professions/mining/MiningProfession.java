@@ -26,7 +26,6 @@ package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.data.ProfessionSpecificDropSettings;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.io.ProfessionLogger;
@@ -54,6 +53,23 @@ public final class MiningProfession extends Profession {
         utils.addItems(OreItemType.class);
     }
 
+    @Override
+    public List<String> getProfessionInformation(UserProfessionData upd) {
+       /* CraftPlayer pl;
+        pl.getAttribute(Attribute.).
+        MobEffectList mel = MobEffects.FASTER_DIG;
+        AttributeModifier mod;
+        //Bukkit.getPlayer("").addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 0, 0));
+        pl.getAttribute(Attribute.GENERIC_ARMOR).get
+        AttributeInstance ai;
+        AttributeBase base;*/
+        return null;
+    }
+
+    @Override
+    public Collection<Class<? extends Profession>> getSubprofessions() {
+        return Collections.singletonList(SmeltingProfession.class);
+    }
 
     @Override
     public String getID() {
@@ -104,8 +120,9 @@ public final class MiningProfession extends Profession {
             String message = player.getName() + " mined " + ore.getName();
 
             if (loc == null) {
-                ProfessionLogger.log("Somehow mined an ore with a null location, this should not happen! Trace:\n" +
-                        new RuntimeException().getLocalizedMessage(), Level.WARNING);
+                ProfessionLogger.logError(new RuntimeException("Somehow mined an ore with a null location, this " +
+                        "should not " +
+                        "happen!"), true);
                 return;
             }
 
@@ -132,25 +149,7 @@ public final class MiningProfession extends Profession {
     }
 
     @Override
-    public List<String> getProfessionInformation(UserProfessionData upd) {
-       /* CraftPlayer pl;
-        pl.getAttribute(Attribute.).
-        MobEffectList mel = MobEffects.FASTER_DIG;
-        AttributeModifier mod;
-        //Bukkit.getPlayer("").addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 0, 0));
-        pl.getAttribute(Attribute.GENERIC_ARMOR).get
-        AttributeInstance ai;
-        AttributeBase base;*/
-        return null;
-    }
-
-    @Override
     public boolean isSubprofession() {
         return false;
-    }
-
-    @Override
-    public Collection<Class<? extends Profession>> getSubprofessions() {
-        return Collections.singletonList(SmeltingProfession.class);
     }
 }

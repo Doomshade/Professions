@@ -75,8 +75,9 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 Professions.getInstance().registerSetup(theSettings);
                 SETTINGS.add(theSettings);
             } catch (ConfigurationException ex) {
-                ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" +
-                        Arrays.toString(ex.getStackTrace()), Level.WARNING);
+                ProfessionLogger.logError(ex, false);
+                /*ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" +
+                        Arrays.toString(ex.getStackTrace()), Level.WARNING);*/
             } catch (Exception ex) {
                 ProfessionLogger.logError(ex);
             }

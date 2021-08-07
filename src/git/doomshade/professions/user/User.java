@@ -117,7 +117,7 @@ public final class User implements IUser {
                 settings.getMaxProfessions(ProfessionType.SECONDARY);
 
         // filter out subprofessions
-        if (professions.values().stream().filter(x -> !(x.getProfession().isSubprofession())).count() >
+        if (getProfessionAmount(false) >
                 maxProfessions) {
             final String message =
                     player.getName() + " has more than " + maxProfessions + " professions! This should not happen!";
@@ -127,6 +127,13 @@ public final class User implements IUser {
 
     private void updateUsedProfessionTypes(ProfessionType professionType, boolean add) {
         usedProfessionTypes.put(professionType, usedProfessionTypes.get(professionType) + (add ? 1 : -1));
+    }
+
+    public int getProfessionAmount(boolean ignoreSubProfessions) {
+        return (int) professions.values()
+                .stream()
+                .filter(x -> ignoreSubProfessions || !(x.getProfession().isSubprofession()))
+                .count();
     }
 
     /**
@@ -415,6 +422,7 @@ public final class User implements IUser {
      *
      * @return {@link UserProfessionData#addLevel(int)}
      */
+    @SuppressWarnings("unused")
     public boolean addLevel(int level, Profession prof) throws PlayerHasNoProfessionException {
         UserProfessionData upd = getProfessionData(prof);
         return upd.addLevel(level);
@@ -441,6 +449,7 @@ public final class User implements IUser {
      *
      * @see UserProfessionData#setLevel(int)
      */
+    @SuppressWarnings("unused")
     public void setLevel(int level, Profession prof) {
         UserProfessionData upd = getProfessionData(prof);
         upd.setLevel(level);
@@ -459,6 +468,7 @@ public final class User implements IUser {
         return ACTIVE_POTIONS.containsKey(potion.getPotionId());
     }
 
+    @SuppressWarnings("unused")
     public void unApplyPotion(Potion potion) {
         if (!isActivePotion(potion)) {
             return;

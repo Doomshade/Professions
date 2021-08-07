@@ -105,7 +105,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                 if (serializedObject == null) {
                     ProfessionLogger.log(
                             "Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!",
-                            Level.WARNING);
+                            Level.SEVERE);
                 } else {
                     for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
                         if (!Objects.requireNonNull(objectSection).isSet(entry.getKey())) {

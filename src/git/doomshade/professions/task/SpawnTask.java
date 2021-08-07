@@ -30,6 +30,8 @@ import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
 import org.bukkit.Bukkit;
 
+import java.util.logging.Level;
+
 public class SpawnTask extends ExtendedBukkitRunnable {
 
     private final SpawnPoint spawnPoint;
@@ -57,7 +59,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         }
         if (respawnTime <= 0) {
             try {
-                ProfessionLogger.log("SpawnTask spawning... " + spawnPoint);
+                ProfessionLogger.log("SpawnTask spawning... " + spawnPoint, Level.CONFIG);
                 spawnPoint.spawn();
             } catch (SpawnException e) {
                 ProfessionLogger.logError(e);

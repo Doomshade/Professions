@@ -273,12 +273,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                 continue;
             }
             // ugly but duh
-            cmd.setCommand(command);
-            cmd.setArgs(fileCommand.getArgs());
-            cmd.setDescription(fileCommand.getDescription());
-            cmd.setRequiresPlayer(fileCommand.requiresPlayer());
-            cmd.setMessages(fileCommand.getMessages());
-            cmd.setPermissions(fileCommand.getPermissions());
+            cmd.setupFrom(fileCommand);
 
         }
     }
@@ -319,8 +314,8 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
 
         tab.addAll(INSTANCE_COMMANDS.values()
                 .stream()
-                .filter(instanceCmd -> instanceCmd.getCommand().startsWith(args[0]))
                 .map(AbstractCommand::getCommand)
+                .filter(command -> command.startsWith(args[0]))
                 .collect(Collectors.toList()));
 
         return tab.isEmpty() ? null : tab;
