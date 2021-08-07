@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.enums;
 
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.ChatColor;
 

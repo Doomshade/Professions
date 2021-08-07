@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;

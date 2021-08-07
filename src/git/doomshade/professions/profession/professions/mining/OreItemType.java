@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.mining;
 
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 
 import java.util.Map;

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn.impl;
+package git.doomshade.professions.api.spawn.ext;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

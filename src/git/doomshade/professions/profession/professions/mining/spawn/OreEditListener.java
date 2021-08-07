@@ -32,7 +32,7 @@ import git.doomshade.professions.gui.mining.OreGUI;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.api.spawn.impl.SpawnPoint;
+import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

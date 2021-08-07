@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.Profession.ProfessionType;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.MaxProfessionsSettings;

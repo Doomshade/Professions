@@ -25,7 +25,7 @@
 package git.doomshade.professions.profession.professions.herbalism;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;

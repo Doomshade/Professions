@@ -26,6 +26,7 @@ package git.doomshade.professions.api.item;
 
 import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.api.dynmap.AMarkable;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;

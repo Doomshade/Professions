@@ -29,7 +29,7 @@ import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.api.spawn.impl.SpawnPoint;
+import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;

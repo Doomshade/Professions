@@ -23,6 +23,8 @@
  */
 
 /**
+ * The main plugin package
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0

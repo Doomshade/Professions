@@ -25,7 +25,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.user.User;
 import org.bukkit.ChatColor;

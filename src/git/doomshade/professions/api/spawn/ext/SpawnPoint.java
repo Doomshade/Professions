@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn.impl;
+package git.doomshade.professions.api.spawn.ext;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Range;
@@ -57,7 +57,7 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.SPAWN
  * @version 1.0
  * @since 1.0
  */
-public class SpawnPoint implements ISpawnPoint {
+public final class SpawnPoint implements ISpawnPoint {
     public static final SpawnPoint EXAMPLE = new SpawnPoint();
     private static final MarkerManager MARKER_MANAGER = Professions.getMarkerManager();
     private static final HashMap<Location, Collection<SpawnPoint>> SPAWN_POINTS = new HashMap<>();

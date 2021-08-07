@@ -26,7 +26,7 @@ package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;

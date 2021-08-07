@@ -27,7 +27,7 @@ package git.doomshade.professions.enums;
 import com.google.common.collect.Sets;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.Profession.ProfessionType;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.placeholder.PlaceholderManager;

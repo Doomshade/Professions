@@ -28,7 +28,7 @@ import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.api.spawn.impl.Spawnable;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;

@@ -22,9 +22,10 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.item;
+package git.doomshade.professions.api.item.ext;
 
 import com.google.common.collect.ImmutableMap;
+import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;

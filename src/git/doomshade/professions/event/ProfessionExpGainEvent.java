@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.event;
 
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.enums.SkillupColor;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.event.Cancellable;

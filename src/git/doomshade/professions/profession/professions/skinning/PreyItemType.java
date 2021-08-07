@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.skinning;
 
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;

@@ -31,7 +31,7 @@ import git.doomshade.guiapi.GUIItem;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;

@@ -25,7 +25,7 @@
 package git.doomshade.professions.profession.professions.smelting;
 
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import git.doomshade.professions.io.ProfessionLogger;

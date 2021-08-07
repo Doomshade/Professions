@@ -25,7 +25,7 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 
 /**
  * This is a workaround class for {@link ProfessionEvent} - this does NOT extend the {@link org.bukkit.event.Event}

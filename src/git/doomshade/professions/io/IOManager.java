@@ -26,13 +26,12 @@ package git.doomshade.professions.io;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;

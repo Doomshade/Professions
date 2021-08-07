@@ -32,7 +32,7 @@ import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.api.spawn.impl.Spawnable;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.utils.*;
 import org.bukkit.Material;
 import org.bukkit.World;

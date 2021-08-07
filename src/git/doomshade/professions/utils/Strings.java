@@ -25,10 +25,10 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.api.Range;
-import git.doomshade.professions.api.item.CraftableItemType;
+import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ICraftable;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.api.spawn.impl.SpawnPoint;
+import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.herbalism.Herb;

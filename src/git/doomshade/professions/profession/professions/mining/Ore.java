@@ -25,13 +25,13 @@
 package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.api.spawn.impl.Spawnable;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.ParticleData;
 import git.doomshade.professions.utils.Utils;

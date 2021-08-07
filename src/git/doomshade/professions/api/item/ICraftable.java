@@ -24,6 +24,8 @@
 
 package git.doomshade.professions.api.item;
 
+import git.doomshade.professions.api.item.ext.CraftableItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.utils.Requirements;
 import org.bukkit.inventory.ItemStack;
 

@@ -22,10 +22,11 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.item;
+package git.doomshade.professions.api.item.ext;
 
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.dynmap.AMarkable;
+import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
 import git.doomshade.professions.data.ItemSettings;

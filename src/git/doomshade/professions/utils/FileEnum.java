@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 import java.util.EnumMap;

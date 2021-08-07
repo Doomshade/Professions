@@ -24,11 +24,10 @@
 
 package git.doomshade.professions.task;
 
-import git.doomshade.professions.api.spawn.impl.SpawnPoint;
+import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
-import org.bukkit.Bukkit;
 
 import java.util.logging.Level;
 
