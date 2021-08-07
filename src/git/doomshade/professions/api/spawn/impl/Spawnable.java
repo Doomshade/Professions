@@ -34,7 +34,10 @@ import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.task.BackupTask;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.ParticleData;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -50,6 +53,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
@@ -90,17 +94,7 @@ public abstract class Spawnable extends Element
         this.materialData = materialData;
         this.name = name;
         this.markerIcon = markerIcon;
-        //this.spawnPoints = new ArrayList<>(spawnPoints);
     }
-
-    /*public static <E extends Spawnable> E get(Class<E> of, String id) {
-        return getElements(of).get(id);
-    }*/
-
-    /*@SuppressWarnings("unchecked")
-    public static <E extends Spawnable> Map<String, E> getElements(Class<E> of) {
-        return (Map<String, E>) ImmutableMap.copyOf(SPAWNABLE_ELEMENTS.get(of));
-    }*/
 
     /**
      * <p>Now this might be a little confusing
@@ -164,10 +158,11 @@ public abstract class Spawnable extends Element
     }
 
     public static <E extends Spawnable> Map<String, E> getAllSpawnableElements() {
-        final Map<String, E> map = getAllElements().values().stream()
+        @SuppressWarnings("unchecked") final Map<String, E> map = getAllElements().values().stream()
                 .flatMap(m -> m.entrySet().stream())
                 .filter(entry -> entry.getValue() instanceof Spawnable)
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> (E) entry.getValue(), (a, b) -> b,
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> (E) entry.getValue(),
+                        (a, b) -> b,
                         LinkedHashMap::new));
         return ImmutableMap.copyOf(map);
     }
@@ -261,7 +256,7 @@ public abstract class Spawnable extends Element
         final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
 
         // create a dummy spawnable
-        final Spawnable spawnable =
+        @SuppressWarnings("deprecation") final Spawnable spawnable =
                 new Spawnable(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(),
                         particleData, "", false) {
 
@@ -284,7 +279,7 @@ public abstract class Spawnable extends Element
                 .getMarkerSetId();*/
         Collection<ISpawnPoint> spawnPointLocations;
         try {
-            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, "herbalism"));
+            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, convertedSpawnable.getItemTypeHolder().getMarkerSetId()));
         } catch (ProfessionObjectInitializationException e) {
 
             // set the exception class to the deserialization object for further clearance
@@ -302,7 +297,7 @@ public abstract class Spawnable extends Element
      * @param spawnPointFilter the filter to use
      */
     public static void scheduleSpawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
-        ProfessionLogger.log("Schedule spawn all");
+        ProfessionLogger.log("Schedule spawn all", Level.CONFIG);
         // for each registered spawnable element
         // for each ID of spawnable elements
         // for each spawn point spawn
@@ -349,7 +344,7 @@ public abstract class Spawnable extends Element
      * @param spawnPointFilter the filter to use
      */
     public static void despawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
-        ProfessionLogger.log("Despawn all");
+        ProfessionLogger.log("Despawn all", Level.CONFIG);
 
         // for each registered spawnable element
         // for each ID of spawnable elements
@@ -368,6 +363,7 @@ public abstract class Spawnable extends Element
      *
      * @return {@code true} if a spawn point with that serialNumber exists, {@code false} otherwise
      */
+    @SuppressWarnings("unused")
     public final boolean isSpawnPoint(Location location, int serialNumber) {
         ISpawnPoint sp = getSpawnPoint(location);
         // checks for both null and just makes sure that this is the implemented spawn point
@@ -383,13 +379,13 @@ public abstract class Spawnable extends Element
         map.put(ID.s, getId());
 
         map.put(MATERIAL.s, ItemUtils.serializeMaterial(getMaterial(), getMaterialData()));
+        map.put(PARTICLE.s, getParticleData().serialize());
+
 
         int i = 0;
-
         for (ISpawnPoint spawnPointLocation : getSpawnPoints()) {
             map.put(SPAWN_POINT.s.concat("-" + i++), spawnPointLocation.serialize());
         }
-        map.put(PARTICLE.s, getParticleData().serialize());
         return map;
     }
 
@@ -415,6 +411,17 @@ public abstract class Spawnable extends Element
         return getMaterialData() == that.getMaterialData() &&
                 getId().equals(that.getId()) &&
                 getMaterial() == that.getMaterial();
+    }
+
+    @Override
+    public String toString() {
+        return "Spawnable{" +
+                "particleData=" + particleData +
+                ", material=" + material +
+                ", materialData=" + materialData +
+                ", name='" + name + '\'' +
+                ", id='" + id + '\'' +
+                '}';
     }
 
     @Override
@@ -492,9 +499,10 @@ public abstract class Spawnable extends Element
     public void addSpawnPoint(ISpawnPoint sp) {
         final ISpawnPoint prev = this.spawnPoints.putIfAbsent(sp.getLocation(), sp);
         if (prev != null) {
-            /*ProfessionLogger.log(String.format("A spawn point with %s (%s) location already exists!",
-                    Utils.locationToString(sp.getLocation()), sp.getLocation().getWorld()),
-                    Level.WARNING);*/
+            ProfessionLogger.log(String.format("Trying to add a spawn point with %s (%s) location, but it already " +
+                                    "exists!",
+                            Utils.locationToString(sp.getLocation()), sp.getLocation().getWorld()),
+                    Level.CONFIG);
             return;
         }
         sp.setSpawnable(canSpawn());
@@ -563,14 +571,5 @@ public abstract class Spawnable extends Element
     @NotNull
     protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();
 
-    @Override
-    public String toString() {
-        return "Spawnable{" +
-                "particleData=" + particleData +
-                ", material=" + material +
-                ", materialData=" + materialData +
-                ", name='" + name + '\'' +
-                ", id='" + id + '\'' +
-                '}';
-    }
+
 }

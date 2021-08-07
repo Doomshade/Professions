@@ -203,8 +203,10 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
      *
      * @throws IOException the item type file could not be loaded
      */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void load() throws IOException {
-        File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
+        final Class<? extends ItemType> clazz = itemType.getClass();
+        File itemFile = ItemUtils.getItemTypeFile(clazz);
         FileConfiguration loader = getLoader(itemFile);
         if (loader == null) {
             return;
@@ -212,7 +214,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
 
         // TODO make a new method for this
         this.errorMessage = loader.getStringList(
-                ERROR_MESSAGE.s);//ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
+                ERROR_MESSAGE.s); //ItemUtils.getDescription(itemType, loader.getStringList(ERROR_MESSAGE), null);
         this.setVisible(loader.getBoolean(Strings.MarkableEnum.MARKER_VISIBLE.s));
         this.setMarkerSetId(loader.getString(Strings.MarkableEnum.MARKER_SET_ID.s));
 
@@ -235,13 +237,17 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         //ItemUtils.getDescription(itemType, loader.getStringList
         // (NEW_ITEMS_AVAILABLE_MESSAGE), null);
 
-        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
-        Collection<Integer> keys = itemsSection.getKeys(false)
+        final ConfigurationSection itemsSection = loader.isConfigurationSection(ItemType.KEY_ITEMS) ?
+                loader.getConfigurationSection(ItemType.KEY_ITEMS) :
+                loader.createSection(ItemType.KEY_ITEMS);
+        if (itemsSection == null) {
+            return;
+        }
+        final Collection<Integer> keys = itemsSection.getKeys(false)
                 .stream()
                 .map(Integer::parseInt)
                 .sorted()
                 .collect(Collectors.toList());
-        final Class<? extends ItemType> clazz = itemType.getClass();
         boolean successInit = true;
         for (int i : keys) {
             try {
@@ -253,11 +259,10 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
                 }
             } catch (Exception e) {
                 ProfessionLogger.log(
-                        "Could not deserialize " + ItemUtils.getItemTypeFile(itemType.getClass()).getName() +
+                        "Could not deserialize " + ItemUtils.getItemTypeFile(clazz).getName() +
                                 " with id " + i, Level.WARNING);
                 ProfessionLogger.logError(e, !(e instanceof InitializationException));
                 successInit = false;
-                continue;
             }
         }
 
