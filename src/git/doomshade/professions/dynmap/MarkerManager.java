@@ -26,7 +26,6 @@ package git.doomshade.professions.dynmap;
 
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import org.bukkit.Location;
-import org.dynmap.DynmapAPI;
 import org.dynmap.bukkit.DynmapPlugin;
 import org.dynmap.markers.Marker;
 import org.dynmap.markers.MarkerAPI;
@@ -71,6 +70,7 @@ public final class MarkerManager {
      * Registers an icon on dynmap
      *
      * @param exampleSpawnPoint the example spawn point
+     * @param globalLabel       the global marker label
      */
     public void register(ISpawnPoint exampleSpawnPoint, String globalLabel) {
         final String id = exampleSpawnPoint.getMarkerSetId();

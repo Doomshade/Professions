@@ -42,7 +42,7 @@ public class BSItemType extends CraftableItemType<BSItemStack> {
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the item stack
      */
     public BSItemType(BSItemStack object) {
         super(object);

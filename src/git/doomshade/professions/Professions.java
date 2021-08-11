@@ -30,8 +30,8 @@ import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.api.IProfessionAPI;
 import git.doomshade.professions.api.IProfessionManager;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.commands.AbstractCommandHandler;
@@ -175,6 +175,8 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
 
     /**
      * Reloads the plugin
+     *
+     * @return {@code true} if the plugin reload was successful, {@code false} otherwise
      */
     public boolean reload() {
         boolean successful = true;
@@ -244,6 +246,30 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     private void logExError(String errMsg, Throwable e) {
         ProfessionLogger.log(errMsg.concat(". Check log file for exception message."));
         ProfessionLogger.logError(e);
+    }
+
+    @Override
+    public void setup() {
+        for (ISetup setup : SETUPS) {
+            try {
+                setup.setup();
+            } catch (Exception e) {
+                ProfessionLogger.log("Could not load " + setup.getSetupName(), Level.SEVERE);
+                ProfessionLogger.logError(e);
+            }
+        }
+    }
+
+    @Override
+    public void cleanup() {
+        for (ISetup setup : SETUPS) {
+            try {
+                setup.cleanup();
+            } catch (Exception e) {
+                ProfessionLogger.log("Could not cleanup " + setup.getSetupName(), Level.SEVERE);
+                ProfessionLogger.logError(e);
+            }
+        }
     }
 
     @Override
@@ -320,30 +346,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
                 itemType.onPluginEnable();
-            }
-        }
-    }
-
-    @Override
-    public void setup() {
-        for (ISetup setup : SETUPS) {
-            try {
-                setup.setup();
-            } catch (Exception e) {
-                ProfessionLogger.log("Could not load " + setup.getSetupName(), Level.SEVERE);
-                ProfessionLogger.logError(e);
-            }
-        }
-    }
-
-    @Override
-    public void cleanup() {
-        for (ISetup setup : SETUPS) {
-            try {
-                setup.cleanup();
-            } catch (Exception e) {
-                ProfessionLogger.log("Could not cleanup " + setup.getSetupName(), Level.SEVERE);
-                ProfessionLogger.logError(e);
             }
         }
     }

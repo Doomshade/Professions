@@ -315,9 +315,9 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
     /**
-     * @return the example item type this holder holds
+     * Used for generating defaults
      *
-     * @apiNote Used for generating defaults
+     * @return the example item type this holder holds
      */
     public final Type getExampleItemType() {
         return itemType;

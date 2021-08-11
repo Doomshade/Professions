@@ -28,8 +28,8 @@ import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.Range;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.data.TrainableSettings;
 import git.doomshade.professions.enums.Messages;
@@ -61,8 +61,8 @@ import java.util.Objects;
 import java.util.logging.Level;
 
 /**
- * @param <T>
- * @param <Type>
+ * @param <T>    the item
+ * @param <Type> the item type
  *
  * @author Doomshade
  * @version 1.0

@@ -29,7 +29,7 @@ import org.bukkit.entity.Player;
 /**
  * An effect that is applicable to player.
  *
- * @param <T>
+ * @param <T> the effect
  *
  * @author Doomshade
  * @version 1.0

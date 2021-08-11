@@ -45,7 +45,7 @@ public class PotionItemType extends CraftableItemType<Potion> {
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the potion
      */
     public PotionItemType(Potion object) {
         super(object);
@@ -60,21 +60,6 @@ public class PotionItemType extends CraftableItemType<Potion> {
         return potion;
     }
 
-
-    @Override
-    public Function<ItemStack, ItemStack> getExtraInEvent() {
-        return Function.identity();
-    }
-
-
-    @Override
-    public void onPluginDisable() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            //Potion.cache(p);
-        }
-        Potion.POTIONS.clear();
-    }
-
     @Override
     public void onPluginAfterReload() {
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -87,5 +72,18 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
         Potion.registerCustomPotionEffect(
                 (potionEffect, player, negated) -> EffectUtils.addAttributes(player, negated, potionEffect));
+    }
+
+    @Override
+    public void onPluginDisable() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            //Potion.cache(p);
+        }
+        Potion.POTIONS.clear();
+    }
+
+    @Override
+    public Function<ItemStack, ItemStack> getExtraInEvent() {
+        return Function.identity();
     }
 }

@@ -122,7 +122,8 @@ public final class ProfessionUtils {
     }
 
     /**
-     * @param e the event to check the player's requirements in
+     * @param e               the event to check the player's requirements in
+     * @param <ItemTypeClass> the {@link ItemType} class
      *
      * @return {@code true} if the player meets all requirements, {@code false} otherwise
      */
@@ -148,7 +149,8 @@ public final class ProfessionUtils {
     }
 
     /**
-     * @param e event to check for
+     * @param e               event to check for
+     * @param <ItemTypeClass> the {@link ItemType} class
      *
      * @return {@code true} if the player has a profession of this called event, {@code false} otherwise
      */
@@ -157,7 +159,8 @@ public final class ProfessionUtils {
     }
 
     /**
-     * @param e event to check for
+     * @param e               event to check for
+     * @param <ItemTypeClass> the {@link ItemType} class
      *
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
@@ -167,7 +170,7 @@ public final class ProfessionUtils {
 
     /**
      * @param e            event to check for
-     * @param errorMessage whether or not to log error message
+     * @param errorMessage whether to log error message
      *
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
@@ -219,6 +222,8 @@ public final class ProfessionUtils {
     /**
      * Adds {@link ItemType}s to this profession to handle in
      *
+     * @param <T>   the {@link ItemType}'s item
+     * @param <A>   the {@link ItemType}
      * @param items the items
      */
     public final <T extends ConfigurationSerializable, A extends ItemType<T>> void addItems(Class<A> items) {

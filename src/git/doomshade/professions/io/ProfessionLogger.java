@@ -107,8 +107,9 @@ public class ProfessionLogger {
     }
 
     /**
-     * Logs a message. Levels >= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file. Levels
-     * >=900 will be displayed in red. Levels <=500 will be displayed in green.
+     * Logs a message. Levels {@literal >}= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to
+     * file. Levels
+     * {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green.
      *
      * @param message the message to display
      * @param level   the log level

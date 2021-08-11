@@ -78,7 +78,8 @@ public class EnchantManager {
     /**
      * Registers an Enchant
      *
-     * @param enchant the enchant class to register
+     * @param enchant the {@link Enchant} class to register
+     * @param <T>     the {@link Enchant}
      */
     public <T extends Enchant> void registerEnchant(Enchant enchant) {
         enchant.init();

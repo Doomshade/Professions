@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Class related to dynmap markers
@@ -78,13 +79,13 @@ public abstract class AMarkable implements ConfigurationSerializable {
             return;
         }
 
-        if (isGreaterLayer(from)) {
+        if (isGreaterLayer(from, markerSetId.isEmpty())) {
             this.markerSetId = from.getMarkerSetId();
         }
     }
 
-    private boolean isGreaterLayer(AMarkable comparing) {
-        return comparing != null && comparing.getLayer() >= getLayer();
+    private boolean isGreaterLayer(AMarkable comparing, boolean override) {
+        return comparing != null && (override || comparing.getLayer() >= getLayer());
     }
 
     /**
@@ -118,7 +119,7 @@ public abstract class AMarkable implements ConfigurationSerializable {
             return;
         }
 
-        if (isGreaterLayer(comparing)) {
+        if (isGreaterLayer(comparing, false)) {
             this.visible = comparing.isVisible();
         }
     }

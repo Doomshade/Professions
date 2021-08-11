@@ -46,7 +46,7 @@ public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     /**
      * Constructor for creation of the item type object
      *
-     * @param object
+     * @param object the enchant
      */
     public EnchantedItemItemType(Enchant object) {
         super(object);

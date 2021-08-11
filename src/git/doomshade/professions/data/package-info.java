@@ -24,6 +24,7 @@
 
 /**
  * Config related classes
+ * TODO: redo the settings, too many classes
  *
  * @author Doomshade
  * @version 1.0

@@ -197,6 +197,8 @@ public final class User implements IUser {
      * User#hasProfessionType(ProfessionType)} {@link Profession#isSubprofession()}
      *
      * @param prof the profession to check
+     *
+     * @return {@code true} if the user can profess into this profession, {@code false} otherwise
      */
     public boolean canProfess(Profession prof) {
         return !hasProfession(prof) && !hasProfessionType(prof.getProfessionType()) && !prof.isSubprofession();

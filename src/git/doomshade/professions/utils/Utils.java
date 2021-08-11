@@ -209,7 +209,7 @@ public final class Utils {
     }
 
     /**
-     * Replaces '&' with in-game colour codes
+     * Replaces '{@literal &}' with in-game colour codes
      *
      * @param s the string
      *

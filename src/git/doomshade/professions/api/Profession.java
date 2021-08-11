@@ -24,8 +24,8 @@
 
 package git.doomshade.professions.api;
 
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
@@ -182,6 +182,8 @@ public abstract class Profession implements IProfession {
 
     /**
      * Called when a user levels up
+     *
+     * @param upd the user profession data
      */
     public void onLevelUp(UserProfessionData upd) {
 

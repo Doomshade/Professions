@@ -270,14 +270,6 @@ public abstract class Spawnable extends Element
         // convert the spawnable to an object of programmer's desire
         final T convertedSpawnable = conversionFunction.apply(spawnable, ex);
 
-        // TODO add marker set ID SOMEHOW
-        // add the spawn points to the spawnable
-        /*String markerSetId = ProfessionManager.getInstance()
-                .getProfession(convertedSpawnable.getClass())
-                .orElseThrow(() -> new ProfessionObjectInitializationException("Sth wrong happened"))
-                .getProfessionSettings()
-                .getSettings(ProfessionSpecificDefaultsSettings.class)
-                .getMarkerSetId();*/
         Collection<ISpawnPoint> spawnPointLocations;
         try {
             spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, convertedSpawnable.getItemTypeHolder().getMarkerSetId()));

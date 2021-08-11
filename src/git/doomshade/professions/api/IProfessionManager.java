@@ -24,8 +24,8 @@
 
 package git.doomshade.professions.api;
 
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 
@@ -110,6 +110,7 @@ public interface IProfessionManager {
     /**
      * @param clazz the {@link ItemTypeHolder} class to look for
      * @param <A>   the {@link ItemTypeHolder}'s {@link ItemType}
+     * @param <T>   the {@link ItemType}'s item
      *
      * @return instance of {@link ItemTypeHolder}
      */

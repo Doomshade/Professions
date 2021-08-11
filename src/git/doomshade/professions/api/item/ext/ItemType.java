@@ -59,7 +59,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -119,12 +122,12 @@ public abstract class ItemType<T extends ConfigurationSerializable> extends AMar
     /**
      * @param clazz  the ItemType class
      * @param object the ItemType generic argument
-     * @param <T>
-     * @param <Obj>
+     * @param <T>    the item
+     * @param <Obj>  the ItemType
      *
      * @return an example instance of the ItemType
      *
-     * @throws IllegalArgumentException if the ItemType class does not implement {@link ItemType#ItemType(Object)}
+     * @throws IllegalArgumentException if the ItemType class does not implement {@link ItemType#ItemType(ConfigurationSerializable)}
      *                                  constructor
      */
     @SuppressWarnings("all")
@@ -433,7 +436,7 @@ public abstract class ItemType<T extends ConfigurationSerializable> extends AMar
     }
 
     protected void updateLore(@NotNull IUserProfessionData upd, List<String> lore, Pattern regex,
-                         Requirements requirements) {
+                              Requirements requirements) {
         lore.replaceAll(s -> {
             Matcher m = regex.matcher(s);
             if (!m.find()) {

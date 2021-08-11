@@ -28,7 +28,7 @@ package git.doomshade.professions.utils;
  * @author Doomshade
  * @version 1.0
  * @since 1.0
- * @param <T>
+ * @param <T> the parameter
  * @deprecated not used
  */
 @Deprecated
