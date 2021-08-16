@@ -265,22 +265,22 @@ public final class SpawnPoint implements ISpawnPoint {
     }
 
     @Override
-    public final int getSerialNumber() {
+    public int getSerialNumber() {
         return serialNumber;
     }
 
     @Override
-    public final Location getLocation() {
+    public Location getLocation() {
         return location;
     }
 
     @Override
-    public final Range getSpawnTime() {
+    public Range getSpawnTime() {
         return spawnTime;
     }
 
     @Override
-    public final Spawnable getSpawnableElement() {
+    public Spawnable getSpawnableElement() {
         return element;
     }
 
@@ -366,7 +366,7 @@ public final class SpawnPoint implements ISpawnPoint {
     }
 
     @Override
-    public final boolean isSpawned() {
+    public boolean isSpawned() {
         return spawned;
     }
 
@@ -404,7 +404,7 @@ public final class SpawnPoint implements ISpawnPoint {
         }
     }
 
-    public final SpawnTask getSpawnTask() {
+    public SpawnTask getSpawnTask() {
         return spawnTask;
     }
 

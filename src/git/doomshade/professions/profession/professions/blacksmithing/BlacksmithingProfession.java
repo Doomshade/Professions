@@ -55,7 +55,7 @@ public class BlacksmithingProfession extends Profession {
 
     @Override
     public <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> ev) {
-        final ProfessionEvent<BSItemType> event = utils.getEventUnsafe(ev, BSItemType.class);
+        final ProfessionEvent<BSItemType> event = utils.getEventUnsafe(ev);
         String expMsg = "";
         if (utils.addExp(event)) {
             expMsg = Utils.getReceiveXp(event.getExp());

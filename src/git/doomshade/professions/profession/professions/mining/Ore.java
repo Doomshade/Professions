@@ -25,13 +25,14 @@
 package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.ParticleData;
 import git.doomshade.professions.utils.Utils;
@@ -43,8 +44,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
 
 import static git.doomshade.professions.utils.Strings.OreEnum.RESULT;
 
@@ -70,10 +69,48 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
         this.results.addAll(results);
     }
 
-    @NotNull
-    @Override
-    protected ItemTypeHolder<Ore, OreItemType> getItemTypeHolder() {
-        return Professions.getProfMan().getItemTypeHolder(OreItemType.class);
+    /**
+     * Required deserialize method of {@link ConfigurationSerializable}
+     *
+     * @param map serialized Ore
+     *
+     * @return deserialized Ore
+     *
+     * @throws ProfessionObjectInitializationException when Ore is not initialized correctly
+     */
+    public static Ore deserialize(Map<String, Object> map, final String name)
+            throws ProfessionObjectInitializationException {
+
+        final Ore deserialize = Spawnable.deserializeSpawnable(map, MarkerManager.EMPTY_MARKER_SET_ID, Ore.class, x -> {
+
+            if (x == null) {
+                return null;
+            }
+
+            boolean thrown = false;
+
+            final PriorityQueue<YieldResult> results = new PriorityQueue<>();
+
+            MemorySection dropSection;
+
+            int i = 0;
+            while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
+                try {
+                    results.add(YieldResult.deserialize(dropSection.getValues(false)));
+                } catch (ConfigurationException | InitializationException e) {
+                    ProfessionLogger.logError(e, false);
+                    thrown = true;
+                }
+                i++;
+            }
+            return thrown ? null : new Ore(x.getId(), name, x.getMaterial(), results,
+                    x.getParticleData());
+        });
+        // if there are missing keys, throw ex
+        if (deserialize == null) {
+            throw new ProfessionObjectInitializationException("Could not fully deserialize ore!");
+        }
+        return deserialize;
     }
     /*
         String id = (String) map.get(ID.s);
@@ -102,6 +139,12 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
         return new Ore(id, name, mat, results, spawnPoints, ParticleData.deserialize(particleSection.getValues(true)));
     }*/
 
+    @NotNull
+    @Override
+    protected ItemTypeHolder<Ore, OreItemType> getItemTypeHolder() {
+        return Professions.getProfMan().getItemTypeHolder(OreItemType.class);
+    }
+
     @Override
     public @NotNull Map<String, Object> serialize() {
 
@@ -115,53 +158,10 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
         return map;
     }
 
-    /**
-     * Required deserialize method of {@link ConfigurationSerializable}
-     *
-     * @param map serialized Ore
-     *
-     * @return deserialized Ore
-     *
-     * @throws ProfessionObjectInitializationException when Ore is not initialized correctly
-     */
-    public static Ore deserialize(Map<String, Object> map, final String name)
-            throws ProfessionObjectInitializationException {
-
-        AtomicReference<ProfessionObjectInitializationException> ex = new AtomicReference<>();
-        final BiFunction<Spawnable, ProfessionObjectInitializationException, Ore> func =
-                (x, y) -> {
-
-                    ex.set(y);
-                    if (x == null) {
-                        return null;
-                    }
-
-                    SortedSet<YieldResult> results = new TreeSet<>();
-
-                    MemorySection dropSection;
-
-                    int i = 0;
-                    while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
-                        try {
-                            results.add(YieldResult.deserialize(dropSection.getValues(false)));
-                        } catch (ConfigurationException e) {
-                            e.append("Ore (" + name + ")");
-                            ProfessionLogger.logError(e, false);
-                        } catch (InitializationException e) {
-                            ProfessionLogger.logError(e, false);
-                        }
-                        i++;
-                    }
-                    return new Ore(x.getId(), name, x.getMaterial(), results,
-                            x.getParticleData());
-                };
-
-        final Ore deserialize = Spawnable.deserializeSpawnable(map, Ore.class, func);
-        // if there are missing keys, throw ex
-        if (deserialize == null) {
-            throw ex.get();
-        }
-        return deserialize;
+    @Override
+    public String toString() {
+        return String.format("Ore{ID=%s\nName=%s\nMaterial=%s\nSpawnPoints=%s}", getId(), getName(), getMaterial(),
+                getSpawnPoints());
     }
 
     /**
@@ -177,12 +177,6 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
                 .map(result -> result.drop)
                 .orElse(null);
 
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Ore{ID=%s\nName=%s\nMaterial=%s\nSpawnPoints=%s}", getId(), getName(), getMaterial(),
-                getSpawnPoints());
     }
 
 }

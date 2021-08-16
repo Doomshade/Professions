@@ -42,14 +42,14 @@ import java.util.Iterator;
 public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
 
     /**
-     * @return whether or not the spawnable can spawn elements
+     * @return whether the spawnable can spawn elements
      */
     boolean canSpawn();
 
     /**
-     * Sets whether or not the spawnable can spawn
+     * Sets whether the spawnable can spawn
      *
-     * @param canSpawn whether or not it can spawn
+     * @param canSpawn whether it can spawn
      */
     void setCanSpawn(boolean canSpawn);
 

@@ -50,8 +50,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import static git.doomshade.professions.utils.Strings.GemEnum.*;
 import static git.doomshade.professions.profession.professions.jewelcrafting.GemUtils.*;
+import static git.doomshade.professions.utils.Strings.GemEnum.*;
 
 /**
  * @author Doomshade
@@ -252,7 +252,9 @@ public class Gem implements ConfigurationSerializable {
                     Collections.singletonList(EQUIPMENT_SLOT.s),
                     ProfessionObjectInitializationException.ExceptionReason.KEY_ERROR);
         }
-        String id = (String) map.get(ID.s);
+
+        // fixme
+        String id = (String) map.get("id");
         String gemEffect = (String) map.get(GEM_EFFECT.s);
         MemorySection itemSection = (MemorySection) map.get(GEM.s);
         ItemStack item = null;
@@ -370,16 +372,6 @@ public class Gem implements ConfigurationSerializable {
         return InsertResult.SUCCESS;
     }
 
-    public static class InsertResultt {
-        public final ItemStack item;
-        public final InsertResult result;
-
-        private InsertResultt(ItemStack item, InsertResult result) {
-            this.item = item;
-            this.result = result;
-        }
-    }
-
     public enum InsertResult {
         INVALID_ITEM,
         NO_GEM_SPACE,
@@ -388,9 +380,10 @@ public class Gem implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<>() {
+        return new LinkedHashMap<>() {
             {
-                put(ID.s, id);
+                // fixme
+                //put(ID.s, id);
                 put(GEM_EFFECT.s, gemEffect.toString());
                 put(GEM_EFFECT_CONTEXT.s, context);
                 put(GEM.s, ItemUtils.serialize(gem));

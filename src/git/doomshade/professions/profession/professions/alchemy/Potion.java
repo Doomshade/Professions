@@ -197,7 +197,9 @@ public class Potion implements ConfigurationSerializable {
 
         ArrayList<String> potionEffects = (ArrayList<String>) map.get(POTION_EFFECTS.s);
         int duration = (int) map.get(POTION_DURATION.s);
-        String potionId = (String) map.get(POTION_FLAG.s);
+
+        // fixme
+        String potionId = (String) map.get("id");
         PotionType potionType = PotionType.valueOf((String) map.get(POTION_TYPE.s));
         MemorySection mem = (MemorySection) map.get(POTION.s);
         ItemStack potion = null;
@@ -238,7 +240,8 @@ public class Potion implements ConfigurationSerializable {
             {
                 put(POTION_EFFECTS.s, potionEffects);
                 put(POTION_DURATION.s, duration);
-                put(POTION_FLAG.s, potionId);
+                // fixme
+                //put(POTION_FLAG.s, potionId);
                 put(POTION_TYPE.s, potionType.name());
                 put(POTION.s, ItemUtils.serialize(potion));
             }

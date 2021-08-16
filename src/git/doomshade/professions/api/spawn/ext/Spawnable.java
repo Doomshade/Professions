@@ -49,7 +49,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -59,7 +58,11 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
 
 /**
- * Manages spawns of spawnable elements. This class already implements {@link ISpawnable} interface.
+ * A spawnable element.
+ * <p>
+ * This can be for example be an ore or a herb
+ * <p>
+ * Extend this class to make an {@link Element} that can be spawned in a world.
  *
  * @author Doomshade
  * @version 1.0
@@ -68,7 +71,6 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
 public abstract class Spawnable extends Element
         implements ConfigurationSerializable, ISpawnable {
 
-    //private final List<? extends ISpawnPoint> spawnPointLocations;
     private final HashMap<Location, ISpawnPoint> spawnPoints = new HashMap<>();
 
     private final ParticleData particleData;
@@ -192,27 +194,6 @@ public abstract class Spawnable extends Element
     }
 
     /**
-     * Deserializes any implementations of this class
-     *
-     * @param map                the serialization map
-     * @param clazz              the class implementing this one that this will convert to
-     * @param conversionFunction the conversion function that converts a spawnable into the given class
-     * @param <T>                the desired class type
-     *
-     * @return the desired object
-     *
-     * @throws ProfessionObjectInitializationException if an exception occured during deserialization
-     */
-    public static <T extends Spawnable> T deserializeSpawnable(
-            Map<String, Object> map,
-            Class<T> clazz,
-            Function<Spawnable, T> conversionFunction)
-            throws ProfessionObjectInitializationException {
-
-        return deserializeSpawnable(map, clazz, (el, e) -> conversionFunction.apply(el));
-    }
-
-    /**
      * Deserializes the spawnable element. This is a helper method for other deserialization methods implementing this
      * class, allows them to deserialize this object's and the implementing class' serialization in one method. This
      * method checks for missing keys and will add an exception to the function if some keys are missing.
@@ -227,61 +208,66 @@ public abstract class Spawnable extends Element
      *
      * @return the desired object
      *
-     * @throws ProfessionObjectInitializationException if an exception occurred during deserialization
+     * @throws ProfessionObjectInitializationException if an exception occurred during deserialization or there are
+     * missing keys
      */
-    public static <T extends Spawnable> T deserializeSpawnable(
-            Map<String, Object> map,
-            Class<T> clazz,
-            BiFunction<Spawnable, ProfessionObjectInitializationException, T> conversionFunction)
+    protected static <T extends Spawnable> T deserializeSpawnable(
+            final Map<String, Object> map,
+            final String markerIcon,
+            final Class<T> clazz,
+            final Function<Spawnable, T> conversionFunction)
             throws ProfessionObjectInitializationException {
 
-
-        // get missing keys and initialize exception
-        final Set<String> missingKeys = Utils.getMissingKeys(map, Arrays.stream(Strings.SpawnableElementEnum.values())
-                .filter(x -> x != SPAWN_POINT)
-                .toArray(Strings.SpawnableElementEnum[]::new));
-
-        final ProfessionObjectInitializationException ex = new ProfessionObjectInitializationException(
-                clazz,
-                missingKeys,
-                ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS
-        );
-        if (!missingKeys.isEmpty()) {
-            return conversionFunction.apply(null, ex);
-        }
+        // first check if there are missing keys
+        checkForMissingKeys(map, clazz, List.of(SPAWN_POINT.s), Strings.SpawnableElementEnum.class);
 
         // get all possible data from the map
-        String id = (String) map.get(ID.s);
-        ItemStack material = ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s));
-        MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
+        final ItemStack material = ItemUtils.deserializeMaterial((String) map.get(MATERIAL.s));
+        final MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
         final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
 
         // create a dummy spawnable
-        @SuppressWarnings("deprecation") final Spawnable spawnable =
-                new Spawnable(id, "SpawnableElementName", material.getType(), (byte) material.getDurability(),
-                        particleData, "", false) {
+        // this will also check for missing element keys in the map
+        final Spawnable spawnable = deserializeElement(map, Spawnable.class, x ->
+                new Spawnable(x.getId(), x.getName(), material.getType(), (byte) material.getDurability(),
+                        particleData, markerIcon, false) {
 
                     @Override
                     protected @NotNull ItemTypeHolder<?, ?> getItemTypeHolder() {
                         throw new UnsupportedOperationException();
                     }
-                };
+                });
 
         // convert the spawnable to an object of programmer's desire
-        final T convertedSpawnable = conversionFunction.apply(spawnable, ex);
+        final T convertedSpawnable = conversionFunction.apply(spawnable);
 
-        Collection<ISpawnPoint> spawnPointLocations;
+        if (convertedSpawnable == null) {
+            return null;
+        }
+
+        // then get spawn points
+        final Collection<ISpawnPoint> spawnPointLocations;
         try {
-            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable, convertedSpawnable.getItemTypeHolder().getMarkerSetId()));
+            spawnPointLocations = new ArrayList<>(SpawnPoint.deserializeAll(map, convertedSpawnable,
+                    convertedSpawnable.getItemTypeHolder().getMarkerSetId()));
         } catch (ProfessionObjectInitializationException e) {
 
             // set the exception class to the deserialization object for further clearance
             e.setClazz(clazz);
-            return conversionFunction.apply(null, e);
+            throw e;
         }
         convertedSpawnable.addSpawnPoints(spawnPointLocations);
         return convertedSpawnable;
     }
+
+    /**
+     * We need to save spawn points every time they are modified -  the item type holder provides {@link
+     * ItemTypeHolder#save(boolean)} method
+     *
+     * @return the item type holder of this object
+     */
+    @NotNull
+    protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();
 
     /**
      * Spawns all elements with given filter (e.g. you are able to spawn only elements that are inside some kind of
@@ -369,11 +355,8 @@ public abstract class Spawnable extends Element
     @Override
     public @NotNull Map<String, Object> serialize() {
         final Map<String, Object> map = new LinkedHashMap<>();
-        map.put(ID.s, getId());
-
         map.put(MATERIAL.s, ItemUtils.serializeMaterial(getMaterial(), getMaterialData()));
         map.put(PARTICLE.s, getParticleData().serialize());
-
 
         int i = 0;
         for (ISpawnPoint spawnPointLocation : getSpawnPoints()) {
@@ -554,15 +537,6 @@ public abstract class Spawnable extends Element
             ProfessionLogger.logError(e);
         }
     }
-
-    /**
-     * We need to save spawn points every time they are modified -  the item type holder provides {@link
-     * ItemTypeHolder#save(boolean)} method
-     *
-     * @return the item type holder of this object
-     */
-    @NotNull
-    protected abstract ItemTypeHolder<?, ?> getItemTypeHolder();
 
 
 }

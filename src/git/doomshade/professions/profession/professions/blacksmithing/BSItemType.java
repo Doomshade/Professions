@@ -51,8 +51,8 @@ public class BSItemType extends CraftableItemType<BSItemStack> {
     @Override
     protected BSItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         try {
-            return new BSItemStack(ItemUtils.deserialize(map));
-        } catch (ConfigurationException | InitializationException e) {
+            return BSItemStack.deserialize(map);
+        } catch (InitializationException e) {
             ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize blacksmith ItemStack from file.");
         }

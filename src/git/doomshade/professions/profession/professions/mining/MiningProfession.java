@@ -84,7 +84,7 @@ public final class MiningProfession extends Profession {
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
 
-        final ProfessionEvent<OreItemType> e = utils.getEventUnsafe(event, OreItemType.class);
+        final ProfessionEvent<OreItemType> e = utils.getEventUnsafe(event);
 
         final User user = e.getPlayer();
         final Player player = user.getPlayer();

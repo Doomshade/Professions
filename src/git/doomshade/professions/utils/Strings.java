@@ -25,8 +25,8 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.api.Range;
-import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ICraftable;
+import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.enums.SortType;
@@ -44,6 +44,7 @@ import org.bukkit.potion.PotionType;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A class of {@code public static final} {@link String}s divided into enums for queries.
@@ -53,7 +54,7 @@ import java.util.function.Predicate;
  * @since 1.0
  */
 public final class Strings {
-    private static final Collection<FileEnum> REGISTERED_FILE_ENUMS = new HashSet<>();
+    private static final Map<Class<? extends FileEnum>, FileEnum> REGISTERED_FILE_ENUMS = new HashMap<>();
 
     public static void register() {
         register(ICraftableEnum.CRAFTING_TIME);
@@ -71,36 +72,113 @@ public final class Strings {
     }
 
     private static void register(FileEnum e) {
-        REGISTERED_FILE_ENUMS.add(e);
+        REGISTERED_FILE_ENUMS.put(e.getClass(), e);
+    }
+
+    /**
+     * Maps a default serialization to a serialization using {@link FileEnum}
+     *
+     * @param map     the map to remap
+     * @param clazzez the {@link FileEnum} classes that are used to remap
+     *
+     * @return remapped default serialization
+     */
+    @SafeVarargs
+    public static Map<FileEnum, Object> mapToFileEnum(Map<String, Object> map, Class<? extends FileEnum>... clazzez) {
+        final Map<FileEnum, Object> m = new LinkedHashMap<>();
+
+        for (Class<? extends FileEnum> clazz : clazzez) {
+            final FileEnum fe = REGISTERED_FILE_ENUMS.get(clazz);
+
+            // loop through all file enum values and check if the getKey() equals to the map entry key and assign it an
+            // object from the map with the given key
+            for (Map.Entry<String, Object> mapEntry : map.entrySet()) {
+                for (Map.Entry<? extends FileEnum, Object> feEntry : fe.getDefaultValues().entrySet()) {
+                    final FileEnum f = feEntry.getKey();
+                    if (f.getKey().equals(mapEntry.getKey())) {
+                        m.put(f, mapEntry.getValue());
+                    }
+                }
+            }
+        }
+        return m;
+    }
+
+    /**
+     * @param map   the map
+     * @param enums the enums
+     *
+     * @return the missing keys of given map and enums
+     */
+    @SafeVarargs
+    public static Set<String> getMissingKeysSet(Map<String, Object> map, Class<? extends FileEnum>... enums) {
+        return toSet(getMissingKeys(map, enums));
+    }
+
+    /**
+     * Transforms a map to a set of missing keys
+     *
+     * @param map the map to transform to
+     *
+     * @return a set of missing keys
+     */
+    public static Set<String> toSet(Map<FileEnum, Object> map) {
+        return map.keySet().stream().map(FileEnum::getKey).collect(Collectors.toSet());
+    }
+
+    /**
+     * @param map   the map
+     * @param enums the enums
+     *
+     * @return the missing keys of given map and enums
+     */
+    @SafeVarargs
+    public static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, Class<? extends FileEnum>... enums) {
+        Map<FileEnum, Object> m = new HashMap<>();
+        for (Class<? extends FileEnum> clazz : enums) {
+            putDefaults(map, m, REGISTERED_FILE_ENUMS.get(clazz));
+        }
+        return m;
+    }
+
+    /**
+     * Puts the defaults from the {@link FileEnum} to the "defaults" map based on the "map" map
+     *
+     * @param map      the map to check for
+     * @param defaults the map to put the defaults to
+     * @param fe       the defaults to retrieve from
+     */
+    private static void putDefaults(Map<String, Object> map, Map<FileEnum, Object> defaults, FileEnum fe) {
+        for (Map.Entry<? extends FileEnum, Object> e : fe.getDefaultValues().entrySet()) {
+            final FileEnum fee = e.getKey();
+            if (!map.containsKey(fee.getKey())) {
+                defaults.put(e.getKey(), e.getValue());
+            }
+        }
     }
 
     public static Map<FileEnum, Object> getMissingKeysItemType(Map<String, Object> map, ItemType<?> itemType) {
-        return getMissingKeys(map, itemType, x -> x.testItemType(itemType));
-
+        return getMissingKeys(map, x -> x.testItemType(itemType));
     }
 
-    public static Map<FileEnum, Object> getMissingKeysObject(Map<String, Object> map, ConfigurationSerializable object) {
-        return getMissingKeys(map, object, x -> x.testObject(object));
-    }
-
-    private static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, Object obj, Predicate<FileEnum> p) {
+    private static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, Predicate<FileEnum> p) {
         Map<FileEnum, Object> enums = new HashMap<>();
 
         // for each registered file enum
-        for (FileEnum fe : REGISTERED_FILE_ENUMS) {
+        for (FileEnum fe : REGISTERED_FILE_ENUMS.values()) {
             if (!p.test(fe)) {
                 continue;
             }
 
             // iterate through its enum values
-            for (Map.Entry<? extends FileEnum, Object> e : fe.getDefaultValues().entrySet()) {
-                FileEnum fee = e.getKey();
-                if (!map.containsKey(fee.getKey())) {
-                    enums.put(e.getKey(), e.getValue());
-                }
-            }
+            putDefaults(map, enums, fe);
         }
         return enums;
+    }
+
+    public static Map<FileEnum, Object> getMissingKeysObject(Map<String, Object> map,
+                                                             ConfigurationSerializable object) {
+        return getMissingKeys(map, x -> x.testObject(object));
     }
 
     /**
@@ -239,7 +317,6 @@ public final class Strings {
     }
 
     public enum GemEnum implements FileEnum {
-        ID("id"),
         GEM_EFFECT("gem-effect"),
         GEM_EFFECT_CONTEXT("gem-effect-context"),
         GEM("item"),
@@ -271,7 +348,6 @@ public final class Strings {
         public EnumMap<GemEnum, Object> getDefaultValues() {
             return new EnumMap<>(GemEnum.class) {
                 {
-                    put(ID, "some-id");
                     put(GEM_EFFECT, "add");
                     put(GEM_EFFECT_CONTEXT, Arrays.asList("poskozeni:5", "inteligence:4"));
                     put(GEM, ItemUtils.EXAMPLE_RESULT.serialize());
@@ -420,7 +496,6 @@ public final class Strings {
     public enum PotionEnum implements FileEnum {
         POTION_EFFECTS("potion-effects"),
         POTION_DURATION("duration"),
-        POTION_FLAG("id"),
         POTION_TYPE("potion-type"),
         POTION("potion");
 
@@ -458,7 +533,6 @@ public final class Strings {
                             String.format("poskozeni%s40", SPLIT_CHAR),
                             String.format("zivoty%s30", SPLIT_CHAR)));
                     put(POTION_DURATION, 80);
-                    put(POTION_FLAG, "potions unique flag");
                     put(POTION_TYPE, PotionType.FIRE_RESISTANCE.name());
                     put(POTION, Potion.EXAMPLE_POTION.serialize());
                 }
@@ -538,7 +612,6 @@ public final class Strings {
      */
     public enum SpawnableElementEnum implements FileEnum {
         SPAWN_POINT("spawnpoint"),
-        ID("id"),
         MATERIAL("material"),
         PARTICLE("particle");
 
@@ -568,7 +641,6 @@ public final class Strings {
             return new EnumMap<>(SpawnableElementEnum.class) {
                 {
                     put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
-                    put(ID, Utils.EXAMPLE_ID);
                     put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType());
                     put(PARTICLE, new ParticleData());
                 }

@@ -51,7 +51,7 @@ public final class EnchantingProfession extends Profession {
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
 
-        final ProfessionEvent<EnchantedItemItemType> event = utils.getEventUnsafe(e, EnchantedItemItemType.class);
+        final ProfessionEvent<EnchantedItemItemType> event = utils.getEventUnsafe(e);
 
         User user = event.getPlayer();
         if (!utils.playerMeetsLevelRequirements(event)) {

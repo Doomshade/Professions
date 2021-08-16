@@ -80,8 +80,7 @@ public class ItemAttribute {
                 this.toString = attribute + ": " + value;
                 break;
             default:
-                this.toString = "";
-                break;
+                throw new IllegalArgumentException(type + " is not a valid attribute type!");
         }
 
         //

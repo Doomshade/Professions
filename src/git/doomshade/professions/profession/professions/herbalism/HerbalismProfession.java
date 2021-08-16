@@ -59,7 +59,7 @@ public class HerbalismProfession extends Profession {
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
 
-        final ProfessionEvent<HerbItemType> event = utils.getEventUnsafe(e, HerbItemType.class);
+        final ProfessionEvent<HerbItemType> event = utils.getEventUnsafe(e);
 
         // check for level requirements
         final User user = event.getPlayer();

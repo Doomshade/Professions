@@ -52,7 +52,7 @@ public class HerbItemType extends ItemType<Herb> {
 
     @Override
     protected Herb deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        return Herb.deserialize(map);
+        return Herb.deserialize(map, "flower");
     }
 
     @Override

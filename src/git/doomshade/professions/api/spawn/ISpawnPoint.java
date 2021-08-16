@@ -108,7 +108,7 @@ public interface ISpawnPoint extends ConfigurationSerializable {
     boolean isSpawned();
 
     /**
-     * @return whether or not this spawn point can spawn elements
+     * @return whether this spawn point can spawn elements
      */
     boolean isSpawnable();
 

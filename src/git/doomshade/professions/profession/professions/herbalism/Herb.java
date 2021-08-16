@@ -27,22 +27,27 @@ package git.doomshade.professions.profession.professions.herbalism;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.ParticleData;
+import git.doomshade.professions.utils.Strings;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static git.doomshade.professions.utils.Strings.HerbEnum.*;
 
@@ -53,7 +58,7 @@ import static git.doomshade.professions.utils.Strings.HerbEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Herb extends Spawnable implements ConfigurationSerializable {
+public class Herb extends Spawnable {
 
     public static final Herb EXAMPLE_HERB = new Herb(Utils.EXAMPLE_ID, Objects.requireNonNull(
             ItemUtils.EXAMPLE_RESULT.getItemMeta()).getDisplayName(),
@@ -74,22 +79,21 @@ public class Herb extends Spawnable implements ConfigurationSerializable {
         this.timeGather = gatherTime;
     }
 
-    public static Herb deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        final Set<String> missingKeys = Utils.getMissingKeys(map, Strings.HerbEnum.values());
-        if (!missingKeys.isEmpty()) {
-            throw new ProfessionObjectInitializationException(HerbItemType.class, missingKeys);
-        }
+    public static Herb deserialize(final Map<String, Object> map, final String markerIcon) throws ProfessionObjectInitializationException {
+        checkForMissingKeys(map, Herb.class, Collections.emptyList(), Strings.HerbEnum.class);
 
-        final Herb herb = Spawnable.deserializeSpawnable(map, Herb.class, x -> {
-            int gatherTime = (int) map.get(TIME_GATHER.s);
-            MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-            ItemStack gatherItem;
+        final Herb herb = Spawnable.deserializeSpawnable(map, markerIcon, Herb.class, x -> {
+            final int gatherTime = (int) map.get(TIME_GATHER.s);
+
+            final MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
+            final ItemStack gatherItem;
             try {
                 gatherItem = ItemUtils.deserialize(mem.getValues(false));
             } catch (ConfigurationException | InitializationException e) {
                 ProfessionLogger.logError(e, false);
                 return null;
             }
+
             String displayName = gatherItem.getType().name();
             if (gatherItem.hasItemMeta()) {
                 ItemMeta meta = gatherItem.getItemMeta();
@@ -97,12 +101,14 @@ public class Herb extends Spawnable implements ConfigurationSerializable {
                     displayName = meta.getDisplayName();
                 }
             }
+
             // TODO: 26.01.2020 make implementation of custom marker icons
             return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(),
                     (boolean) map.get(ENABLE_SPAWN.s),
                     x.getParticleData(), gatherTime,
-                    "flower");
+                    x.getMarkerIcon());
         });
+
         if (herb == null) {
             throw new ProfessionObjectInitializationException("Could not deserialize herb");
         }

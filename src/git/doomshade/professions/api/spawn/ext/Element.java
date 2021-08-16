@@ -26,16 +26,26 @@ package git.doomshade.professions.api.spawn.ext;
 
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.spawn.IElement;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
+
+import static git.doomshade.professions.utils.Strings.ElementEnum.ID;
+import static git.doomshade.professions.utils.Strings.ElementEnum.NAME;
 
 /**
+ * An element.
+ * <p>
+ * This can for example be an {@link org.bukkit.inventory.ItemStack} that can be crafted.
+ * <p>
+ * Extend this class to create an element, i.e. something that can be found in a world.
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
@@ -60,6 +70,40 @@ public abstract class Element implements IElement, ConfigurationSerializable {
         }
     }
 
+    protected static <T extends Element> T deserializeElement(Map<String, Object> map,
+                                                              Class<T> clazz,
+                                                              Function<Element, T> conversionFunction)
+            throws ProfessionObjectInitializationException {
+        checkForMissingKeys(map, clazz, Collections.emptyList(), Strings.ElementEnum.class);
+
+        final String id = (String) map.get(ID.s);
+        final String name = (String) map.get(NAME.s);
+
+        final Element dummy = new Element(id, false) {
+            @Override
+            public String getName() {
+                return name;
+            }
+        };
+
+        // convert the element
+        return conversionFunction.apply(dummy);
+    }
+
+    @SafeVarargs
+    protected static void checkForMissingKeys(Map<String, Object> map,
+                                              Class<?> clazz,
+                                              Collection<String> ignoredKeys,
+                                              Class<? extends FileEnum>... keys)
+            throws ProfessionObjectInitializationException {
+        Set<String> missingKeys = Strings.getMissingKeysSet(map, keys);
+        missingKeys.removeAll(ignoredKeys);
+        if (!missingKeys.isEmpty()) {
+            throw new ProfessionObjectInitializationException(clazz, missingKeys,
+                    ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
+        }
+    }
+
     public static void unloadElements() {
         ELEMENTS.clear();
     }
@@ -81,8 +125,8 @@ public abstract class Element implements IElement, ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put(Strings.ElementEnum.ID.s, getId());
-        map.put(Strings.ElementEnum.NAME.s, getName());
+        map.put(ID.s, getId());
+        map.put(NAME.s, getName());
         return map;
     }
 

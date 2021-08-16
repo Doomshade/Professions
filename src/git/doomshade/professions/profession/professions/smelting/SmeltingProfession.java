@@ -55,7 +55,7 @@ public class SmeltingProfession extends Profession {
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> ev) {
 
-        final ProfessionEvent<BarItemType> event = utils.getEventUnsafe(ev, BarItemType.class);
+        final ProfessionEvent<BarItemType> event = utils.getEventUnsafe(ev);
         String expMsg = "";
         if (utils.addExp(event)) {
             expMsg = Utils.getReceiveXp(event.getExp());

@@ -24,8 +24,11 @@
 
 package git.doomshade.professions.profession.professions.blacksmithing;
 
+import git.doomshade.professions.api.spawn.ext.Element;
+import git.doomshade.professions.exceptions.ConfigurationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,13 +40,33 @@ import java.util.Map;
  * @version 1.0
  * @since 1.0
  */
-public class BSItemStack implements ConfigurationSerializable {
+public class BSItemStack extends Element {
     final ItemStack item;
+    private final String name;
 
-    public BSItemStack(ItemStack item) {
+    public BSItemStack(String id, String name, ItemStack item) {
+        super(id, true);
+        this.name = name;
         this.item = item;
     }
 
+    public static BSItemStack deserialize(final Map<String, Object> map)
+            throws ProfessionObjectInitializationException {
+        final BSItemStack is = deserializeElement(map, BSItemStack.class, x -> {
+            try {
+                return new BSItemStack(x.getId(), x.getName(), ItemUtils.deserialize(map));
+            } catch (ConfigurationException | ProfessionObjectInitializationException e) {
+                ProfessionLogger.logError(e);
+                return null;
+            }
+        });
+
+        if (is == null) {
+            throw new ProfessionObjectInitializationException("Could not deserialize blacksmithing itemstack!");
+        }
+
+        return is;
+    }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
@@ -52,5 +75,10 @@ public class BSItemStack implements ConfigurationSerializable {
                 put("item", ItemUtils.serialize(item));
             }
         };
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 }

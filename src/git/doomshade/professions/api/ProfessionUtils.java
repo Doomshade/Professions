@@ -54,15 +54,13 @@ public final class ProfessionUtils {
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
      *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
+     * @return the cast event or {@code null} if the event could not be cast
      */
-    public <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEvent<?> event, Class<A> clazz)
+    @SuppressWarnings("unchecked")
+    public <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEvent<?> event)
             throws ClassCastException {
-        return getEvent(event, clazz).orElse(null);
+        return (ProfessionEvent<A>) getEvent(event).orElse(null);
     }
 
     /**
@@ -70,15 +68,11 @@ public final class ProfessionUtils {
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
      *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
+     * @return empty if the event could not be cast, cast even otherwise
      */
-    @SuppressWarnings({"unchecked"})
-    public <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event,
-                                                                         Class<A> clazz)
+    @SuppressWarnings("unchecked")
+    public <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event)
             throws ClassCastException {
         try {
             return Optional.of((ProfessionEvent<A>) event);
@@ -92,16 +86,13 @@ public final class ProfessionUtils {
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
      *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
+     * @return the cast event or {@code null} if the event could not be cast
      */
-    public <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEventWrapper<?> event,
-                                                                     Class<A> clazz)
+    @SuppressWarnings("unchecked")
+    public <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEventWrapper<?> event)
             throws ClassCastException {
-        return getEvent(event, clazz).orElse(null);
+        return (ProfessionEvent<A>) getEvent(event).orElse(null);
     }
 
     /**
@@ -109,16 +100,14 @@ public final class ProfessionUtils {
      *
      * @param event the profession event to cast
      * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
      *
      * @return the casted event
      *
      * @throws ClassCastException if the event couldn't be cast
      */
-    public <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event,
-                                                                         Class<A> clazz)
+    public <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event)
             throws ClassCastException {
-        return getEvent(event.event, clazz);
+        return getEvent(event.event);
     }
 
     /**
@@ -127,7 +116,7 @@ public final class ProfessionUtils {
      *
      * @return {@code true} if the player meets all requirements, {@code false} otherwise
      */
-    public final <ItemTypeClass extends ItemType<?>> boolean playerMeetsLevelRequirements(
+    public <ItemTypeClass extends ItemType<?>> boolean playerMeetsLevelRequirements(
             ProfessionEvent<ItemTypeClass> e) {
         if (!playerHasProfession(e)) {
             return false;
@@ -144,7 +133,7 @@ public final class ProfessionUtils {
      *
      * @see User#getProfessionData(Profession)
      */
-    public final UserProfessionData getUserProfessionData(User user) {
+    public UserProfessionData getUserProfessionData(User user) {
         return user.getProfessionData(profession);
     }
 
@@ -154,7 +143,7 @@ public final class ProfessionUtils {
      *
      * @return {@code true} if the player has a profession of this called event, {@code false} otherwise
      */
-    public final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
+    public <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
         return e.getPlayer().hasProfession(profession);
     }
 
@@ -164,7 +153,7 @@ public final class ProfessionUtils {
      *
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
-    public final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
+    public <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
         return isValidEvent(e, true);
     }
 
@@ -174,8 +163,8 @@ public final class ProfessionUtils {
      *
      * @return {@code true} if event has registered an object of item type, {@code false} otherwise
      */
-    public final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e,
-                                                                          boolean errorMessage) {
+    public <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e,
+                                                                    boolean errorMessage) {
         final boolean playerHasProf = playerHasProfession(e);
         if (!playerHasProf) {
             e.setCancelled(true);
@@ -197,7 +186,7 @@ public final class ProfessionUtils {
      *
      * @return {@code true} if the exp was given, {@code false} otherwise
      */
-    public final boolean addExp(ProfessionEvent<?> e) {
+    public boolean addExp(ProfessionEvent<?> e) {
         return addExp(e.getExp(), e.getPlayer(), e.getItemType());
     }
 
@@ -212,7 +201,7 @@ public final class ProfessionUtils {
      *
      * @see User#addExp(double, Profession, ItemType)
      */
-    public final boolean addExp(double exp, User user, ItemType<?> source) {
+    public boolean addExp(double exp, User user, ItemType<?> source) {
         if (!user.isSuppressExpEvent()) {
             return user.addExp(exp, profession, source);
         }
@@ -226,7 +215,7 @@ public final class ProfessionUtils {
      * @param <A>   the {@link ItemType}
      * @param items the items
      */
-    public final <T extends ConfigurationSerializable, A extends ItemType<T>> void addItems(Class<A> items) {
+    public <T extends ConfigurationSerializable, A extends ItemType<T>> void addItems(Class<A> items) {
         profession.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 }
