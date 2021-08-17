@@ -29,6 +29,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 

@@ -44,6 +44,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,8 @@ public class Herb extends Spawnable {
         }
         return herb;
     }
-        /*
+
+    /*
         // gather item
         MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
         ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
