@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.api.spawn.ISpawnable;
+import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.IOManager;
@@ -373,8 +374,10 @@ public abstract class Spawnable extends Element
 
     @Override
     public Serializable[] cache() {
-        final Serializable[] cache = prepareCache();
+        // extend the cache
+        final Serializable[] cache = Cacheable.prepareCache(super.cache(), getOffset());
 
+        // the index to write to is equal to parent offset
         int idx = super.getOffset();
         for (ISpawnPoint s : getSpawnPoints()) {
             SpawnPoint sp = (SpawnPoint) s;

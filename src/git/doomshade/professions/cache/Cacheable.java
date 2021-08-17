@@ -34,23 +34,25 @@ import java.io.Serializable;
 public interface Cacheable {
 
     /**
+     * Extends the cache and copies the contents of the parent cache
+     *
+     * @param prev the parent cache
+     * @param size the new size
+     *
+     * @return the extended cache
+     */
+    static Serializable[] prepareCache(Serializable[] prev, int size) {
+        final Serializable[] cache = new Serializable[size];
+        System.arraycopy(prev, 0, cache, 0, prev.length);
+        return cache;
+    }
+
+    /**
      * Loads the data from a cache
      *
      * @param data the cache
      */
     void loadCache(Serializable[] data);
-
-    default Serializable[] prepareCache() {
-        // get the previous cache and its offset
-        final Serializable[] prev = cache();
-        final int offset = getOffset();
-
-        // create a new cache with a offset equal to the previous offset and the current offset and copy the previous contents
-        final Serializable[] cache = new Serializable[prev.length + offset];
-        System.arraycopy(prev, 0, cache, 0, prev.length);
-
-        return cache;
-    }
 
     /**
      * No data should be changed with each subsequent call of this method
@@ -59,5 +61,10 @@ public interface Cacheable {
      */
     Serializable[] cache();
 
+    /**
+     * The offset should always be equal to the parent offset ({@code super.getOffset()}) plus the current offset
+     *
+     * @return the offset in data for further caching
+     */
     int getOffset();
 }
