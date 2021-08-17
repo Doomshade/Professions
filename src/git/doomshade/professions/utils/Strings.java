@@ -30,6 +30,7 @@ import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.enums.SortType;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
@@ -56,7 +57,7 @@ import java.util.stream.Collectors;
 public final class Strings {
     private static final Map<Class<? extends FileEnum>, FileEnum> REGISTERED_FILE_ENUMS = new HashMap<>();
 
-    public static void register() {
+    static {
         register(ICraftableEnum.CRAFTING_TIME);
         register(ItemTypeEnum.NAME);
         register(ElementEnum.NAME);
@@ -72,6 +73,7 @@ public final class Strings {
     }
 
     private static void register(FileEnum e) {
+        //ProfessionLogger.log(String.format("Registering FileEnum - Class: %s; FileEnum: %s", e.getClass(), e));
         REGISTERED_FILE_ENUMS.put(e.getClass(), e);
     }
 
@@ -149,6 +151,11 @@ public final class Strings {
      * @param fe       the defaults to retrieve from
      */
     private static void putDefaults(Map<String, Object> map, Map<FileEnum, Object> defaults, FileEnum fe) {
+        if (fe == null) {
+            ProfessionLogger.logError(new NullPointerException(
+                    String.format("Null FileEnum parameter\nmap=%s\ndefaults=%s", map, defaults)));
+            return;
+        }
         for (Map.Entry<? extends FileEnum, Object> e : fe.getDefaultValues().entrySet()) {
             final FileEnum fee = e.getKey();
             if (!map.containsKey(fee.getKey())) {

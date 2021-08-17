@@ -138,7 +138,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     }
 
     /**
-     * @return all known elements (e.g. all herbs possible herbs)
+     * @return all known elements (e.g. all herbs)
      */
     public Map<String, ? extends Element> getElements() {
         return ImmutableMap.copyOf(ELEMENTS.get(getClass()));

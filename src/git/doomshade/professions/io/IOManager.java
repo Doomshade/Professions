@@ -27,6 +27,7 @@ package git.doomshade.professions.io;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
@@ -39,6 +40,7 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Doomshade
@@ -271,5 +273,12 @@ public class IOManager {
      */
     public static File getPlayerFolder() {
         return getFolder(PLAYER_FOLDER);
+    }
+
+    public static void loadSpawnableCache() {
+    }
+
+    public static void saveSpawnableCache() {
+
     }
 }

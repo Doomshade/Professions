@@ -154,26 +154,64 @@ public abstract class Spawnable extends Element
             Material mat = block.getType();
             Location location = block.getLocation();
             try {
-                return Utils.findInIterable(getAllSpawnableElements().values(),
-                        x -> x.getMaterial() == mat && x.isSpawnPoint(location));
+                final Map<Class<? extends Spawnable>, Map<String, Spawnable>> els = getAllSpawnableElements();
+                final Collection<Map<String, Spawnable>> vals = els.values();
+                for (Map<String, Spawnable> val : vals) {
+                    return Utils.findInIterable(val.values(),
+                            x -> x.getMaterial() == mat && x.isSpawnPoint(location));
+                }
             } catch (Utils.SearchNotFoundException ignored) {
             }
             return null;
         };
     }
 
-    public static <E extends Spawnable> Map<String, E> getAllSpawnableElements() {
-        @SuppressWarnings("unchecked") final Map<String, E> map = getAllElements().values().stream()
-                .flatMap(m -> m.entrySet().stream())
-                .filter(entry -> entry.getValue() instanceof Spawnable)
-                .collect(Collectors.toMap(Map.Entry::getKey, entry -> (E) entry.getValue(),
-                        (a, b) -> b,
-                        LinkedHashMap::new));
+    /**
+     * @return a map of spawnable elements where the key is the ID of the spawnable element and value is the
+     * corresponding element
+     *
+     * @see Element#getId()
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<Class<? extends Spawnable>, Map<String, Spawnable>> getAllSpawnableElements() {
+        final Map<Class<? extends Element>, Map<String, Element>> allElements = getAllElements();
+        final Map<Class<? extends Spawnable>, Map<String, Spawnable>> map = new HashMap<>();
+
+        for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : allElements.entrySet()) {
+            if (!entry.getKey().isAssignableFrom(Spawnable.class)) {
+                continue;
+            }
+
+            final Map<String, Spawnable> s = new HashMap<>();
+            final Map<String, Element> v = entry.getValue();
+
+            for (Map.Entry<String, Element> vEntry : v.entrySet()) {
+                s.put(vEntry.getKey(), (Spawnable) vEntry.getValue());
+            }
+
+            map.put((Class<? extends Spawnable>) entry.getKey(), s);
+        }
         return ImmutableMap.copyOf(map);
     }
 
+    /**
+     * @param clazz the class
+     * @param <E>   the spawnable type
+     *
+     * @return a map of spawnable elements based on the given spawnable class
+     */
     public static <E extends Spawnable> Map<String, E> getSpawnableElements(Class<E> clazz) {
         return ImmutableMap.copyOf(getElements(clazz));
+    }
+
+    /**
+     * @return a collection of spawnable elements
+     */
+    public static Collection<Spawnable> getSpawnableElements() {
+        final Map<Class<? extends Spawnable>, Map<String, Spawnable>> allSpawnableElements = getAllSpawnableElements();
+        final Collection<Map<String, Spawnable>> vals = allSpawnableElements.values();
+
+        return vals.stream().flatMap(val -> val.values().stream()).collect(Collectors.toList());
     }
 
     /**
@@ -187,7 +225,7 @@ public abstract class Spawnable extends Element
      */
     public static Spawnable of(Block block) throws Utils.SearchNotFoundException {
 
-        final Spawnable el = iterate(block, getAllSpawnableElements().values());
+        final Spawnable el = iterate(block, getSpawnableElements());
 
         if (el != null) {
             return el;
@@ -299,9 +337,8 @@ public abstract class Spawnable extends Element
      * @param action           the action
      */
     private static void doForAllElements(Predicate<ISpawnPoint> spawnPointFilter, Consumer<ISpawnPoint> action) {
-        final Map<String, Spawnable> elements = getAllSpawnableElements();
-        for (Map.Entry<String, Spawnable> entry : elements.entrySet()) {
-            Spawnable spawn = entry.getValue();
+        final Collection<Spawnable> spawnables = getSpawnableElements();
+        for (Spawnable spawn : spawnables) {
             for (ISpawnPoint sp : spawn.getSpawnPoints()) {
                 if (!spawnPointFilter.test(sp)) {
                     continue;
