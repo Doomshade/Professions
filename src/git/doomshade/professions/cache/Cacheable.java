@@ -34,6 +34,8 @@ import java.io.Serializable;
 public interface Cacheable {
 
     /**
+     * No data should be changed with each subsequent call of this method
+     *
      * @return the data to be cached
      */
     Serializable[] cache();

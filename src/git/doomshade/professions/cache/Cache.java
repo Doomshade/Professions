@@ -49,15 +49,55 @@ public class Cache extends ReadOnlyCache {
      */
     public void save(Cacheable[] data) throws IOException, NullPointerException {
         validate(data);
-        out.writeInt(data.length);
-        out.writeInt(data[0].cache().length);
+
+        // write the header
+        writeHeader(data);
+
+        // write the data
+        writeData(data);
+
+        // close the file
+        close();
+    }
+
+    private void close() throws IOException {
+        out.flush();
+        out.close();
+    }
+
+    /**
+     * Writes the objects to the output stream
+     *
+     * @param data the object data
+     *
+     * @throws IOException if something occurred during writing to the file
+     */
+    private void writeData(Cacheable[] data) throws IOException {
         for (Cacheable c : data) {
             for (Serializable s : c.cache()) {
                 out.writeObject(s);
             }
         }
-        out.flush();
-        out.close();
+    }
+
+    /**
+     * Writes the header of the file to the output stream
+     *
+     * @param data the data to get the header from
+     *
+     * @throws IOException if something occurred during writing to the file
+     */
+    private void writeHeader(Cacheable[] data) throws IOException {
+        // the amount of cacheables
+        // for example 25 herbs
+        out.writeInt(data.length);
+        for (Cacheable c : data) {
+            final Serializable[] cache = c.cache();
+
+            // the inner array amount of each data
+            // for example looped 25 times and saves each herb's amount of spawn points
+            out.writeInt(cache.length);
+        }
     }
 
     /**

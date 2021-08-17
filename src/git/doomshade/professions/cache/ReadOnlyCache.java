@@ -48,23 +48,57 @@ public class ReadOnlyCache {
      * @throws IOException if the file does not exist, or it could not be read
      */
     public Serializable[][] load() throws IOException {
-        Serializable[][] arr = new Serializable[0][0];
+        Serializable[][] arr = new Serializable[0][];
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
-            int cacheLen = in.readInt();
-            int cacheArrayLen = in.readInt();
-            arr = new Serializable[cacheLen][cacheArrayLen];
+            final int[] header = readHeader(in);
+            arr = new Serializable[header.length][];
 
-            for (int i = 0; i < cacheLen; i++) {
-                for (int j = 0; j < cacheArrayLen; j++) {
-                    try {
-                        arr[i][j] = (Serializable) in.readObject();
-                    } catch (ClassNotFoundException e) {
-                        throw new IOException("Cache could not be loaded", e);
-                    }
+            for (int i = 0; i < header.length; i++) {
+                final int size = header[i];
+                try {
+                    arr[i] = readObjects(in, size);
+                } catch (ClassNotFoundException e) {
+                    throw new IOException("Could not read file!", e);
                 }
             }
         }
         return arr;
+    }
+
+    /**
+     * Reads the header from the input stream
+     *
+     * @param in the input stream
+     *
+     * @return the header
+     *
+     * @throws IOException if the data could not be read
+     */
+    private int[] readHeader(ObjectInputStream in) throws IOException {
+        int cacheLen = in.readInt();
+        int[] header = new int[cacheLen];
+        for (int i = 0; i < cacheLen; i++) {
+            header[i] = in.readInt();
+        }
+        return header;
+    }
+
+    /**
+     * Reads the objects from the input stream
+     *
+     * @param in   the input stream
+     * @param size the object amount
+     *
+     * @return the objects
+     *
+     * @throws IOException if the data could not be read
+     */
+    private Serializable[] readObjects(ObjectInputStream in, int size) throws IOException, ClassNotFoundException {
+        Serializable[] objects = new Serializable[size];
+        for (int j = 0; j < size; j++) {
+            objects[j] = (Serializable) in.readObject();
+        }
+        return objects;
     }
 }
