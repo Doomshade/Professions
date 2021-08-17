@@ -42,16 +42,23 @@ public class SpawnTask extends ExtendedBukkitRunnable {
     // because of cache
     private transient final int generatedRespawnTime;
     private transient int respawnTime;
+
     public SpawnTask(SpawnPoint spawnPoint) {
         this.spawnPoint = spawnPoint;
         this.generatedRespawnTime = spawnPoint.getSpawnTime().getRandom();
         this.respawnTime = generatedRespawnTime;
     }
 
+    /**
+     * @return the generated (random) respawn time
+     */
     public int getGeneratedRespawnTime() {
         return generatedRespawnTime;
     }
 
+    /**
+     * @return the current respawn time
+     */
     public int getRespawnTime() {
         return respawnTime;
     }
