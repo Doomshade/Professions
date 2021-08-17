@@ -34,16 +34,30 @@ import java.io.Serializable;
 public interface Cacheable {
 
     /**
+     * Loads the data from a cache
+     *
+     * @param data the cache
+     */
+    void loadCache(Serializable[] data);
+
+    default Serializable[] prepareCache() {
+        // get the previous cache and its offset
+        final Serializable[] prev = cache();
+        final int offset = getOffset();
+
+        // create a new cache with a offset equal to the previous offset and the current offset and copy the previous contents
+        final Serializable[] cache = new Serializable[prev.length + offset];
+        System.arraycopy(prev, 0, cache, 0, prev.length);
+
+        return cache;
+    }
+
+    /**
      * No data should be changed with each subsequent call of this method
      *
      * @return the data to be cached
      */
     Serializable[] cache();
 
-    /**
-     * Loads the data from a cache
-     *
-     * @param data the cache
-     */
-    void loadCache(Serializable[] data);
+    int getOffset();
 }

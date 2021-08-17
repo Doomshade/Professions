@@ -48,6 +48,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -209,7 +210,7 @@ public abstract class Spawnable extends Element
      * @return the desired object
      *
      * @throws ProfessionObjectInitializationException if an exception occurred during deserialization or there are
-     * missing keys
+     *                                                 missing keys
      */
     protected static <T extends Spawnable> T deserializeSpawnable(
             final Map<String, Object> map,
@@ -368,6 +369,40 @@ public abstract class Spawnable extends Element
     @Override
     public String getId() {
         return id;
+    }
+
+    @Override
+    public Serializable[] cache() {
+        final Serializable[] cache = prepareCache();
+
+        int idx = super.getOffset();
+        for (ISpawnPoint s : getSpawnPoints()) {
+            SpawnPoint sp = (SpawnPoint) s;
+            cache[idx++] = sp.getSerialNumber();
+            cache[idx++] = sp.getSpawnTask().getRespawnTime();
+        }
+
+        return cache;
+    }
+
+    @Override
+    public void loadCache(Serializable[] data) {
+        super.loadCache(data);
+        final int index = super.getOffset();
+        final int lastIndex = this.getOffset();
+
+        for (int i = index; i < lastIndex; i += 2) {
+            int serialNumber = (int) data[i];
+            int respawnTime = (int) data[i + 1];
+
+            final SpawnPoint sp = (SpawnPoint) getSpawnPoint(serialNumber);
+            sp.getSpawnTask().setRespawnTime(respawnTime);
+        }
+    }
+
+    @Override
+    public int getOffset() {
+        return super.getOffset() + getSpawnPoints().size() * 2;
     }
 
     @Override

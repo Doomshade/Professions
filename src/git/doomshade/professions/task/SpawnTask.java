@@ -63,6 +63,15 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         return respawnTime;
     }
 
+    /**
+     * Sets the current respawn time
+     *
+     * @param respawnTime the current respawn time
+     */
+    public void setRespawnTime(int respawnTime) {
+        this.respawnTime = respawnTime;
+    }
+
     @Override
     public void run() {
         if (spawnPoint.isSpawned()) {

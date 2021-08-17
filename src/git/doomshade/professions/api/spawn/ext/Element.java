@@ -26,9 +26,7 @@ package git.doomshade.professions.api.spawn.ext;
 
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.spawn.IElement;
-import git.doomshade.professions.cache.Cache;
 import git.doomshade.professions.cache.Cacheable;
-import git.doomshade.professions.cache.ReadOnlyCache;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Strings;
@@ -36,7 +34,6 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
@@ -147,11 +144,17 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
         return ImmutableMap.copyOf(ELEMENTS.get(getClass()));
     }
 
+    @Override
     public Serializable[] cache() {
         return new Serializable[0];
     }
 
+    @Override
     public void loadCache(Serializable[] data) {
     }
 
+    @Override
+    public int getOffset() {
+        return 0;
+    }
 }
