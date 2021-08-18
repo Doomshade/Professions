@@ -28,7 +28,9 @@ import git.doomshade.professions.api.Range;
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.api.spawn.ext.SpawnPoint;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
@@ -280,7 +282,7 @@ public final class Strings {
                     put(EXP, 0);
                     put(NAME, "&eNO_NAME");
                     put(DESCRIPTION, Arrays.asList("&aThe", "&bDescription"));
-                    put(MATERIAL, Material.CHEST);
+                    put(MATERIAL, Material.CHEST.toString());
                     put(RESTRICTED_WORLDS, Arrays.asList("some_world", "some_other_world"));
                     put(INVENTORY_REQUIREMENTS,
                             new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
@@ -303,8 +305,8 @@ public final class Strings {
         }
 
         @Override
-        public boolean testItemType(ItemType<?> itemType) {
-            return itemType != null;
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Element;
         }
 
         @Override
@@ -395,8 +397,7 @@ public final class Strings {
         public EnumMap<HerbEnum, Object> getDefaultValues() {
             return new EnumMap<>(HerbEnum.class) {
                 {
-                    ItemStack exampleResult = ItemUtils.EXAMPLE_RESULT;
-                    put(GATHER_ITEM, exampleResult.serialize());
+                    put(GATHER_ITEM, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(ENABLE_SPAWN, false);
                     put(TIME_GATHER, 5);
                 }
@@ -494,7 +495,7 @@ public final class Strings {
         public EnumMap<OreEnum, Object> getDefaultValues() {
             return new EnumMap<>(OreEnum.class) {
                 {
-                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT));
+                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT).serialize());
                 }
             };
         }
@@ -634,8 +635,8 @@ public final class Strings {
         }
 
         @Override
-        public boolean testItemType(ItemType<?> itemType) {
-            return itemType != null;
+        public boolean testObject(ConfigurationSerializable object) {
+            return object instanceof Spawnable;
         }
 
         @Override
@@ -648,8 +649,8 @@ public final class Strings {
             return new EnumMap<>(SpawnableElementEnum.class) {
                 {
                     put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
-                    put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType());
-                    put(PARTICLE, new ParticleData());
+                    put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType().toString());
+                    put(PARTICLE, new ParticleData().serialize());
                 }
             };
         }

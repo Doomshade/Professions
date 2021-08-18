@@ -25,8 +25,8 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.ItemUtils;
@@ -91,7 +91,7 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                                         itemSection.getCurrentPath()), Level.INFO);
                     }
                     //
-                    itemSection.addDefault(entry.getKey().toString(), entry.getValue());
+                    itemSection.addDefault(entry.getKey().getKey(), entry.getValue());
 
                 }
 
@@ -102,20 +102,17 @@ public class GenerateDefaultsCommand extends AbstractCommand {
                                 itemSection.getConfigurationSection(OBJECT) :
                                 itemSection.createSection(OBJECT);
 
-                final Map<String, Object> serializedObject = itemType.serialize();
-                if (serializedObject == null) {
-                    ProfessionLogger.log(
-                            "Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!",
-                            Level.SEVERE);
-                } else {
-                    for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
-                        if (!Objects.requireNonNull(objectSection).isSet(entry.getKey())) {
-                            ProfessionLogger.log(
-                                    String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(),
-                                            objectSection.getCurrentPath()), Level.INFO);
-                        }
-                        objectSection.addDefault(entry.getKey(), entry.getValue());
+                final Map<FileEnum, Object> missingKeysObject =
+                        Strings.getMissingKeysObject(objectSection.getValues(false), itemType.getObject());
+
+
+                for (Map.Entry<FileEnum, Object> entry : missingKeysObject.entrySet()) {
+                    if (!Objects.requireNonNull(objectSection).isSet(entry.getKey().getKey())) {
+                        ProfessionLogger.log(
+                                String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(),
+                                        objectSection.getCurrentPath()), Level.INFO);
                     }
+                    objectSection.addDefault(entry.getKey().getKey(), entry.getValue());
                 }
             }
 
