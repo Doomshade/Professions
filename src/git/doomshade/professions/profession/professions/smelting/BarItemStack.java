@@ -24,33 +24,40 @@
 
 package git.doomshade.professions.profession.professions.smelting;
 
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.utils.ItemUtils;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import static git.doomshade.professions.utils.Strings.BarEnum.ITEM;
 
 /**
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public class BarItemStack implements ConfigurationSerializable {
-    final ItemStack item;
+public class BarItemStack extends Element {
+    public static BarItemStack EXAMPLE_BAR = new BarItemStack(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
+            ItemUtils.EXAMPLE_RESULT);
+    private final ItemStack item;
 
-    public BarItemStack(ItemStack item) {
+    public BarItemStack(String id, String name, ItemStack item) {
+        super(id, name);
         this.item = item;
     }
 
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<>() {
-            {
-                put("item", ItemUtils.serialize(item));
-            }
-        };
+        Map<String, Object> map = super.serialize();
+        map.put(ITEM.s, ItemUtils.serialize(item));
+        return map;
+    }
+
+    public ItemStack getItem() {
+        return item;
     }
 }

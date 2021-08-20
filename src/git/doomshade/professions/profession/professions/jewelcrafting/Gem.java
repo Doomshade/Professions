@@ -26,6 +26,7 @@ package git.doomshade.professions.profession.professions.jewelcrafting;
 
 import com.google.common.collect.Sets;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
@@ -37,7 +38,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -58,19 +58,17 @@ import static git.doomshade.professions.utils.Strings.GemEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Gem implements ConfigurationSerializable {
+public class Gem extends Element {
 
-    public static final HashMap<String, Gem> GEMS = new HashMap<>();
     // TODO settings
     public static final String EMPTY_GEM = "(Místo pro klenot)";
-    private static final String EXAMPLE_GEM_ID = "example-gem-id";
 
     // stay here cuz of order!
     public static final Gem EXAMPLE_GEM = new Gem(
-            EXAMPLE_GEM_ID,
+            Utils.EXAMPLE_ID,
             ItemUtils.EXAMPLE_RESULT,
             GemUtils.ADD_ATTRIBUTE_EFFECT,
-            ChatColor.GREEN + "Test display name",
+            Utils.EXAMPLE_NAME,
             Arrays.asList("poskozeni:50", "vitalita:30"),
             GemEquipmentSlot.ARMOR
     );
@@ -80,35 +78,48 @@ public class Gem implements ConfigurationSerializable {
     private final List<String> context;
     private final ItemStack gem;
     private final GemEffect gemEffect;
-    private final String id;
     private final GemEquipmentSlot equipmentSlot;
-    private final String displayName;
     //private static final InsertResult INVALID_ITEM_RESULT = new InsertResult(null, ResultEnum.INVALID_ITEM);
     //private static final InsertResult NO_GEM_SPACE_RESULT = new InsertResult(null, ResultEnum.NO_GEM_SPACE);
 
 
     private Gem(String id, ItemStack gem, GemEffect gemEffect, String displayName, List<String> context,
                 GemEquipmentSlot equipmentSlot) throws IllegalArgumentException {
-
-        if (GEMS.containsKey(id)) {
-            throw new IllegalArgumentException("Cannot register another gem with the same id! (" + id + ")");
-        }
+        super(id, displayName, true);
 
         this.equipmentSlot = equipmentSlot;
         if (equipmentSlot == null) {
             throw new IllegalArgumentException(
                     "Invalid equipment slot. Valid equipment slots: " + Arrays.toString(GemEquipmentSlot.values()));
         }
-        this.id = id;
         this.context = context;
         this.gem = gem;
         addNbtTag(gem, GEM_NBT_TAG);
         this.gemEffect = gemEffect;
-        this.displayName = displayName;
+    }
 
-        if (!id.equals(EXAMPLE_GEM_ID)) {
-            GEMS.put(id, this);
+    private void addNbtTag(ItemStack gem, String key) {
+        addNbtTag(gem, key, this.getId());
+    }
+
+    private void addNbtTag(ItemStack gem, String key, String id) {
+        if (gem.getItemMeta() == null) {
+            return;
         }
+        PersistentDataContainer pdc = gem.getItemMeta().getPersistentDataContainer();
+        NamespacedKey nmsk = new NamespacedKey(Professions.getInstance(), key);
+        pdc.set(nmsk, PersistentDataType.STRING, id);
+    }
+
+    /**
+     * Checks for the NBT Tag of the ItemStack. If found, returns the gem
+     *
+     * @param item the item to check for
+     *
+     * @return the gem if it actually is one
+     */
+    public static Optional<Gem> getGem(ItemStack item) {
+        return getGem(item, GEM_NBT_TAG);
     }
 
     private static Optional<Gem> getGem(ItemStack item, String tag) {
@@ -126,7 +137,7 @@ public class Gem implements ConfigurationSerializable {
         }
 
         final String id = pdc.get(key, PersistentDataType.STRING);
-        final Gem value = GEMS.get(id);
+        final Gem value = getElement(Gem.class, id);
         if (value == null) {
             if (LOGGED_ERROR_GEMS.add(id)) {
                 final String s = "Found a gem but the gem is not registered! (" + id + ")";
@@ -137,48 +148,6 @@ public class Gem implements ConfigurationSerializable {
         }
 
         return Optional.of(value);
-    }
-
-    public static Optional<Gem> getGem(String id) {
-        return Optional.ofNullable(GEMS.get(id));
-    }
-
-    /**
-     * Checks for the NBT Tag of the ItemStack. If found, returns the gem
-     *
-     * @param item the item to check for
-     *
-     * @return the gem if it actually is one
-     */
-    public static Optional<Gem> getGem(ItemStack item) {
-        return getGem(item, GEM_NBT_TAG);
-    }
-
-    public static Optional<Gem> getGemInItem(ItemStack item) {
-        return getGem(item, ACTIVE_GEM_NBT_TAG);
-    }
-
-    private void addNbtTag(ItemStack gem, String key) {
-        addNbtTag(gem, key, this.id);
-    }
-
-    private void addNbtTag(ItemStack gem, String key, String id) {
-        if (gem.getItemMeta() == null) {
-            return;
-        }
-        PersistentDataContainer pdc = gem.getItemMeta().getPersistentDataContainer();
-        NamespacedKey nmsk = new NamespacedKey(Professions.getInstance(), key);
-        pdc.set(nmsk, PersistentDataType.STRING, id);
-    }
-
-    public static boolean hasGem(ItemStack item) {
-        if (item == null || item.getItemMeta() == null) {
-            return false;
-        }
-        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
-        NamespacedKey key = new NamespacedKey(Professions.getInstance(), ACTIVE_GEM_NBT_TAG);
-
-        return pdc.has(key, PersistentDataType.STRING);
     }
 
     public static void update(Player player) {
@@ -214,6 +183,20 @@ public class Gem implements ConfigurationSerializable {
         difference2.forEach(x -> x.unApply(player));
     }
 
+    public static Optional<Gem> getGemInItem(ItemStack item) {
+        return getGem(item, ACTIVE_GEM_NBT_TAG);
+    }
+
+    public static boolean hasGem(ItemStack item) {
+        if (item == null || item.getItemMeta() == null) {
+            return false;
+        }
+        PersistentDataContainer pdc = item.getItemMeta().getPersistentDataContainer();
+        NamespacedKey key = new NamespacedKey(Professions.getInstance(), ACTIVE_GEM_NBT_TAG);
+
+        return pdc.has(key, PersistentDataType.STRING);
+    }
+
     @NotNull
     private static Iterable<ItemStack> getScannedItems(PlayerInventory inventory) {
         // TODO add this to config
@@ -228,6 +211,24 @@ public class Gem implements ConfigurationSerializable {
 
         scannedItems.addAll(Arrays.stream(inventory.getArmorContents()).collect(Collectors.toList()));
         return scannedItems;
+    }
+
+    public void apply(Player player) {
+        final UUID uniqueId = player.getUniqueId();
+        Set<Gem> gems = ACTIVE_GEMS.getOrDefault(uniqueId, new HashSet<>());
+        if (gems.add(this)) {
+            gemEffect.apply(this, player, false);
+            ACTIVE_GEMS.put(uniqueId, gems);
+        }
+    }
+
+    public void unApply(Player player) {
+        final UUID uniqueId = player.getUniqueId();
+        Set<Gem> gems = ACTIVE_GEMS.getOrDefault(uniqueId, new HashSet<>());
+        if (gems.remove(this)) {
+            gemEffect.apply(this, player, true);
+            ACTIVE_GEMS.put(uniqueId, gems);
+        }
     }
 
     public static void unApplyAll(Player player) {
@@ -279,25 +280,6 @@ public class Gem implements ConfigurationSerializable {
 
     public List<String> getContext() {
         return context;
-    }
-
-
-    public void apply(Player player) {
-        final UUID uniqueId = player.getUniqueId();
-        Set<Gem> gems = ACTIVE_GEMS.getOrDefault(uniqueId, new HashSet<>());
-        if (gems.add(this)) {
-            gemEffect.apply(this, player, false);
-            ACTIVE_GEMS.put(uniqueId, gems);
-        }
-    }
-
-    public void unApply(Player player) {
-        final UUID uniqueId = player.getUniqueId();
-        Set<Gem> gems = ACTIVE_GEMS.getOrDefault(uniqueId, new HashSet<>());
-        if (gems.remove(this)) {
-            gemEffect.apply(this, player, true);
-            ACTIVE_GEMS.put(uniqueId, gems);
-        }
     }
 
     public boolean isActive(Player player) {
@@ -359,7 +341,7 @@ public class Gem implements ConfigurationSerializable {
         }*/
 
         if (idx != -1) {
-            lore.set(idx, displayName);
+            lore.set(idx, getName());
             meta.setLore(lore);
             item.setItemMeta(meta);
         } else if (!ignoreMisto) {
@@ -372,25 +354,21 @@ public class Gem implements ConfigurationSerializable {
         return InsertResult.SUCCESS;
     }
 
-    public enum InsertResult {
-        INVALID_ITEM,
-        NO_GEM_SPACE,
-        SUCCESS
-    }
-
     @Override
     public @NotNull Map<String, Object> serialize() {
         return new LinkedHashMap<>() {
             {
-                // fixme
-                //put(ID.s, id);
                 put(GEM_EFFECT.s, gemEffect.toString());
                 put(GEM_EFFECT_CONTEXT.s, context);
                 put(GEM.s, ItemUtils.serialize(gem));
-                put(DISPLAY_NAME.s, displayName);
                 put(EQUIPMENT_SLOT.s, equipmentSlot.name());
             }
         };
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(gem, gemEffect, getId());
     }
 
     @Override
@@ -404,22 +382,23 @@ public class Gem implements ConfigurationSerializable {
         Gem gem1 = (Gem) o;
         return gem.equals(gem1.gem) &&
                 gemEffect.equals(gem1.gemEffect) &&
-                id.equals(gem1.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(gem, gemEffect, id);
+                getId().equals(gem1.getId());
     }
 
     @Override
     public String toString() {
         return "Gem{" +
                 "gemEffect=" + gemEffect +
-                ", id='" + id + '\'' +
+                ", id='" + getId() + '\'' +
                 ", equipmentSlot=" + equipmentSlot +
-                ", displayName='" + displayName + '\'' +
+                ", displayName='" + getName() + '\'' +
                 '}';
+    }
+
+    public enum InsertResult {
+        INVALID_ITEM,
+        NO_GEM_SPACE,
+        SUCCESS
     }
 
     public enum GemEquipmentSlot {

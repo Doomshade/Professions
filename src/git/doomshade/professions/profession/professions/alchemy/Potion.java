@@ -24,12 +24,11 @@
 
 package git.doomshade.professions.profession.professions.alchemy;
 
-import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Strings;
@@ -37,7 +36,6 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -48,7 +46,6 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.io.File;
 import java.util.*;
 
 import static git.doomshade.professions.utils.Strings.PotionEnum.*;
@@ -58,89 +55,32 @@ import static git.doomshade.professions.utils.Strings.PotionEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Potion implements ConfigurationSerializable {
+public class Potion extends Element {
 
+    public static final Potion EXAMPLE_POTION = new Potion(
+            Arrays.asList("vyhybani", "poskozeni"),
+            5,
+            Utils.EXAMPLE_ID,
+            PotionType.FIRE_RESISTANCE,
+            ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build(),
+            Utils.EXAMPLE_NAME);
     private static final NamespacedKey NBT_KEY = new NamespacedKey(
             Professions.getInstance(),
             "profession_potion"
     );
-
     private static final HashSet<CustomPotionEffect> CUSTOM_POTION_EFFECTS = new HashSet<>();
-
-    private static final String TEST_POTION_ID = "test_potion";
-    public static final Potion EXAMPLE_POTION = new Potion(
-            Arrays.asList("vyhybani", "poskozeni"),
-            5,
-            TEST_POTION_ID,
-            PotionType.FIRE_RESISTANCE,
-            ItemUtils.itemStackBuilder(Material.POTION).withDisplayName("&aSome bottle").build());
-
-    static final HashSet<Potion> POTIONS = new HashSet<>();
-
     private final ArrayList<String> potionEffects = new ArrayList<>();
     private final int duration;
-    private final String potionId;
     private final PotionType potionType;
     private final ItemStack potion;
 
     private Potion(Collection<String> potionEffects, int duration, String potionId, PotionType potionType,
-                   ItemStack potion) {
+                   ItemStack potion, String name) {
+        super(potionId, name);
         this.duration = duration;
-        this.potionId = potionId;
         this.potionType = potionType;
         this.potionEffects.addAll(potionEffects);
         this.potion = potion;
-        if (!potionId.equals(TEST_POTION_ID)) {
-            POTIONS.add(this);
-        }
-    }
-
-    private static File getFile(Player player) {
-        return new File(IOManager.getCacheFolder(), player.getUniqueId().toString().concat(".bin"));
-    }
-
-    @Deprecated
-    public static void cache(Player player) {
-        /*HashSet<PotionTask> potionTasks = ACTIVE_POTIONS.get(player.getUniqueId());
-        if (potionTasks == null || potionTasks.isEmpty()) {
-            return;
-        }
-        File file = getFile(player);
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            for (PotionTask task : potionTasks) {
-                oos.writeObject(task);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-    }
-
-    @Deprecated
-    public static void loadFromCache(Player player) {
-        /*File file = getFile(player);
-        if (!file.exists()) {
-            return;
-        }
-        HashSet<PotionTask> potionTasks = new HashSet<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            while (ois.available() > 0) {
-                potionTasks.add((PotionTask) ois.readObject());
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        } finally {
-            ACTIVE_POTIONS.put(player.getUniqueId(), potionTasks);
-        }*/
-    }
-
-    public static ImmutableSet<Potion> getPotions() {
-        return ImmutableSet.copyOf(POTIONS);
     }
 
     /**
@@ -163,33 +103,16 @@ public class Potion implements ConfigurationSerializable {
         }
 
         String potionId = pdc.get(NBT_KEY, PersistentDataType.STRING);
-        try {
-            return Utils.findInIterable(POTIONS, x -> x.potionId.equals(potionId));
-        } catch (Utils.SearchNotFoundException e) {
-            ProfessionLogger.log(POTIONS);
-            throw new IllegalStateException("Found " + potionId + " in-game, but its data is not loaded!");
-        }
+        return getElement(Potion.class, potionId);
     }
 
     public static void registerCustomPotionEffect(CustomPotionEffect effect) {
         CUSTOM_POTION_EFFECTS.add(effect);
     }
 
-    void addAttributes(final Player player, final boolean negate) {
-        //final PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
-        //itemMeta.getCustomEffects().forEach(x -> x.getType().createEffect(duration, 0).apply(player));
-
-
-        potionEffects.forEach(x -> {
-            for (CustomPotionEffect potionEffect : CUSTOM_POTION_EFFECTS) {
-                potionEffect.apply(x, player, negate);
-            }
-        });
-
-    }
-
     @SuppressWarnings("all")
-    static Potion deserialize(Map<String, Object> map) throws ProfessionObjectInitializationException {
+    public static Potion deserialize(Map<String, Object> map, final String name)
+            throws ProfessionObjectInitializationException {
         Set<String> missingKeys = Utils.getMissingKeys(map, Strings.PotionEnum.values());
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(PotionItemType.class, missingKeys);
@@ -210,11 +133,29 @@ public class Potion implements ConfigurationSerializable {
             throw new ProfessionObjectInitializationException("Could not deserialize potion ItemStack from file.");
         }
 
-        return new Potion(potionEffects, duration, potionId, potionType, potion);
+        return new Potion(potionEffects, duration, potionId, potionType, potion, name);
+    }
+
+    void addAttributes(final Player player, final boolean negate) {
+        //final PotionMeta itemMeta = (PotionMeta) potion.getItemMeta();
+        //itemMeta.getCustomEffects().forEach(x -> x.getType().createEffect(duration, 0).apply(player));
+
+
+        potionEffects.forEach(x -> {
+            for (CustomPotionEffect potionEffect : CUSTOM_POTION_EFFECTS) {
+                potionEffect.apply(x, player, negate);
+            }
+        });
+
     }
 
     ItemStack getItem() {
         return potion;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 
     @Override
@@ -226,26 +167,28 @@ public class Potion implements ConfigurationSerializable {
             return false;
         }
         Potion potion = (Potion) o;
-        return potionId.equals(potion.potionId);
+        return getId().equals(potion.getId());
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(potionId);
+    public String toString() {
+        return "Potion{" +
+                "potionEffects=" + potionEffects +
+                ", duration=" + duration +
+                ", potionId='" + getId() + '\'' +
+                ", potionType=" + potionType +
+                ", potion=" + potion +
+                '}';
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        return new HashMap<>() {
-            {
-                put(POTION_EFFECTS.s, potionEffects);
-                put(POTION_DURATION.s, duration);
-                // fixme
-                //put(POTION_FLAG.s, potionId);
-                put(POTION_TYPE.s, potionType.name());
-                put(POTION.s, ItemUtils.serialize(potion));
-            }
-        };
+        Map<String, Object> map = super.serialize();
+        map.put(POTION_EFFECTS.s, potionEffects);
+        map.put(POTION_DURATION.s, duration);
+        map.put(POTION_TYPE.s, potionType.name());
+        map.put(POTION.s, ItemUtils.serialize(potion));
+        return map;
     }
 
     public Optional<ItemStack> getPotionItem(ItemStack item) {
@@ -263,23 +206,8 @@ public class Potion implements ConfigurationSerializable {
         clone.setItemMeta(meta);
 
         final PersistentDataContainer pds = meta.getPersistentDataContainer();
-        pds.set(NBT_KEY, PersistentDataType.STRING, potionId);
+        pds.set(NBT_KEY, PersistentDataType.STRING, getId());
         return Optional.of(clone);
-    }
-
-    @Override
-    public String toString() {
-        return "Potion{" +
-                "potionEffects=" + potionEffects +
-                ", duration=" + duration +
-                ", potionId='" + potionId + '\'' +
-                ", potionType=" + potionType +
-                ", potion=" + potion +
-                '}';
-    }
-
-    public String getPotionId() {
-        return potionId;
     }
 
     int getDuration() {

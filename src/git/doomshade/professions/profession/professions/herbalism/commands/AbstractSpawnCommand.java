@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 abstract class AbstractSpawnCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Herb herb = Herb.get(Herb.class, args[1]);
+        Herb herb = Herb.getElement(Herb.class, args[1]);
         if (herb == null) {
             sender.sendMessage("Herb with ID " + args[1] + " does not exist.");
             return;
@@ -123,7 +123,7 @@ abstract class AbstractSpawnCommand extends AbstractCommand {
                         .collect(Collectors.toList()));
                 break;
             case 3:
-                Herb herb = Herb.get(Herb.class, args[1].trim());
+                Herb herb = Herb.getElement(Herb.class, args[1].trim());
                 if (herb == null) {
                     sender.sendMessage(args[1] + " is an invalid herb id.");
                     break;

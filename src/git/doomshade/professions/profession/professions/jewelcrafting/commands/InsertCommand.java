@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.profession.professions.jewelcrafting.commands;
 
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.utils.Permissions;
@@ -54,14 +55,14 @@ public class InsertCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
 
-        Optional<Gem> opt = Gem.getGem(args[1]);
+        final String id = args[1];
+        final Gem gem = Element.getElement(Gem.class, id);
 
-        if (opt.isEmpty()) {
+        if (gem == null) {
             sender.sendMessage("Invalid gem id");
             return;
         }
 
-        Gem gem = opt.get();
         final PlayerInventory inventory = ((Player) sender).getInventory();
         //GetSet<ItemStack> item = new GetSet<>(inventory.getItemInMainHand());
         gem.insert(inventory.getItemInMainHand(), true);
@@ -71,7 +72,7 @@ public class InsertCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        return new ArrayList<>(Gem.GEMS.keySet());
+        return new ArrayList<>(Element.getElements(Gem.class).keySet());
     }
 
     @Override

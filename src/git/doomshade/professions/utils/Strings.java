@@ -29,7 +29,6 @@ import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ext.Element;
-import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.io.ProfessionLogger;
@@ -38,11 +37,9 @@ import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.skinning.Mob;
-import git.doomshade.professions.profession.utils.YieldResult;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
 
 import java.util.*;
@@ -62,7 +59,7 @@ public final class Strings {
     static {
         register(ICraftableEnum.CRAFTING_TIME);
         register(ItemTypeEnum.NAME);
-        register(ElementEnum.NAME);
+        register(ElementEnum.ID);
         register(GemEnum.DISPLAY_NAME);
         register(HerbEnum.ENABLE_SPAWN);
         register(ItemTypeEnum.NAME);
@@ -295,8 +292,7 @@ public final class Strings {
     }
 
     public enum ElementEnum implements FileEnum {
-        ID("id"),
-        NAME("name");
+        ID("id");
 
         public final String s;
 
@@ -319,7 +315,6 @@ public final class Strings {
             return new EnumMap<>(ElementEnum.class) {
                 {
                     put(ID, Utils.EXAMPLE_ID);
-                    put(NAME, "some-name");
                 }
             };
         }
@@ -495,7 +490,7 @@ public final class Strings {
         public EnumMap<OreEnum, Object> getDefaultValues() {
             return new EnumMap<>(OreEnum.class) {
                 {
-                    put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT).serialize());
+                    //put(RESULT, new YieldResult(40d, ItemUtils.EXAMPLE_RESULT).serialize());
                 }
             };
         }
@@ -615,9 +610,6 @@ public final class Strings {
         }
     }
 
-    /**
-     * Enum for keys in file
-     */
     public enum SpawnableElementEnum implements FileEnum {
         SPAWN_POINT("spawnpoint"),
         MATERIAL("material"),
@@ -648,9 +640,57 @@ public final class Strings {
         public EnumMap<SpawnableElementEnum, Object> getDefaultValues() {
             return new EnumMap<>(SpawnableElementEnum.class) {
                 {
-                    put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
+                    //put(SPAWN_POINT, SpawnPoint.EXAMPLE.serialize());
                     put(MATERIAL, ItemUtils.EXAMPLE_RESULT.getType().toString());
                     put(PARTICLE, new ParticleData().serialize());
+                }
+            };
+        }
+    }
+
+    public enum BSEnum implements FileEnum {
+        ITEM("item");
+
+        public final String s;
+
+        BSEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<BSEnum, Object> getDefaultValues() {
+            return new EnumMap<>(BSEnum.class) {
+                {
+                    put(ITEM, ItemUtils.EXAMPLE_RESULT.serialize());
+                }
+            };
+        }
+    }
+
+    public enum BarEnum implements FileEnum {
+        ITEM("item");
+
+        public final String s;
+
+        BarEnum(String s) {
+            this.s = s;
+        }
+
+        @Override
+        public String getKey() {
+            return s;
+        }
+
+        @Override
+        public EnumMap<BarEnum, Object> getDefaultValues() {
+            return new EnumMap<>(BarEnum.class) {
+                {
+                    put(ITEM, ItemUtils.EXAMPLE_RESULT.serialize());
                 }
             };
         }

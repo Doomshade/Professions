@@ -44,7 +44,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,87 +79,45 @@ public class Herb extends Spawnable {
         this.timeGather = gatherTime;
     }
 
-    public static Herb deserialize(final Map<String, Object> map, final String markerIcon) throws ProfessionObjectInitializationException {
-        checkForMissingKeys(map, Herb.class, Collections.emptyList(), Strings.HerbEnum.class);
-
-        final Herb herb = Spawnable.deserializeSpawnable(map, markerIcon, Herb.class, x -> {
+    public static Herb deserialize(final Map<String, Object> map, final String markerIcon, final String name)
+            throws ProfessionObjectInitializationException {
+        return deserializeSpawnable(map, markerIcon, name, Herb.class, x -> {
             final int gatherTime = (int) map.get(TIME_GATHER.s);
 
             final MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-            final ItemStack gatherItem;
+            final ItemStack gatherItem1;
             try {
-                gatherItem = ItemUtils.deserialize(mem.getValues(false));
+                gatherItem1 = ItemUtils.deserialize(mem.getValues(false));
             } catch (ConfigurationException | InitializationException e) {
                 ProfessionLogger.logError(e, false);
                 return null;
             }
 
-            String displayName = gatherItem.getType().name();
-            if (gatherItem.hasItemMeta()) {
-                ItemMeta meta = gatherItem.getItemMeta();
+            String displayName = gatherItem1.getType().name();
+            if (gatherItem1.hasItemMeta()) {
+                ItemMeta meta = gatherItem1.getItemMeta();
                 if (Objects.requireNonNull(meta).hasDisplayName()) {
                     displayName = meta.getDisplayName();
                 }
             }
 
             // TODO: 26.01.2020 make implementation of custom marker icons
-            return new Herb(x.getId(), displayName, gatherItem, x.getMaterial(), x.getMaterialData(),
+            return new Herb(x.getId(), displayName, gatherItem1, x.getMaterial(), x.getMaterialData(),
                     (boolean) map.get(ENABLE_SPAWN.s),
                     x.getParticleData(), gatherTime,
                     x.getMarkerIcon());
-        });
-
-        if (herb == null) {
-            throw new ProfessionObjectInitializationException("Could not deserialize herb");
-        }
-        return herb;
+        }, Collections.emptyList(), Strings.HerbEnum.class);
     }
 
-    /*
-        // gather item
-        MemorySection mem = (MemorySection) map.get(GATHER_ITEM.s);
-        ItemStack gatherItem = ItemUtils.deserialize(mem.getValues(false));
-
-        // herb material
-        ItemStack herbMaterial = ItemUtils.deserializeMaterial((String) map.get(HERB_MATERIAL.s));
-
-        // herb id
-        String herbId = (String) map.get(ID.s);
-
-        // spawn points
-        int i = 0;
-        MemorySection spawnSection;
-        ArrayList<SpawnPoint> spawnPoints = new ArrayList<>();
-        while ((spawnSection = (MemorySection) map.get(SPAWN_POINT.s.concat("-" + i))) != null) {
-            SpawnPoint sp = SpawnPoint.deserialize(spawnSection.getValues(false));
-            if (sp.location.clone().add(0, -1, 0).getBlock().getType() == Material.AIR) {
-                final String message = String.format("Spawn point %d of herb %s set to air. Make sure you have a
-                block below the herb!", i, herbId);
-                Professions.log(message, Level.INFO);
-                Professions.log(message, Level.CONFIG);
-            }
-            spawnPoints.add(sp);
-            i++;
-        }
-
-        // particles
-        MemorySection particleSection = (MemorySection) map.get(PARTICLE.s);
-        final ParticleData particleData = ParticleData.deserialize(particleSection.getValues(true));
-
-        // gather time
-        int gatherTime = (int) map.get(GATHER_TIME.s);
-
-        String displayName = gatherItem.getType().name();
-        if (gatherItem.hasItemMeta()) {
-            ItemMeta meta = gatherItem.getItemMeta();
-            if (meta.hasDisplayName()) {
-                displayName = meta.getDisplayName();
+    public static void spawnHerbs(World world) {
+        for (Map.Entry<Herb, ? extends ISpawnPoint> entry : getHerbsInWorld(world).entrySet()) {
+            try {
+                entry.getValue().spawn();
+            } catch (SpawnException e) {
+                ProfessionLogger.logError(e);
             }
         }
-
-        return new Herb(herbId, displayName, gatherItem, herbMaterial.getType(), (byte) herbMaterial.getDurability(),
-         spawnPoints, (boolean) map.get(ENABLE_SPAWN.s), particleData, gatherTime);
-    }*/
+    }
 
     private static Map<Herb, ? extends ISpawnPoint> getHerbsInWorld(World world) {
         HashMap<Herb, ISpawnPoint> herbs = new HashMap<>();
@@ -172,16 +129,6 @@ public class Herb extends Spawnable {
             }
         }
         return herbs;
-    }
-
-    public static void spawnHerbs(World world) {
-        for (Map.Entry<Herb, ? extends ISpawnPoint> entry : getHerbsInWorld(world).entrySet()) {
-            try {
-                entry.getValue().spawn();
-            } catch (SpawnException e) {
-                ProfessionLogger.logError(e);
-            }
-        }
     }
 
     @SuppressWarnings("unused")
@@ -219,18 +166,18 @@ public class Herb extends Spawnable {
     }
 
     @Override
+    public String toString() {
+        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(),
+                this.getMaterial().name());
+    }
+
+    @Override
     public boolean canSpawn() {
         return enableSpawn;
     }
 
     public ItemStack getGatherItem() {
         return gatherItem;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(),
-                this.getMaterial().name());
     }
 
     public int getGatherTime() {

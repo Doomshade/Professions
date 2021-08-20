@@ -67,7 +67,7 @@ public class JewelcraftingListener implements Listener {
         Messages.MessageBuilder msg = new Messages.MessageBuilder()
                 .player(player);
 
-        // right clicked with a gem in hand
+        // right-clicked with a gem in hand
         if (opt.isPresent()) {
             if (RIGHT_CLICK.containsKey(uniqueId)) {
                 return;
@@ -80,7 +80,7 @@ public class JewelcraftingListener implements Listener {
         // check if player clicked before
         final Gem gem = RIGHT_CLICK.remove(uniqueId);
 
-        // the player did did not
+        // the player did not
         if (gem == null) {
             return;
         }

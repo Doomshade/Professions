@@ -22,39 +22,41 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.professions.blacksmithing;
+package git.doomshade.professions.profession.professions.enchanting;
 
-import git.doomshade.professions.api.item.ext.CraftableItemType;
-import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.exceptions.InitializationException;
-import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.ItemUtils;
+import org.bukkit.inventory.ItemStack;
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /**
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public class BSItemType extends CraftableItemType<BSItemStack> {
-    /**
-     * Constructor for creation of the item type object
-     *
-     * @param object the item stack
-     */
-    public BSItemType(BSItemStack object) {
-        super(object);
+public final class EnchantMetadata {
+    private final BiFunction<ItemStack, Integer, ItemStack> func;
+    private final Collection<Integer> intensities;
+    private final Consumer<Void> init;
+
+    public EnchantMetadata(
+            BiFunction<ItemStack, Integer, ItemStack> func, Collection<Integer> intensities,
+            Consumer<Void> init) {
+        this.func = func;
+        this.intensities = intensities;
+        this.init = init;
     }
 
-    @Override
-    protected BSItemStack deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        try {
-            return BSItemStack.deserialize(map, getName());
-        } catch (InitializationException e) {
-            ProfessionLogger.logError(e, false);
-            throw new ProfessionObjectInitializationException("Could not deserialize blacksmith ItemStack from file.");
-        }
+    public BiFunction<ItemStack, Integer, ItemStack> getFunc() {
+        return func;
+    }
+
+    public Collection<Integer> getIntensities() {
+        return intensities;
+    }
+
+    public Consumer<Void> getInit() {
+        return init;
     }
 }

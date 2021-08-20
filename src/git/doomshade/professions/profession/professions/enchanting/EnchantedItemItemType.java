@@ -25,7 +25,7 @@
 package git.doomshade.professions.profession.professions.enchanting;
 
 import git.doomshade.professions.api.item.ext.CraftableItemType;
-import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
@@ -53,21 +53,17 @@ public class EnchantedItemItemType extends CraftableItemType<Enchant> {
     }
 
     @Override
+    protected Enchant deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
+        return Enchant.deserialize(map, getName());
+    }
+
+    @Override
     public boolean equalsObject(Enchant t) {
         Enchant ench = getObject();
         if (ench == null || t == null) {
             return false;
         }
         return ench.getItem().isSimilar(t.getItem());
-    }
-
-    @Override
-    protected Enchant deserializeObject(Map<String, Object> map) {
-        try {
-            return Enchant.deserialize(map);
-        } catch (InitializationException e) {
-            return null;
-        }
     }
 
     @Override

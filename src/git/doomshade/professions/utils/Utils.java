@@ -48,6 +48,7 @@ public final class Utils {
     public static final String YML_EXTENSION = ".yml";
 
     public static final String EXAMPLE_ID = "example-id";
+    public static final String EXAMPLE_NAME = "some-name";
 
     /**
      * Sorts the map by value

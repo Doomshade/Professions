@@ -64,7 +64,7 @@ public class DespawnCommand extends AbstractSpawnCommand {
             }
         }
 
-        Herb herb = Herb.get(Herb.class, args[1]);
+        Herb herb = Herb.getElement(Herb.class, args[1]);
         if (herb == null) {
             sender.sendMessage("Herb with ID " + args[1] + " does not exist.");
             return;

@@ -44,14 +44,4 @@ public class GemItemType extends CraftableItemType<Gem> {
     protected Gem deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
         return Gem.deserialize(map);
     }
-
-    @Override
-    public void onPluginDisable() {
-        Gem.GEMS.clear();
-    }
-
-    @Override
-    public void onPluginBeforeReload() {
-        Gem.GEMS.clear();
-    }
 }

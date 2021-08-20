@@ -58,7 +58,7 @@ public class AddCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         Player player = (Player) sender;
-        Herb herb = Herb.get(Herb.class, args[1]);
+        Herb herb = Herb.getElement(Herb.class, args[1]);
 
         if (herb == null) {
             player.sendMessage("Invalid herb id");
@@ -105,7 +105,7 @@ public class AddCommand extends AbstractCommand {
                         .collect(Collectors.toList()));
                 break;
             case 3:
-                Herb herb = Herb.get(Herb.class, args[1].trim());
+                Herb herb = Herb.getElement(Herb.class, args[1].trim());
                 if (herb == null) {
                     sender.sendMessage(args[1] + " is an invalid herb id.");
                 }

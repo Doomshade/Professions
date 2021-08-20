@@ -60,7 +60,7 @@ public class BlacksmithingProfession extends Profession {
         if (utils.addExp(event)) {
             expMsg = Utils.getReceiveXp(event.getExp());
         }
-        ItemStack item = event.getItemType().getObject().item;
+        ItemStack item = event.getItemType().getObject().getItem();
         String itemName = item != null ?
                 item.hasItemMeta() && Objects.requireNonNull(item.getItemMeta()).hasDisplayName() ?
                         item.getItemMeta().getDisplayName() :

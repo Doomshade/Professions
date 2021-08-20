@@ -54,7 +54,7 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
     @Override
     protected Potion deserializeObject(Map<String, Object> map) throws ProfessionObjectInitializationException {
-        Potion potion = Potion.deserialize(map);
+        Potion potion = Potion.deserialize(map, getName());
         final Optional<ItemStack> potionItem = potion.getPotionItem(potion.getItem());
         potionItem.ifPresent(this::setResult);
         return potion;
@@ -79,7 +79,6 @@ public class PotionItemType extends CraftableItemType<Potion> {
         for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.cache(p);
         }
-        Potion.POTIONS.clear();
     }
 
     @Override

@@ -251,7 +251,7 @@ public final class ItemUtils implements ISetup {
 
         if (meta instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) meta;
-            map.put(POTION_TYPE, potionMeta.getBasePotionData());
+            map.put(POTION_TYPE, potionMeta.getBasePotionData().getType().name());
         }
 
         return map;

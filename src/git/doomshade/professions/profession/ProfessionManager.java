@@ -35,10 +35,8 @@ import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
-import git.doomshade.professions.profession.professions.enchanting.Enchant;
-import git.doomshade.professions.profession.professions.enchanting.EnchantManager;
 import git.doomshade.professions.profession.professions.enchanting.EnchantedItemItemType;
-import git.doomshade.professions.profession.professions.enchanting.enchants.RandomAttributeEnchant;
+import git.doomshade.professions.profession.professions.enchanting.Enchants;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
 import git.doomshade.professions.profession.professions.herbalism.HerbalismProfession;
@@ -59,17 +57,14 @@ import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -197,15 +192,17 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         // ENCHANTING
         registerItemTypeHolder(
                 EnchantedItemItemType.class,
-                (Supplier<Enchant>) () -> {
+                Enchants.EXAMPLE_ENCHANT,
+                /*(Supplier<Enchant>) () -> {
                     EnchantManager enchMan = EnchantManager.getInstance();
                     try {
-                        enchMan.registerEnchant(new RandomAttributeEnchant(new ItemStack(Material.GLASS)));
+                        enchMan.registerEnchant(new RandomAttributeEnchant(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
+                                new ItemStack(Material.GLASS)));
                     } catch (Exception e) {
                         ProfessionLogger.logError(e);
                     }
                     return enchMan.getEnchant(RandomAttributeEnchant.class);
-                },
+                },*/
                 x -> {
                     x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
                     x.setName(ChatColor.RED + "Test random attribute enchantment");
@@ -246,7 +243,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         // SMELTING
         registerItemTypeHolder(
                 BarItemType.class,
-                new BarItemStack(ItemUtils.EXAMPLE_RESULT),
+                BarItemStack.EXAMPLE_BAR,
                 x -> {
                     x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
                     x.setName(ChatColor.BLUE + "Test bar");

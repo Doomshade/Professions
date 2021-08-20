@@ -24,21 +24,22 @@
 
 package git.doomshade.professions.profession.professions.enchanting;
 
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.exceptions.ConfigurationException;
-import git.doomshade.professions.exceptions.InitializationException;
+import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemAttribute;
 import git.doomshade.professions.utils.ItemAttribute.AttributeType;
 import git.doomshade.professions.utils.ItemUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.MemorySection;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -49,9 +50,8 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 1.0
  */
-public abstract class Enchant implements ConfigurationSerializable {
+public class Enchant extends Element {
     public static final int DEFAULT_INTENSITY = 0;
-    static final HashMap<Class<? extends Enchant>, Enchant> ENCHANTS = new HashMap<>();
     private static final List<Pattern> attributePatterns = new ArrayList<>();
     private static final String ITEMSTACK = "itemstack", CLASS = "class", CRAFT_EXP_YIELD = "craft-exp-yield";
 
@@ -64,37 +64,33 @@ public abstract class Enchant implements ConfigurationSerializable {
         attributePatterns.add(Pattern.compile("[\\D]+: [0-9]+"));
     }
 
-    protected final Random random;
-    private BiFunction<ItemStack, Integer, ItemStack> function = null;
+    private final EnchantMetadata metadata;
     private ItemStack item;
     private int craftExpYield;
 
-    protected Enchant(ItemStack item) {
+    public Enchant(String id, String name, ItemStack item, EnchantMetadata metadata,
+                   boolean registerElement) {
+        super(id, name, registerElement);
         setItem(item);
         this.setCraftExpYield(0);
-        this.random = new Random();
+        this.metadata = metadata;
     }
 
-    @SuppressWarnings("unchecked")
-    static Enchant deserialize(Map<String, Object> map) throws InitializationException {
-
+    static Enchant deserialize(Map<String, Object> map, String name) throws ProfessionObjectInitializationException {
         try {
+            Enchant e = Element.deserializeElement(map, name, Enchant.class, x -> {
+                return null;
+            });
             MemorySection mem = (MemorySection) map.get(ITEMSTACK);
             ItemStack item = ItemUtils.deserialize(mem.getValues(false));
-            Class<? extends Enchant> clazz = (Class<? extends Enchant>) Class.forName((String) map.get(CLASS));
             int expYield = (int) map.get(CRAFT_EXP_YIELD);
 
-            Enchant ench = EnchantManager.getInstance().getEnchant(clazz);
-            ench.setItem(item);
-            ench.setCraftExpYield(expYield);
-            return ench;
-        } catch (ClassNotFoundException e) {
-            ProfessionLogger.logError(e);
+            return null;
         } catch (ConfigurationException e) {
             ProfessionLogger.logError(e, false);
         }
 
-        return null;
+        throw new ProfessionObjectInitializationException("Could not deserialize enchant");
     }
 
     protected static boolean isEnchantable(ItemStack item) {
@@ -208,7 +204,7 @@ public abstract class Enchant implements ConfigurationSerializable {
 
     @Override
     public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
+        Map<String, Object> map = super.serialize();
         map.put(ITEMSTACK, ItemUtils.serialize(item));
         map.put(CLASS, getClass().getName());
         map.put(CRAFT_EXP_YIELD, craftExpYield);
@@ -220,9 +216,6 @@ public abstract class Enchant implements ConfigurationSerializable {
         return "enchant name: " + getClass().getSimpleName() + "\nitem: " + item;
     }
 
-    // might not be used
-    public abstract List<Integer> getIntensities();
-
     public int getCraftExpYield() {
         return craftExpYield;
     }
@@ -231,17 +224,12 @@ public abstract class Enchant implements ConfigurationSerializable {
         this.craftExpYield = craftExpYield;
     }
 
-    public void setEnchantFunction(BiFunction<ItemStack, Integer, ItemStack> func) {
-        this.function = func;
-    }
-
     public final ItemStack use(ItemStack item) {
         return use(item, DEFAULT_INTENSITY);
     }
 
     public final ItemStack use(ItemStack item, int intensity) {
-        return function.apply(item, intensity);
+        return metadata.getFunc().apply(item, intensity);
     }
 
-    protected abstract void init();
 }

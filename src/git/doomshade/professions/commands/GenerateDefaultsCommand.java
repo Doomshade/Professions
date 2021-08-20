@@ -107,12 +107,13 @@ public class GenerateDefaultsCommand extends AbstractCommand {
 
 
                 for (Map.Entry<FileEnum, Object> entry : missingKeysObject.entrySet()) {
-                    if (!Objects.requireNonNull(objectSection).isSet(entry.getKey().getKey())) {
+                    final String key = entry.getKey().getKey();
+                    if (!Objects.requireNonNull(objectSection).isSet(key)) {
                         ProfessionLogger.log(
-                                String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(),
+                                String.format("Generated %s in file %s section %s", key, file.getName(),
                                         objectSection.getCurrentPath()), Level.INFO);
                     }
-                    objectSection.addDefault(entry.getKey().getKey(), entry.getValue());
+                    objectSection.addDefault(key, entry.getValue());
                 }
             }
 

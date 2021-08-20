@@ -58,7 +58,7 @@ public class AddCommand extends AbstractEditCommand {
     public void onCommand(CommandSender sender, String[] args) {
 
         Player player = (Player) sender;
-        Ore ore = Spawnable.get(Ore.class, args[1]);
+        Ore ore = Spawnable.getElement(Ore.class, args[1]);
 
         if (ore == null) {
             player.sendMessage("Invalid ore id");

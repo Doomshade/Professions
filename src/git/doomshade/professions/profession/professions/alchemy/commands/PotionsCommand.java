@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.profession.professions.alchemy.commands;
 
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.utils.Permissions;
@@ -47,7 +48,7 @@ public class PotionsCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        sender.sendMessage(Potion.getPotions().toString());
+        sender.sendMessage(Spawnable.getElements(Potion.class).toString());
     }
 
     @Override

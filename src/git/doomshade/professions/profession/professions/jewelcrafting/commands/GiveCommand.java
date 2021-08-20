@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.profession.professions.jewelcrafting.commands;
 
+import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.utils.Permissions;
@@ -57,12 +58,13 @@ public class GiveCommand extends AbstractCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        Optional<Gem> opt = Gem.getGem(args[1]);
-        if (opt.isEmpty()) {
-            sender.sendMessage("Gem with " + args[1] + " id does not exist");
+
+        final String id = args[1];
+        final Gem gem = Element.getElement(Gem.class, id);
+        if (gem == null) {
+            sender.sendMessage("Gem with " + id + " id does not exist");
             return;
         }
-        Gem gem = opt.get();
 
         Player to;
         if (args.length >= 3) {
@@ -79,7 +81,7 @@ public class GiveCommand extends AbstractCommand {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
-        return args.length == 2 ? new ArrayList<>(Gem.GEMS.keySet()) : null;
+        return args.length == 2 ? new ArrayList<>(Element.getElements(Gem.class).keySet()) : null;
     }
 
     @Override

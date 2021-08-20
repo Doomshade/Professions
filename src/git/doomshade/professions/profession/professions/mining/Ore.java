@@ -35,6 +35,7 @@ import git.doomshade.professions.exceptions.ProfessionObjectInitializationExcept
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.utils.YieldResult;
 import git.doomshade.professions.utils.ParticleData;
+import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.MemorySection;
@@ -55,7 +56,7 @@ import static git.doomshade.professions.utils.Strings.OreEnum.RESULT;
  * @version 1.0
  * @since 1.0
  */
-public class Ore extends Spawnable implements ConfigurationSerializable {
+public class Ore extends Spawnable {
 
     //public static final HashMap<String, Ore> ORES = new HashMap<>();
     public static final Ore EXAMPLE_ORE =
@@ -81,36 +82,36 @@ public class Ore extends Spawnable implements ConfigurationSerializable {
     public static Ore deserialize(Map<String, Object> map, final String name)
             throws ProfessionObjectInitializationException {
 
-        final Ore deserialize = Spawnable.deserializeSpawnable(map, MarkerManager.EMPTY_MARKER_SET_ID, Ore.class, x -> {
+        final Ore ore = Spawnable.deserializeSpawnable(map, MarkerManager.EMPTY_MARKER_SET_ID, name, Ore.class,
+                x -> {
 
-            if (x == null) {
-                return null;
-            }
+                    if (x == null) {
+                        return null;
+                    }
 
-            boolean thrown = false;
+                    boolean thrown = false;
 
-            final PriorityQueue<YieldResult> results = new PriorityQueue<>();
+                    final PriorityQueue<YieldResult> results = new PriorityQueue<>();
 
-            MemorySection dropSection;
 
-            int i = 0;
-            while ((dropSection = (MemorySection) map.get(RESULT.s.concat("-" + i))) != null) {
-                try {
-                    results.add(YieldResult.deserialize(dropSection.getValues(false)));
-                } catch (ConfigurationException | InitializationException e) {
-                    ProfessionLogger.logError(e, false);
-                    thrown = true;
-                }
-                i++;
-            }
-            return thrown ? null : new Ore(x.getId(), name, x.getMaterial(), results,
-                    x.getParticleData());
-        });
-        // if there are missing keys, throw ex
-        if (deserialize == null) {
-            throw new ProfessionObjectInitializationException("Could not fully deserialize ore!");
-        }
-        return deserialize;
+                    for (int i = 0; i < map.size(); i++) {
+                        final Object o = map.get(RESULT.s.concat("-" + i));
+
+                        if (o instanceof MemorySection) {
+                            try {
+                                final MemorySection dropSection = (MemorySection) o;
+                                results.add(YieldResult.deserialize(dropSection.getValues(false)));
+                            } catch (ConfigurationException | InitializationException e) {
+                                ProfessionLogger.logError(e, false);
+                                thrown = true;
+                            }
+                        }
+                    }
+                    return thrown ? null : new Ore(x.getId(), name, x.getMaterial(), results,
+                            x.getParticleData());
+                }, Collections.singletonList(RESULT.s), Strings.OreEnum.class);
+
+        return ore;
     }
     /*
         String id = (String) map.get(ID.s);

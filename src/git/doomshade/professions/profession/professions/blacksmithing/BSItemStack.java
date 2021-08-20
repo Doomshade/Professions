@@ -29,11 +29,15 @@ import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Strings;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import static git.doomshade.professions.utils.Strings.BSEnum.ITEM;
 
 /**
  * @author Doomshade
@@ -42,43 +46,38 @@ import java.util.Map;
  */
 public class BSItemStack extends Element {
     final ItemStack item;
-    private final String name;
 
     public BSItemStack(String id, String name, ItemStack item) {
-        super(id, true);
-        this.name = name;
+        super(id, name);
         this.item = item;
     }
 
-    public static BSItemStack deserialize(final Map<String, Object> map)
+    public static BSItemStack deserialize(final Map<String, Object> map, String name)
             throws ProfessionObjectInitializationException {
-        final BSItemStack is = deserializeElement(map, BSItemStack.class, x -> {
+        final BSItemStack is = deserializeElement(map, name, BSItemStack.class, x -> {
             try {
                 return new BSItemStack(x.getId(), x.getName(), ItemUtils.deserialize(map));
             } catch (ConfigurationException | ProfessionObjectInitializationException e) {
-                ProfessionLogger.logError(e);
+                ProfessionLogger.logError(e, false);
                 return null;
             }
-        });
-
-        if (is == null) {
-            throw new ProfessionObjectInitializationException("Could not deserialize blacksmithing itemstack!");
-        }
+        }, Collections.emptyList(), Strings.BSEnum.class);
 
         return is;
     }
 
     @Override
     public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = super.serialize();
+        map.put(ITEM.s, ItemUtils.serialize(item));
         return new HashMap<>() {
             {
-                put("item", ItemUtils.serialize(item));
+                put(ITEM.s, ItemUtils.serialize(item));
             }
         };
     }
 
-    @Override
-    public String getName() {
-        return name;
+    public ItemStack getItem() {
+        return item;
     }
 }

@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.spawn.IElement;
 import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.ProfessionLogger;
+import git.doomshade.professions.profession.professions.herbalism.Herb;
+import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.utils.FileEnum;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
@@ -39,7 +42,6 @@ import java.util.*;
 import java.util.function.Function;
 
 import static git.doomshade.professions.utils.Strings.ElementEnum.ID;
-import static git.doomshade.professions.utils.Strings.ElementEnum.NAME;
 
 /**
  * An element.
@@ -58,9 +60,33 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
             Map<String, Element>
             > ELEMENTS = new HashMap<>();
     private final String id;
+    private final String name;
 
-    protected Element(String id, boolean registerElement) {
+    /**
+     * Overloaded constructor with a {@code true} as the third parameter
+     *
+     * @param id   the ID of this element
+     * @param name the name of this element
+     *
+     * @throws IllegalArgumentException if the ID of the child class exists, for example this prevents two {@link Herb}s
+     *                                  with the same ID, but not a {@link Herb} and an {@link Ore} with the same ID
+     * @see Element#Element(String, String, boolean)
+     */
+    protected Element(String id, String name) throws IllegalArgumentException {
+        this(id, name, true);
+    }
+
+    /**
+     * @param id              the ID of this element
+     * @param name            the name of this element
+     * @param registerElement whether to register this element so it's visible in-game
+     *
+     * @throws IllegalArgumentException if the ID of the child class exists, for example this prevents two {@link Herb}s
+     *                                  with the same ID, but not a {@link Herb} and an {@link Ore} with the same ID
+     */
+    protected Element(String id, String name, boolean registerElement) throws IllegalArgumentException {
         this.id = id;
+        this.name = name;
         if (!Utils.EXAMPLE_ID.equalsIgnoreCase(id) && registerElement) {
             Map<String, Element> map = ELEMENTS.getOrDefault(getClass(), new HashMap<>());
             final Element el = map.putIfAbsent(id, this);
@@ -72,26 +98,83 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
         }
     }
 
+    /**
+     * Deserializes an {@link Element} and converts it to a desired implementation of it
+     *
+     * @param map                the serialization of the {@link Element}
+     * @param name               the name of the {@link Element}
+     * @param clazz              the implementation class
+     * @param conversionFunction the function to convert from {@link Element} to the desired implementation
+     * @param <T>                the implementation
+     *
+     * @return a deserialized implementation of an {@link Element}
+     *
+     * @throws ProfessionObjectInitializationException if there are missing keys or the conversion function returns
+     *                                                 {@code null}
+     * @see Element#deserializeElement(Map, String, Class, Function, Collection, Class[])
+     */
     protected static <T extends Element> T deserializeElement(Map<String, Object> map,
+                                                              String name,
                                                               Class<T> clazz,
                                                               Function<Element, T> conversionFunction)
             throws ProfessionObjectInitializationException {
+        return deserializeElement(map, name, clazz, conversionFunction, Collections.emptyList());
+    }
+
+    /**
+     * Deserializes an {@link Element} and converts it to a desired implementation of it including checking for missing
+     * keys
+     *
+     * @param map                the serialization of the {@link Element}
+     * @param name               the name of the {@link Element}
+     * @param clazz              the implementation class
+     * @param conversionFunction the function to convert from {@link Element} to the desired implementation
+     * @param ignoredKeys        the ignored keys in the {@link FileEnum}
+     * @param keys               the {@link FileEnum}s
+     * @param <T>                the implementation
+     *
+     * @return a deserialized implementation of an {@link Element}
+     *
+     * @throws ProfessionObjectInitializationException if there are missing keys or the conversion function returns
+     *                                                 {@code null}
+     */
+    @NotNull
+    @SafeVarargs
+    protected static <T extends Element> T deserializeElement(Map<String, Object> map,
+                                                              String name,
+                                                              Class<T> clazz,
+                                                              Function<Element, T> conversionFunction,
+                                                              final Collection<String> ignoredKeys,
+                                                              final Class<? extends FileEnum>... keys)
+            throws ProfessionObjectInitializationException {
         checkForMissingKeys(map, clazz, Collections.emptyList(), Strings.ElementEnum.class);
+        checkForMissingKeys(map, clazz, ignoredKeys, keys);
 
+        // get the ID from the serialization
         final String id = (String) map.get(ID.s);
-        final String name = (String) map.get(NAME.s);
 
-        final Element dummy = new Element(id, false) {
-            @Override
-            public String getName() {
-                return name;
-            }
+        // create a dummy class
+        final Element dummy = new Element(id, name, false) {
         };
 
         // convert the element
-        return conversionFunction.apply(dummy);
+        final T element = conversionFunction.apply(dummy);
+        if (element == null) {
+            throw new ProfessionObjectInitializationException("Could not deserialize an element due to an error");
+        }
+        return element;
     }
 
+    /**
+     * Checks for missing keys in the serialization
+     *
+     * @param map         the serialization
+     * @param clazz       the class just for logging purposes
+     * @param ignoredKeys the ignored {@link FileEnum} keys
+     * @param keys        the {@link FileEnum} keys
+     *
+     * @throws ProfessionObjectInitializationException
+     */
     @SafeVarargs
     protected static void checkForMissingKeys(Map<String, Object> map,
                                               Class<?> clazz,
@@ -106,7 +189,16 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
         }
     }
 
+    /**
+     *
+     */
     public static void unloadElements() {
+        // cache it first
+        for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : getAllElements().entrySet()) {
+            for (Map.Entry<String, Element> entry1 : entry.getValue().entrySet()) {
+                // TODO cache
+            }
+        }
         ELEMENTS.clear();
     }
 
@@ -114,7 +206,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
         return ImmutableMap.copyOf(ELEMENTS);
     }
 
-    public static <E extends Element> E get(Class<E> of, String id) {
+    public static <E extends Element> E getElement(Class<E> of, String id) {
         return getElements(of).get(id);
     }
 
@@ -128,13 +220,17 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     public Map<String, Object> serialize() {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put(ID.s, getId());
-        map.put(NAME.s, getName());
         return map;
     }
 
     @Override
-    public String getId() {
+    public final String getId() {
         return id;
+    }
+
+    @Override
+    public final String getName() {
+        return name;
     }
 
     /**
@@ -145,12 +241,12 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     }
 
     @Override
-    public Serializable[] cache() {
-        return new Serializable[0];
+    public void loadCache(Serializable[] data) {
     }
 
     @Override
-    public void loadCache(Serializable[] data) {
+    public Serializable[] cache() {
+        return new Serializable[0];
     }
 
     @Override

@@ -464,11 +464,11 @@ public final class User implements IUser {
         }
         PotionTask potionTask = new PotionTask(potion, player);
         potionTask.runTask();
-        ACTIVE_POTIONS.put(potion.getPotionId(), potionTask);
+        ACTIVE_POTIONS.put(potion.getId(), potionTask);
     }
 
     public boolean isActivePotion(Potion potion) {
-        return ACTIVE_POTIONS.containsKey(potion.getPotionId());
+        return ACTIVE_POTIONS.containsKey(potion.getId());
     }
 
     @SuppressWarnings("unused")
@@ -476,7 +476,7 @@ public final class User implements IUser {
         if (!isActivePotion(potion)) {
             return;
         }
-        ACTIVE_POTIONS.remove(potion.getPotionId()).cancel();
+        ACTIVE_POTIONS.remove(potion.getId()).cancel();
     }
 
     ConfigurationSection getProfessionsSection() {
