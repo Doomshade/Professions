@@ -349,7 +349,8 @@ public final class ItemUtils implements ISetup {
             if (items.size() > 1) {
                 // log that we found the diablo item but there were duplicates
                 ProfessionLogger.log(
-                        "Found multiple DiabloItems for a single itemstack, diablo item must both have unique display" +
+                        "Found multiple DiabloItems for a single itemstack, diablo item must both have a unique " +
+                                "display" +
                                 " and config name" +
                                 displayName, Level.WARNING);
                 ProfessionLogger.log("Duplicates: " +
@@ -595,7 +596,8 @@ public final class ItemUtils implements ISetup {
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
         if (!loader.isConfigurationSection(ItemType.KEY_ITEMS)) {
             throw new IllegalArgumentException(
-                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY_ITEMS + "." + id + ")");
+                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY_ITEMS + "." + id +
+                            ")");
         }
         ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         return ((MemorySection) Objects.requireNonNull(itemsSection.get(itemId))).getValues(false);
