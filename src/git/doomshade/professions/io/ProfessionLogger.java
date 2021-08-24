@@ -28,13 +28,7 @@ import git.doomshade.professions.Professions;
 import org.bukkit.ChatColor;
 import org.fusesource.jansi.Ansi;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -43,14 +37,25 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 1.0
  */
-public class ProfessionLogger {
-    private static final DateTimeFormatter DF = DateTimeFormatter
-            .ofLocalizedTime(FormatStyle.MEDIUM)
-            .withLocale(Locale.GERMAN);
+public final class ProfessionLogger {
     private static final int GREEN = 500;
     private static final int RED = 900;
+    private static LogLevel logLevel = LogLevel.ALL;
 
     private ProfessionLogger() {
+    }
+
+    public static void setLogLevel(int level) {
+        logLevel = LogLevel.fromLevel(level);
+    }
+
+    /**
+     * Logs an object using {@link Object#toString()} method to console with {@link Level#INFO} level.
+     *
+     * @param object the object to log
+     */
+    public static void log(Object object) {
+        log(object, Level.INFO);
     }
 
     /**
@@ -64,12 +69,45 @@ public class ProfessionLogger {
     }
 
     /**
-     * Logs an object using {@link Object#toString()} method to console with {@link Level#INFO} level.
+     * Logs a message. Levels {@literal >}= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file.
+     * Levels {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green.
      *
-     * @param object the object to log
+     * @param message the message to display
+     * @param level   the log level
      */
-    public static void log(Object object) {
-        log(object, Level.INFO);
+    public static void log(String message, Level level) {
+        if (message == null || level == null) {
+            return;
+        }
+
+        // don't log empty messages
+        if (message.isEmpty()) {
+            return;
+        }
+
+        // log only with proper level
+        final int leveli = level.intValue();
+        if (logLevel.level.intValue() > leveli) {
+            return;
+        }
+
+        final String lvlName = String.format("[%s] ", level.getName());
+        IOManager.log(lvlName.concat(ChatColor.stripColor(message)));
+
+        Ansi.Color color = Ansi.Color.WHITE;
+
+        if (leveli >= RED) {
+            color = Ansi.Color.RED;
+        } else if (leveli <= GREEN) {
+            color = Ansi.Color.GREEN;
+        }
+
+        Ansi ansi = Ansi.ansi().boldOff();
+
+        Professions.getInstance()
+                .getLogger()
+                .log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+
     }
 
     /**
@@ -106,52 +144,24 @@ public class ProfessionLogger {
         }
     }
 
-    /**
-     * Logs a message. Levels {@literal >}= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to
-     * file. Levels
-     * {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green.
-     *
-     * @param message the message to display
-     * @param level   the log level
-     */
-    public static void log(String message, Level level) {
-        if (message.isEmpty()) {
-            return;
+    private enum LogLevel {
+        ALL(Level.ALL),
+        FINE(Level.FINE),
+        CONFIG(Level.CONFIG),
+        INFO(Level.INFO),
+        WARNING(Level.WARNING),
+        SEVERE(Level.SEVERE);
+
+        private final int levelId;
+        private final Level level;
+
+        LogLevel(Level lvl) {
+            this.level = lvl;
+            this.levelId = ordinal();
         }
 
-        final int leveli = level.intValue();
-        if (leveli >= Level.CONFIG.intValue() && level != Level.INFO) {
-            String time = String.format("[%s] ", LocalTime.now().format(DF));
-
-            if (IOManager.fos == null) {
-                try {
-                    IOManager.fos = new PrintStream(IOManager.getLogFile());
-                } catch (FileNotFoundException e) {
-                    // DONT CALL #logError HERE!
-                    e.printStackTrace();
-                    return;
-                }
-            }
-
-            IOManager.fos.println(time.concat(ChatColor.stripColor(message)));
-
-            if (level == Level.CONFIG) {
-                return;
-            }
+        static LogLevel fromLevel(int level) {
+            return Arrays.stream(values()).filter(ll -> ll.levelId == level).findFirst().orElse(LogLevel.ALL);
         }
-        Ansi.Color color = Ansi.Color.WHITE;
-
-        if (leveli >= RED) {
-            color = Ansi.Color.RED;
-        } else if (leveli <= GREEN) {
-            color = Ansi.Color.GREEN;
-        }
-
-        Ansi ansi = Ansi.ansi().boldOff();
-
-        Professions.getInstance()
-                .getLogger()
-                .log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
-
     }
 }

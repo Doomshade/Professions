@@ -27,7 +27,6 @@ package git.doomshade.professions.io;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ext.ItemType;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
@@ -35,12 +34,15 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.Locale;
 
 /**
  * @author Doomshade
@@ -62,8 +64,12 @@ public class IOManager {
     private static final File TRAINER_FOLDER = new File(plugin.getDataFolder(), "trainer gui");
     private static final File LANG_FOLDER = new File(plugin.getDataFolder(), "lang");
     private static final HashMap<String, File> FILE_CACHE = new HashMap<>();
-    static PrintStream fos = null;
+    private static PrintStream fos = null;
     private static boolean FIRST_BACKUP = true;
+
+    private static final DateTimeFormatter DF = DateTimeFormatter
+            .ofLocalizedTime(FormatStyle.MEDIUM)
+            .withLocale(Locale.GERMAN);
 
     static {
         LOGS_FOLDER = new File(plugin.getDataFolder(), "logs");
@@ -172,10 +178,6 @@ public class IOManager {
         return getFolder(LANG_FOLDER);
     }
 
-    public static File getLogFile() {
-        return LOG_FILE;
-    }
-
     public static void setupFiles() {
         Professions plugin = Professions.getInstance();
 
@@ -231,6 +233,24 @@ public class IOManager {
         if (fos != null) {
             fos.flush();
         }
+    }
+
+    public static void log(String message) {
+        if (fos == null) {
+            try {
+                fos = new PrintStream(IOManager.getLogFile());
+            } catch (FileNotFoundException e) {
+                // DONT CALL #logError HERE!
+                e.printStackTrace();
+                return;
+            }
+        }
+        final String time = String.format("[%s] ", LocalTime.now().format(DF));
+        fos.println(time.concat(message));
+    }
+
+    public static File getLogFile() {
+        return LOG_FILE;
     }
 
     /**
