@@ -62,10 +62,12 @@ public final class SpawnPoint implements ISpawnPoint {
     private static final MarkerManager MARKER_MANAGER = Professions.getMarkerManager();
     private static final HashMap<Location, Collection<SpawnPoint>> SPAWN_POINTS = new HashMap<>();
     private static final HashMap<Spawnable, Integer> SERIAL_NUMBER_CACHE = new HashMap<>();
+
     private final Location location;
-    private final Range spawnTime;
     private final Spawnable element;
     private final int serialNumber;
+
+    private final Range spawnTime;
     private final String markerId;
     private final String markerLabel;
     private final String markerSetId;
@@ -112,7 +114,8 @@ public final class SpawnPoint implements ISpawnPoint {
     }
 
     /**
-     * The main spawn point
+     * The main spawn point. Binds the spawn point to the given spawnable so there's no need in adding the spawn
+     * point again
      *
      * @param location     the location
      * @param spawnTime    the spawn time
@@ -184,6 +187,8 @@ public final class SpawnPoint implements ISpawnPoint {
          *          pitch: 0
          *          yaw: 0
          */
+        ProfessionLogger.log(String.format("Deserializing spawn points for %s from map (%d)", spawnable.getId(),
+                        map.size()), Level.CONFIG);
         for (int i = 0; i < map.size(); i++) {
 
             final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
@@ -191,6 +196,7 @@ public final class SpawnPoint implements ISpawnPoint {
                 try {
                     spawnPointLocations.add(SpawnPoint.deserialize(((MemorySection) o).getValues(false), spawnable,
                             markerSetId, i));
+                    ProfessionLogger.log(String.format("Deserialized spawn point with id %d", i), Level.CONFIG);
                 } catch (ProfessionObjectInitializationException e) {
                     if (ex == null) {
                         ex = new ProfessionObjectInitializationException(SpawnPoint.class, Collections.emptyList(),
@@ -430,10 +436,10 @@ public final class SpawnPoint implements ISpawnPoint {
     @Override
     public String toString() {
         return "SpawnPoint{" +
-                "location=" + location +
+                "location=" + Utils.locationToString(location) +
                 ", spawnTime=" + spawnTime +
                 ", serialNumber=" + serialNumber +
-                ", spawnTask=" + spawnTask +
+                ", spawnTask=" + spawnTask.hashCode() +
                 '}';
     }
 

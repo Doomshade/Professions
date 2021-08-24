@@ -71,25 +71,36 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  */
 public final class ItemUtils implements ISetup {
 
+    /** instance because of setup */
     public static final ItemUtils instance = new ItemUtils();
+
+    /** an example item requirement */
     public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
             .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of requirement"))
             .withDisplayName(ChatColor.DARK_AQUA + "Display name")
             .setAmount(5)
             .build();
+
+    /** an example result in crafting */
     public static final ItemStack EXAMPLE_RESULT = new ItemStackBuilder(Material.GLASS)
             .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of result"))
             .withDisplayName(ChatColor.DARK_AQUA + "Display name")
             .setAmount(5)
             .build();
+
+    /** an example location */
     public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
-    static final String DIABLO_ITEM = "diabloitem";
+
+    // file keys
+    private static final String DIABLO_ITEM = "diabloitem";
     private static final String MATERIAL = "material";
     private static final String DISPLAY_NAME = "display-name";
     private static final String LORE = "lore";
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
     private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
+
+    // TODO remove caching
     private static final File ITEMS_LOGGED_FILE = new File(IOManager.getCacheFolder(), "itemutilscache.bin");
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
     private static boolean loggedDiablo = false;
@@ -485,7 +496,7 @@ public final class ItemUtils implements ISetup {
                 getItemTypeFile((Class<? extends ItemType<?>>) itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
-        // gem.yml -> items.1
+        // gem.yml -> items.1.
         final String itemSection = ItemType.KEY_ITEMS + "." + itemType.getFileId() + ".";
         for (int i = 0; i < desc.size(); i++) {
             String s = desc.get(i);

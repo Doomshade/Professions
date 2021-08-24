@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.spawn.IElement;
 import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
-import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.utils.FileEnum;
@@ -252,5 +251,13 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Element{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

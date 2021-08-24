@@ -125,6 +125,7 @@ public abstract class Spawnable extends Element
 
     private static <T extends Spawnable> Spawnable iterate(
             Block block, Iterable<T> iterable) {
+        ProfessionLogger.log(String.format("Iterating through %s for block %s...", iterable, block), Level.CONFIG);
         for (T el : iterable) {
 
             // el.get() = function, that transforms a spawnable element instance into elementClass instance
@@ -358,9 +359,6 @@ public abstract class Spawnable extends Element
      */
     public static void scheduleSpawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
         ProfessionLogger.log("Schedule spawn all", Level.CONFIG);
-        // for each registered spawnable element
-        // for each ID of spawnable elements
-        // for each spawn point spawn
         final Consumer<ISpawnPoint> action = z -> {
             try {
                 z.scheduleSpawn();
@@ -385,7 +383,7 @@ public abstract class Spawnable extends Element
                     continue;
                 }
                 // log
-                ProfessionLogger.log(sp);
+                ProfessionLogger.log(sp, Level.CONFIG);
                 action.accept(sp);
             }
         }
@@ -499,12 +497,12 @@ public abstract class Spawnable extends Element
     @Override
     public String toString() {
         return "Spawnable{" +
-                "particleData=" + particleData +
+                "spawnPoints=" + spawnPoints.size() +
                 ", material=" + material +
                 ", materialData=" + materialData +
-                ", name='" + getName() + '\'' +
-                ", id='" + getId() + '\'' +
-                '}';
+                ", markerIcon='" + markerIcon + '\'' +
+                ", canSpawn=" + canSpawn +
+                "} " + super.toString();
     }
 
     @Override
@@ -582,9 +580,9 @@ public abstract class Spawnable extends Element
     public void addSpawnPoint(ISpawnPoint sp) {
         final ISpawnPoint prev = this.spawnPoints.putIfAbsent(sp.getLocation(), sp);
         if (prev != null) {
-            ProfessionLogger.log(String.format("Trying to add a spawn point with %s (%s) location, but it already " +
-                                    "exists!",
-                            Utils.locationToString(sp.getLocation()), sp.getLocation().getWorld()),
+            ProfessionLogger.log(String.format("Trying to add a spawn point ID %d with %s location for %s, but it " +
+                                    "already exists!", sp.getSerialNumber(),
+                            Utils.locationToString(sp.getLocation()), sp.getSpawnableElement()),
                     Level.CONFIG);
             return;
         }
@@ -597,6 +595,9 @@ public abstract class Spawnable extends Element
         for (ISpawnPoint sp : spawnPoints) {
             addSpawnPoint(sp);
         }
+        // log
+        ProfessionLogger.log(String.format("Spawn point total for %s: %d", this.getId(),
+                this.getSpawnPoints().size()), Level.CONFIG);
     }
 
     @Override

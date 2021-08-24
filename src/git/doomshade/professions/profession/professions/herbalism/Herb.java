@@ -167,8 +167,10 @@ public class Herb extends Spawnable {
 
     @Override
     public String toString() {
-        return String.format("\nHerb:\nID: %s\nName: %s\nMaterial: %s", this.getId(), this.getName(),
-                this.getMaterial().name());
+        return "Herb{" +
+                "gatherItem=" + gatherItem.getType() +
+                ", timeGather=" + timeGather +
+                "} " + super.toString();
     }
 
     @Override

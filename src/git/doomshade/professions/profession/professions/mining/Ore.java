@@ -92,8 +92,6 @@ public class Ore extends Spawnable {
                     boolean thrown = false;
 
                     final PriorityQueue<YieldResult> results = new PriorityQueue<>();
-
-
                     for (int i = 0; i < map.size(); i++) {
                         final Object o = map.get(RESULT.s.concat("-" + i));
 
@@ -161,8 +159,7 @@ public class Ore extends Spawnable {
 
     @Override
     public String toString() {
-        return String.format("Ore{ID=%s\nName=%s\nMaterial=%s\nSpawnPoints=%s}", getId(), getName(), getMaterial(),
-                getSpawnPoints());
+        return "Ore{} " + super.toString();
     }
 
     /**
