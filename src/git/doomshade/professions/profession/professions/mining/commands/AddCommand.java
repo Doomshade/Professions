@@ -1,11 +1,35 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.profession.professions.mining.commands;
 
-import git.doomshade.professions.api.spawn.Range;
+import git.doomshade.professions.api.Range;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.profession.spawn.SpawnPoint;
-import git.doomshade.professions.profession.spawn.Spawnable;
+import git.doomshade.professions.api.spawn.ext.SpawnPoint;
+import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
@@ -14,6 +38,11 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/**
+ * @author Doomshade
+ * @version 1.0
+ * @since 1.0
+ */
 @SuppressWarnings("ALL")
 public class AddCommand extends AbstractEditCommand {
 
@@ -29,7 +58,7 @@ public class AddCommand extends AbstractEditCommand {
     public void onCommand(CommandSender sender, String[] args) {
 
         Player player = (Player) sender;
-        Ore ore = Spawnable.get(Ore.class, args[1]);
+        Ore ore = Spawnable.getElement(Ore.class, args[1]);
 
         if (ore == null) {
             player.sendMessage("Invalid ore id");
@@ -45,7 +74,8 @@ public class AddCommand extends AbstractEditCommand {
         try {
             respawnTime = Range.fromString(args[2]).orElseThrow(() -> new IllegalArgumentException(
                     String.format("Could not get " +
-                            "range from '%s'", args[2])));;
+                            "range from '%s'", args[2])));
+            ;
         } catch (Exception e) {
             ProfessionLogger.logError(e);
         }

@@ -1,8 +1,31 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.api;
 
-import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
 import git.doomshade.professions.enums.Messages;
@@ -18,17 +41,16 @@ import git.doomshade.professions.profession.professions.herbalism.HerbalismProfe
 import git.doomshade.professions.profession.professions.jewelcrafting.JewelcraftingProfession;
 import git.doomshade.professions.profession.professions.mining.MiningProfession;
 import git.doomshade.professions.profession.professions.smelting.SmeltingProfession;
-import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ISetup;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -43,13 +65,15 @@ import java.util.stream.Collectors;
  * @see JewelcraftingProfession
  * @see MiningProfession
  * @see SmeltingProfession
+ * @since 1.0
  */
-public abstract class Profession implements Listener, Comparable<Profession> {
+public abstract class Profession implements IProfession {
 
+    protected final ProfessionUtils utils;
+    final HashSet<ItemTypeHolder<?, ?>> items = new HashSet<>();
     private final HashSet<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
-    private final HashSet<ItemTypeHolder<?, ?>> items = new HashSet<>();
     private final ItemStack icon;
     private final ProfessionSettingsManager professionSettings;
 
@@ -73,6 +97,7 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         this.name = defaults.getName();
         this.icon = defaults.getIcon();
         this.pt = defaults.getProfessionType();
+        this.utils = new ProfessionUtils(this);
     }
 
     private void ensureNotInitialized(boolean ignoreError) throws IllegalStateException {
@@ -85,96 +110,10 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     }
 
     /**
-     * Casts desired event to another one
-     *
-     * @param event the profession event to cast
-     * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
-     *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
-     */
-    protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEvent<?> event, Class<A> clazz)
-            throws ClassCastException {
-        return getEvent(event, clazz).orElse(null);
-    }
-
-    /**
-     * Casts desired event to another one
-     *
-     * @param event the profession event to cast
-     * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
-     *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
-     */
-    @SuppressWarnings({"unchecked"})
-    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEvent<?> event,
-                                                                                   Class<A> clazz)
-            throws ClassCastException {
-        try {
-            return Optional.of((ProfessionEvent<A>) event);
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Casts desired event to another one
-     *
-     * @param event the profession event to cast
-     * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
-     *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
-     */
-    protected static <A extends ItemType<?>> ProfessionEvent<A> getEventUnsafe(ProfessionEventWrapper<?> event,
-                                                                               Class<A> clazz)
-            throws ClassCastException {
-        return getEvent(event, clazz).orElse(null);
-    }
-
-    /**
-     * Casts desired event to another one
-     *
-     * @param event the profession event to cast
-     * @param <A>   the generic argument of the event
-     * @param clazz the generic argument class
-     *
-     * @return the casted event
-     *
-     * @throws ClassCastException if the event couldn't be cast
-     */
-    protected static <A extends ItemType<?>> Optional<ProfessionEvent<A>> getEvent(ProfessionEventWrapper<?> event,
-                                                                                   Class<A> clazz)
-            throws ClassCastException {
-        return getEvent(event.event, clazz);
-    }
-
-    /**
-     * @return the unique ID of this profession
-     */
-    public abstract String getID();
-
-    /**
      * @return the icon of this profession (for GUI purposes)
      */
     public ItemStack getIcon() {
         return icon;
-    }
-
-    /**
-     * Adds {@link ItemType}s to this profession to handle in
-     *
-     * @param items the items
-     */
-    protected final <T, A extends ItemType<T>> void addItems(Class<A> items) {
-        this.items.add(Professions.getProfMan().getItemTypeHolder(items));
     }
 
     /**
@@ -189,35 +128,6 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      */
     public ProfessionSettingsManager getProfessionSettings() {
         return professionSettings;
-    }
-
-    /**
-     * Adds the exp to the user based on the event given.
-     *
-     * @param e the event
-     *
-     * @return {@code true} if the exp was given, {@code false} otherwise
-     */
-    protected final boolean addExp(ProfessionEvent<?> e) {
-        return addExp(e.getExp(), e.getPlayer(), e.getItemType());
-    }
-
-    /**
-     * Adds exp to the user based on the source
-     *
-     * @param exp    the exp to add
-     * @param user   the user to add the exp to
-     * @param source the source of exp
-     *
-     * @return {@code true} if the exp was added successfully, {@code false} otherwise
-     *
-     * @see User#addExp(double, Profession, ItemType)
-     */
-    protected final boolean addExp(double exp, User user, ItemType<?> source) {
-        if (!user.isSuppressExpEvent()) {
-            return user.addExp(exp, this, source);
-        }
-        return false;
     }
 
     @Override
@@ -250,75 +160,6 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     }
 
     /**
-     * @param e               event to check for
-     * @param <ItemTypeClass> the item type
-     *
-     * @return {@code true} if event has registered an object of item type, {@code false} otherwise
-     */
-    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e) {
-        return isValidEvent(e, true);
-    }
-
-    /**
-     * @param e               event to check for
-     * @param <ItemTypeClass> the item type
-     * @param errorMessage    whether or not to log error message
-     *
-     * @return {@code true} if event has registered an object of item type, {@code false} otherwise
-     */
-    protected final <ItemTypeClass extends ItemType<?>> boolean isValidEvent(ProfessionEvent<ItemTypeClass> e,
-                                                                             boolean errorMessage) {
-        final boolean playerHasProf = playerHasProfession(e);
-        if (!playerHasProf) {
-            e.setCancelled(true);
-            if (errorMessage) {
-                final User player = e.getPlayer();
-                player.sendMessage(new Messages.MessageBuilder(Messages.Global.PROFESSION_REQUIRED_FOR_THIS_ACTION)
-                        .player(player)
-                        .profession(this)
-                        .build());
-            }
-        }
-        return playerHasProf;
-    }
-
-    /**
-     * @param e               event to check for
-     * @param <ItemTypeClass> the item type
-     *
-     * @return {@code true} if the player has a profession of this called event, {@code false} otherwise
-     */
-    protected final <ItemTypeClass extends ItemType<?>> boolean playerHasProfession(ProfessionEvent<ItemTypeClass> e) {
-        return e.getPlayer().hasProfession(this);
-    }
-
-    /**
-     * @param e the event to check the player's requirements in
-     *
-     * @return {@code true} if the player meets all requirements, {@code false} otherwise
-     */
-    protected final <ItemTypeClass extends ItemType<?>> boolean playerMeetsLevelRequirements(
-            ProfessionEvent<ItemTypeClass> e) {
-        if (!playerHasProfession(e)) {
-            return false;
-        }
-        ItemTypeClass obj = e.getItemType();
-        UserProfessionData upd = getUserProfessionData(e.getPlayer());
-        return obj.meetsLevelReq(upd.getLevel()) || upd.getUser().isBypass();
-    }
-
-    /**
-     * @param user the user to get the profession data from
-     *
-     * @return the user profession data
-     *
-     * @see User#getProfessionData(Profession)
-     */
-    protected final UserProfessionData getUserProfessionData(User user) {
-        return user.getProfessionData(this);
-    }
-
-    /**
      * Compares the profession types and then the names
      *
      * @param o the profession to compare
@@ -341,7 +182,9 @@ public abstract class Profession implements Listener, Comparable<Profession> {
     }
 
     /**
-     * Called when a user level ups
+     * Called when a user levels up
+     *
+     * @param upd the user profession data
      */
     public void onLevelUp(UserProfessionData upd) {
 
@@ -373,12 +216,26 @@ public abstract class Profession implements Listener, Comparable<Profession> {
      */
     @EventHandler
     public final <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
+        final Class<? extends IProfession>[] profs = event.getProfessions();
 
+        if (profs == null || profs.length == 0) {
+            ProfessionLogger.logError(new IllegalStateException(
+                    String.format("Received empty profession list for %s event", event.getItemType().getName())), true);
+            return;
+        }
+
+        // check whether the event was called for this profession
+        if (Arrays.stream(profs).noneMatch(prof -> prof.equals(getClass()))){
+            return;
+        }
         // the player has no profession but has a rank builder+ -> do not cancel the event
-        if (!playerHasProfession(event)) {
+        if (!utils.playerHasProfession(event)) {
 
             // cancels the event if the player is a rank lower than builder
-            event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
+            final boolean b = !Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER);
+            ProfessionLogger.log(String.format("Setting cancelled of event %s to %s",
+                    event.getItemType().getName(), b), Level.FINEST);
+            event.setCancelled(b);
             return;
         }
         for (ItemTypeHolder<?, ?> ith : items) {
@@ -391,23 +248,10 @@ public abstract class Profession implements Listener, Comparable<Profession> {
         }
     }
 
-    /**
-     * Called when an event related to this profession occurs
-     *
-     * @param e       the event
-     * @param <IType> the ItemType
-     */
-    public abstract <IType extends ItemType<?>> void onEvent(ProfessionEventWrapper<IType> e);
-
     @Nullable
     public List<String> getProfessionInformation(UserProfessionData upd) {
         return null;
     }
-
-    /**
-     * @return {@code true} if this profession is a subprofession, {@code false} otherwise
-     */
-    public abstract boolean isSubprofession();
 
     /**
      * @return a collection of subprofessions of this profession
@@ -441,14 +285,9 @@ public abstract class Profession implements Listener, Comparable<Profession> {
                 }
             }
             String sb = Arrays.stream(values())
-                    .map(type -> type.ordinal() + "=" + type.toString())
+                    .map(type -> type.ordinal() + "=" + type)
                     .collect(Collectors.joining("", professionType + " is not a valid profession type! (", ")"));
             throw new IllegalArgumentException(sb);
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
 
         /**
@@ -463,9 +302,14 @@ public abstract class Profession implements Listener, Comparable<Profession> {
                 }
             }
             String sb = Arrays.stream(values())
-                    .map(type -> type.ordinal() + "=" + type.toString())
+                    .map(type -> type.ordinal() + "=" + type)
                     .collect(Collectors.joining("", id + " is not a valid profession id type! (", ")"));
             throw new IllegalArgumentException(sb);
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
         }
 
         @Override

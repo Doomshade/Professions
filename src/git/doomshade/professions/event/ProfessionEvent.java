@@ -1,8 +1,33 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfession;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ItemUtils;
@@ -25,27 +50,35 @@ import java.util.stream.Collectors;
  * @author Doomshade
  * @version 1.0
  * @see Profession#onEvent(ProfessionEventWrapper)
+ * @since 1.0
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
     private static final HandlerList handlerList = new HandlerList();
     private final User user;
     private final Collection<Object> extras = new ArrayList<>();
     private final List<String> errorMessage = new ArrayList<>();
+    private final Class<? extends IProfession>[] professions;
     private T t;
     private boolean cancel = false;
     private int exp;
 
-    public ProfessionEvent(T t, User user) {
+    public ProfessionEvent(T t, User user, Class<? extends IProfession>[] professions) {
         this.t = t;
         this.user = user;
         this.exp = t.getExp();
         @SuppressWarnings("all") final List<String> errMessages =
                 Professions.getProfMan().getItemTypeHolder(t.getClass()).getErrorMessage();
         this.errorMessage.addAll(errMessages);
+        this.professions = new Class[professions.length];
+        System.arraycopy(professions, 0, this.professions, 0, this.professions.length);
     }
 
     public static HandlerList getHandlerList() {
         return handlerList;
+    }
+
+    public Class<? extends IProfession>[] getProfessions() {
+        return professions;
     }
 
     public int getExp() {

@@ -1,9 +1,33 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.utils;
 
 import git.doomshade.diablolike.DiabloLike;
 import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.ReloadCommand;
@@ -42,28 +66,41 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  * Utilities for {@link ItemStack}
  *
  * @author Doomshade
+ * @version 1.0
+ * @since 1.0
  */
 public final class ItemUtils implements ISetup {
 
+    /** instance because of setup */
     public static final ItemUtils instance = new ItemUtils();
+
+    /** an example item requirement */
     public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
             .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of requirement"))
             .withDisplayName(ChatColor.DARK_AQUA + "Display name")
             .setAmount(5)
             .build();
+
+    /** an example result in crafting */
     public static final ItemStack EXAMPLE_RESULT = new ItemStackBuilder(Material.GLASS)
             .withLore(Arrays.asList(ChatColor.RED + "This", ChatColor.GREEN + "is a lore of result"))
             .withDisplayName(ChatColor.DARK_AQUA + "Display name")
             .setAmount(5)
             .build();
+
+    /** an example location */
     public static final Location EXAMPLE_LOCATION = Bukkit.getWorlds().get(0).getSpawnLocation();
-    static final String DIABLO_ITEM = "diabloitem";
+
+    // file keys
+    private static final String DIABLO_ITEM = "diabloitem";
     private static final String MATERIAL = "material";
     private static final String DISPLAY_NAME = "display-name";
     private static final String LORE = "lore";
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
     private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
+
+    // TODO remove caching
     private static final File ITEMS_LOGGED_FILE = new File(IOManager.getCacheFolder(), "itemutilscache.bin");
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
     private static boolean loggedDiablo = false;
@@ -187,7 +224,7 @@ public final class ItemUtils implements ISetup {
         if (!ITEMS_LOGGED.contains(map)) {
             ProfessionLogger.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.",
                     Level.WARNING);
-            ProfessionLogger.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
+            ProfessionLogger.log("DiabloItem serialized form:\n" + map, Level.WARNING, true);
             ITEMS_LOGGED.add(map);
         }
     }
@@ -195,7 +232,7 @@ public final class ItemUtils implements ISetup {
     public static Map<String, Object> serialize(final ItemStack item) {
 
         if (item == null) {
-            return null;
+            return new HashMap<>();
         }
 
 
@@ -217,12 +254,15 @@ public final class ItemUtils implements ISetup {
         }
 
         if (meta.hasLore()) {
-            map.put(LORE, Objects.requireNonNull(meta.getLore()).stream().map(x -> x.replaceAll("§", "&")).collect(Collectors.toList()));
+            map.put(LORE, Objects.requireNonNull(meta.getLore())
+                    .stream()
+                    .map(x -> x.replaceAll("§", "&"))
+                    .collect(Collectors.toList()));
         }
 
         if (meta instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) meta;
-            map.put(POTION_TYPE, potionMeta.getBasePotionData());
+            map.put(POTION_TYPE, potionMeta.getBasePotionData().getType().name());
         }
 
         return map;
@@ -320,7 +360,8 @@ public final class ItemUtils implements ISetup {
             if (items.size() > 1) {
                 // log that we found the diablo item but there were duplicates
                 ProfessionLogger.log(
-                        "Found multiple DiabloItems for a single itemstack, diablo item must both have unique display" +
+                        "Found multiple DiabloItems for a single itemstack, diablo item must both have a unique " +
+                                "display" +
                                 " and config name" +
                                 displayName, Level.WARNING);
                 ProfessionLogger.log("Duplicates: " +
@@ -455,8 +496,8 @@ public final class ItemUtils implements ISetup {
                 getItemTypeFile((Class<? extends ItemType<?>>) itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
-        // gem.yml -> items.1
-        final String itemSection = ItemType.KEY + "." + itemType.getFileId() + ".";
+        // gem.yml -> items.1.
+        final String itemSection = ItemType.KEY_ITEMS + "." + itemType.getFileId() + ".";
         for (int i = 0; i < desc.size(); i++) {
             String s = desc.get(i);
             if (s.isEmpty()) {
@@ -548,6 +589,8 @@ public final class ItemUtils implements ISetup {
         return desc;
     }
 
+    // TODO move this to IO and pass down ConfigurationSection instead of the map
+
     /**
      * @param clazz the {@link ItemType} class
      * @param id    the {@link ItemType#getFileId()}
@@ -562,11 +605,12 @@ public final class ItemUtils implements ISetup {
         }
         String itemId = String.valueOf(id);
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        if (!loader.isConfigurationSection(ItemType.KEY)) {
+        if (!loader.isConfigurationSection(ItemType.KEY_ITEMS)) {
             throw new IllegalArgumentException(
-                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY + "." + id + ")");
+                    clazz.getSimpleName() + " with id " + id + " not found in file! (" + ItemType.KEY_ITEMS + "." + id +
+                            ")");
         }
-        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
+        ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
         return ((MemorySection) Objects.requireNonNull(itemsSection.get(itemId))).getValues(false);
     }
 

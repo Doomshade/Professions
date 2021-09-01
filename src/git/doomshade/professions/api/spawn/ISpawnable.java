@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.api.spawn;
 
 import git.doomshade.professions.api.IParticleData;
@@ -13,25 +37,21 @@ import java.util.Iterator;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
-public interface ISpawnable extends Iterable<ISpawnPoint> {
+public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
 
     /**
-     * @return whether or not the spawnable can spawn elements
+     * @return whether the spawnable can spawn elements
      */
     boolean canSpawn();
 
     /**
-     * Sets whether or not the spawnable can spawn
+     * Sets whether the spawnable can spawn
      *
-     * @param canSpawn whether or not it can spawn
+     * @param canSpawn whether it can spawn
      */
     void setCanSpawn(boolean canSpawn);
-
-    /**
-     * @return the id of this spawnable
-     */
-    String getId();
 
     /**
      * @return the marker icon on dynmap for all spawn points
@@ -52,11 +72,6 @@ public interface ISpawnable extends Iterable<ISpawnPoint> {
      * @return the material data because of special blocks suck as flowers
      */
     byte getMaterialData();
-
-    /**
-     * @return the name of the element
-     */
-    String getName();
 
     /**
      * @param location the location to check for
@@ -92,15 +107,19 @@ public interface ISpawnable extends Iterable<ISpawnPoint> {
      * @param location the location
      *
      * @return the spawn point based on location or {@code null}
+     *
+     * @throws IllegalArgumentException if a spawn point with that location does not exist
      */
-    ISpawnPoint getSpawnPoint(Location location);
+    ISpawnPoint getSpawnPoint(Location location) throws IllegalArgumentException;
 
     /**
      * @param serialNumber the serial number
      *
      * @return the spawn point based on serial number or {@code null}
+     *
+     * @throws IllegalArgumentException if a spawn point with that serial number does not exist
      */
-    ISpawnPoint getSpawnPoint(int serialNumber);
+    ISpawnPoint getSpawnPoint(int serialNumber) throws IllegalArgumentException;
 
     /**
      * Adds a spawn point
@@ -127,13 +146,17 @@ public interface ISpawnable extends Iterable<ISpawnPoint> {
      * Removes a spawn point based on the location
      *
      * @param location the location
+     *
+     * @throws IllegalArgumentException if a spawn point with that location does not exist
      */
-    void removeSpawnPoint(Location location);
+    void removeSpawnPoint(Location location) throws IllegalArgumentException;
 
     /**
      * Removes a spawn point with given serialNumber
      *
      * @param serialNumber the serialNumber of the spawn point
+     *
+     * @throws IllegalArgumentException if a spawn point with that serial number does not exist
      */
-    void removeSpawnPoint(int serialNumber);
+    void removeSpawnPoint(int serialNumber) throws IllegalArgumentException;
 }

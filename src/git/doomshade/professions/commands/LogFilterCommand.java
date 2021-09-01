@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.io.IOManager;
@@ -21,8 +45,8 @@ import java.util.stream.Collectors;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
-@SuppressWarnings("ALL")
 public class LogFilterCommand extends AbstractCommand {
 
     public LogFilterCommand() {
@@ -74,18 +98,21 @@ public class LogFilterCommand extends AbstractCommand {
 
         try (Scanner sc = new Scanner(logFile)) {
             final File filteredLogsFolder = IOManager.getFilteredLogsFolder();
-            File customLog = new File(filteredLogsFolder, pattern.pattern().concat("-log-".concat(System.currentTimeMillis() + ".txt")));
+            File customLog = new File(filteredLogsFolder,
+                    pattern.pattern().concat("-log-".concat(System.currentTimeMillis() + ".txt")));
             if (!customLog.exists()) {
                 customLog.createNewFile();
             }
             try (PrintWriter os = new PrintWriter(customLog)) {
                 while (sc.hasNextLine()) {
                     String s = sc.nextLine();
-                    if (pattern.matcher(s).find())
+                    if (pattern.matcher(s).find()) {
                         os.println(s);
+                    }
                 }
             }
-            sender.sendMessage("Successfully created " + customLog.getName() + " in folder " + filteredLogsFolder.getName());
+            sender.sendMessage(
+                    "Successfully created " + customLog.getName() + " in folder " + filteredLogsFolder.getName());
         } catch (FileNotFoundException ex) {
             sender.sendMessage("File does not exist.");
             ProfessionLogger.logError(ex);

@@ -1,11 +1,37 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ICraftable;
-import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.*;
+import git.doomshade.professions.utils.FileEnum;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Permissions;
+import git.doomshade.professions.utils.Strings;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,7 +42,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -24,6 +49,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public class GenerateDefaultsCommand extends AbstractCommand {
@@ -39,59 +65,55 @@ public class GenerateDefaultsCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         for (ItemTypeHolder<?, ?> itemTypeHolder : Professions.getProfMan().getItemTypeHolders()) {
-            ItemType<?> itemType = itemTypeHolder.getItemType();
+            final ItemType<?> itemType = itemTypeHolder.getExampleItemType();
 
-
-            Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
+            final Map<String, Object> map = ItemUtils.getItemTypeMap(itemType.getClass(), 0);
 
             // get the missing keys
-            Set<FileEnum> missingKeys = Utils.getMissingKeysEnum(map, Strings.ItemTypeEnum.values());
-            if (itemType instanceof ICraftable) {
-                missingKeys.addAll(Utils.getMissingKeysEnum(map, Strings.ICraftableEnum.values()));
-            }
+            final Map<FileEnum, Object> missingKeys = Strings.getMissingKeysItemType(map, itemType);
 
-            // do not uncomment, we want to check for items.object section too!
-            /*if (missingKeys.isEmpty()) {
-                continue;
-            }*/
-
-            File file = ItemUtils.getItemTypeFile(itemType.getClass());
-            FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+            final File file = ItemUtils.getItemTypeFile(itemType.getClass());
+            final FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
 
             // "items:"
-            ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY);
+            final ConfigurationSection itemsSection = loader.getConfigurationSection(ItemType.KEY_ITEMS);
 
             for (String s : Objects.requireNonNull(itemsSection).getKeys(false)) {
 
                 // "items: '1':"
-                ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
-                for (FileEnum en : missingKeys) {
+                final ConfigurationSection itemSection = itemsSection.getConfigurationSection(s);
 
-                    // "items: '1': exp"
-                    for (Map.Entry<?, Object> entry : en.getDefaultValues().entrySet()) {
-                        if (!Objects.requireNonNull(itemSection).isSet(entry.getKey().toString())) {
-                            ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), itemSection.getCurrentPath()), Level.INFO);
-                        }
-                        //
-                        itemSection.addDefault(entry.getKey().toString(), entry.getValue());
-
+                // "items: '1': exp"
+                for (Map.Entry<FileEnum, Object> entry : missingKeys.entrySet()) {
+                    if (!Objects.requireNonNull(itemSection).isSet(entry.getKey().toString())) {
+                        ProfessionLogger.log(
+                                String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(),
+                                        itemSection.getCurrentPath()), Level.INFO);
                     }
+                    //
+                    itemSection.addDefault(entry.getKey().getKey(), entry.getValue());
+
                 }
 
 
                 // "items: '1': object:"
-                ConfigurationSection objectSection = Objects.requireNonNull(itemSection).isConfigurationSection(OBJECT) ? itemSection.getConfigurationSection(OBJECT) : itemSection.createSection(OBJECT);
+                final ConfigurationSection objectSection =
+                        Objects.requireNonNull(itemSection).isConfigurationSection(OBJECT) ?
+                                itemSection.getConfigurationSection(OBJECT) :
+                                itemSection.createSection(OBJECT);
 
-                final Map<String, Object> serializedObject = itemType.getSerializedObject();
-                if (serializedObject == null) {
-                    ProfessionLogger.log("Object serialization not yet implemented for " + itemType.getClass().getSimpleName() + "!", Level.WARNING);
-                } else {
-                    for (Map.Entry<String, Object> entry : serializedObject.entrySet()) {
-                        if (!Objects.requireNonNull(objectSection).isSet(entry.getKey())) {
-                            ProfessionLogger.log(String.format("Generated %s in file %s section %s", entry.getKey(), file.getName(), objectSection.getCurrentPath()), Level.INFO);
-                        }
-                        objectSection.addDefault(entry.getKey(), entry.getValue());
+                final Map<FileEnum, Object> missingKeysObject =
+                        Strings.getMissingKeysObject(objectSection.getValues(false), itemType.getObject());
+
+
+                for (Map.Entry<FileEnum, Object> entry : missingKeysObject.entrySet()) {
+                    final String key = entry.getKey().getKey();
+                    if (!Objects.requireNonNull(objectSection).isSet(key)) {
+                        ProfessionLogger.log(
+                                String.format("Generated %s in file %s section %s", key, file.getName(),
+                                        objectSection.getCurrentPath()), Level.INFO);
                     }
+                    objectSection.addDefault(key, entry.getValue());
                 }
             }
 

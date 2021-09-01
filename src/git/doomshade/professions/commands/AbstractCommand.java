@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.io.ProfessionLogger;
@@ -11,11 +35,13 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- * Class representing all the commands. This is not a {@link CommandExecutor}, the executor is the command handler registering this command!
+ * Class representing all the commands. This is not a {@link CommandExecutor}, the executor is the command handler
+ * registering this command!
  *
  * @author Doomshade
  * @version 1.0
  * @see AbstractCommandHandler
+ * @since 1.0
  */
 @SuppressWarnings("ALL")
 public abstract class AbstractCommand implements ConfigurationSerializable, Comparable<AbstractCommand> {
@@ -40,22 +66,11 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * Partly deserializes a command (overrides all but {@code getId()} getter methods)
      *
      * @param map the map
+     *
      * @return partly deserialized command
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
         return new AbstractCommand() {
-
-            /**
-             * This uses {@link #getCommand()} method, so be careful not to call it in that!
-             * @param type the method the error occurred in
-             */
-            private void logDeserializationError(String type) {
-                ProfessionLogger.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
-            }
-
-            private String getDeserializationError(String type) {
-                return "Failed to deserialize " + type;
-            }
 
             @Override
             public int compareTo(@NotNull AbstractCommand o) {
@@ -98,15 +113,28 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 return args;
             }
 
+            /**
+             * This uses {@link #getCommand()} method, so be careful not to call it in that!
+             * @param type the method the error occurred in
+             */
+            private void logDeserializationError(String type) {
+                ProfessionLogger.log(getDeserializationError(type) + " of " + getCommand() + " command.", Level.SEVERE);
+            }
+
             @Override
             public String getCommand() {
                 String st = "";
                 try {
                     st = Utils.cast(map.get(COMMAND));
                 } catch (ClassCastException e) {
-                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")", Level.SEVERE);
+                    ProfessionLogger.log(getDeserializationError("command") + "(serialization = " + map + ")",
+                            Level.SEVERE);
                 }
                 return st;
+            }
+
+            private String getDeserializationError(String type) {
+                return "Failed to deserialize " + type;
             }
 
             @Override
@@ -151,9 +179,24 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     /**
+     * @return the name of command
+     */
+    public String getCommand() {
+        return command;
+    }
+
+    /**
+     * @param command the command to set
+     */
+    public final void setCommand(String command) {
+        this.command = command;
+    }
+
+    /**
      * Compares commands to each other based on their command name
      *
      * @param o the other command to compare to
+     *
      * @return a comparison of command names
      */
     @Override
@@ -162,9 +205,18 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         AbstractCommand that = (AbstractCommand) o;
         return requiresPlayer == that.requiresPlayer &&
@@ -175,11 +227,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
                 requiredPermissions.equals(that.requiredPermissions);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
-    }
-
     /**
      * @param sender the sender of this command
      * @param args   the arguments of the command
@@ -187,6 +234,38 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     public abstract void onCommand(CommandSender sender, String[] args);
 
     public abstract List<String> onTabComplete(CommandSender sender, String[] args);
+
+    /**
+     * @return a unique ID for the command
+     */
+    public abstract String getID();
+
+    /**
+     * Sets an argument to the command
+     *
+     * @param bool use {@code true} if the argument is required, {@code false} otherwise
+     * @param args the arguments
+     */
+    public final void setArg(boolean bool, String... args) {
+        this.args.put(bool, Arrays.asList(args));
+    }
+
+    public final void addMessages(String... messages) {
+        this.messages.addAll(Arrays.asList(messages));
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put(COMMAND, getCommand());
+        map.put(DESCRIPTION, getDescription());
+        map.put(REQUIRES_PLAYER, requiresPlayer());
+        map.put(ARG_TRUE, getArgs().get(true));
+        map.put(ARG_FALSE, getArgs().get(false));
+        map.put(MESSAGE, getMessages());
+        map.put(REQUIRED_PERMISSIONS, getPermissions());
+        return map;
+    }
 
     /**
      * @return the arguments of command
@@ -200,20 +279,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public final void setArgs(Map<Boolean, List<String>> args) {
         this.args = args;
-    }
-
-    /**
-     * @return the name of command
-     */
-    public String getCommand() {
-        return command;
-    }
-
-    /**
-     * @param command the command to set
-     */
-    public final void setCommand(String command) {
-        this.command = command;
     }
 
     /**
@@ -238,28 +303,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     /**
-     * @return a unique ID for the command
-     */
-    public abstract String getID();
-
-    /**
-     * @param requiresPlayer the requiresPlayer to set
-     */
-    public final void setRequiresPlayer(boolean requiresPlayer) {
-        this.requiresPlayer = requiresPlayer;
-    }
-
-    /**
-     * Sets an argument to the command
-     *
-     * @param bool use {@code true} if the argument is required, {@code false} otherwise
-     * @param args the arguments
-     */
-    public final void setArg(boolean bool, String... args) {
-        this.args.put(bool, Arrays.asList(args));
-    }
-
-    /**
      * @return custom messages of the command
      */
     public List<String> getMessages() {
@@ -273,33 +316,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public final void setMessages(List<String> messages) {
         this.messages = messages;
-    }
-
-    public final void addMessages(String... messages) {
-        this.messages.addAll(Arrays.asList(messages));
-    }
-
-    @Override
-    public @NotNull Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(COMMAND, getCommand());
-        map.put(DESCRIPTION, getDescription());
-        map.put(REQUIRES_PLAYER, requiresPlayer());
-        map.put(ARG_TRUE, getArgs().get(true));
-        map.put(ARG_FALSE, getArgs().get(false));
-        map.put(MESSAGE, getMessages());
-        map.put(REQUIRED_PERMISSIONS, getPermissions());
-        return map;
-    }
-
-    /**
-     * Adds a required permissions for this command usage
-     *
-     * @param permissions the permissions
-     * @see git.doomshade.professions.utils.Permissions
-     */
-    public final void addPermission(String... permissions) {
-        requiredPermissions.addAll(Arrays.asList(permissions));
     }
 
     /**
@@ -316,5 +332,32 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public final void setPermissions(Collection<String> permissions) {
         this.requiredPermissions = permissions;
+    }
+
+    /**
+     * Adds a required permissions for this command usage
+     *
+     * @param permissions the permissions
+     *
+     * @see git.doomshade.professions.utils.Permissions
+     */
+    public final void addPermission(String... permissions) {
+        requiredPermissions.addAll(Arrays.asList(permissions));
+    }
+
+    void setupFrom(AbstractCommand other) {
+        setCommand(other.getCommand());
+        setArgs(other.getArgs());
+        setDescription(other.getDescription());
+        setRequiresPlayer(other.requiresPlayer());
+        setMessages(other.getMessages());
+        setPermissions(other.getPermissions());
+    }
+
+    /**
+     * @param requiresPlayer the requiresPlayer to set
+     */
+    public final void setRequiresPlayer(boolean requiresPlayer) {
+        this.requiresPlayer = requiresPlayer;
     }
 }

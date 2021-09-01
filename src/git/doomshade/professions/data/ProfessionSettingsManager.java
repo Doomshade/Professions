@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
@@ -23,6 +47,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public final class ProfessionSettingsManager extends AbstractSettings {
     private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
@@ -37,7 +62,8 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
         T theSettings = null;
         try {
-            AbstractProfessionSpecificSettings settings = Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName()));
+            AbstractProfessionSpecificSettings settings =
+                    Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName()));
             if (settings instanceof Cloneable) {
                 theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
             } else {
@@ -50,7 +76,9 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 Professions.getInstance().registerSetup(theSettings);
                 SETTINGS.add(theSettings);
             } catch (ConfigurationException ex) {
-                ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" + Arrays.toString(ex.getStackTrace()), Level.WARNING);
+                ProfessionLogger.logError(ex, false);
+                /*ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" +
+                        Arrays.toString(ex.getStackTrace()), Level.WARNING);*/
             } catch (Exception ex) {
                 ProfessionLogger.logError(ex);
             }

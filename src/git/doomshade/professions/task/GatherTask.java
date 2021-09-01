@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2021 Jakub Šmrha
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
@@ -36,6 +60,7 @@ import java.util.logging.Level;
  *
  * @author Doomshade
  * @version 1.0
+ * @since 1.0
  */
 public class GatherTask extends ExtendedBukkitRunnable {
 
@@ -50,8 +75,9 @@ public class GatherTask extends ExtendedBukkitRunnable {
     protected final UserProfessionData gatherer;
     protected final Consumer<GatherResult> endResultAction;
     protected final BossBarOptions bossBarOptions;
+
     // create a reference for the player so the gatherer.getUser().getPlayer() is not called so often
-    protected final Player player;
+    protected final UUID player;
     protected final long gatherTime;
     protected BossBar bossBar;
     private Predicate<EntityDamageEvent> damageEventPredicate;
@@ -66,12 +92,12 @@ public class GatherTask extends ExtendedBukkitRunnable {
      */
     public GatherTask(ISpawnPoint spawnPoint, UserProfessionData gatherer, ItemStack result,
                       Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions, long gatherTime) {
-        this.result = result;
         this.spawnPoint = spawnPoint;
         this.gatherer = gatherer;
-        this.bossBarOptions = bossBarOptions;
+        this.result = result;
         this.endResultAction = endResultAction;
-        this.player = gatherer.getUser().getPlayer();
+        this.bossBarOptions = bossBarOptions;
+        this.player = gatherer.getUser().getPlayer().getUniqueId();
         this.gatherTime = gatherTime;
     }
 
@@ -117,7 +143,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
      * @param <T>       the predicate type
      */
     private <T> void onEvent(Predicate<T> predicate, T testedArg, GatherResult result) {
-        if (predicate.test(testedArg)) {
+        if (predicate != null && predicate.test(testedArg)) {
             setResult(result);
             cancel();
         }
@@ -137,7 +163,11 @@ public class GatherTask extends ExtendedBukkitRunnable {
             final String msg = ChatColor.RED +
                     "The block was not gathered for unknown reasons. Contact the admins and try to describe the " +
                     "problem thoroughly.";
-            player.sendMessage(msg);
+            final Player player = Bukkit.getPlayer(this.player);
+
+            if (player != null) {
+                player.sendMessage(msg);
+            }
             ProfessionLogger.log(msg, Level.CONFIG);
         }
     }
@@ -150,7 +180,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
      */
     public static void onGathererMoved(Player movedPlayer, double length) {
 
-        GatherTask gatherTask = TASKS.get(movedPlayer.getUniqueId());
+        final GatherTask gatherTask = TASKS.get(movedPlayer.getUniqueId());
 
         // check for gather task
         if (gatherTask == null) {
@@ -170,8 +200,10 @@ public class GatherTask extends ExtendedBukkitRunnable {
     @Override
     protected void onStart() {
         // if ANY gather task is active on this player, do not run the task
-        if (isActive(player)) {
-            throw new IllegalStateException();
+        final Player player = Bukkit.getPlayer(this.player);
+        if (player == null || isActive(player)) {
+            cancel();
+            return;
         }
 
         // creates a bossbar with the bossbar options provided
@@ -186,12 +218,12 @@ public class GatherTask extends ExtendedBukkitRunnable {
         if (bossBarOptions.useBossBar && Settings.isUseBossBar()) {
             setupBossBar(Professions.getInstance(), delay());
         }
-        TASKS.put(player.getUniqueId(), this);
+        TASKS.put(this.player, this);
     }
 
     @Override
     protected void onCancel() {
-        cancelTask();
+        cleanup();
     }
 
     @Override
@@ -207,8 +239,8 @@ public class GatherTask extends ExtendedBukkitRunnable {
     /**
      * Cleans up after the task
      */
-    private void cancelTask() {
-        TASKS.remove(player.getUniqueId());
+    private void cleanup() {
+        TASKS.remove(player);
 
         if (bossBar == null) {
             return;
@@ -228,6 +260,10 @@ public class GatherTask extends ExtendedBukkitRunnable {
      * @param delay  the delay
      */
     private void setupBossBar(Plugin plugin, long delay) {
+        final Player player = Bukkit.getPlayer(this.player);
+        if (player == null){
+            return;
+        }
         bossBar.setProgress(1);
         bossBar.addPlayer(player);
         final int period = 1;
@@ -286,7 +322,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
 
     @Override
     public final void run() {
-        cancelTask();
+        cleanup();
         Location location = spawnPoint.getLocation();
 
         // someone has already gathered the expected block
@@ -297,7 +333,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
         }
 
         // the player has no empty space in inventory but the task was successful, so drop the item on the ground
-        final PlayerInventory inventory = player.getInventory();
+        final PlayerInventory inventory = Bukkit.getPlayer(player).getInventory();
         final Item item = Objects.requireNonNull(location.getWorld())
                 .dropItemNaturally(location.clone().add(0.5, 0.5, 0.5), result);
         if (inventory.firstEmpty() == -1 && !inventory.contains(result)) {
@@ -313,6 +349,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
         }
 
         try {
+            ProfessionLogger.log("Gather task success " + this);
             spawnPoint.despawn();
             spawnPoint.scheduleSpawn();
             inventory.addItem(result);
@@ -332,6 +369,17 @@ public class GatherTask extends ExtendedBukkitRunnable {
             setResult(GatherResult.UNKNOWN);
             ProfessionLogger.logError(e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GatherTask{" +
+                "result=" + result +
+                ", player=" + player +
+                ", gatherTime=" + gatherTime +
+                ", damageEventPredicate=" + damageEventPredicate +
+                ", movePredicate=" + movePredicate +
+                '}';
     }
 
     /**
@@ -399,6 +447,4 @@ public class GatherTask extends ExtendedBukkitRunnable {
          */
         public BarFlag[] barFlags = new BarFlag[0];
     }
-
-
 }

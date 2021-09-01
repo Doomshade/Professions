@@ -1,6 +1,9 @@
 ## default lang
 lang: lang_en
 
+## levels 0-5 (all-severe)
+log-level: 0
+
 ## the worlds that mining profession expects the ore in
 ## the plugin handles
 mining-worlds:
