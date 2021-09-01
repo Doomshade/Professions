@@ -58,7 +58,7 @@ public class HerbalismProfession extends Profession {
 
     @Override
     public <T extends ItemType<?>> void onEvent(ProfessionEventWrapper<T> e) {
-
+        ProfessionLogger.log("Handling Herbalism event...", Level.FINEST);
         final ProfessionEvent<HerbItemType> event = utils.getEventUnsafe(e);
 
         // check for level requirements
@@ -66,6 +66,8 @@ public class HerbalismProfession extends Profession {
         final UserProfessionData upd = utils.getUserProfessionData(user);
         if (!utils.playerMeetsLevelRequirements(event)) {
             event.printErrorMessage(upd);
+            ProfessionLogger.log(String.format("Player %s did not meet requirements to gather %s",
+                    user.getPlayer().getName(), event.getItemType().getObject().getName()), Level.FINEST);
             return;
         }
 
@@ -80,14 +82,19 @@ public class HerbalismProfession extends Profession {
 
         // this should not happen either but just making sure
         if (herb == null || location == null) {
+            ProfessionLogger.log(
+                    String.format("Either herb or location was null, this should not happen! (herb=%s, location=%s)",
+                            herb, location),
+                    Level.WARNING);
             return;
         }
-
 
         final ISpawnPoint sp = herb.getSpawnPoint(location);
         final Player player = user.getPlayer();
 
         if (GatherTask.isActive(player)) {
+            ProfessionLogger.log(String.format("Player %s did not have an active gather task for %s",
+                    user.getPlayer().getName(), herb.getName()), Level.FINEST);
             return;
         }
 
@@ -130,7 +137,7 @@ public class HerbalismProfession extends Profession {
         HerbGatherTask herbGatherTask =
                 new HerbGatherTask(sp, upd, herb.getGatherItem(), endResultAction, itemType.getName(),
                         herb.getGatherTime() * 20L);
-        ProfessionLogger.log("Starting " + herbGatherTask);
+        ProfessionLogger.log("Starting " + herbGatherTask, Level.FINEST);
         herbGatherTask.startTask();
     }
 

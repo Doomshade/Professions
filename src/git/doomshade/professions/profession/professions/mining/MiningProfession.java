@@ -42,7 +42,6 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.logging.Level;
 
 /**
@@ -83,6 +82,7 @@ public final class MiningProfession extends Profession {
 
     @Override
     public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> event) {
+        ProfessionLogger.log("Handling ore event...", Level.FINEST);
 
         final ProfessionEvent<OreItemType> e = utils.getEventUnsafe(event);
 
@@ -95,6 +95,8 @@ public final class MiningProfession extends Profession {
             // if player at least has a permission of builder, do not cancel the event
             // cancel the event otherwise so players with no mining profession mine the ore!
             e.setCancelled(!Permissions.has(player, Permissions.BUILDER));
+            ProfessionLogger.log(String.format("Player does not have the mining profession to mine %s...",
+                    e.getItemType().getObject().getName()), Level.FINEST);
             return;
         }
 
@@ -103,54 +105,63 @@ public final class MiningProfession extends Profession {
         if (!utils.playerMeetsLevelRequirements(e)) {
             e.setCancelled(true);
             e.printErrorMessage(upd);
+            ProfessionLogger.log(String.format("Player does not meet requirements to mine %s...",
+                    e.getItemType().getObject().getName()), Level.FINEST);
             return;
         }
 
 
         // if the event passes, drop ore regardless of XP
-        if (e.hasExtra(Location.class)) {
-            Location loc = e.getExtra(Location.class);
-            final OreItemType itemType = e.getItemType();
+        if (!e.hasExtra(Location.class)) {
+            ProfessionLogger.logError(new RuntimeException("Somehow mined an ore with a null location, this " +
+                    "should not " +
+                    "happen!"), true);
+        }
+        Location loc = e.getExtra(Location.class);
+        final OreItemType itemType = e.getItemType();
 
-            // FIXME npt exception
+        // FIXME npt exception
             /*int amount = getProfessionSettings().getSettings(ProfessionSpecificDropSettings.class)
                     .getDropAmount(upd, itemType);*/
-            int amount = 1;
-            Ore ore = itemType.getObject();
+        int amount = 1;
+        Ore ore = itemType.getObject();
 
-            if (ore == null) {
-                return;
-            }
-
-            String message = player.getName() + " mined " + ore.getName();
-
-            if (loc == null) {
-                ProfessionLogger.logError(new RuntimeException("Somehow mined an ore with a null location, this " +
-                        "should not " +
-                        "happen!"), true);
-                return;
-            }
-
-            final World world = loc.getWorld();
-
-            // add Vector3 of 0.5 to the location so the drops do not fly away eks dee
-            final Location dropLocation = loc.clone().add(0.5, 0.5, 0.5);
-
-            // randomize drop for each drop amount
-            for (int i = 0; i < amount; i++) {
-                ItemStack miningResult = ore.getMiningResult();
-
-                if (miningResult != null) {
-                    Objects.requireNonNull(world).dropItem(dropLocation, miningResult);
-                }
-            }
-
-
-            if (utils.addExp(e)) {
-                message = message.concat(Utils.getReceiveXp(e.getExp()));
-            }
-            ProfessionLogger.log(message, Level.CONFIG);
+        if (ore == null) {
+            return;
         }
+
+        String message = player.getName() + " mined " + ore.getName();
+
+        if (loc == null) {
+            ProfessionLogger.logError(new RuntimeException("Somehow mined an ore with a null location, this " +
+                    "should not " +
+                    "happen!"), true);
+            return;
+        }
+
+        final World world = loc.getWorld();
+        if (world == null) {
+            return;
+        }
+
+        // add Vector3 of 0.5 to the location so the drops do not fly away eks dee
+        final Location dropLocation = loc.clone().add(0.5, 0.5, 0.5);
+
+        // randomize drop for each drop amount
+        for (int i = 0; i < amount; i++) {
+            ItemStack miningResult = ore.getMiningResult();
+
+            if (miningResult != null) {
+                world.dropItem(dropLocation, miningResult);
+            }
+        }
+
+
+        if (utils.addExp(e)) {
+            message = message.concat(Utils.getReceiveXp(e.getExp()));
+        }
+        ProfessionLogger.log(message, Level.CONFIG);
+
     }
 
     @Override

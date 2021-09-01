@@ -29,7 +29,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -108,15 +107,19 @@ public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
      * @param location the location
      *
      * @return the spawn point based on location or {@code null}
+     *
+     * @throws IllegalArgumentException if a spawn point with that location does not exist
      */
-    ISpawnPoint getSpawnPoint(Location location);
+    ISpawnPoint getSpawnPoint(Location location) throws IllegalArgumentException;
 
     /**
      * @param serialNumber the serial number
      *
      * @return the spawn point based on serial number or {@code null}
+     *
+     * @throws IllegalArgumentException if a spawn point with that serial number does not exist
      */
-    ISpawnPoint getSpawnPoint(int serialNumber);
+    ISpawnPoint getSpawnPoint(int serialNumber) throws IllegalArgumentException;
 
     /**
      * Adds a spawn point
@@ -143,13 +146,17 @@ public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {
      * Removes a spawn point based on the location
      *
      * @param location the location
+     *
+     * @throws IllegalArgumentException if a spawn point with that location does not exist
      */
-    void removeSpawnPoint(Location location);
+    void removeSpawnPoint(Location location) throws IllegalArgumentException;
 
     /**
      * Removes a spawn point with given serialNumber
      *
      * @param serialNumber the serialNumber of the spawn point
+     *
+     * @throws IllegalArgumentException if a spawn point with that serial number does not exist
      */
-    void removeSpawnPoint(int serialNumber);
+    void removeSpawnPoint(int serialNumber) throws IllegalArgumentException;
 }

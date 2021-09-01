@@ -36,6 +36,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * @author Doomshade
@@ -73,7 +74,7 @@ public class TestCommand extends AbstractCommand {
             final ItemStack deserialize;
             try {
                 deserialize = ItemUtils.deserialize(serialize);
-                ProfessionLogger.log(deserialize);
+                ProfessionLogger.log(deserialize, Level.FINEST);
             } catch (ConfigurationException | InitializationException e) {
                 ProfessionLogger.logError(e, false);
             }

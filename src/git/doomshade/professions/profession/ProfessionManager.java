@@ -85,7 +85,6 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     @SuppressWarnings("rawtypes")
     private final HashMap<Class<? extends ItemType>, ItemTypeHolder<?, ?>> ITEMS = new HashMap<>();
     private final PluginManager pm = Bukkit.getPluginManager();
-    private final Professions plugin = Professions.getInstance();
     private Map<String, Profession> PROFESSIONS_ID = new HashMap<>();
     private Map<String, Profession> PROFESSIONS_NAME = new HashMap<>();
 
@@ -142,19 +141,17 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     /**
      * Registers profession types and then item type holders in that order
      *
-     * @throws IOException if an IO error occurs
      */
-    private void register() throws IOException {
+    private void register() {
         registerItemTypeHolders();
     }
 
     /**
      * Huge method for {@link ItemTypeHolder} registrations
      *
-     * @throws IOException if an IO error occurs
      * @see #registerItemTypeHolder(Class, ConfigurationSerializable, Consumer)
      */
-    private void registerItemTypeHolders() throws IOException {
+    private void registerItemTypeHolders() {
 
         // MINING
         registerItemTypeHolder(
@@ -175,11 +172,11 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         );*/
 
         // HUNTING (no longer used)
-        registerItemTypeHolder(
+        /*registerItemTypeHolder(
                 PreyItemType.class,
                 new Mob(EntityType.SKELETON),
                 x -> x.setName(ChatColor.YELLOW + "Kostlivec")
-        );
+        );*/
 
 
         // HERBALISM
@@ -190,10 +187,16 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         );
 
         // ENCHANTING
-        registerItemTypeHolder(
+        /*registerItemTypeHolder(
                 EnchantedItemItemType.class,
                 Enchants.EXAMPLE_ENCHANT,
-                /*(Supplier<Enchant>) () -> {
+
+                x -> {
+                    x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
+                    x.setName(ChatColor.RED + "Test random attribute enchantment");
+                }
+        );*/
+        /*(Supplier<Enchant>) () -> {
                     EnchantManager enchMan = EnchantManager.getInstance();
                     try {
                         enchMan.registerEnchant(new RandomAttributeEnchant(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
@@ -203,11 +206,6 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
                     }
                     return enchMan.getEnchant(RandomAttributeEnchant.class);
                 },*/
-                x -> {
-                    x.addCraftingRequirement(ItemUtils.EXAMPLE_REQUIREMENT);
-                    x.setName(ChatColor.RED + "Test random attribute enchantment");
-                }
-        );
 
         // CRAFTING
         /*registerItemTypeHolderSupplier(() -> {
@@ -266,10 +264,15 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     @Override
     public <T extends ConfigurationSerializable, IType extends ItemType<T>> void registerItemTypeHolder(
             Class<IType> itemType, T o,
-            Consumer<IType> additionalCommand) throws IOException {
+            Consumer<IType> additionalCommand) {
         ItemTypeHolder<T, IType> itemTypeHolder = new ItemTypeHolder<>(itemType, o, additionalCommand);
         ITEMS.put(itemTypeHolder.getExampleItemType().getClass(), itemTypeHolder);
-        itemTypeHolder.update();
+        try {
+            itemTypeHolder.update();
+            ProfessionLogger.log(String.format("Successfully registered %s", itemType.getSimpleName()), Level.FINE);
+        } catch (IOException e) {
+            ProfessionLogger.logError(e);
+        }
     }
 
     @Override
@@ -280,10 +283,10 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     @Override
     @SuppressWarnings({"unchecked"})
     public <T extends ConfigurationSerializable, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(
-            Class<A> clazz) throws IllegalArgumentException {
+            Class<A> clazz) throws IllegalStateException {
         final ItemTypeHolder<?, ?> itHolder = ITEMS.get(clazz);
         if (itHolder == null) {
-            throw new IllegalArgumentException(clazz + " is not a registered item type holder!");
+            throw new IllegalStateException(clazz + " is not a registered item type holder!");
         }
         return (ItemTypeHolder<T, A>) itHolder;
     }
@@ -338,13 +341,13 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
      * @see #registerProfession(Profession)
      */
     private void registerProfessions() {
-        registerProfession(new MiningProfession(), false);
-        registerProfession(new JewelcraftingProfession(), false);
+        registerProfession(new MiningProfession());
+        registerProfession(new JewelcraftingProfession());
         //registerProfession(new EnchantingProfession(), false);
         //registerProfession(new SkinningProfession(), false);
-        registerProfession(new SmeltingProfession(), false);
-        registerProfession(new HerbalismProfession(), false);
-        registerProfession(new AlchemyProfession(), false);
+        registerProfession(new SmeltingProfession());
+        registerProfession(new HerbalismProfession());
+        registerProfession(new AlchemyProfession());
         sortProfessions();
     }
 
@@ -370,7 +373,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 
         if (!INITED_PROFESSIONS.add(prof.getClass())) {
             throw new IllegalArgumentException(
-                    String.format("%s %shas already been registered!", prof.getColoredName(), ChatColor.RESET));
+                    String.format("%s %s has already been registered!", prof.getColoredName(), ChatColor.RESET));
         }
 
         // make sure the profession is not already registered
@@ -385,9 +388,10 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
         PROFESSIONS_NAME.put(ChatColor.stripColor(prof.getColoredName().toLowerCase()), prof);
 
         // if this is during onEnable, register the profession as a listener
-        if (!REGISTERED_PROFESSIONS.contains(prof.getClass())) {
-            pm.registerEvents(prof, plugin);
-            REGISTERED_PROFESSIONS.add(prof.getClass());
+        if (REGISTERED_PROFESSIONS.add(prof.getClass())) {
+            ProfessionLogger.log(String.format("Registered events for %s", prof.getColoredName() + ChatColor.RESET),
+                    Level.INFO);
+            pm.registerEvents(prof, Professions.getInstance());
         }
 
         /*Professions._log("Could not update " + prof.getID() + " profession. Reason:", Level.WARNING);

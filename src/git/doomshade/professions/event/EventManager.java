@@ -25,15 +25,16 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.IProfession;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.user.User;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.plugin.PluginManager;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * A helper class for event managing
@@ -94,25 +95,32 @@ public final class EventManager {
      *
      * @see ProfessionEvent#getExtras(Class)
      */
-    public <T extends ItemType<?>> ProfessionEvent<T> callEvent(T itemType, User user, Object... extras) {
-        return callEvent(getEvent(itemType, user, extras));
+    public <T extends ItemType<?>> ProfessionEvent<T> callEvent(T itemType, User user, List<Object> extras, Class<?
+            extends IProfession>... professions) {
+        return callEvent(getEvent(itemType, user, extras, professions));
     }
 
     /**
      * Gets a profession event that professions handle (this does <b>NOT</b> call the event)
      *
-     * @param itemType the item type
-     * @param user     the user
-     * @param extras   extras if needed
-     * @param <T>      the item type
+     * @param itemType    the item type
+     * @param user        the user
+     * @param extras      extras if needed
+     * @param professions the professions to call this event for
+     * @param <T>         the item type
      *
      * @return the called profession event
      *
      * @see ProfessionEvent#getExtras(Class)
      */
-    public <T extends ItemType<?>> ProfessionEvent<T> getEvent(T itemType, User user, Object... extras) {
-        ProfessionEvent<T> pe = new ProfessionEvent<>(itemType, user);
-        pe.setExtras(Arrays.asList(extras));
+    @SafeVarargs
+    public final <T extends ItemType<?>> ProfessionEvent<T> getEvent(T itemType, User user, List<Object> extras, Class<?
+            extends IProfession>... professions) {
+        if (professions == null) {
+            return null;
+        }
+        ProfessionEvent<T> pe = new ProfessionEvent<>(itemType, user, professions);
+        pe.setExtras(extras);
         return pe;
     }
 

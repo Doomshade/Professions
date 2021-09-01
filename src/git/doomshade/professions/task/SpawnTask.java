@@ -79,7 +79,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
         }
         if (respawnTime <= 0) {
             try {
-                ProfessionLogger.log("SpawnTask spawning... " + spawnPoint, Level.CONFIG);
+                ProfessionLogger.log("SpawnTask spawning... " + spawnPoint, Level.FINEST);
                 spawnPoint.spawn();
             } catch (SpawnException e) {
                 ProfessionLogger.logError(e);
@@ -105,7 +105,7 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long delay() {
-        return 20L;
+        return 0L;
     }
 
     @Override

@@ -188,7 +188,7 @@ public final class SpawnPoint implements ISpawnPoint {
          *          yaw: 0
          */
         ProfessionLogger.log(String.format("Deserializing spawn points for %s from map (%d)", spawnable.getId(),
-                        map.size()), Level.CONFIG);
+                        map.size()), Level.FINEST);
         for (int i = 0; i < map.size(); i++) {
 
             final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
@@ -196,7 +196,7 @@ public final class SpawnPoint implements ISpawnPoint {
                 try {
                     spawnPointLocations.add(SpawnPoint.deserialize(((MemorySection) o).getValues(false), spawnable,
                             markerSetId, i));
-                    ProfessionLogger.log(String.format("Deserialized spawn point with id %d", i), Level.CONFIG);
+                    ProfessionLogger.log(String.format("Deserialized spawn point with id %d", i), Level.FINEST);
                 } catch (ProfessionObjectInitializationException e) {
                     if (ex == null) {
                         ex = new ProfessionObjectInitializationException(SpawnPoint.class, Collections.emptyList(),
@@ -440,6 +440,7 @@ public final class SpawnPoint implements ISpawnPoint {
                 ", spawnTime=" + spawnTime +
                 ", serialNumber=" + serialNumber +
                 ", spawnTask=" + spawnTask.hashCode() +
+                ", spawnable=" + getSpawnableElement().getId() +
                 '}';
     }
 

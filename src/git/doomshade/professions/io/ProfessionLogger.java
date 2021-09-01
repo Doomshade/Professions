@@ -50,19 +50,12 @@ public final class ProfessionLogger {
     }
 
     /**
-     * Logs an object using {@link Object#toString()} method to console with {@link Level#INFO} level.
-     *
-     * @param object the object to log
-     */
-    public static void log(Object object) {
-        log(object, Level.INFO);
-    }
-
-    /**
      * Logs an object using {@link Object#toString()} method. Use {@link Level#CONFIG} to log into log file.
      *
      * @param object the object to log
      * @param level  the level
+     *
+     * @see ProfessionLogger#log(String, Level)
      */
     public static void log(Object object, Level level) {
         log(object == null ? "null" : object.toString(), level);
@@ -70,12 +63,27 @@ public final class ProfessionLogger {
 
     /**
      * Logs a message. Levels {@literal >}= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file.
-     * Levels {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green.
+     * Levels {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green. Calls
+     * {@link ProfessionLogger#log(String, Level, boolean)} with {@code false} as the third argument
      *
      * @param message the message to display
      * @param level   the log level
+     *
+     * @see ProfessionLogger#log(String, Level, boolean)
      */
     public static void log(String message, Level level) {
+        log(message, level, false);
+    }
+
+    /**
+     * Logs a message. Levels {@literal >}= {@link Level#CONFIG} (excluding {@link Level#INFO}) will be logged to file.
+     * Levels {@literal >}=900 will be displayed in red. Levels {@literal <}=500 will be displayed in green.
+     *
+     * @param message       the message to display
+     * @param level         the log level
+     * @param logToFileOnly whether to log to file only
+     */
+    public static void log(String message, Level level, boolean logToFileOnly) {
         if (message == null || level == null) {
             return;
         }
@@ -87,13 +95,13 @@ public final class ProfessionLogger {
 
         // log only with proper level
         final int leveli = level.intValue();
-        if (logLevel.level.intValue() > leveli) {
+        if (logLevel.level.intValue() >= leveli) {
             return;
         }
 
-        final String lvlName = String.format("[%s] ", level.getName());
-        IOManager.log(lvlName.concat(ChatColor.stripColor(message)));
 
+        final String infoWithPadding = String.format("[%-7s] ", level.getName());
+        IOManager.logToFile(infoWithPadding.concat(ChatColor.stripColor(message)));
         Ansi.Color color = Ansi.Color.WHITE;
 
         if (leveli >= RED) {
@@ -104,10 +112,15 @@ public final class ProfessionLogger {
 
         Ansi ansi = Ansi.ansi().boldOff();
 
-        Professions.getInstance()
-                .getLogger()
-                .log(level, ansi.fg(color).toString() + message + ansi.fg(Ansi.Color.WHITE));
+        // don't log to console if the logToFileOnly is true
+        // log only info, warnings and severe messages
+        if (!logToFileOnly && leveli >= Level.INFO.intValue()) {
+            final String info = String.format("[%s] ", level.getName());
+            Professions.getInstance()
+                    .getLogger()
+                    .log(level, ansi.fg(color).toString() + info.concat(message) + ansi.fg(Ansi.Color.WHITE));
 
+        }
     }
 
     /**
@@ -129,17 +142,22 @@ public final class ProfessionLogger {
     }
 
     public static void logError(Throwable e, boolean pluginError) {
+        final Level level = pluginError ? Level.SEVERE : Level.WARNING;
+
+        // log that an error has occurred
         log((pluginError ? "Internal" : "External") + " plugin error" + (!pluginError ?
                 ", please check logs for further information." :
-                ", please contact author with the stack trace from your log file."), Level.WARNING);
+                ", please contact author with the stack trace from your log file."), level);
+
+        // log the stacktrace to file only
         if (e != null && e.getStackTrace() != null) {
             final String ss = e + "\n" + Arrays.stream(e.getStackTrace())
                     .map(StackTraceElement::toString)
                     .collect(Collectors.joining(",\n"));
             if (e.getMessage() != null) {
-                log(e.getMessage().replaceAll("<br>", "\n") + "\n" + ss, Level.CONFIG);
+                log(e.getMessage().replaceAll("<br>", "\n") + "\n" + ss, level, true);
             } else {
-                log(ss, Level.CONFIG);
+                log(ss, level, true);
             }
         }
     }

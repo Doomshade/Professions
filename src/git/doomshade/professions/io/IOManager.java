@@ -235,7 +235,7 @@ public class IOManager {
         }
     }
 
-    public static void log(String message) {
+    public static void logToFile(String message) {
         if (fos == null) {
             try {
                 fos = new PrintStream(IOManager.getLogFile());

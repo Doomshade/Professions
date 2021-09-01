@@ -224,7 +224,7 @@ public final class ItemUtils implements ISetup {
         if (!ITEMS_LOGGED.contains(map)) {
             ProfessionLogger.log("Deserializing an item that is not a DiabloItem. Serialized form is found in logs.",
                     Level.WARNING);
-            ProfessionLogger.log("DiabloItem serialized form:\n" + map, Level.CONFIG);
+            ProfessionLogger.log("DiabloItem serialized form:\n" + map, Level.WARNING, true);
             ITEMS_LOGGED.add(map);
         }
     }

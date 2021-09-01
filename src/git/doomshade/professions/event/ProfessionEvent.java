@@ -25,6 +25,7 @@
 package git.doomshade.professions.event;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfession;
 import git.doomshade.professions.api.Profession;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.user.User;
@@ -56,21 +57,28 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
     private final User user;
     private final Collection<Object> extras = new ArrayList<>();
     private final List<String> errorMessage = new ArrayList<>();
+    private final Class<? extends IProfession>[] professions;
     private T t;
     private boolean cancel = false;
     private int exp;
 
-    public ProfessionEvent(T t, User user) {
+    public ProfessionEvent(T t, User user, Class<? extends IProfession>[] professions) {
         this.t = t;
         this.user = user;
         this.exp = t.getExp();
         @SuppressWarnings("all") final List<String> errMessages =
                 Professions.getProfMan().getItemTypeHolder(t.getClass()).getErrorMessage();
         this.errorMessage.addAll(errMessages);
+        this.professions = new Class[professions.length];
+        System.arraycopy(professions, 0, this.professions, 0, this.professions.length);
     }
 
     public static HandlerList getHandlerList() {
         return handlerList;
+    }
+
+    public Class<? extends IProfession>[] getProfessions() {
+        return professions;
     }
 
     public int getExp() {

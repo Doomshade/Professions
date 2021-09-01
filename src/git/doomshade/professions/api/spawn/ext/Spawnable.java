@@ -36,7 +36,6 @@ import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.utils.*;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -70,7 +69,7 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
 public abstract class Spawnable extends Element
         implements ConfigurationSerializable, ISpawnable {
 
-    private final HashMap<Location, ISpawnPoint> spawnPoints = new HashMap<>();
+    private final Map<Location, ISpawnPoint> spawnPoints = new LinkedHashMap<>();
 
     private final ParticleData particleData;
     private final Material material;
@@ -97,7 +96,7 @@ public abstract class Spawnable extends Element
     /**
      * <p>Now this might be a little confusing
      * <p>The way this works: we retrieve information from block (the location and material by default, additional args
-     * can be added by overriding {@link Spawnable#get()})
+     * can be added by overriding {@link Spawnable#isSpawnable(Block)})
      * <p>and then we make sure that the material is equal to this object, and that location is one of its spawn points
      * <p>If these two conditions are met, the object holding the correct spawn points and material is returned.
      * <p>e.g. A block on {0,0,0} with yellow_flower material will return the herb that is the correct material,
@@ -114,78 +113,27 @@ public abstract class Spawnable extends Element
     public static <T extends Spawnable> T of(Block block, Class<T> elementClass)
             throws Utils.SearchNotFoundException {
 
-        final Spawnable el = iterate(block, getSpawnableElements(elementClass).values());
-
-        if (el != null) {
-            return (T) el;
-        }
-
-        throw new Utils.SearchNotFoundException();
+        return (T) iterate(block, getSpawnableElements(elementClass).values());
     }
 
     private static <T extends Spawnable> Spawnable iterate(
-            Block block, Iterable<T> iterable) {
-        ProfessionLogger.log(String.format("Iterating through %s for block %s...", iterable, block), Level.CONFIG);
-        for (T el : iterable) {
+            Block block, Iterable<T> iterable) throws Utils.SearchNotFoundException {
+        if (block != null) {
+            ProfessionLogger.log(String.format("Iterating through %s for block %s...", iterable, block), Level.FINEST);
+            for (T el : iterable) {
 
-            // el.get() = function, that transforms a spawnable element instance into elementClass instance
-            final Function<Block, ? extends Spawnable> func = el.get();
-            if (func != null) {
-                final Spawnable spawn = func.apply(block);
-                if (spawn != null) {
-                    return spawn;
+                if (el.isSpawnable(block)) {
+                    ProfessionLogger.log(String.format("Found spawnable for the block (id=%s, name=%s, loc=%s)",
+                            el.getId(), el.getName(), el.getSpawnPoint(block.getLocation())), Level.FINEST);
+                    return el;
                 }
             }
         }
-        return null;
+        throw new Utils.SearchNotFoundException();
     }
 
-    /**
-     * @return the spawnable location element if the provided argument matched a location element
-     */
-    protected Function<Block, ? extends Spawnable> get() {
-        return block -> {
-            Material mat = block.getType();
-            Location location = block.getLocation();
-            try {
-                final Map<Class<? extends Spawnable>, Map<String, Spawnable>> els = getAllSpawnableElements();
-                final Collection<Map<String, Spawnable>> vals = els.values();
-                for (Map<String, Spawnable> val : vals) {
-                    return Utils.findInIterable(val.values(),
-                            x -> x.getMaterial() == mat && x.isSpawnPoint(location));
-                }
-            } catch (Utils.SearchNotFoundException ignored) {
-            }
-            return null;
-        };
-    }
-
-    /**
-     * @return a map of spawnable elements where the key is the ID of the spawnable element and value is the
-     * corresponding element
-     *
-     * @see Element#getId()
-     */
-    @SuppressWarnings("unchecked")
-    public static Map<Class<? extends Spawnable>, Map<String, Spawnable>> getAllSpawnableElements() {
-        final Map<Class<? extends Element>, Map<String, Element>> allElements = getAllElements();
-        final Map<Class<? extends Spawnable>, Map<String, Spawnable>> map = new HashMap<>();
-
-        for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : allElements.entrySet()) {
-
-            final Map<String, Spawnable> s = new HashMap<>();
-            final Map<String, Element> v = entry.getValue();
-
-            for (Map.Entry<String, Element> vEntry : v.entrySet()) {
-                final Element el = vEntry.getValue();
-                if (el instanceof Spawnable) {
-                    s.put(vEntry.getKey(), (Spawnable) el);
-                }
-            }
-
-            map.put((Class<? extends Spawnable>) entry.getKey(), s);
-        }
-        return ImmutableMap.copyOf(map);
+    protected boolean isSpawnable(Block block) {
+        return isSpawnPoint(block.getLocation());
     }
 
     /**
@@ -209,12 +157,7 @@ public abstract class Spawnable extends Element
      */
     public static Spawnable of(Block block) throws Utils.SearchNotFoundException {
 
-        final Spawnable el = iterate(block, getSpawnableElements());
-
-        if (el != null) {
-            return el;
-        }
-        throw new Utils.SearchNotFoundException();
+        return iterate(block, getSpawnableElements());
     }
 
     /**
@@ -230,7 +173,43 @@ public abstract class Spawnable extends Element
                 spawnables.add(entry.getValue());
             }
         }
+
+        // log
+        ProfessionLogger.log("Spawnable elements: " + spawnables);
         return spawnables;
+    }
+
+    /**
+     * @return a map of spawnable elements where the key is the ID of the {@link Spawnable} and value is the
+     * corresponding {@link Spawnable}
+     *
+     * @see Element#getId()
+     */
+    @SuppressWarnings("unchecked")
+    public static Map<Class<? extends Spawnable>, Map<String, Spawnable>> getAllSpawnableElements() {
+        final Map<Class<? extends Element>, Map<String, Element>> allElements = getAllElements();
+        final Map<Class<? extends Spawnable>, Map<String, Spawnable>> map = new HashMap<>();
+
+        for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : allElements.entrySet()) {
+            // the class must be a spawnable
+            if (!Spawnable.class.isAssignableFrom(entry.getKey())) {
+                continue;
+            }
+
+            // convert the element map to a spawnable map
+            final Map<String, Spawnable> s = new HashMap<>();
+            for (Map.Entry<String, Element> vEntry : entry.getValue().entrySet()) {
+                final Element el = vEntry.getValue();
+                // double check if the element is actually a spawnable
+                if (el instanceof Spawnable) {
+                    s.put(vEntry.getKey(), (Spawnable) el);
+                }
+            }
+            map.put((Class<? extends Spawnable>) entry.getKey(), s);
+        }
+        // log
+        ProfessionLogger.log(map, Level.FINEST);
+        return ImmutableMap.copyOf(map);
     }
 
     /**
@@ -358,7 +337,7 @@ public abstract class Spawnable extends Element
      * @param spawnPointFilter the filter to use
      */
     public static void scheduleSpawnAll(Predicate<ISpawnPoint> spawnPointFilter) {
-        ProfessionLogger.log("Schedule spawn all", Level.CONFIG);
+        ProfessionLogger.log("Schedule spawn all", Level.FINEST);
         final Consumer<ISpawnPoint> action = z -> {
             try {
                 z.scheduleSpawn();
@@ -383,7 +362,7 @@ public abstract class Spawnable extends Element
                     continue;
                 }
                 // log
-                ProfessionLogger.log(sp, Level.CONFIG);
+                ProfessionLogger.log(sp, Level.FINEST);
                 action.accept(sp);
             }
         }
@@ -476,6 +455,17 @@ public abstract class Spawnable extends Element
     }
 
     @Override
+    public String toString() {
+        return "Spawnable{" +
+                "spawnPoints=" + spawnPoints.size() +
+                ", material=" + material +
+                ", materialData=" + materialData +
+                ", markerIcon='" + markerIcon + '\'' +
+                ", canSpawn=" + canSpawn +
+                "} " + super.toString();
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(getId(), getMaterial(), getMaterialData());
     }
@@ -492,17 +482,6 @@ public abstract class Spawnable extends Element
         return getMaterialData() == that.getMaterialData() &&
                 getId().equals(that.getId()) &&
                 getMaterial() == that.getMaterial();
-    }
-
-    @Override
-    public String toString() {
-        return "Spawnable{" +
-                "spawnPoints=" + spawnPoints.size() +
-                ", material=" + material +
-                ", materialData=" + materialData +
-                ", markerIcon='" + markerIcon + '\'' +
-                ", canSpawn=" + canSpawn +
-                "} " + super.toString();
     }
 
     @Override
@@ -546,7 +525,7 @@ public abstract class Spawnable extends Element
 
     @Override
     public boolean isSpawnPoint(int serialNumber) {
-        return getSpawnPoint(serialNumber) != null;
+        return getSpawnPoints().stream().anyMatch(x -> x.getSerialNumber() == serialNumber);
     }
 
     @Override
@@ -563,17 +542,23 @@ public abstract class Spawnable extends Element
     }
 
     @Override
-    public ISpawnPoint getSpawnPoint(Location location) {
-        return spawnPoints.get(location);
+    public ISpawnPoint getSpawnPoint(Location location) throws IllegalArgumentException {
+        final ISpawnPoint sp = spawnPoints.get(location);
+        if (sp == null) {
+            throw new IllegalArgumentException(
+                    String.format("Spawn point with %s location does not exist!", Utils.locationToString(location)));
+        }
+        return sp;
     }
 
     @Override
-    public ISpawnPoint getSpawnPoint(int serialNumber) {
+    public ISpawnPoint getSpawnPoint(int serialNumber) throws IllegalArgumentException {
         return getSpawnPoints()
                 .stream()
                 .filter(sp -> sp.getSerialNumber() == serialNumber)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException(
+                        String.format("Spawn point with %d serial number does not exist!", serialNumber)));
     }
 
     @Override
@@ -583,7 +568,7 @@ public abstract class Spawnable extends Element
             ProfessionLogger.log(String.format("Trying to add a spawn point ID %d with %s location for %s, but it " +
                                     "already exists!", sp.getSerialNumber(),
                             Utils.locationToString(sp.getLocation()), sp.getSpawnableElement()),
-                    Level.CONFIG);
+                    Level.FINE);
             return;
         }
         sp.setSpawnable(canSpawn());
@@ -597,7 +582,7 @@ public abstract class Spawnable extends Element
         }
         // log
         ProfessionLogger.log(String.format("Spawn point total for %s: %d", this.getId(),
-                this.getSpawnPoints().size()), Level.CONFIG);
+                this.getSpawnPoints().size()), Level.FINEST);
     }
 
     @Override
@@ -608,10 +593,9 @@ public abstract class Spawnable extends Element
         final BackupTask.Result result = IOManager.backupFirst();
         if (result != null) {
             if (result == BackupTask.Result.SUCCESS) {
-                ProfessionLogger.log(ChatColor.GREEN + "Backed up files before editing file.");
+                ProfessionLogger.log("Backed up files before editing file.", Level.CONFIG);
             } else {
-                ProfessionLogger.log(
-                        ChatColor.RED + "Failed to back up files. Contact admins to check console output!");
+                ProfessionLogger.log("Failed to back up files. Contact admins to check console output!", Level.WARNING);
             }
         }
         spawnPoint.despawn();
@@ -620,19 +604,13 @@ public abstract class Spawnable extends Element
     }
 
     @Override
-    public void removeSpawnPoint(Location location) {
-        ISpawnPoint sp = getSpawnPoint(location);
-        if (sp != null) {
-            removeSpawnPoint(sp);
-        }
+    public void removeSpawnPoint(Location location) throws IllegalArgumentException {
+        removeSpawnPoint(getSpawnPoint(location));
     }
 
     @Override
-    public final void removeSpawnPoint(int serialNumber) {
-        ISpawnPoint sp = getSpawnPoint(serialNumber);
-        if (sp != null) {
-            removeSpawnPoint(sp);
-        }
+    public final void removeSpawnPoint(int serialNumber) throws IllegalArgumentException {
+        removeSpawnPoint(getSpawnPoint(serialNumber));
     }
 
     /**

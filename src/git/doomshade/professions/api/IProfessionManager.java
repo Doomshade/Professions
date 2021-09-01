@@ -63,11 +63,9 @@ public interface IProfessionManager {
      * @param additionalCommand the additional commands to be made before registration to file
      * @param <T>               the {@link ItemType} argument
      * @param <IType>           the {@link ItemType}
-     *
-     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered to file
      */
     default <T extends ConfigurationSerializable, IType extends ItemType<T>> void registerItemTypeHolder(
-            Class<IType> itemType, Supplier<T> o, Consumer<IType> additionalCommand) throws IOException {
+            Class<IType> itemType, Supplier<T> o, Consumer<IType> additionalCommand) {
         registerItemTypeHolder(itemType, o.get(), additionalCommand);
 
     }
@@ -78,13 +76,10 @@ public interface IProfessionManager {
      * @param additionalCommand the additional commands to be made before registration to file
      * @param <T>               the {@link ItemType} argument
      * @param <IType>           the {@link ItemType}
-     *
-     * @throws IOException if the {@link ItemTypeHolder} couldn't be registered to file
      */
     <T extends ConfigurationSerializable, IType extends ItemType<T>> void registerItemTypeHolder(Class<IType> itemType,
                                                                                                  T o,
-                                                                                                 Consumer<IType> additionalCommand)
-            throws IOException;
+                                                                                                 Consumer<IType> additionalCommand);
 
     /**
      * @param itemType the {@link ItemType} class
@@ -95,7 +90,7 @@ public interface IProfessionManager {
      * @throws IOException if the {@link ItemTypeHolder} couldn't be registered
      */
     default <T extends ConfigurationSerializable, IType extends ItemType<T>> void registerItemTypeHolder(
-            Class<IType> itemType, T o) throws IOException {
+            Class<IType> itemType, T o) {
         registerItemTypeHolder(itemType, o, null);
     }
 
@@ -113,9 +108,11 @@ public interface IProfessionManager {
      * @param <T>   the {@link ItemType}'s item
      *
      * @return instance of {@link ItemTypeHolder}
+     *
+     * @throws IllegalStateException if the {@link ItemTypeHolder} has not yet been registered
      */
     <T extends ConfigurationSerializable, A extends ItemType<T>> ItemTypeHolder<T, A> getItemTypeHolder(Class<A> clazz)
-            throws IllegalArgumentException;
+            throws IllegalStateException;
 
     /**
      * @param profession the {@link Profession} class

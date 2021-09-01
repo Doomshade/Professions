@@ -25,6 +25,7 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.IProfession;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
@@ -63,10 +64,12 @@ public abstract class AbstractProfessionListener implements Listener {
      *
      * @return
      */
+    @SafeVarargs
     @Nullable
-    private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, Object... extras) {
+    private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, List<Object> extras, Class<?
+            extends IProfession>... professions) {
         if (type != null) {
-            return em.callEvent(type, User.getUser(player), extras);
+            return em.callEvent(type, User.getUser(player), extras, professions);
         }
         return null;
     }
@@ -129,10 +132,12 @@ public abstract class AbstractProfessionListener implements Listener {
      *
      * @return an event that gets called or {@code null} if invalid parameters were provided
      */
+    @SafeVarargs
     protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(
             Player player, Obj item,
-            Class<T> itemTypeClass, Object... extras) {
-        final ProfessionEvent<T> event = getEvent(player, item, itemTypeClass, extras);
+            Class<T> itemTypeClass, List<Object> extras, Class<?
+            extends IProfession>... professions) {
+        final ProfessionEvent<T> event = getEvent(player, item, itemTypeClass, extras, professions);
 
         return event == null ? null : callEvent(event);
     }
@@ -149,10 +154,12 @@ public abstract class AbstractProfessionListener implements Listener {
      *
      * @return an event or {@code null} if invalid parameters were provided
      */
+    @SafeVarargs
     @Nullable
     protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(
             Player player, Obj item,
-            Class<T> itemTypeClass, Object... extras) {
+            Class<T> itemTypeClass, List<Object> extras, Class<?
+            extends IProfession>... professions) {
         if (player == null || item == null) {
             return null;
         }
@@ -161,7 +168,7 @@ public abstract class AbstractProfessionListener implements Listener {
         if (itemType == null) {
             return null;
         }
-        return em.getEvent(itemType, User.getUser(player), extras);
+        return em.getEvent(itemType, User.getUser(player), extras, professions);
     }
 
 }

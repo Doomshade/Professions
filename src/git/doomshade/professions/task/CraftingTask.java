@@ -44,6 +44,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 
 /**
@@ -166,7 +167,8 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
 
         EventManager em = EventManager.getInstance();
         final Player player = user.getPlayer();
-        final ProfessionEvent<ItemType<?>> pe = em.getEvent(item, user);
+        final ProfessionEvent<ItemType<?>> pe = em.getEvent(item, user,
+                Collections.emptyList(), upd.getProfession().getClass());
 
         // now check for level
         if (!item.meetsLevelReq(upd.getLevel())) {

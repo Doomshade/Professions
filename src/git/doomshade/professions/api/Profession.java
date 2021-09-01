@@ -50,6 +50,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -215,12 +216,26 @@ public abstract class Profession implements IProfession {
      */
     @EventHandler
     public final <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
+        final Class<? extends IProfession>[] profs = event.getProfessions();
 
+        if (profs == null || profs.length == 0) {
+            ProfessionLogger.logError(new IllegalStateException(
+                    String.format("Received empty profession list for %s event", event.getItemType().getName())), true);
+            return;
+        }
+
+        // check whether the event was called for this profession
+        if (Arrays.stream(profs).noneMatch(prof -> prof.equals(getClass()))){
+            return;
+        }
         // the player has no profession but has a rank builder+ -> do not cancel the event
         if (!utils.playerHasProfession(event)) {
 
             // cancels the event if the player is a rank lower than builder
-            event.setCancelled(!Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER));
+            final boolean b = !Permissions.has(event.getPlayer().getPlayer(), Permissions.BUILDER);
+            ProfessionLogger.log(String.format("Setting cancelled of event %s to %s",
+                    event.getItemType().getName(), b), Level.FINEST);
+            event.setCancelled(b);
             return;
         }
         for (ItemTypeHolder<?, ?> ith : items) {
