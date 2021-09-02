@@ -59,7 +59,7 @@ public class TrainerListener implements Listener {
         if (trainerId == null || trainerId.isEmpty()) {
             final String s = "Could not resolve trainer ID, please contact an admin.";
             player.sendMessage(s);
-            throw new RuntimeException(s);
+            throw new IllegalStateException(s);
         }
         trait.openTrainerGUI(player);
     }

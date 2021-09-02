@@ -69,10 +69,11 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.LEVEL_REQ_COL
  * @version 1.0
  * @since 1.0
  */
+@SuppressWarnings("unchecked")
 public final class ItemUtils implements ISetup {
 
     /** instance because of setup */
-    public static final ItemUtils instance = new ItemUtils();
+    public static final ItemUtils INSTANCE = new ItemUtils();
 
     /** an example item requirement */
     public static final ItemStack EXAMPLE_REQUIREMENT = new ItemStackBuilder(Material.GLASS)
@@ -98,11 +99,12 @@ public final class ItemUtils implements ISetup {
     private static final String LORE = "lore";
     private static final String POTION_TYPE = "potion-type";
     private static final String AMOUNT = "amount";
-    private static final HashSet<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
+    private static final Set<Map<String, Object>> ITEMS_LOGGED = new HashSet<>();
 
     // TODO remove caching
     private static final File ITEMS_LOGGED_FILE = new File(IOManager.getCacheFolder(), "itemutilscache.bin");
     private static final Pattern GENERIC_REGEX = Pattern.compile("\\{([a-zA-Z0-9.\\-_]+)}");
+    public static final int MAX_ITEM_AMOUNT = 64;
     private static boolean loggedDiablo = false;
 
     private ItemUtils() {
@@ -121,7 +123,6 @@ public final class ItemUtils implements ISetup {
      *
      * @return deserialized ItemStack
      */
-    @SuppressWarnings("unchecked")
     public static ItemStack deserialize(Map<String, Object> map, boolean checkForDiabloHook)
             throws ConfigurationException, ProfessionObjectInitializationException {
         if (map == null) {
@@ -149,7 +150,7 @@ public final class ItemUtils implements ISetup {
 
         final Object potentialMaterial = map.get(MATERIAL);
         if (potentialMaterial == null) {
-            throw new ConfigurationException(new NullPointerException("Null material for " + map));
+            throw new ConfigurationException("Null material for " + map);
         }
 
         ItemStack item = deserializeMaterial((String) potentialMaterial);
@@ -180,7 +181,7 @@ public final class ItemUtils implements ISetup {
         }
 
         if (meta instanceof PotionMeta) {
-            PotionMeta potionMeta = (PotionMeta) meta;
+            //PotionMeta potionMeta = (PotionMeta) meta;
             final Object potentialPotionType = map.get(POTION_TYPE);
             if (potentialPotionType instanceof String) {
 
@@ -205,6 +206,7 @@ public final class ItemUtils implements ISetup {
         try {
             mat = Material.valueOf(split[0]);
         } catch (IllegalArgumentException e) {
+            ProfessionLogger.logError(e, false);
             throw new ProfessionObjectInitializationException("Could not deserialize material " + split[0]);
         }
         return new ItemStack(mat, 1, damage);
@@ -380,7 +382,7 @@ public final class ItemUtils implements ISetup {
 
         return null;
     }
-    /*@SuppressWarnings("unchecked")
+    /*
     private static Map<String, Object> serializePotionMeta(Map<String, Object> map, ItemMeta meta) {
         Class<? extends ItemMeta> clazz = meta.getClass();
         if (!clazz.getSimpleName().equalsIgnoreCase("craftmetaitem")) {
@@ -438,7 +440,6 @@ public final class ItemUtils implements ISetup {
      *
      * @return description of {@link ItemType}
      */
-    @SuppressWarnings("unchecked")
     public static <A extends ItemType<?>> List<String> getItemTypeLore(A itemType) {
         Map<String, Object> map = getItemTypeMap(itemType.getClass(), itemType.getFileId());
         List<String> desc = (List<String>) map.getOrDefault(DESCRIPTION.s, new ArrayList<String>());
@@ -492,8 +493,7 @@ public final class ItemUtils implements ISetup {
                 desc.set(i, ChatColor.translateAlternateColorCodes('&', (s.replaceAll(regex, replacement))));
             }
         }
-        @SuppressWarnings("unchecked") final File f =
-                getItemTypeFile((Class<? extends ItemType<?>>) itemType.getClass());
+        final File f = getItemTypeFile((Class<? extends ItemType<?>>) itemType.getClass());
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
 
         // gem.yml -> items.1.
@@ -654,7 +654,6 @@ public final class ItemUtils implements ISetup {
                 Object read;
                 try {
                     while ((read = ois.readObject()) != null) {
-                        @SuppressWarnings("unchecked")
                         Map<String, Object> map = (Map<String, Object>) read;
                         ITEMS_LOGGED.add(map);
                     }

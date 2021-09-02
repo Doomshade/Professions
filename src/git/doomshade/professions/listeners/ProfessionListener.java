@@ -38,7 +38,6 @@ import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.alchemy.PotionItemType;
 import git.doomshade.professions.profession.professions.crafting.CustomRecipe;
-import git.doomshade.professions.profession.professions.enchanting.Enchant;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.herbalism.HerbItemType;
 import git.doomshade.professions.profession.professions.herbalism.HerbalismProfession;
@@ -96,8 +95,8 @@ public class ProfessionListener extends AbstractProfessionListener {
     /**
      * Hashmap for enchants
      */
-    private static final HashMap<UUID, Enchant> ENCHANTS = new HashMap<>();
-    private static final HashMap<UUID, PlayerMove> MOVE_LEN = new HashMap<>();
+    //private static final Map<UUID, Enchant> ENCHANTS = new HashMap<>();
+    private static final Map<UUID, PlayerMove> MOVE_LEN = new HashMap<>();
 
     ///////////////////////////////////////////////////////////////////////////
     // Mining
@@ -171,7 +170,7 @@ public class ProfessionListener extends AbstractProfessionListener {
 
             // get amount of items that are crafted (it won't call that amount of events, we
             // have to handle it)
-            int amountOfItems = getAmountOfItems(recipe.getResult(), hrac, e);
+            // int amountOfItems = getAmountOfItems(recipe.getResult(), hrac, e);
 
             // get the event to modify it before calling it
             /*ProfessionEvent<CustomRecipe> event = getEvent(hrac, ((ShapedRecipe) recipe), CustomRecipe.class);
@@ -586,7 +585,7 @@ public class ProfessionListener extends AbstractProfessionListener {
     // Skinning
     ///////////////////////////////////////////////////////////////////////////
 
-    private static class PlayerMove {
+    private static final class PlayerMove {
         private final Player movingPlayer;
         private final Location start;
 

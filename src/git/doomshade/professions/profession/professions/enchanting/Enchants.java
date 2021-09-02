@@ -35,6 +35,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import static git.doomshade.professions.profession.professions.enchanting.Enchant.DEFAULT_INTENSITY;
@@ -48,11 +49,11 @@ public final class Enchants {
     private static final EnchantMetadata RANDOM_ATTRIBUTE_ENCHANT = new EnchantMetadata(
             (x, y) -> {
                 // put to file
-                final int MAX_INTENSITY = 1;
-                final HashMap<Integer, Range> INTENSITY_VALUES = new HashMap<>() {
+                final int maxIntensity = 1;
+                final HashMap<Integer, Range> intensityValues = new HashMap<>() {
                     {
                         put(DEFAULT_INTENSITY, new Range(1, 5));
-                        put(MAX_INTENSITY, new Range(5, 10));
+                        put(maxIntensity, new Range(5, 10));
                     }
                 };
                 ItemMeta meta = x.getItemMeta();
@@ -74,10 +75,10 @@ public final class Enchants {
                         if (randomAttr.isEmpty()) {
                             throw new IllegalStateException("Returned an empty attribute from sapi attributes (???)");
                         }
-                        ItemAttribute attribute = new ItemAttribute(randomAttr, INTENSITY_VALUES.get(y).getRandom(),
+                        ItemAttribute attribute = new ItemAttribute(randomAttr, intensityValues.get(y).getRandom(),
                                 ItemAttribute.AttributeType.SKILLAPI);
                         break;
-                    case MAX_INTENSITY:
+                    case maxIntensity:
                         break;
                 }
                 return null;
@@ -86,12 +87,19 @@ public final class Enchants {
             x -> {
             }
     );
-    private static final HashMap<Enchants.Type, EnchantMetadata> ENCHANTS = new HashMap<>();
-    public static Enchant EXAMPLE_ENCHANT = new Enchant(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
+    private static final Map<Type, EnchantMetadata> ENCHANTS = new HashMap<>();
+    private static final Enchant EXAMPLE_ENCHANT = new Enchant(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
             ItemUtils.EXAMPLE_RESULT, RANDOM_ATTRIBUTE_ENCHANT, false);
+
+    private Enchants() {
+    }
 
     public static Enchant getEnchant(String id, String name, ItemStack item, Enchants.Type enchant) {
         return new Enchant(id, name, item, ENCHANTS.get(enchant), true);
+    }
+
+    public static Enchant getExampleEnchant() {
+        return EXAMPLE_ENCHANT;
     }
 
     public enum Type {

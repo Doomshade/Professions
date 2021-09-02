@@ -30,6 +30,7 @@ import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.UserProfessionData;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -47,10 +48,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -67,19 +65,19 @@ public class GatherTask extends ExtendedBukkitRunnable {
     /**
      * The tasks for event calling. A task is added in {@link #onStart()} and removed in {@link #onCancel()}
      */
-    private static final HashMap<UUID, GatherTask> TASKS = new HashMap<>();
+    private static final Map<UUID, GatherTask> TASKS = new HashMap<>();
+    private static final int PICKUP_DELAY = 5000;
 
     // let these be protected for further polymorphism purposes
-    protected final ISpawnPoint spawnPoint;
-    protected final ItemStack result;
-    protected final UserProfessionData gatherer;
-    protected final Consumer<GatherResult> endResultAction;
-    protected final BossBarOptions bossBarOptions;
+    private final ISpawnPoint spawnPoint;
+    private final ItemStack result;
+    private final Consumer<GatherResult> endResultAction;
+    private final BossBarOptions bossBarOptions;
 
     // create a reference for the player so the gatherer.getUser().getPlayer() is not called so often
-    protected final UUID player;
-    protected final long gatherTime;
-    protected BossBar bossBar;
+    private final UUID player;
+    private final long gatherTime;
+    private BossBar bossBar;
     private Predicate<EntityDamageEvent> damageEventPredicate;
     private Predicate<Double> movePredicate;
 
@@ -93,7 +91,6 @@ public class GatherTask extends ExtendedBukkitRunnable {
     public GatherTask(ISpawnPoint spawnPoint, UserProfessionData gatherer, ItemStack result,
                       Consumer<GatherResult> endResultAction, BossBarOptions bossBarOptions, long gatherTime) {
         this.spawnPoint = spawnPoint;
-        this.gatherer = gatherer;
         this.result = result;
         this.endResultAction = endResultAction;
         this.bossBarOptions = bossBarOptions;
@@ -261,7 +258,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
      */
     private void setupBossBar(Plugin plugin, long delay) {
         final Player player = Bukkit.getPlayer(this.player);
-        if (player == null){
+        if (player == null) {
             return;
         }
         bossBar.setProgress(1);
@@ -355,14 +352,14 @@ public class GatherTask extends ExtendedBukkitRunnable {
             inventory.addItem(result);
 
             // set the pickup delay of the item on the ground so the player can't duplicate the herbs
-            item.setPickupDelay(5000);
+            item.setPickupDelay(PICKUP_DELAY);
             new BukkitRunnable() {
 
                 @Override
                 public void run() {
                     item.remove();
                 }
-            }.runTaskLater(Professions.getInstance(), 20L);
+            }.runTaskLater(Professions.getInstance(), Utils.TICKS);
 
             setResult(GatherResult.SUCCESS);
         } catch (Exception e) {

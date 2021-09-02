@@ -45,7 +45,7 @@ import java.util.Optional;
 @TraitName("professiontrainer")
 public class TrainerTrait extends Trait {
 
-    public static String KEY_TRAINER_ID = "professions.trainerId";
+    public static final String KEY_TRAINER_ID = "professions.trainerId";
     private String trainerId = "";
 
     public TrainerTrait() {

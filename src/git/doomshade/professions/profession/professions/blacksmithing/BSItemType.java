@@ -25,11 +25,9 @@
 package git.doomshade.professions.profession.professions.blacksmithing;
 
 import git.doomshade.professions.api.item.ext.CraftableItemType;
-import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
-import git.doomshade.professions.utils.ItemUtils;
 
 import java.util.Map;
 

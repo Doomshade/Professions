@@ -45,7 +45,7 @@ import java.util.Objects;
 public final class MarkerManager {
 
     private static final Map<String, MarkerSet> MARKERS = new HashMap<>();
-    public static String EMPTY_MARKER_SET_ID = "";
+    private static final String EMPTY_MARKER_SET_ID = "";
     private static MarkerManager instance = null;
     private final MarkerAPI markerApi;
 
@@ -66,6 +66,10 @@ public final class MarkerManager {
         }
     }
 
+    public static String getEmptyMarkerSetId() {
+        return EMPTY_MARKER_SET_ID;
+    }
+
     /**
      * Registers an icon on dynmap
      *
@@ -74,7 +78,7 @@ public final class MarkerManager {
      */
     public void register(ISpawnPoint exampleSpawnPoint, String globalLabel) {
         final String id = exampleSpawnPoint.getMarkerSetId();
-        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+        if (id.equalsIgnoreCase(getEmptyMarkerSetId())) {
             return;
         }
 
@@ -96,7 +100,7 @@ public final class MarkerManager {
      */
     public void show(ISpawnPoint spawnPoint) {
         final String id = spawnPoint.getMarkerSetId();
-        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+        if (id.equalsIgnoreCase(getEmptyMarkerSetId())) {
             return;
         }
 
@@ -118,7 +122,7 @@ public final class MarkerManager {
      */
     public void hide(ISpawnPoint spawn) {
         final String id = spawn.getMarkerSetId();
-        if (id.equalsIgnoreCase(EMPTY_MARKER_SET_ID)) {
+        if (id.equalsIgnoreCase(getEmptyMarkerSetId())) {
             return;
         }
 

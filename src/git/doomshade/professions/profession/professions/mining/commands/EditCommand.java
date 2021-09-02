@@ -39,6 +39,7 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Command for editing mining areas
@@ -50,7 +51,7 @@ import java.util.Map;
 @SuppressWarnings("ALL")
 public class EditCommand extends AbstractEditCommand {
 
-    private final HashSet<Location> EDITED = new HashSet<>();
+    private final Set<Location> edited = new HashSet<>();
 
     /**
      * Setup defaults for command
@@ -74,7 +75,7 @@ public class EditCommand extends AbstractEditCommand {
                             x.despawn();
                             Location loc = x.getLocation();
                             loc.getBlock().setType(Material.WHITE_WOOL);
-                            EDITED.add(loc);
+                            edited.add(loc);
                         });
                     }
                     break;
@@ -89,7 +90,7 @@ public class EditCommand extends AbstractEditCommand {
                             }
                         });
                     }
-                    EDITED.clear();
+                    edited.clear();
                     break;
                 default:
                     return;
@@ -102,10 +103,10 @@ public class EditCommand extends AbstractEditCommand {
                 final ISpawnPoint locationOptions = ore.getSpawnPoint(loc);
                 locationOptions.despawn();
 
-                if (EDITED.remove(loc)) {
+                if (edited.remove(loc)) {
                     locationOptions.scheduleSpawn();
                 } else {
-                    EDITED.add(loc);
+                    edited.add(loc);
                     loc.getBlock().setType(Material.WHITE_WOOL);
                 }
             } catch (SpawnException e) {

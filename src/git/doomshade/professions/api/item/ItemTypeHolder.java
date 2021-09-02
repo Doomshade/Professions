@@ -25,7 +25,7 @@
 package git.doomshade.professions.api.item;
 
 import git.doomshade.professions.api.IProfessionManager;
-import git.doomshade.professions.api.dynmap.AMarkable;
+import git.doomshade.professions.api.dynmap.Markable;
 import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
@@ -66,7 +66,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeHolderEnum.*;
  * @see IProfessionManager
  * @since 1.0
  */
-public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends AMarkable
+public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends Markable
         implements Iterable<Type> {
     /**
      * The dynmap marker layer
@@ -81,7 +81,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     /**
      * Using linked hashmap as in the file it is not specified that the item type IDs must be consecutive
      */
-    private LinkedHashMap<Integer, Type> itemTypes = new LinkedHashMap<>();
+    private Map<Integer, Type> itemTypes = new LinkedHashMap<>();
 
     /**
      * Comparator to sort ItemTypes

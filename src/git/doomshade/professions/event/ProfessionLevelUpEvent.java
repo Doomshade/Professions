@@ -36,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
  * @since 1.0
  */
 public class ProfessionLevelUpEvent extends AbstractProfessionEvent {
-    private static final HandlerList handlerList = new HandlerList();
+    private static final HandlerList HANDLER_LIST = new HandlerList();
     private int before, after;
 
     protected ProfessionLevelUpEvent(UserProfessionData data) {
@@ -50,12 +50,12 @@ public class ProfessionLevelUpEvent extends AbstractProfessionEvent {
     }
 
     public static HandlerList getHandlerList() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     public int getBefore() {

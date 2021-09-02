@@ -55,7 +55,7 @@ import static git.doomshade.professions.utils.Strings.PotionEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Potion extends Element {
+public final class Potion extends Element {
 
     public static final Potion EXAMPLE_POTION = new Potion(
             Arrays.asList("vyhybani", "poskozeni"),
@@ -68,8 +68,8 @@ public class Potion extends Element {
             Professions.getInstance(),
             "profession_potion"
     );
-    private static final HashSet<CustomPotionEffect> CUSTOM_POTION_EFFECTS = new HashSet<>();
-    private final ArrayList<String> potionEffects = new ArrayList<>();
+    private static final Set<CustomPotionEffect> CUSTOM_POTION_EFFECTS = new HashSet<>();
+    private final List<String> potionEffects = new ArrayList<>();
     private final int duration;
     private final PotionType potionType;
     private final ItemStack potion;

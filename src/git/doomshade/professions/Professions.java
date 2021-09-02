@@ -86,6 +86,7 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 
@@ -98,7 +99,7 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup, IProfessionAPI {
 
-    private static final ArrayList<ISetup> SETUPS = new ArrayList<>();
+    private static final List<ISetup> SETUPS = new ArrayList<>();
     private static Professions instance;
     private static boolean diabloLike = false;
     private static ProfessionManager profMan;
@@ -106,7 +107,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     private static GUIManager guiManager;
     private static LuckPerms permMan;
     private static Economy econ;
-    private final File CONFIG_FILE = new File(getDataFolder(), "config.yml");
+    private final File configFile = new File(getDataFolder(), "config.yml");
 
     private FileConfiguration configLoader;
 
@@ -282,7 +283,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
      */
     @Override
     public void reloadConfig() {
-        configLoader = YamlConfiguration.loadConfiguration(CONFIG_FILE);
+        configLoader = YamlConfiguration.loadConfiguration(configFile);
     }
 
     /**
@@ -378,7 +379,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             ProfessionLogger.logError(e);
         }
         // then the rest
-        registerSetup(ItemUtils.instance);
+        registerSetup(ItemUtils.INSTANCE);
         registerSetup(Profession.ProfessionType.PRIMARY);
 
         registerCommandHandler(new CommandHandler());
@@ -509,34 +510,33 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         }
 
         resourcePath = resourcePath.replace('\\', '/');
-        Reader in = this.getTextResource(resourcePath);
-        if (in == null) {
-            throw new IllegalArgumentException(
-                    "The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
-        }
-
         File outFile = new File(this.getDataFolder(), fileName);
         int lastIndex = resourcePath.lastIndexOf(47);
         File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
         if (!outDir.exists()) {
             outDir.mkdirs();
         }
+        try (Reader in = this.getTextResource(resourcePath)) {
+            if (in == null) {
+                throw new IllegalArgumentException(
+                        "The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
+            }
 
-        try {
+
             if (!outFile.exists() || replace) {
 
                 // NOPES: UTF-16, ISO, UTF-16BE
-                OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
-                char[] buf = new char[1024];
+                try (OutputStreamWriter out =
+                        new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
+                    final int bufSize = 1024;
+                    char[] buf = new char[bufSize];
 
-                int len;
+                    int len;
 
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
+                    while ((len = in.read(buf)) > 0) {
+                        out.write(buf, 0, len);
+                    }
                 }
-
-                out.close();
-                in.close();
             }
         } catch (IOException e) {
             ProfessionLogger.log("Could not save " + outFile.getName() + " to " + outFile);

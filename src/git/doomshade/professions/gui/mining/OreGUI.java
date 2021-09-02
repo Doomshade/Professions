@@ -50,8 +50,8 @@ import java.util.Objects;
  */
 public class OreGUI extends GUI {
 
-    private boolean ignore = false;
     public static final NamespacedKey NBT_KEY = new NamespacedKey(Professions.getInstance(), "ignoreRange");
+    private boolean ignore = false;
 
     protected OreGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);

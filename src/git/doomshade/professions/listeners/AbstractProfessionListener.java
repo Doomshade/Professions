@@ -44,6 +44,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -54,8 +55,8 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public abstract class AbstractProfessionListener implements Listener {
 
-    private static final HashMap<UUID, List<UUID>> PICKUPS = new HashMap<>();
-    private static final EventManager em = Professions.getEventManager();
+    private static final Map<UUID, List<UUID>> PICKUPS = new HashMap<>();
+    private static final EventManager EM = Professions.getEventManager();
 
     /**
      * @param type
@@ -69,7 +70,7 @@ public abstract class AbstractProfessionListener implements Listener {
     private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, List<Object> extras, Class<?
             extends IProfession>... professions) {
         if (type != null) {
-            return em.callEvent(type, User.getUser(player), extras, professions);
+            return EM.callEvent(type, User.getUser(player), extras, professions);
         }
         return null;
     }
@@ -143,7 +144,7 @@ public abstract class AbstractProfessionListener implements Listener {
     }
 
     protected final <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
-        return em.callEvent(event);
+        return EM.callEvent(event);
     }
 
     /**
@@ -164,11 +165,11 @@ public abstract class AbstractProfessionListener implements Listener {
             return null;
         }
 
-        T itemType = em.getItemType(item, itemTypeClass);
+        T itemType = EM.getItemType(item, itemTypeClass);
         if (itemType == null) {
             return null;
         }
-        return em.getEvent(itemType, User.getUser(player), extras, professions);
+        return EM.getEvent(itemType, User.getUser(player), extras, professions);
     }
 
 }

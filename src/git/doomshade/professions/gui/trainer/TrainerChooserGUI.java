@@ -53,9 +53,9 @@ import java.util.Objects;
  * @since 1.0
  */
 public class TrainerChooserGUI extends GUI {
-    private static final String KEY_NAME = "name";
     public static final String KEY_NPC = "npc";
-    private final Map<String, String> NAME_ID_MAP = new HashMap<>();
+    private static final String KEY_NAME = "name";
+    private final Map<String, String> nameIdMap = new HashMap<>();
 
     protected TrainerChooserGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
@@ -73,7 +73,8 @@ public class TrainerChooserGUI extends GUI {
         if (files == null) {
             throw new GUIInitializationException();
         }
-        GUIInventory.Builder builder = getInventoryBuilder().size(9).title("Trainer chooser");
+        final int sizeMultiplier = 9;
+        GUIInventory.Builder builder = getInventoryBuilder().size(sizeMultiplier).title("Trainer chooser");
         int position = 0;
         for (File file : files) {
             String id = file.getName().substring(0, file.getName().lastIndexOf('.'));
@@ -81,7 +82,7 @@ public class TrainerChooserGUI extends GUI {
             FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
             String name = Utils.translateColour(Objects.requireNonNull(loader.getString(KEY_NAME, "Trainer name")));
 
-            NAME_ID_MAP.put(name, id);
+            nameIdMap.put(name, id);
             List<String> lore = Utils.translateLore(loader.getStringList("lore"));
             GUIItem item = new GUIItem(Material.CHEST, position++, 1, (short) 0);
             ItemMeta meta = Bukkit.getItemFactory().getItemMeta(Material.CHEST);
@@ -115,7 +116,7 @@ public class TrainerChooserGUI extends GUI {
         }
 
         String name = Objects.requireNonNull(item.getItemMeta()).getDisplayName();
-        String id = NAME_ID_MAP.get(name);
+        String id = nameIdMap.get(name);
         if (id == null) {
             he.sendMessage("Could not retrieve trainer ID with the trainer name " + name);
             return;

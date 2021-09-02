@@ -108,7 +108,7 @@ public class AdminProfessionGUI extends GUI {
             return;
         }
 
-        String input = (String) obj;
+        //String input = (String) obj;
 
         // write to file
         getManager().openGui(this);

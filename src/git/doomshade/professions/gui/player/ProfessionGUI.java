@@ -31,8 +31,8 @@ import git.doomshade.guiapi.GUIItem;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
@@ -40,6 +40,8 @@ import git.doomshade.professions.listeners.PluginProfessionListener;
 import git.doomshade.professions.task.CraftingTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.ItemUtils;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -59,6 +61,7 @@ import java.util.UUID;
  */
 public class ProfessionGUI extends GUI {
     static final String POSITION_GUI = "position";
+    public static final int MAX_DELAY = 60;
     private final int levelThreshold;
     private Profession prof;
 
@@ -162,11 +165,11 @@ public class ProfessionGUI extends GUI {
                     public void run() {
                         PluginProfessionListener.PENDING_REPEAT_AMOUNT.remove(uniqueId);
                     }
-                }.runTaskLater(plugin, 60 * 20L);
+                }.runTaskLater(plugin, MAX_DELAY * Utils.TICKS);
                 break;
             case SHIFT_RIGHT:
                 task.setRepeat(false);
-                task.setRepeatAmount(64);
+                task.setRepeatAmount(ItemUtils.MAX_ITEM_AMOUNT);
                 task.runTask(plugin);
                 break;
             default:

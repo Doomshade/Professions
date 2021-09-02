@@ -45,7 +45,7 @@ import static git.doomshade.professions.utils.Strings.BSEnum.ITEM;
  * @since 1.0
  */
 public class BSItemStack extends Element {
-    final ItemStack item;
+    private final ItemStack item;
 
     public BSItemStack(String id, String name, ItemStack item) {
         super(id, name);

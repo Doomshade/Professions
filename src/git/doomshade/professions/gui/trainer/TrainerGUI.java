@@ -54,10 +54,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -70,8 +67,8 @@ import java.util.logging.Level;
  */
 public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemType<T>> extends GUI implements ISetup {
 
-    private static final HashMap<String, List<ItemType<?>>> CACHE = new HashMap<>();
-    private static final HashMap<String, Profession> CACHE_PROFESSIONS = new HashMap<>();
+    private static final Map<String, List<ItemType<?>>> CACHE = new HashMap<>();
+    private static final Map<String, Profession> CACHE_PROFESSIONS = new HashMap<>();
     private static boolean inited = false;
     private String trainerId;
     private List<Type> trainableItems = new ArrayList<>();
@@ -238,7 +235,8 @@ public class TrainerGUI<T extends ConfigurationSerializable, Type extends ItemTy
                                     .equalsIgnoreCase(configName);
                         });
             } catch (Utils.SearchNotFoundException e) {
-                throw new RuntimeException(e);
+                ProfessionLogger.logError(e);
+                return;
             }
 
             // 3) add and filter

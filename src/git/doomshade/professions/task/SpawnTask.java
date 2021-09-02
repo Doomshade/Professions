@@ -28,6 +28,7 @@ import git.doomshade.professions.api.spawn.ext.SpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import git.doomshade.professions.utils.Utils;
 
 import java.util.logging.Level;
 
@@ -110,6 +111,6 @@ public class SpawnTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long period() {
-        return 20L;
+        return Utils.TICKS;
     }
 }

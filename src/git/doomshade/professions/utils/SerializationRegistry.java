@@ -24,10 +24,12 @@
 
 package git.doomshade.professions.utils;
 
+import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Set;
@@ -38,8 +40,12 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 1.0
  */
+@Deprecated
 public final class SerializationRegistry {
     private static boolean inited = false;
+
+    private SerializationRegistry() {
+    }
 
     public static void init() {
         if (inited) {
@@ -47,21 +53,30 @@ public final class SerializationRegistry {
         }
         inited = true;
         for (Package p : Package.getPackages()) {
-            getClasses(p.getName())
-                    .stream()
-                    .filter(x -> x != null && x.isAssignableFrom(ConfigurationSerializable.class))
-                    .forEach(x -> register((Class<? extends ConfigurationSerializable>) x));
+            try {
+                getClasses(p.getName())
+                        .stream()
+                        .filter(x -> x != null && x.isAssignableFrom(ConfigurationSerializable.class))
+                        .forEach(x -> register((Class<? extends ConfigurationSerializable>) x));
+            } catch (IOException e) {
+                ProfessionLogger.logError(e);
+            }
         }
     }
 
-    private static Set<Class<?>> getClasses(String packageName) {
-        InputStream stream = ClassLoader.getSystemClassLoader()
-                .getResourceAsStream(packageName.replaceAll("[.]", "/"));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-        return reader.lines()
-                .filter(line -> line.endsWith(".class"))
-                .map(line -> getClass(line, packageName))
-                .collect(Collectors.toSet());
+    private static Set<Class<?>> getClasses(String packageName) throws IOException {
+        try (InputStream stream = ClassLoader.getSystemClassLoader()
+                .getResourceAsStream(packageName.replaceAll("[.]", "/"))) {
+            if (stream != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
+                    return reader.lines()
+                            .filter(line -> line.endsWith(".class"))
+                            .map(line -> getClass(line, packageName))
+                            .collect(Collectors.toSet());
+                }
+            }
+        }
+        throw new IOException();
     }
 
     private static Class<?> getClass(String className, String packageName) {

@@ -55,7 +55,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
             SHOW_ON_DYNMAP = "show-on-dynmap";
 
     private String name;
-    private String markerSetId = MarkerManager.EMPTY_MARKER_SET_ID;
+    private String markerSetId = MarkerManager.getEmptyMarkerSetId();
     private boolean showOnDynmap = false;
     private ItemStack icon = ItemUtils.itemStackBuilder(Material.CHEST)
             .withLore(Arrays.asList("The", "Lore"))
@@ -94,7 +94,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
     }
 
     @Override
-    public Object clone() throws CloneNotSupportedException {
+    public ProfessionSpecificDefaultsSettings clone() throws CloneNotSupportedException {
         ProfessionSpecificDefaultsSettings clone = (ProfessionSpecificDefaultsSettings) super.clone();
         try {
             clone.setup();

@@ -26,7 +26,6 @@ package git.doomshade.professions.utils;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
@@ -44,11 +43,14 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 public final class Utils {
-
     public static final String YML_EXTENSION = ".yml";
-
     public static final String EXAMPLE_ID = "example-id";
     public static final String EXAMPLE_NAME = "some-name";
+    public static final long TICKS = 20L;
+    private static final int PLAYER_TARGET_RANGE = 5;
+
+    private Utils() {
+    }
 
     /**
      * Sorts the map by value
@@ -57,7 +59,7 @@ public final class Utils {
      *
      * @return sorted map
      */
-    public static <K, V> LinkedHashMap<K, V> sortMapByValue(Map<K, V> map, Comparator<V> comparator) {
+    public static <K, V> Map<K, V> sortMapByValue(Map<K, V> map, Comparator<V> comparator) {
         LinkedHashMap<K, V> sortedMap = new LinkedHashMap<>();
         if (map == null) {
             return sortedMap;
@@ -86,7 +88,7 @@ public final class Utils {
      * @return the block the player is currently looking at
      */
     public static Block getLookingAt(Player player) {
-        return player.getTargetBlock(null, 5);
+        return player.getTargetBlock(null, PLAYER_TARGET_RANGE);
     }
 
 
@@ -179,7 +181,7 @@ public final class Utils {
             final String key = value.toString();
             if (!map.containsKey(key)) {
                 for (FileEnum ignore : ignored) {
-                    if (value == ignore) {
+                    if (value.equals(ignore)) {
                         continue _loop;
                     }
                 }

@@ -40,19 +40,21 @@ import java.util.function.Consumer;
  */
 public class HerbGatherTask extends GatherTask {
 
-    private static final BossBarOptions bossBarOptions = new BossBarOptions();
+    private static final BossBarOptions BOSS_BAR_OPTIONS = new BossBarOptions();
+    // TODO add to settings
+    private static final double MAX_DISTANCE = 5d;
 
     static {
-        bossBarOptions.useBossBar = true;
-        bossBarOptions.barColor = BarColor.GREEN;
-        bossBarOptions.barStyle = BarStyle.SOLID;
+        BOSS_BAR_OPTIONS.useBossBar = true;
+        BOSS_BAR_OPTIONS.barColor = BarColor.GREEN;
+        BOSS_BAR_OPTIONS.barStyle = BarStyle.SOLID;
     }
 
     public HerbGatherTask(ISpawnPoint location, UserProfessionData gatherer, ItemStack result,
                           Consumer<GatherResult> endResultAction, String title, long gatherTime) {
-        super(location, gatherer, result, endResultAction, bossBarOptions, gatherTime);
-        bossBarOptions.title = title;
+        super(location, gatherer, result, endResultAction, BOSS_BAR_OPTIONS, gatherTime);
+        BOSS_BAR_OPTIONS.title = title;
         setOnGathererDamaged(x -> true);
-        setOnMoved(x -> x >= 5d);
+        setOnMoved(x -> x >= MAX_DISTANCE);
     }
 }

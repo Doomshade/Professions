@@ -26,6 +26,7 @@ package git.doomshade.professions.task;
 
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import git.doomshade.professions.utils.Utils;
 
 import java.time.Duration;
 
@@ -36,8 +37,9 @@ import java.time.Duration;
  */
 public class LogTask extends ExtendedBukkitRunnable {
 
+    private static final int MINUTES = 10;
     // 10 minutes
-    private static final long LOG_DELAY = Duration.ofMinutes(10).getSeconds();
+    private static final long LOG_DELAY = Duration.ofMinutes(MINUTES).getSeconds();
 
 
     @Override
@@ -47,11 +49,11 @@ public class LogTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long delay() {
-        return LOG_DELAY * 20L;
+        return LOG_DELAY * Utils.TICKS;
     }
 
     @Override
     protected long period() {
-        return LOG_DELAY * 20L;
+        return LOG_DELAY * Utils.TICKS;
     }
 }

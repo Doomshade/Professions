@@ -50,7 +50,13 @@ public class TestThreeGui extends GUI {
         Objects.requireNonNull(meta).setDisplayName(getContext().getContext(PlayerProfessionsGUI.ID_PROFESSION));
         GUIItem guiItem = new GUIItem(Material.DIAMOND_PICKAXE, pos, 1, (short) 0);
         guiItem.changeItem(this, () -> meta);
-        setInventory(getInventoryBuilder().size(9).withItem(guiItem).title("PERFECTO TOT").size(9 * 4).build());
+        final int sizeMultiplier = 9;
+        final int rows = 4;
+        setInventory(getInventoryBuilder().size(sizeMultiplier)
+                .withItem(guiItem)
+                .title("PERFECTO TOT")
+                .size(sizeMultiplier * rows)
+                .build());
     }
 
     @Override

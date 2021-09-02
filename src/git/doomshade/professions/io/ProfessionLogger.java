@@ -28,6 +28,7 @@ import git.doomshade.professions.Professions;
 import org.bukkit.ChatColor;
 import org.fusesource.jansi.Ansi;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -101,7 +102,13 @@ public final class ProfessionLogger {
 
 
         final String infoWithPadding = String.format("[%-7s] ", level.getName());
-        IOManager.logToFile(infoWithPadding.concat(ChatColor.stripColor(message)));
+        try {
+            IOManager.logToFile(infoWithPadding.concat(ChatColor.stripColor(message)));
+        } catch (IOException e) {
+            Professions.getInstance()
+                    .getLogger()
+                    .log(Level.WARNING, "Could not create the log file!", e);
+        }
         Ansi.Color color = Ansi.Color.WHITE;
 
         if (leveli >= RED) {

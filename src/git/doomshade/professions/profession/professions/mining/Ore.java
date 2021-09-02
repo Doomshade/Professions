@@ -56,7 +56,7 @@ import static git.doomshade.professions.utils.Strings.OreEnum.RESULT;
  * @version 1.0
  * @since 1.0
  */
-public class Ore extends Spawnable {
+public final class Ore extends Spawnable {
 
     //public static final HashMap<String, Ore> ORES = new HashMap<>();
     public static final Ore EXAMPLE_ORE =
@@ -82,7 +82,7 @@ public class Ore extends Spawnable {
     public static Ore deserialize(Map<String, Object> map, final String name)
             throws ProfessionObjectInitializationException {
 
-        final Ore ore = Spawnable.deserializeSpawnable(map, MarkerManager.EMPTY_MARKER_SET_ID, name, Ore.class,
+        final Ore ore = Spawnable.deserializeSpawnable(map, MarkerManager.getEmptyMarkerSetId(), name, Ore.class,
                 x -> {
 
                     if (x == null) {

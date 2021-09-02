@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 public class ProfessionEvent<T extends ItemType<?>> extends Event implements Cancellable {
-    private static final HandlerList handlerList = new HandlerList();
+    private static final HandlerList HANDLER_LIST = new HandlerList();
     private final User user;
     private final Collection<Object> extras = new ArrayList<>();
     private final List<String> errorMessage = new ArrayList<>();
@@ -74,7 +74,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
     }
 
     public static HandlerList getHandlerList() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     public Class<? extends IProfession>[] getProfessions() {
@@ -159,7 +159,7 @@ public class ProfessionEvent<T extends ItemType<?>> extends Event implements Can
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     @Override

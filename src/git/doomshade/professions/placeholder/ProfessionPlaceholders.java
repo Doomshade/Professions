@@ -42,32 +42,18 @@ import java.lang.reflect.Method;
  * @version 1.0
  * @since 1.0
  */
-public class ProfessionPlaceholders extends PlaceholderExpansion {
+public final class ProfessionPlaceholders extends PlaceholderExpansion {
 
     private static final String SECONDARY = "secondary";
     private static final String PRIMARY = "primary";
-
+    private static final ProfessionPlaceholders INSTANCE = new ProfessionPlaceholders();
     private final PluginDescriptionFile description = Professions.getInstance().getDescription();
 
-    private static boolean registered = false;
-
-    public ProfessionPlaceholders() {
-        if (registered) {
-            throw new RuntimeException("Cannot make more than one instance of " + getClass().getSimpleName());
-        }
-        registered = true;
+    private ProfessionPlaceholders() {
     }
 
-    // must persist
-    @Override
-    public boolean persist() {
-        return true;
-    }
-
-    // no requirements
-    @Override
-    public boolean canRegister() {
-        return true;
+    public static ProfessionPlaceholders getInstance() {
+        return INSTANCE;
     }
 
     @Override
@@ -83,6 +69,18 @@ public class ProfessionPlaceholders extends PlaceholderExpansion {
     @Override
     public String getVersion() {
         return description.getVersion();
+    }
+
+    // must persist
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
+    // no requirements
+    @Override
+    public boolean canRegister() {
+        return true;
     }
 
     @Override

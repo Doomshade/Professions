@@ -55,10 +55,10 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ALL")
 public class EditItemTypeCommand extends AbstractCommand {
 
-    static final HashSet<String> files = new HashSet<>();
+    static final Set<String> FILES = new HashSet<>();
     static final String ARG_FILE = "\"item type file\"";
-    static final int[] i = {1};
-    private static final TreeMap<File, LinkedList<FileConfiguration>> UNDO = new TreeMap<>();
+    static final int[] I = {1};
+    private static final Map<File, LinkedList<FileConfiguration>> UNDO = new TreeMap<>();
 
     public EditItemTypeCommand() {
         setArg(true, ARG_FILE,
@@ -72,8 +72,8 @@ public class EditItemTypeCommand extends AbstractCommand {
         setCommand("edit");
         setDescription("Edits something in item type file");
         setRequiresPlayer(false);
-        files.clear();
-        files.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles()))
+        FILES.clear();
+        FILES.addAll(Arrays.stream(Objects.requireNonNull(IOManager.getItemFolder().listFiles()))
                 .map(x -> "\"".concat(x.getName()).concat("\""))
                 .collect(Collectors.toSet()));
         addPermission(Permissions.ADMIN);
@@ -104,11 +104,11 @@ public class EditItemTypeCommand extends AbstractCommand {
             return;
         }
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-        final String path = args[i[0]++];
+        final String path = args[I[0]++];
         if (!loader.getKeys(true).contains(path)) {
             sender.sendMessage(path + " does not exist in " + fileName + "! Creating new path.");
         }
-        String[] values = String.join(" ", Arrays.asList(args).subList(i[0], args.length)).split(";");
+        String[] values = String.join(" ", Arrays.asList(args).subList(I[0], args.length)).split(";");
         if (values.length == 0) {
             sender.sendMessage("Cannot set " + path +
                     " to empty value like that. If you really want to set it to empty, set the value to NULL");
@@ -212,7 +212,7 @@ public class EditItemTypeCommand extends AbstractCommand {
                 if (handler != null) {
                     final UndoEditCommand acmd = handler.getCommand(UndoEditCommand.class);
                     String msg = handler.infoMessage(acmd)
-                            .replaceAll("<" + acmd.args.get(true).get(0) + ">", "\"" + fileName + "\"");
+                            .replaceAll("<" + acmd.getArgs().get(true).get(0) + ">", "\"" + fileName + "\"");
                     sender.sendMessage("To undo, use command:\n " + msg);
                 }
             } catch (Utils.SearchNotFoundException e) {
@@ -225,16 +225,16 @@ public class EditItemTypeCommand extends AbstractCommand {
     }
 
     static File getFile(String[] args) {
-        i[0] = 1;
+        I[0] = 1;
         String fileName = Arrays.asList(args).subList(1, args.length).stream().map(new Function<String, String>() {
-            boolean found = false;
+            private boolean found = false;
 
             @Override
             public String apply(String s) {
                 if (found) {
                     return "";
                 }
-                i[0]++;
+                I[0]++;
                 if (s.endsWith("\"") || s.endsWith("'")) {
                     found = true;
                 }
@@ -255,16 +255,14 @@ public class EditItemTypeCommand extends AbstractCommand {
         List<String> list = new ArrayList<>();
 
         File file = getFile(args);
-        if (args.length == i[0]) {
-            list.addAll(files.stream().filter(x -> x.startsWith(args[i[0] - 1])).collect(Collectors.toSet()));
-        } else if (args.length > i[0]) {
-            if (file.exists()) {
-                FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-                list.addAll(loader.getKeys(true)
-                        .stream()
-                        .filter(x -> x.startsWith(args[i[0]].replaceAll("\"", "")))
-                        .collect(Collectors.toSet()));
-            }
+        if (args.length == I[0]) {
+            list.addAll(FILES.stream().filter(x -> x.startsWith(args[I[0] - 1])).collect(Collectors.toSet()));
+        } else if (args.length > I[0] && file.exists()) {
+            FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+            list.addAll(loader.getKeys(true)
+                    .stream()
+                    .filter(x -> x.startsWith(args[I[0]].replaceAll("\"", "")))
+                    .collect(Collectors.toSet()));
         }
 
         return list.isEmpty() ? null : list;

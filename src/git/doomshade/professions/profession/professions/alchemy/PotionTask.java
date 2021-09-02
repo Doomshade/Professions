@@ -25,6 +25,7 @@
 package git.doomshade.professions.profession.professions.alchemy;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -67,7 +68,8 @@ public class PotionTask extends BukkitRunnable implements Serializable {
 
     @Override
     public void run() {
-        if (--duration <= 0) {
+        duration--;
+        if (duration <= 0) {
             cancel();
         }
     }
@@ -92,7 +94,7 @@ public class PotionTask extends BukkitRunnable implements Serializable {
 
     public synchronized BukkitTask runTask() {
         potion.addAttributes(player, false);
-        return super.runTaskLater(Professions.getInstance(), 20L);
+        return super.runTaskLater(Professions.getInstance(), Utils.TICKS);
     }
 
     @Deprecated

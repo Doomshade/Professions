@@ -78,8 +78,8 @@ public class UndoEditCommand extends AbstractCommand {
     @Override
     public List<String> onTabComplete(CommandSender sender, String[] args) {
         EditItemTypeCommand.getFile(args);
-        List<String> list = EditItemTypeCommand.files.stream()
-                .filter(x -> x.startsWith(args[EditItemTypeCommand.i[0] - 1]))
+        List<String> list = EditItemTypeCommand.FILES.stream()
+                .filter(x -> x.startsWith(args[EditItemTypeCommand.I[0] - 1]))
                 .distinct()
                 .collect(Collectors.toList());
         return list.isEmpty() ? null : list;

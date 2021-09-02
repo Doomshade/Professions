@@ -28,6 +28,7 @@ import git.doomshade.professions.Professions;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import git.doomshade.professions.utils.Utils;
 
 import java.io.*;
 import java.time.Duration;
@@ -50,6 +51,7 @@ public class BackupTask extends ExtendedBukkitRunnable {
     private static final String BACKUP = "backup";
     private static final FilenameFilter FILE_FILTER =
             (dir, name) -> !(name.contains(BACKUP) || dir.getName().contains(BACKUP));
+    private static final int BUFSIZE = 1024;
 
     /**
      * Defaults to failure
@@ -87,24 +89,23 @@ public class BackupTask extends ExtendedBukkitRunnable {
         if (!outputFile.exists()) {
             outputFile.createNewFile();
         }
-        FileOutputStream fos = new FileOutputStream(outputFile);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-
-        for (File file : fileList) {
-            try (FileInputStream fis = new FileInputStream(file)) {
-                ZipEntry zipEntry = new ZipEntry(file.getAbsolutePath());
-                zos.putNextEntry(zipEntry);
-                byte[] bytes = new byte[1024];
-                int length;
-                while ((length = fis.read(bytes)) != -1) {
-                    zos.write(bytes, 0, length);
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            try (ZipOutputStream zos = new ZipOutputStream(fos)) {
+                for (File file : fileList) {
+                    try (FileInputStream fis = new FileInputStream(file)) {
+                        ZipEntry zipEntry = new ZipEntry(file.getAbsolutePath());
+                        zos.putNextEntry(zipEntry);
+                        byte[] bytes = new byte[BUFSIZE];
+                        int length;
+                        while ((length = fis.read(bytes)) != -1) {
+                            zos.write(bytes, 0, length);
+                        }
+                        zos.closeEntry();
+                    }
                 }
-                zos.closeEntry();
+
             }
         }
-
-        zos.close();
-        fos.close();
     }
 
     /**
@@ -138,12 +139,12 @@ public class BackupTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long delay() {
-        return BACKUP_DELAY * 20L;
+        return BACKUP_DELAY * Utils.TICKS;
     }
 
     @Override
     protected long period() {
-        return BACKUP_DELAY * 20L;
+        return BACKUP_DELAY * Utils.TICKS;
     }
 
     public enum Result {

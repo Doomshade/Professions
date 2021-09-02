@@ -35,4 +35,8 @@ import java.time.LocalDateTime;
 public class CacheHeader implements Serializable {
 
     private final LocalDateTime time = LocalDateTime.now();
+
+    public final LocalDateTime getTime() {
+        return time;
+    }
 }

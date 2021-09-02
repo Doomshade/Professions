@@ -43,10 +43,10 @@ import java.util.logging.Level;
  * @since 1.0
  */
 public abstract class AbstractSettings implements ISetup, Serializable {
-    transient static final Level LEVEL = Level.WARNING;
-    protected transient static FileConfiguration config;
-    private final transient static Professions plugin = Professions.getInstance();
-    transient static boolean outdated = false;
+    final transient static Level LEVEL = Level.WARNING;
+    private final transient static Professions PLUGIN = Professions.getInstance();
+    transient static FileConfiguration config;
+    private transient static boolean outdated = false;
 
     static {
         loadConfig();
@@ -55,9 +55,50 @@ public abstract class AbstractSettings implements ISetup, Serializable {
     AbstractSettings() {
     }
 
+    static boolean isOutdated() {
+        return outdated;
+    }
+
+    static void setOutdated(boolean outdated) {
+        AbstractSettings.outdated = outdated;
+    }
+
+    @Override
+    public void setup() throws ConfigurationException {
+        loadConfig();
+        assertSectionExists();
+    }
+
     private static void loadConfig() {
-        plugin.reloadConfig();
-        config = plugin.getConfig();
+        PLUGIN.reloadConfig();
+        config = PLUGIN.getConfig();
+    }
+
+    private void assertSectionExists() throws ConfigurationException {
+        if (getDefaultSection() == null) {
+            throw new ConfigurationException();
+        }
+    }
+
+    protected ConfigurationSection getDefaultSection() {
+        return config;
+    }
+
+    @Override
+    public String getSetupName() {
+        return "settings";
+    }
+
+    protected final boolean isSection(String section) {
+        return isSection(section, null);
+    }
+
+    protected final boolean isSection(String section, Object value) {
+        boolean isSection = getDefaultSection().isConfigurationSection(section);
+        if (!isSection) {
+            printError(getDefaultSection().getCurrentPath() + "." + section, value);
+        }
+        return isSection;
     }
 
     protected void printError(String section, Object value) {
@@ -72,40 +113,4 @@ public abstract class AbstractSettings implements ISetup, Serializable {
             ProfessionLogger.log(String.format("Using %s as default value.", value), LEVEL);
         }
     }
-
-    protected final boolean isSection(String section, Object value) {
-        boolean isSection = getDefaultSection().isConfigurationSection(section);
-        if (!isSection) {
-            printError(getDefaultSection().getCurrentPath() + "." + section, value);
-        }
-        return isSection;
-    }
-
-    private void assertSectionExists() throws ConfigurationException {
-        if (getDefaultSection() == null) {
-            throw new ConfigurationException();
-        }
-    }
-
-    @Override
-    public void setup() throws ConfigurationException {
-        loadConfig();
-        assertSectionExists();
-    }
-
-    @Override
-    public String getSetupName() {
-        return "settings";
-    }
-
-    protected ConfigurationSection getDefaultSection() {
-        return config;
-    }
-
-
-    protected final boolean isSection(String section) {
-        return isSection(section, null);
-    }
-
-
 }

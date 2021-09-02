@@ -43,16 +43,16 @@ import static git.doomshade.professions.utils.Strings.PreyEnum.ENTITY;
  * @since 1.0
  */
 public class Mob implements ConfigurationSerializable {
-    final String configName;
-    final EntityType type;
+    private final String configName;
+    private final EntityType type;
+
+    public Mob(EntityType type) {
+        this(type, "");
+    }
 
     Mob(EntityType type, String configName) {
         this.type = type;
         this.configName = configName;
-    }
-
-    public Mob(EntityType type) {
-        this(type, "");
     }
 
     boolean isMythicMob() {

@@ -145,17 +145,18 @@ public class ProfessionInfoCommand extends AbstractCommand {
         }
 
         static String replaceAll(String s, UserProfessionData prof) {
+            String copy = s;
             for (Regex regex : values()) {
-                if (s.isEmpty()) {
+                if (copy.isEmpty()) {
                     break;
                 }
                 String reg = regex.name().toLowerCase().replaceAll("[_]", "-");
                 String replacement = regex.getReplacement(prof);
-                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "}", replacement));
-                s = ChatColor.translateAlternateColorCodes('&', s.replaceAll("\\{" + reg + "-bold}",
+                copy = ChatColor.translateAlternateColorCodes('&', copy.replaceAll("\\{" + reg + "}", replacement));
+                copy = ChatColor.translateAlternateColorCodes('&', copy.replaceAll("\\{" + reg + "-bold}",
                         ChatColor.getLastColors(replacement) + ChatColor.BOLD + ChatColor.stripColor(replacement)));
             }
-            return s;
+            return copy;
         }
 
         private String getReplacement(UserProfessionData prof) {

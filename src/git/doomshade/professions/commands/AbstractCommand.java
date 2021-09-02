@@ -55,12 +55,12 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     private static final String MESSAGE = "message";
     private static final String REQUIRED_PERMISSIONS = "permissions";
     // end of path names
-    protected String command = "";
-    protected String description = "";
-    protected Collection<String> requiredPermissions = new ArrayList<>();
-    protected List<String> messages = new ArrayList<>();
-    protected Map<Boolean, List<String>> args = new HashMap<>();
-    protected boolean requiresPlayer = false;
+    private String command = "";
+    private String description = "";
+    private Collection<String> requiredPermissions = new ArrayList<>();
+    private List<String> messages = new ArrayList<>();
+    private Map<Boolean, List<String>> args = new HashMap<>();
+    private boolean requiresPlayer = false;
 
     /**
      * Partly deserializes a command (overrides all but {@code getId()} getter methods)
@@ -71,11 +71,6 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      */
     public static AbstractCommand partlyDeserialize(Map<String, Object> map) {
         return new AbstractCommand() {
-
-            @Override
-            public int compareTo(@NotNull AbstractCommand o) {
-                return getCommand().compareTo(o.getCommand());
-            }
 
             @Override
             public void onCommand(CommandSender sender, String[] args) {
@@ -200,17 +195,17 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
      * @return a comparison of command names
      */
     @Override
-    public int compareTo(AbstractCommand o) {
+    public final int compareTo(AbstractCommand o) {
         return getCommand().compareTo(o.getCommand());
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return Objects.hash(command, description, messages, args, requiresPlayer, requiredPermissions);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -255,7 +250,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
     }
 
     @Override
-    public @NotNull Map<String, Object> serialize() {
+    public final @NotNull Map<String, Object> serialize() {
         Map<String, Object> map = new HashMap<>();
         map.put(COMMAND, getCommand());
         map.put(DESCRIPTION, getDescription());
@@ -345,7 +340,7 @@ public abstract class AbstractCommand implements ConfigurationSerializable, Comp
         requiredPermissions.addAll(Arrays.asList(permissions));
     }
 
-    void setupFrom(AbstractCommand other) {
+    final void setupFrom(AbstractCommand other) {
         setCommand(other.getCommand());
         setArgs(other.getArgs());
         setDescription(other.getDescription());

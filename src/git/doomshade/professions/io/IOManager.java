@@ -30,8 +30,6 @@ import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -41,7 +39,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -49,32 +46,34 @@ import java.util.Locale;
  * @version 1.0
  * @since 1.0
  */
-public class IOManager {
+public final class IOManager {
     public static final String LANG_PATH = "lang/";
-    private static final Professions plugin = Professions.getInstance();
-    private static final File CACHE_FOLDER = new File(plugin.getDataFolder(), "cache");
-    private static final File PLAYER_FOLDER = new File(plugin.getDataFolder(), "playerdata");
-    private static final File DATA_FOLDER = new File(plugin.getDataFolder(), "data");
-    private static final File BACKUP_FOLDER = new File(plugin.getDataFolder(), "backup");
+    private static final Professions PLUGIN = Professions.getInstance();
+    private static final File CACHE_FOLDER = new File(PLUGIN.getDataFolder(), "cache");
+    private static final File PLAYER_FOLDER = new File(PLUGIN.getDataFolder(), "playerdata");
+    private static final File DATA_FOLDER = new File(PLUGIN.getDataFolder(), "data");
+    private static final File BACKUP_FOLDER = new File(PLUGIN.getDataFolder(), "backup");
     private static final File LOGS_FOLDER;
     private static final File LOG_FILE;
-    private static final File FILTERED_LOGS_FOLDER = new File(plugin.getDataFolder(), "filtered logs");
-    private static final File ITEM_FOLDER = new File(plugin.getDataFolder(), "itemtypes");
-    private static final File PROFESSION_FOLDER = new File(plugin.getDataFolder(), "professions");
-    private static final File TRAINER_FOLDER = new File(plugin.getDataFolder(), "trainer gui");
-    private static final File LANG_FOLDER = new File(plugin.getDataFolder(), "lang");
-    private static final HashMap<String, File> FILE_CACHE = new HashMap<>();
-    private static PrintStream fos = null;
-    private static boolean FIRST_BACKUP = true;
-
+    private static final File FILTERED_LOGS_FOLDER = new File(PLUGIN.getDataFolder(), "filtered logs");
+    private static final File ITEM_FOLDER = new File(PLUGIN.getDataFolder(), "itemtypes");
+    private static final File PROFESSION_FOLDER = new File(PLUGIN.getDataFolder(), "professions");
+    private static final File TRAINER_FOLDER = new File(PLUGIN.getDataFolder(), "trainer gui");
+    private static final File LANG_FOLDER = new File(PLUGIN.getDataFolder(), "lang");
+    //private static final Map<String, File> FILE_CACHE = new HashMap<>();
     private static final DateTimeFormatter DF = DateTimeFormatter
             .ofLocalizedTime(FormatStyle.MEDIUM)
             .withLocale(Locale.GERMAN);
+    private static PrintStream fos = null;
+    private static boolean firstBackup = true;
 
     static {
-        LOGS_FOLDER = new File(plugin.getDataFolder(), "logs");
+        LOGS_FOLDER = new File(PLUGIN.getDataFolder(), "logs");
         LOG_FILE = new File(getLogsFolder(),
                 String.format("%s.txt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH_mm"))));
+    }
+
+    private IOManager() {
     }
 
     /**
@@ -110,13 +109,6 @@ public class IOManager {
      */
     public static File getBackupFolder() {
         return getFolder(BACKUP_FOLDER);
-    }
-
-    /**
-     * @return the logs folder directory
-     */
-    public static File getLogsFolder() {
-        return getFolder(LOGS_FOLDER);
     }
 
     /**
@@ -235,18 +227,27 @@ public class IOManager {
         }
     }
 
-    public static void logToFile(String message) {
+    public static void logToFile(String message) throws IOException {
         if (fos == null) {
             try {
-                fos = new PrintStream(IOManager.getLogFile());
+                fos = new PrintStream(getLogFile());
             } catch (FileNotFoundException e) {
-                // DONT CALL #logError HERE!
-                e.printStackTrace();
+                // creates the logs folder
+                getLogsFolder();
+                getLogFile().createNewFile();
+
                 return;
             }
         }
         final String time = String.format("[%s] ", LocalTime.now().format(DF));
         fos.println(time.concat(message));
+    }
+
+    /**
+     * @return the logs folder directory
+     */
+    public static File getLogsFolder() {
+        return getFolder(LOGS_FOLDER);
     }
 
     public static File getLogFile() {
@@ -259,7 +260,7 @@ public class IOManager {
      * @return the result of backup or {@code null}, if backed up before
      */
     public static BackupTask.Result backupFirst() {
-        return FIRST_BACKUP ? backup() : null;
+        return firstBackup ? backup() : null;
     }
 
     /**
@@ -270,14 +271,14 @@ public class IOManager {
     public static BackupTask.Result backup() {
         BackupTask task = new BackupTask();
         task.startTask();
-        FIRST_BACKUP = false;
+        firstBackup = false;
         return task.getResult();
     }
 
-    public static void saveUser(User user) throws IOException {
+    /*public static void saveUser(User user) throws IOException {
         File file = getUserFile(user);
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-    }
+    }*/
 
     private static File getUserFile(User user) throws IOException {
         File file = getFile(getPlayerFolder(),

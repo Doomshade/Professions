@@ -57,44 +57,16 @@ import java.util.stream.Collectors;
  * @since 1.0
  */
 @SuppressWarnings("ALL")
-public class Messages implements ISetup {
+public final class Messages implements ISetup {
 
-    private static final Messages instance = new Messages();
+    private static final Messages INSTANCE = new Messages();
     private static FileConfiguration lang;
 
     private Messages() {
     }
 
     public static Messages getInstance() {
-        return instance;
-    }
-
-
-    /**
-     * Collection builder for adding multiple collections
-     *
-     * @param <T> the collection type
-     */
-    private static class CollectionBuilder<T> {
-        private final Collection<T> collection;
-
-        private CollectionBuilder(Collection<T> defaultCollection) {
-            this.collection = defaultCollection;
-        }
-
-        private CollectionBuilder<T> add(Collection<T> another) {
-            this.collection.addAll(another);
-            return this;
-        }
-
-        private CollectionBuilder<T> add(T[] array) {
-            return add(Arrays.asList(array));
-        }
-
-
-        private Collection<T> build() {
-            return collection;
-        }
+        return INSTANCE;
     }
 
     @Override
@@ -267,9 +239,35 @@ public class Messages implements ISetup {
         }
     }
 
-    public static class MessageBuilder {
-        private String message = "";
+    /**
+     * Collection builder for adding multiple collections
+     *
+     * @param <T> the collection type
+     */
+    private static final class CollectionBuilder<T> {
+        private final Collection<T> collection;
+
+        private CollectionBuilder(Collection<T> defaultCollection) {
+            this.collection = defaultCollection;
+        }
+
+        private CollectionBuilder<T> add(T[] array) {
+            return add(Arrays.asList(array));
+        }
+
+        private CollectionBuilder<T> add(Collection<T> another) {
+            this.collection.addAll(another);
+            return this;
+        }
+
+        private Collection<T> build() {
+            return collection;
+        }
+    }
+
+    public static final class MessageBuilder {
         private final Map<Pattern, String> replacements = new HashMap<>();
+        private String message = "";
         private Player player = null;
 
         public MessageBuilder() {
@@ -279,13 +277,35 @@ public class Messages implements ISetup {
             message(message);
         }
 
+        public MessageBuilder message(MessagesHolder m) {
+            this.message = Messages.lang.getString(m.getKey());
+            return this;
+        }
+
+        public MessageBuilder exp(int exp) {
+            return exp((double) exp);
+        }
+
+        public MessageBuilder exp(double exp) {
+            return replace(Pattern.P_EXP, String.valueOf(exp));
+        }
+
         private MessageBuilder replace(Pattern regex, String replacement) {
             replacements.put(regex, replacement);
             return this;
         }
 
-        public MessageBuilder message(MessagesHolder m) {
-            this.message = Messages.lang.getString(m.getKey());
+        public MessageBuilder level(int level) {
+            return replace(Pattern.P_LEVEL, String.valueOf(level));
+        }
+
+        public MessageBuilder itemType(ItemType<?> itemType) {
+            return replace(Pattern.P_ITEM, itemType.getName());
+        }
+
+        public MessageBuilder userProfessionData(UserProfessionData upd) {
+            profession(upd.getProfession());
+            player(upd.getUser());
             return this;
         }
 
@@ -306,28 +326,6 @@ public class Messages implements ISetup {
         public MessageBuilder player(Player player) {
             this.player = player;
             return replace(Pattern.P_PLAYER, player.getDisplayName());
-        }
-
-        public MessageBuilder exp(double exp) {
-            return replace(Pattern.P_EXP, String.valueOf(exp));
-        }
-
-        public MessageBuilder exp(int exp) {
-            return exp((double) exp);
-        }
-
-        public MessageBuilder level(int level) {
-            return replace(Pattern.P_LEVEL, String.valueOf(level));
-        }
-
-        public MessageBuilder itemType(ItemType<?> itemType) {
-            return replace(Pattern.P_ITEM, itemType.getName());
-        }
-
-        public MessageBuilder userProfessionData(UserProfessionData upd) {
-            profession(upd.getProfession());
-            player(upd.getUser());
-            return this;
         }
 
         public String build() {

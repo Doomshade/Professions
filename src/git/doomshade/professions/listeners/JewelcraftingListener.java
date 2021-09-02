@@ -37,10 +37,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author Doomshade
@@ -49,7 +46,7 @@ import java.util.UUID;
  */
 public class JewelcraftingListener implements Listener {
 
-    private static final HashMap<UUID, Gem> RIGHT_CLICK = new HashMap<>();
+    private static final Map<UUID, Gem> RIGHT_CLICK = new HashMap<>();
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {

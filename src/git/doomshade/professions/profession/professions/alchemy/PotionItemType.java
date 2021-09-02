@@ -27,8 +27,6 @@ package git.doomshade.professions.profession.professions.alchemy;
 import git.doomshade.professions.api.item.ext.CraftableItemType;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.profession.utils.EffectUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
@@ -62,9 +60,9 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
     @Override
     public void onPluginAfterReload() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
+        //for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.loadFromCache(p);
-        }
+        //}
     }
 
     @Override
@@ -76,9 +74,9 @@ public class PotionItemType extends CraftableItemType<Potion> {
 
     @Override
     public void onPluginDisable() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
+        //for (Player p : Bukkit.getOnlinePlayers()) {
             //Potion.cache(p);
-        }
+        //}
     }
 
     @Override

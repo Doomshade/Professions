@@ -40,9 +40,9 @@ import java.util.logging.Level;
 public final class GemUtils {
 
     public static final Map<String, GemEffect> IDS;
+    public static final GemEffect ADD_ATTRIBUTE_EFFECT;
     static final String ACTIVE_GEM_NBT_TAG = "activeGem";
     static final String GEM_NBT_TAG = "gemItemType";
-    public static final GemEffect ADD_ATTRIBUTE_EFFECT;
 
     static {
         ADD_ATTRIBUTE_EFFECT = new GemEffect() {
@@ -75,6 +75,9 @@ public final class GemUtils {
                 put(ADD_ATTRIBUTE_EFFECT.toString(), ADD_ATTRIBUTE_EFFECT);
             }
         };
+    }
+
+    private GemUtils() {
     }
 
 

@@ -64,7 +64,7 @@ public class LogFilterCommand extends AbstractCommand {
 
 
         String thePattern = Arrays.asList(args).subList(i[0], args.length).stream().map(new Function<String, String>() {
-            boolean found = false;
+            private boolean found = false;
 
             @Override
             public String apply(String s) {

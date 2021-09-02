@@ -115,14 +115,14 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return {@code true} if player meets requirements, {@code false} otherwise
      */
     public boolean meetsRequirements(Player player) {
-        HashSet<ItemStack> itemz = getMetRequirements(player);
+        Set<ItemStack> itemz = getMetRequirements(player);
         if (itemz.size() > items.size()) {
             throw new IllegalStateException("This should not happen???");
         }
         return itemz.size() == items.size();
     }
 
-    private HashSet<ItemStack> getMetRequirements(Player player) {
+    private Set<ItemStack> getMetRequirements(Player player) {
         HashSet<ItemStack> itemz = new HashSet<>();
         for (ItemStack itemContent : player.getInventory()) {
             if (itemContent == null) {
@@ -178,7 +178,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     public String toString(Player player, ChatColor requirementMet, ChatColor requirementNotMet) {
         StringBuilder sb = new StringBuilder();
         Iterator<ItemStack> iterator = iterator();
-        HashSet<ItemStack> metRequirements = player != null ? getMetRequirements(player) : new HashSet<>();
+        Set<ItemStack> metRequirements = player != null ? getMetRequirements(player) : new HashSet<>();
         while (iterator.hasNext()) {
             ItemStack item = iterator.next();
             if (metRequirements.contains(item) && requirementMet != null) {

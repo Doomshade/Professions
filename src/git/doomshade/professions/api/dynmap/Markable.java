@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 /**
  * Class related to dynmap markers
@@ -39,7 +38,7 @@ import java.util.function.Predicate;
  * @version 1.0
  * @since 1.0
  */
-public abstract class AMarkable implements ConfigurationSerializable {
+public abstract class Markable implements ConfigurationSerializable {
 
     private String markerSetId = "";
     private boolean visible = false;
@@ -74,7 +73,7 @@ public abstract class AMarkable implements ConfigurationSerializable {
      *
      * @param from the comparing layer of the markable
      */
-    public final void setMarkerSetId(AMarkable from) {
+    public final void setMarkerSetId(Markable from) {
         if (from == null) {
             return;
         }
@@ -84,7 +83,7 @@ public abstract class AMarkable implements ConfigurationSerializable {
         }
     }
 
-    private boolean isGreaterLayer(AMarkable comparing, boolean override) {
+    private boolean isGreaterLayer(Markable comparing, boolean override) {
         return comparing != null && (override || comparing.getLayer() >= getLayer());
     }
 
@@ -114,7 +113,7 @@ public abstract class AMarkable implements ConfigurationSerializable {
      *
      * @param comparing the comparing layer of the markable
      */
-    public final void setVisible(AMarkable comparing) {
+    public final void setVisible(Markable comparing) {
         if (comparing == null) {
             return;
         }

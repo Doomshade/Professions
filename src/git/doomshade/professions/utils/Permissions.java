@@ -36,18 +36,18 @@ import org.bukkit.entity.Player;
  */
 public final class Permissions {
 
-    private static final LuckPerms manager = Professions.getPermissionManager();
-    public static String
+    public static final String
             ADMIN = "prof.*",
             BUILDER = "prof.builder",
             HELPER = "prof.helper",
             DEFAULT_COMMAND_USAGE = "prof.commands";
+    private static final LuckPerms PROFMAN = Professions.getPermissionManager();
 
     private Permissions() {
     }
 
     public static boolean has(Player player, String permission) {
-        User user = manager.getPlayerAdapter(Player.class).getUser(player);
+        User user = PROFMAN.getPlayerAdapter(Player.class).getUser(player);
         return user.getCachedData().getPermissionData().checkPermission(permission).asBoolean();
     }
 

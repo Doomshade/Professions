@@ -39,7 +39,7 @@ import java.util.Comparator;
  * @deprecated not used
  */
 @Deprecated
-public class SortedList<E> extends ArrayList<E> {
+public final class SortedList<E> extends ArrayList<E> {
     private transient final Comparator<? super E> c;
 
     /**

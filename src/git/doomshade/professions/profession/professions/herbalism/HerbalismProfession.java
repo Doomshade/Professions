@@ -71,9 +71,9 @@ public class HerbalismProfession extends Profession {
             return;
         }
 
-        // this should not happen but we will check for it anyways
+        // this should not happen, but we will check for it anyways
         if (!event.hasExtra(Location.class)) {
-            throw new RuntimeException("No location given, this should not happen");
+            throw new IllegalStateException("No location given, this should not happen");
         }
 
         final Location location = event.getExtra(Location.class);
@@ -136,7 +136,7 @@ public class HerbalismProfession extends Profession {
         // create and run the task
         HerbGatherTask herbGatherTask =
                 new HerbGatherTask(sp, upd, herb.getGatherItem(), endResultAction, itemType.getName(),
-                        herb.getGatherTime() * 20L);
+                        herb.getGatherTime() * Utils.TICKS);
         ProfessionLogger.log("Starting " + herbGatherTask, Level.FINEST);
         herbGatherTask.startTask();
     }

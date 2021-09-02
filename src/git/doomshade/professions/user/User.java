@@ -68,7 +68,7 @@ public final class User implements IUser {
     private final FileConfiguration loader;
     private final File file;
     private final ConfigurationSection profSection;
-    private final HashMap<String, PotionTask> ACTIVE_POTIONS = new HashMap<>();
+    private final Map<String, PotionTask> activePotions = new HashMap<>();
     private Map<Class<?>, UserProfessionData> professions;
     private Map<ProfessionType, Integer> usedProfessionTypes;
     private boolean bypass, suppressExpEvent;
@@ -162,7 +162,7 @@ public final class User implements IUser {
 
     @Override
     public void unloadUser() {
-        ACTIVE_POTIONS.forEach((x, y) -> y.cancel());
+        activePotions.forEach((x, y) -> y.cancel());
         USERS.remove(player.getUniqueId());
     }
 
@@ -174,7 +174,7 @@ public final class User implements IUser {
         } catch (Utils.SearchNotFoundException e) {
             if (profSection.isConfigurationSection(prof.getID())) {
                 throw new IllegalStateException(
-                        player.getName() + " has profession written in file but is not loaded!");
+                        player.getName() + " has profession written in file but is not loaded!", e);
             }
             return false;
         }
@@ -381,7 +381,7 @@ public final class User implements IUser {
             return null;
         }
         String fileName = file.getName();
-        String substring = fileName.substring(0, fileName.length() - 4);
+        String substring = fileName.substring(0, fileName.length() - Utils.YML_EXTENSION.length());
         return getUser(UUID.fromString(substring));
     }
 
@@ -464,11 +464,11 @@ public final class User implements IUser {
         }
         PotionTask potionTask = new PotionTask(potion, player);
         potionTask.runTask();
-        ACTIVE_POTIONS.put(potion.getId(), potionTask);
+        activePotions.put(potion.getId(), potionTask);
     }
 
     public boolean isActivePotion(Potion potion) {
-        return ACTIVE_POTIONS.containsKey(potion.getId());
+        return activePotions.containsKey(potion.getId());
     }
 
     @SuppressWarnings("unused")
@@ -476,7 +476,7 @@ public final class User implements IUser {
         if (!isActivePotion(potion)) {
             return;
         }
-        ACTIVE_POTIONS.remove(potion.getId()).cancel();
+        activePotions.remove(potion.getId()).cancel();
     }
 
     ConfigurationSection getProfessionsSection() {

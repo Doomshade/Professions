@@ -58,51 +58,9 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         this(clazz, keys, NO_ID, ExceptionReason.MISSING_KEYS);
     }
 
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, ExceptionReason reason) {
-        this(clazz, keys, NO_ID, reason);
-    }
-
     public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
                                                    ExceptionReason reason) {
         this(clazz, keys, id, "", reason);
-    }
-
-    /**
-     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an ID of -1 (Magical
-     * number) and empty additional message
-     *
-     * @param clazz             the item type class in which the error occurred
-     * @param keys              the keys of missing keys
-     * @param additionalMessage the additional message to add at the end of exception
-     */
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, String additionalMessage) {
-        this(clazz, keys, NO_ID, additionalMessage);
-    }
-
-    /**
-     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an empty additional
-     * message
-     *
-     * @param clazz the item type class in which the error occurred
-     * @param keys  the keys of missing keys
-     * @param id    the ID of {@code ItemType}
-     */
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id) {
-        this(clazz, keys, id, "");
-    }
-
-    /**
-     * The main constructor of this exception. Consider calling {@link ProfessionLogger#log(String, Level)} instead of
-     * {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
-     *
-     * @param clazz             the item type class in which the error occurred
-     * @param keys              the missing keys
-     * @param id                the ID of {@code ItemType}
-     * @param additionalMessage the additional message to add at the end of exception
-     */
-    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
-                                                   String additionalMessage) {
-        this(clazz, keys, id, additionalMessage, ExceptionReason.MISSING_KEYS);
     }
 
     public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
@@ -120,6 +78,53 @@ public class ProfessionObjectInitializationException extends InitializationExcep
 
         this.reasons.add(reason);
         this.separations.add(0);*/
+    }
+
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, ExceptionReason reason) {
+        this(clazz, keys, NO_ID, reason);
+    }
+
+    /**
+     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an ID of -1 (Magical
+     * number) and empty additional message
+     *
+     * @param clazz             the item type class in which the error occurred
+     * @param keys              the keys of missing keys
+     * @param additionalMessage the additional message to add at the end of exception
+     */
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, String additionalMessage) {
+        this(clazz, keys, NO_ID, additionalMessage);
+    }
+
+    /**
+     * The main constructor of this exception. Consider calling {@link ProfessionLogger#log(String, Level)} instead of
+     * {@link #printStackTrace()} for the exception message if you do not need to print the stack trace.
+     *
+     * @param clazz             the item type class in which the error occurred
+     * @param keys              the missing keys
+     * @param id                the ID of {@code ItemType}
+     * @param additionalMessage the additional message to add at the end of exception
+     */
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id,
+                                                   String additionalMessage) {
+        this(clazz, keys, id, additionalMessage, ExceptionReason.MISSING_KEYS);
+    }
+
+    /**
+     * Calls {@link #ProfessionObjectInitializationException(Class, Collection, int, String)} with an empty additional
+     * message
+     *
+     * @param clazz the item type class in which the error occurred
+     * @param keys  the keys of missing keys
+     * @param id    the ID of {@code ItemType}
+     */
+    public ProfessionObjectInitializationException(Class<?> clazz, Collection<String> keys, int id) {
+        this(clazz, keys, id, "");
+    }
+
+    public ProfessionObjectInitializationException(String message) {
+        super(message);
+        keys = new HashSet<>();
     }
 
     public void setAdditionalMessage(String additionalMessage) {
@@ -163,12 +168,6 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         return s;
     }
 
-
-    public ProfessionObjectInitializationException(String message) {
-        super(message);
-        keys = new HashSet<>();
-    }
-
     /*
     public void addId(int id) {
         this.ids.add(id);
@@ -194,10 +193,6 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         this.keys.addAll(keys);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public void setClazz(Class<?> clazz) {
         this.clazz = clazz;
     }
@@ -206,12 +201,16 @@ public class ProfessionObjectInitializationException extends InitializationExcep
         return id;
     }
 
-    public void setReason(ExceptionReason reason) {
-        this.reason = reason;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public ExceptionReason getReason() {
         return reason;
+    }
+
+    public void setReason(ExceptionReason reason) {
+        this.reason = reason;
     }
 
     /*

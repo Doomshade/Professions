@@ -63,7 +63,8 @@ import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
  */
 public abstract class CraftableItemType<T extends ConfigurationSerializable> extends ItemType<T> implements ICraftable {
 
-    private double craftingTime = 5d;
+    private static final double DEFAULT_CRAFTING_TIME = 5d;
+    private double craftingTime = DEFAULT_CRAFTING_TIME;
     private ItemStack result = ItemUtils.EXAMPLE_RESULT;
     private Requirements craftingRequirements = new Requirements();
     private Map<Sound, String> sounds = new HashMap<>();
@@ -80,7 +81,7 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
     @Override
     public void deserialize(int id, Map<String, Object> map) throws InitializationException {
         super.deserialize(id, map);
-        this.craftingTime = (double) map.getOrDefault(CRAFTING_TIME.s, 5d);
+        this.craftingTime = (double) map.getOrDefault(CRAFTING_TIME.s, DEFAULT_CRAFTING_TIME);
 
         this.sounds = new HashMap<>() {
             {

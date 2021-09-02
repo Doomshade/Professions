@@ -38,9 +38,9 @@ import org.bukkit.event.Event;
  * @since 1.0
  */
 abstract class AbstractProfessionEvent extends Event implements Cancellable {
-    protected final User user;
-    protected final Profession profession;
-    protected final UserProfessionData userProfessionData;
+    private final User user;
+    private final Profession profession;
+    private final UserProfessionData userProfessionData;
     private boolean cancelled;
 
     protected AbstractProfessionEvent(UserProfessionData data) {

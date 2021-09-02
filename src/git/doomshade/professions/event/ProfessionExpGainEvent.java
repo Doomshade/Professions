@@ -39,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
  * @since 1.0
  */
 public class ProfessionExpGainEvent extends AbstractProfessionEvent implements Cancellable {
-    private static final HandlerList handlerList = new HandlerList();
+    private static final HandlerList HANDLER_LIST = new HandlerList();
     private ItemType<?> source;
     private double exp;
 
@@ -54,7 +54,7 @@ public class ProfessionExpGainEvent extends AbstractProfessionEvent implements C
     }
 
     public static HandlerList getHandlerList() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     public double getExp() {
@@ -75,7 +75,7 @@ public class ProfessionExpGainEvent extends AbstractProfessionEvent implements C
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
 }

@@ -44,10 +44,10 @@ public class Cache extends ReadOnlyCache {
      *
      * @param data the data
      *
-     * @throws IOException          if it could not be flushed
-     * @throws NullPointerException if the cache contains null objects
+     * @throws IOException              if it could not be flushed
+     * @throws IllegalArgumentException if the cache contains null objects
      */
-    public void save(Cacheable[] data) throws IOException, NullPointerException {
+    public void save(Cacheable[] data) throws IOException, IllegalArgumentException {
         validate(data);
 
         // write the header
@@ -105,29 +105,31 @@ public class Cache extends ReadOnlyCache {
      *
      * @param cache the cacheable array
      *
-     * @throws NullPointerException if some object is null
+     * @throws IllegalArgumentException if some object is null
      */
     private void validate(Cacheable[] cache) throws NullPointerException {
         if (cache == null) {
-            throw new NullPointerException("Cache cannot be null!");
+            throw new IllegalArgumentException("Cache cannot be null!");
         }
 
         for (int i = 0; i < cache.length; i++) {
             final Cacheable c = cache[i];
             if (c == null) {
-                throw new NullPointerException(String.format("A cacheable of the cache array at index %d is null!", i));
+                throw new IllegalArgumentException(
+                        String.format("A cacheable of the cache array at index %d is null!", i));
             }
 
             final Serializable[] ss = c.cache();
             if (ss == null) {
-                throw new NullPointerException(String.format("An array of the cacheable object at index %d is null!",
-                        i));
+                throw new IllegalArgumentException(
+                        String.format("An array of the cacheable object at index %d is null!",
+                                i));
             }
 
             for (int j = 0; j < ss.length; j++) {
                 final Serializable s = ss[j];
                 if (s == null) {
-                    throw new NullPointerException(String.format("An object at index %d in cacheable %d is null!"
+                    throw new IllegalArgumentException(String.format("An object at index %d in cacheable %d is null!"
                             , j, i));
                 }
             }

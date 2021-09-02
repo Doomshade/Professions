@@ -51,7 +51,7 @@ public class ExpSettings extends AbstractSettings {
     private static final int N_DEFAULT_LEVEL_CAP = 40;
     private static final double N_DEFAULT_MULTIPLIER = 1d;
     private ExpFormula expFormula = new ExpFormula(1, 1, 1);
-    private int levelCap = 40;
+    private int levelCap = N_DEFAULT_LEVEL_CAP;
     private double expMultiplier = N_DEFAULT_MULTIPLIER, skillapiExpMultiplier = N_DEFAULT_MULTIPLIER;
 
     ExpSettings() {

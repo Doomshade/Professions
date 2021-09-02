@@ -40,13 +40,17 @@ import static git.doomshade.professions.utils.Strings.BarEnum.ITEM;
  * @since 1.0
  */
 public class BarItemStack extends Element {
-    public static BarItemStack EXAMPLE_BAR = new BarItemStack(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
+    private static final BarItemStack EXAMPLE_BAR = new BarItemStack(Utils.EXAMPLE_ID, Utils.EXAMPLE_NAME,
             ItemUtils.EXAMPLE_RESULT);
     private final ItemStack item;
 
     public BarItemStack(String id, String name, ItemStack item) {
         super(id, name);
         this.item = item;
+    }
+
+    public static BarItemStack getExampleBar() {
+        return EXAMPLE_BAR;
     }
 
 

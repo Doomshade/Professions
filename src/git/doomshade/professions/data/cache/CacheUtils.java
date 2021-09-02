@@ -37,7 +37,7 @@ import java.util.Collections;
  * @version 1.0
  * @since 1.0
  */
-public class CacheUtils {
+public final class CacheUtils {
 
     private CacheUtils() {
     }

@@ -25,7 +25,7 @@
 package git.doomshade.professions.api.item.ext;
 
 import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.dynmap.AMarkable;
+import git.doomshade.professions.api.dynmap.Markable;
 import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.ExpSettings;
@@ -82,7 +82,7 @@ import static git.doomshade.professions.utils.Strings.ItemTypeEnum.*;
  * @see CraftableItemType
  * @since 1.0
  */
-public abstract class ItemType<T extends ConfigurationSerializable> extends AMarkable
+public abstract class ItemType<T extends ConfigurationSerializable> extends Markable
         implements ConfigurationSerializable,
         Comparable<ItemType<T>> {
 

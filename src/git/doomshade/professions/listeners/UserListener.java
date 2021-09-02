@@ -36,6 +36,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -92,6 +93,18 @@ public class UserListener implements Listener {
         return inventoriez;
     }*/
 
+    private static final Map<UUID, HashMap<ValidInputType, GUI>> PLAYER_INPUT = new HashMap<>();
+
+    public static void askUser(Player user, String message, ValidInputType type, GUI gui) {
+        user.closeInventory();
+        PLAYER_INPUT.put(user.getUniqueId(), new HashMap<>() {
+            {
+                put(type, gui);
+            }
+        });
+        user.sendMessage(message);
+    }
+
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         try {
@@ -116,22 +129,10 @@ public class UserListener implements Listener {
 
     }
 
-    private static final HashMap<UUID, HashMap<ValidInputType, GUI>> PLAYER_INPUT = new HashMap<>();
-
-    public static void askUser(Player user, String message, ValidInputType type, GUI gui) {
-        user.closeInventory();
-        PLAYER_INPUT.put(user.getUniqueId(), new HashMap<>() {
-            {
-                put(type, gui);
-            }
-        });
-        user.sendMessage(message);
-    }
-
     @EventHandler
     public void onChat(AsyncPlayerChatEvent e) {
-        HashMap<ValidInputType, GUI> onIn;
-        if ((onIn = PLAYER_INPUT.remove(e.getPlayer().getUniqueId())) != null) {
+        final HashMap<ValidInputType, GUI> onIn = PLAYER_INPUT.remove(e.getPlayer().getUniqueId());
+        if (onIn != null) {
             GUI gui = onIn.values().iterator().next();
             gui.onCustomEvent(e.getMessage());
         }

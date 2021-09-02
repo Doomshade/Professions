@@ -40,8 +40,7 @@ import java.util.*;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
-import static git.doomshade.professions.data.AbstractSettings.LEVEL;
-import static git.doomshade.professions.data.AbstractSettings.outdated;
+import static git.doomshade.professions.data.AbstractSettings.*;
 
 /**
  * The main settings class that registers all setting instances. Also manages settings in the root path.
@@ -52,11 +51,11 @@ import static git.doomshade.professions.data.AbstractSettings.outdated;
  */
 public final class Settings implements ISetup {
 
-    private static final HashSet<AbstractSettings> SETTINGS = new HashSet<>();
+    private static final Set<AbstractSettings> SETTINGS = new HashSet<>();
     private static final String DEFAULT_PROPERTIES = "lang_en.yml";
+    private static final Settings INSTANCE;
     protected static FileConfiguration config;
     protected static Professions plugin;
-    private static final Settings instance;
     private static FileConfiguration lang;
     private static File langFile;
     private static Material editItem = Material.GOLD_NUGGET;
@@ -70,7 +69,7 @@ public final class Settings implements ISetup {
 
     static {
         plugin = Professions.getInstance();
-        instance = new Settings();
+        INSTANCE = new Settings();
         plugin.reloadConfig();
         config = plugin.getConfig();
 
@@ -84,11 +83,11 @@ public final class Settings implements ISetup {
         registerSettings(new MaxProfessionsSettings());
     }
 
-    public static Collection<AbstractSettings> getSettings() {
-        return Collections.unmodifiableCollection(SETTINGS);
+    private Settings() {
     }
 
-    private Settings() {
+    public static Collection<AbstractSettings> getSettings() {
+        return Collections.unmodifiableCollection(SETTINGS);
     }
 
     public static void registerSettings(AbstractSettings settings) {
@@ -100,15 +99,15 @@ public final class Settings implements ISetup {
     }
 
     public static Settings getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends AbstractSettings> T getSettings(Class<T> clazz) {
+    public static <T extends AbstractSettings> T getSettings(Class<T> clazz) throws IllegalArgumentException {
         try {
             return (T) Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(clazz.getName()));
         } catch (Utils.SearchNotFoundException e) {
-            throw new IllegalArgumentException(clazz + " settings is not a registered settings!");
+            throw new IllegalArgumentException(clazz + " settings is not a registered settings!", e);
         }
     }
 
@@ -131,7 +130,7 @@ public final class Settings implements ISetup {
             });
         } catch (Utils.SearchNotFoundException e) {
             throw new IllegalArgumentException(
-                    profession.getColoredName() + " settings is not a registered profession settings!");
+                    profession.getColoredName() + " settings is not a registered profession settings!", e);
         }
     }
 
@@ -163,10 +162,10 @@ public final class Settings implements ISetup {
         return useBossBar;
     }
 
-    protected void printError(String section, Object value) {
-        if (!outdated) {
+    private void printError(String section, Object value) {
+        if (!isOutdated()) {
             ProfessionLogger.log("Your configuration file is outdated!", LEVEL);
-            outdated = true;
+            setOutdated(true);
         }
         ProfessionLogger.log(String.format("Missing \"%s\" variable!", section), LEVEL);
         if (value == null) {

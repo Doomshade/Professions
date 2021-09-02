@@ -56,29 +56,22 @@ import java.util.stream.Collectors;
 public abstract class AbstractCommandHandler implements CommandExecutor, TabCompleter, ISetup {
 
     // cache instances of all command handlers
-    private static final HashMap<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES =
+    private static final Map<Class<? extends AbstractCommandHandler>, AbstractCommandHandler> INSTANCES =
             new HashMap<>();
-
-    // only need one reference of plugin
-    // honestly not needed, but it does not eat that much memory
-    protected final Professions plugin = Professions.getInstance();
-
     // tree map to print the commands in natural order
-    // again, memory/CPU usage is little no none, no need to keep it as a simple hashmap
-    protected final TreeMap<String, AbstractCommand> INSTANCE_COMMANDS = new TreeMap<>(String::compareToIgnoreCase);
+    protected final Map<String, AbstractCommand> instanceCommands = new TreeMap<>(String::compareToIgnoreCase);
+    private final Professions plugin = Professions.getInstance();
+    // TODO will likely shift to an IOManager someday
+    private final File folder = new File(plugin.getDataFolder(), "commands");
 
-    // TODO
-    // will likely shift to an IOManager someday
-    private final File FOLDER = new File(plugin.getDataFolder(), "commands");
-
-    // initialize plugin command and its file
+    // lazily initialize plugin command and its file
     private PluginCommand cmd = null;
     private File file = null;
 
     // just make sure the folder is an actual directory every time a new instance is created
     {
-        if (!FOLDER.isDirectory()) {
-            FOLDER.mkdirs();
+        if (!folder.isDirectory()) {
+            folder.mkdirs();
         }
     }
 
@@ -133,7 +126,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      * @return a copy of the command handler's commands
      */
     public final Map<String, AbstractCommand> getCommands() {
-        return ImmutableSortedMap.copyOf(INSTANCE_COMMANDS);
+        return ImmutableSortedMap.copyOf(instanceCommands);
     }
 
     /**
@@ -142,15 +135,16 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      *
      * @return the command handler
      *
-     * @throws RuntimeException if the command handler is not registered
+     * @throws IllegalArgumentException if the command handler is not registered
      */
     @SuppressWarnings("unchecked")
     public static <T extends AbstractCommandHandler> T getInstance(Class<T> commandHandlerClass)
-            throws RuntimeException {
+            throws IllegalArgumentException {
         if (INSTANCES.containsKey(commandHandlerClass)) {
             return (T) INSTANCES.get(commandHandlerClass);
         } else {
-            throw new RuntimeException(commandHandlerClass.getSimpleName() + " is not a registered command handler!");
+            throw new IllegalArgumentException(
+                    commandHandlerClass.getSimpleName() + " is not a registered command handler!");
         }
     }
 
@@ -191,7 +185,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      * @param cmd the command to register
      */
     protected final void registerCommand(AbstractCommand cmd) {
-        INSTANCE_COMMANDS.put(cmd.getCommand(), cmd);
+        instanceCommands.put(cmd.getCommand(), cmd);
     }
 
     /**
@@ -202,7 +196,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         if (cmd == null || file == null) {
             String commandName = getCommandExecutorName();
             try {
-                file = new File(FOLDER, String.format("%s.yml", commandName));
+                file = new File(folder, String.format("%s.yml", commandName));
                 if (!file.exists()) {
                     file.createNewFile();
                 }
@@ -212,7 +206,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             cmd = Bukkit.getPluginCommand(commandName);
             Objects.requireNonNull(cmd).setExecutor(this);
         }
-        INSTANCE_COMMANDS.clear();
+        instanceCommands.clear();
         registerCommands();
 
         setupCommandFile();
@@ -248,7 +242,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         // this is quite ugly, but essentially deserializes the command, creating a helper class
         // we can only partly deserialize from file as there's no way we serialize onCommand and onTabComplete methods
         // there could likely be a better looking solution, but fuck that
-        for (AbstractCommand cmd : INSTANCE_COMMANDS.values()) {
+        for (AbstractCommand cmd : instanceCommands.values()) {
             final String id = cmd.getID();
 
             // sometimes we forget the ID of command (which is mandatory), throw an ex to let the coder know
@@ -287,7 +281,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     private void setupCommandFile() throws IOException {
         FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
         Map<String, Object> defaults = new HashMap<>();
-        for (AbstractCommand cmd : INSTANCE_COMMANDS.values()) {
+        for (AbstractCommand cmd : instanceCommands.values()) {
             defaults.put(cmd.getID(), cmd.serialize());
         }
         loader.addDefaults(defaults);
@@ -300,7 +294,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
                                             String[] args) {
         List<String> tab = new ArrayList<>();
         if (args.length == 0) {
-            INSTANCE_COMMANDS.forEach((y, x) -> {
+            instanceCommands.forEach((y, x) -> {
                 if (isValid(sender, x)) {
                     tab.add(x.getCommand());
                 }
@@ -308,12 +302,12 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             return tab;
         }
 
-        AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
+        AbstractCommand acmd = instanceCommands.get(args[0]);
         if (isValid(sender, acmd)) {
             return acmd.onTabComplete(sender, args);
         }
 
-        tab.addAll(INSTANCE_COMMANDS.values()
+        tab.addAll(instanceCommands.values()
                 .stream()
                 .map(AbstractCommand::getCommand)
                 .filter(command -> command.startsWith(args[0]))
@@ -363,20 +357,21 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
             return true;
         }
 
-        AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
+        AbstractCommand acmd = instanceCommands.get(args[0]);
         if (!isValid(sender, acmd)) {
             return false;
         }
-        List<String> cmdArgs = acmd.getArgs().containsKey(true) && acmd.getArgs().get(true) != null
-                ? acmd.getArgs().get(true)
-                : null;
-        if (cmdArgs != null && acmd.getArgs().get(true) != null && cmdArgs.size() > args.length - 1) {
-            sender.sendMessage(infoMessage(acmd));
-            return true;
+        final Map<Boolean, List<String>> cmdArgMap = acmd.getArgs();
+        List<String> cmdArgs = cmdArgMap.get(true);
+        if (cmdArgs != null) {
+            final boolean isCorrectLength = cmdArgs.size() > args.length - 1;
+            if (isCorrectLength) {
+                sender.sendMessage(infoMessage(acmd));
+                return true;
+            }
         }
         acmd.onCommand(sender, args);
-        if ((acmd.getPermissions().contains(Permissions.HELPER) ||
-                acmd.getPermissions().contains(Permissions.BUILDER)) && sender instanceof Player) {
+        if (sender instanceof Player) {
             ProfessionLogger.log(
                     String.format("%s issued %s command with arguments: %s", sender.getName(), acmd.getCommand(),
                             Arrays.toString(args)), Level.CONFIG);
@@ -388,7 +383,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
         sender.sendMessage(ChatColor.DARK_AQUA + "" + ChatColor.STRIKETHROUGH + "-------" + ChatColor.DARK_AQUA + "[" +
                 ChatColor.RED
                 + plugin.getName() + ChatColor.DARK_AQUA + "]" + ChatColor.STRIKETHROUGH + "-------");
-        for (AbstractCommand acmd : INSTANCE_COMMANDS.values()) {
+        for (AbstractCommand acmd : instanceCommands.values()) {
             if (isValid(sender, acmd)) {
                 sender.sendMessage(infoMessage(acmd));
             }

@@ -45,6 +45,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -57,7 +58,7 @@ import java.util.regex.Pattern;
  */
 public class OreEditListener implements Listener {
 
-    private static final HashMap<UUID, OreLocation> CHAT = new HashMap<>();
+    private static final Map<UUID, OreLocation> CHAT = new HashMap<>();
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -143,7 +144,7 @@ public class OreEditListener implements Listener {
         }
     }
 
-    private static class OreLocation {
+    private static final class OreLocation {
         private final Ore ore;
         private final Location location;
 

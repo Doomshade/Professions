@@ -36,7 +36,7 @@ import java.io.File;
  * @version 1.0
  * @since 1.0
  */
-public class OreSpawnManager implements ISetup {
+public final class OreSpawnManager implements ISetup {
 
 
     private static OreSpawnManager instance;

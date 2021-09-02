@@ -60,8 +60,8 @@ import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.SPAWN
 public final class SpawnPoint implements ISpawnPoint {
     public static final SpawnPoint EXAMPLE = new SpawnPoint();
     private static final MarkerManager MARKER_MANAGER = Professions.getMarkerManager();
-    private static final HashMap<Location, Collection<SpawnPoint>> SPAWN_POINTS = new HashMap<>();
-    private static final HashMap<Spawnable, Integer> SERIAL_NUMBER_CACHE = new HashMap<>();
+    private static final Map<Location, Collection<SpawnPoint>> SPAWN_POINTS = new HashMap<>();
+    private static final Map<Spawnable, Integer> SERIAL_NUMBER_CACHE = new HashMap<>();
 
     private final Location location;
     private final Spawnable element;
@@ -100,7 +100,7 @@ public final class SpawnPoint implements ISpawnPoint {
      * @param spawnable the spawnable element
      */
     public SpawnPoint(Location location, Range spawnTime, Spawnable spawnable) {
-        this(location, spawnTime, spawnable, MarkerManager.EMPTY_MARKER_SET_ID);
+        this(location, spawnTime, spawnable, MarkerManager.getEmptyMarkerSetId());
     }
 
     /**
@@ -114,8 +114,8 @@ public final class SpawnPoint implements ISpawnPoint {
     }
 
     /**
-     * The main spawn point. Binds the spawn point to the given spawnable so there's no need in adding the spawn
-     * point again
+     * The main spawn point. Binds the spawn point to the given spawnable so there's no need in adding the spawn point
+     * again
      *
      * @param location     the location
      * @param spawnTime    the spawn time
@@ -155,10 +155,6 @@ public final class SpawnPoint implements ISpawnPoint {
         return SERIAL_NUMBER_CACHE.getOrDefault(forElement, 0) + 1;
     }
 
-    public SpawnPoint(Location location, Range spawnTime, Spawnable element, int serialNumber) {
-        this(location, spawnTime, element, MarkerManager.EMPTY_MARKER_SET_ID, serialNumber);
-    }
-
     public static void unloadAll() {
         SERIAL_NUMBER_CACHE.clear();
         SPAWN_POINTS.clear();
@@ -166,7 +162,7 @@ public final class SpawnPoint implements ISpawnPoint {
 
     public static Collection<SpawnPoint> deserializeAll(Map<String, Object> map, Spawnable spawnable)
             throws ProfessionObjectInitializationException {
-        return deserializeAll(map, spawnable, MarkerManager.EMPTY_MARKER_SET_ID);
+        return deserializeAll(map, spawnable, MarkerManager.getEmptyMarkerSetId());
     }
 
     public static Collection<SpawnPoint> deserializeAll(Map<String, Object> map, Spawnable spawnable,
@@ -188,7 +184,7 @@ public final class SpawnPoint implements ISpawnPoint {
          *          yaw: 0
          */
         ProfessionLogger.log(String.format("Deserializing spawn points for %s from map (%d)", spawnable.getId(),
-                        map.size()), Level.FINEST);
+                map.size()), Level.FINEST);
         for (int i = 0; i < map.size(); i++) {
 
             final Object o = map.get(SPAWN_POINT.s.concat("-") + i);
@@ -247,7 +243,7 @@ public final class SpawnPoint implements ISpawnPoint {
 
     public static SpawnPoint deserialize(Map<String, Object> map, Spawnable spawnable, int serialNumber)
             throws ProfessionObjectInitializationException {
-        return deserialize(map, spawnable, MarkerManager.EMPTY_MARKER_SET_ID, serialNumber);
+        return deserialize(map, spawnable, MarkerManager.getEmptyMarkerSetId(), serialNumber);
     }
 
     @Override

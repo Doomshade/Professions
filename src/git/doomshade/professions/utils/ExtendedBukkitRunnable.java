@@ -43,7 +43,7 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
 
     private boolean running = false;
 
-    public synchronized final BukkitTask startTaskAsync() throws IllegalArgumentException, IllegalStateException {
+    public final synchronized BukkitTask startTaskAsync() throws IllegalArgumentException, IllegalStateException {
         return startTask(false);
     }
 
@@ -65,12 +65,12 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
             return sync
                     ? super.runTaskTimer(Professions.getInstance(), delay, period)
                     : super.runTaskTimerAsynchronously(Professions.getInstance(), delay, period);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             if (isRunning()) {
                 try {
                     cancel();
                 } catch (IllegalStateException ex) {
-                    ex.printStackTrace();
+                    ProfessionLogger.logError(ex);
                 }
             }
             // TODO
@@ -84,7 +84,7 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
     }
 
     @Override
-    public synchronized final void cancel() throws IllegalStateException {
+    public final synchronized void cancel() throws IllegalStateException {
         if (!isRunning()) {
             throw new IllegalStateException("Task is not running!");
         }
@@ -156,7 +156,7 @@ public abstract class ExtendedBukkitRunnable extends BukkitRunnable {
      */
     protected abstract long period();
 
-    public synchronized final BukkitTask startTask() throws IllegalArgumentException, IllegalStateException {
+    public final synchronized BukkitTask startTask() throws IllegalArgumentException, IllegalStateException {
         return startTask(true);
     }
 }

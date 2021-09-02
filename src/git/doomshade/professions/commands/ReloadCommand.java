@@ -41,11 +41,7 @@ import java.util.List;
 @SuppressWarnings("ALL")
 public class ReloadCommand extends AbstractCommand {
 
-    private static boolean clear_cache = true;
-
-    public static boolean isClearCache() {
-        return clear_cache;
-    }
+    private static boolean clearCache = true;
 
     public ReloadCommand() {
         setCommand("reload");
@@ -57,13 +53,17 @@ public class ReloadCommand extends AbstractCommand {
         addPermission(Permissions.HELPER);
     }
 
+    public static boolean isClearCache() {
+        return clearCache;
+    }
+
     @Override
     public void onCommand(CommandSender sender, String[] args) {
-        clear_cache = false;
+        clearCache = false;
         Professions plugin = Professions.getInstance();
         if (args.length > 1) {
             try {
-                clear_cache = Boolean.parseBoolean(args[1]);
+                clearCache = Boolean.parseBoolean(args[1]);
             } catch (Exception e) {
                 sender.sendMessage(ChatColor.BLUE + "Invalid argument. Valid args: (true/false)");
             }

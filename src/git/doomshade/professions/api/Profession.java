@@ -70,8 +70,8 @@ import java.util.stream.Collectors;
 public abstract class Profession implements IProfession {
 
     protected final ProfessionUtils utils;
-    final HashSet<ItemTypeHolder<?, ?>> items = new HashSet<>();
-    private final HashSet<String> requiredPlugins = new HashSet<>();
+    final Set<ItemTypeHolder<?, ?>> items = new HashSet<>();
+    private final Set<String> requiredPlugins = new HashSet<>();
     private final String name;
     private final ProfessionType pt;
     private final ItemStack icon;

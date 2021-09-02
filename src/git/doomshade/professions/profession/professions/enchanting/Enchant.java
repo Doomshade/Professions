@@ -37,9 +37,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -52,16 +53,16 @@ import java.util.stream.Collectors;
  */
 public class Enchant extends Element {
     public static final int DEFAULT_INTENSITY = 0;
-    private static final List<Pattern> attributePatterns = new ArrayList<>();
+    private static final List<Pattern> ATTRIBUTE_PATTERNS = new ArrayList<>();
     private static final String ITEMSTACK = "itemstack", CLASS = "class", CRAFT_EXP_YIELD = "craft-exp-yield";
 
     static {
 
         // LA
-        attributePatterns.add(Pattern.compile("[+][0-9]+ [\\D]+"));
+        ATTRIBUTE_PATTERNS.add(Pattern.compile("[+][0-9]+ [\\D]+"));
 
         // SAPI
-        attributePatterns.add(Pattern.compile("[\\D]+: [0-9]+"));
+        ATTRIBUTE_PATTERNS.add(Pattern.compile("[\\D]+: [0-9]+"));
     }
 
     private final EnchantMetadata metadata;
@@ -141,7 +142,7 @@ public class Enchant extends Element {
             return null;
         }
         String copy = ChatColor.stripColor(loreLine);
-        for (Pattern p : attributePatterns) {
+        for (Pattern p : ATTRIBUTE_PATTERNS) {
             if (p.matcher(copy).find()) {
                 try {
                     return new ItemAttribute(loreLine.replaceAll("[\\d]", "").replaceAll("[+]", ""),
@@ -198,7 +199,7 @@ public class Enchant extends Element {
         return item;
     }
 
-    public void setItem(ItemStack item) {
+    public final void setItem(ItemStack item) {
         this.item = item;
     }
 
@@ -220,7 +221,7 @@ public class Enchant extends Element {
         return craftExpYield;
     }
 
-    public void setCraftExpYield(int craftExpYield) {
+    public final void setCraftExpYield(int craftExpYield) {
         this.craftExpYield = craftExpYield;
     }
 

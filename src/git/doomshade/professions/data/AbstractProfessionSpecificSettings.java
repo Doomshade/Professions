@@ -43,8 +43,8 @@ import java.io.Serializable;
  */
 public abstract class AbstractProfessionSpecificSettings extends AbstractSettings {
 
-    private transient final Profession profession;
-    private transient final FileConfiguration loader;
+    private final transient Profession profession;
+    private final transient FileConfiguration loader;
 
     /**
      * The default constructor of settings

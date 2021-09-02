@@ -45,14 +45,14 @@ import java.util.List;
  */
 public final class EventManager {
 
-    private static final EventManager em = new EventManager();
-    private static final PluginManager pm = Bukkit.getPluginManager();
+    private static final EventManager EM = new EventManager();
+    private static final PluginManager PM = Bukkit.getPluginManager();
 
     private EventManager() {
     }
 
     public static EventManager getInstance() {
-        return em;
+        return EM;
     }
 
     /**
@@ -133,7 +133,7 @@ public final class EventManager {
      * @return the called profession event
      */
     public <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
-        pm.callEvent(event);
+        PM.callEvent(event);
         return event;
     }
 }

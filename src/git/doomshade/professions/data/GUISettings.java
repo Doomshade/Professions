@@ -35,37 +35,20 @@ import java.util.Objects;
  *
  * @author Doomshade
  * @version 1.0
- * @since 1.0
  * @see git.doomshade.professions.commands.PlayerGuiCommand
+ * @since 1.0
  */
 public class GUISettings extends AbstractSettings {
-    private static final String SECTION = "gui",
-            PROFESSIONS_GUI_NAME = "professions-gui-name",
-            LEVEL_THRESHOLD = "show-level-threshold",
-            INFORMATION_SIGN_NAME = "information-sign-name";
+    private static final String KEY_SECTION = "gui",
+            KEY_PROFESSIONS_GUI_NAME = "professions-gui-name",
+            KEY_LEVEL_THRESHOLD = "show-level-threshold",
+            KEY_INFORMATION_SIGN_NAME = "information-sign-name";
+    private static final int DEFAULT_LEVEL_THRESHOLD = 3;
     private String professionsGuiName = "Professions", signName = "Information";
-    private int levelThreshold = 3;
+    private int levelThreshold = DEFAULT_LEVEL_THRESHOLD;
 
     GUISettings() {
         super();
-    }
-
-
-    @Override
-    protected ConfigurationSection getDefaultSection() {
-        ConfigurationSection section = super.getDefaultSection();
-
-        if (!section.isConfigurationSection(SECTION)) {
-            super.printError(SECTION, null);
-            return null;
-        }
-
-        return section.getConfigurationSection(SECTION);
-    }
-
-    @Override
-    protected void printError(String section, Object value) {
-        super.printError(SECTION + "." + section, value);
     }
 
     // TODO update gui settings on reload (have to add a method in GUIApi)
@@ -74,14 +57,36 @@ public class GUISettings extends AbstractSettings {
         super.setup();
         ConfigurationSection section = getDefaultSection();
 
-        professionsGuiName = setupString(section, PROFESSIONS_GUI_NAME, professionsGuiName);
-        signName = setupString(section, INFORMATION_SIGN_NAME, signName);
+        professionsGuiName = setupString(section, KEY_PROFESSIONS_GUI_NAME, professionsGuiName);
+        signName = setupString(section, KEY_INFORMATION_SIGN_NAME, signName);
 
-        if (!section.isInt(LEVEL_THRESHOLD)) {
-            printError(LEVEL_THRESHOLD, 3);
+        if (!section.isInt(KEY_LEVEL_THRESHOLD)) {
+            printError(KEY_LEVEL_THRESHOLD, DEFAULT_LEVEL_THRESHOLD);
         } else {
-            this.levelThreshold = section.getInt(LEVEL_THRESHOLD);
+            this.levelThreshold = section.getInt(KEY_LEVEL_THRESHOLD);
         }
+    }
+
+    @Override
+    protected ConfigurationSection getDefaultSection() {
+        ConfigurationSection section = super.getDefaultSection();
+
+        if (!section.isConfigurationSection(KEY_SECTION)) {
+            super.printError(KEY_SECTION, null);
+            return null;
+        }
+
+        return section.getConfigurationSection(KEY_SECTION);
+    }
+
+    @Override
+    public String getSetupName() {
+        return "GUI " + super.getSetupName();
+    }
+
+    @Override
+    protected void printError(String section, Object value) {
+        super.printError(KEY_SECTION + "." + section, value);
     }
 
     private String setupString(ConfigurationSection section, String path, String defaultName) {
@@ -98,7 +103,6 @@ public class GUISettings extends AbstractSettings {
         return str;
     }
 
-
     public String getProfessionsGuiName() {
         return professionsGuiName;
     }
@@ -109,10 +113,5 @@ public class GUISettings extends AbstractSettings {
 
     public String getSignName() {
         return signName;
-    }
-
-    @Override
-    public String getSetupName() {
-        return "GUI " + super.getSetupName();
     }
 }

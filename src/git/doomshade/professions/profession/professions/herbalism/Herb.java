@@ -58,7 +58,7 @@ import static git.doomshade.professions.utils.Strings.HerbEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Herb extends Spawnable {
+public final class Herb extends Spawnable {
 
     public static final Herb EXAMPLE_HERB = new Herb(Utils.EXAMPLE_ID, Objects.requireNonNull(
             ItemUtils.EXAMPLE_RESULT.getItemMeta()).getDisplayName(),

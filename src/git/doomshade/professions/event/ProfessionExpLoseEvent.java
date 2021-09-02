@@ -36,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
  * @since 1.0
  */
 public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
-    private static final HandlerList handlerList = new HandlerList();
+    private static final HandlerList HANDLER_LIST = new HandlerList();
     private double exp;
 
     protected ProfessionExpLoseEvent(UserProfessionData data) {
@@ -49,7 +49,7 @@ public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
     }
 
     public static HandlerList getHandlerList() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
     public double getExp() {
@@ -62,7 +62,7 @@ public class ProfessionExpLoseEvent extends AbstractProfessionEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlerList;
+        return HANDLER_LIST;
     }
 
 }

@@ -34,8 +34,11 @@ import java.util.regex.Pattern;
  * @version 1.0
  * @since 1.0
  */
-public class EffectUtils {
+public final class EffectUtils {
     private static final Pattern ATTRIBUTE_PATTERN = Pattern.compile("([\\w]+):([0-9]+)");
+
+    private EffectUtils() {
+    }
 
     public static void addAttributes(Player player, boolean inverted, String attr) {
         Matcher m = ATTRIBUTE_PATTERN.matcher(attr);

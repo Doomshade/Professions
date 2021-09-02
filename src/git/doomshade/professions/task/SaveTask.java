@@ -27,6 +27,7 @@ package git.doomshade.professions.task;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;
+import git.doomshade.professions.utils.Utils;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;
@@ -40,8 +41,9 @@ import java.time.Duration;
  * @since 1.0
  */
 public class SaveTask extends ExtendedBukkitRunnable {
+    private static final int MINUTES = 5;
     // 5 minutes
-    private static final long SAVE_DELAY = Duration.ofMinutes(5).getSeconds();
+    private static final long SAVE_DELAY = Duration.ofMinutes(MINUTES).getSeconds();
 
     @Override
     public void run() {
@@ -58,11 +60,11 @@ public class SaveTask extends ExtendedBukkitRunnable {
 
     @Override
     protected long delay() {
-        return SAVE_DELAY * 20L;
+        return SAVE_DELAY * Utils.TICKS;
     }
 
     @Override
     protected long period() {
-        return SAVE_DELAY * 20L;
+        return SAVE_DELAY * Utils.TICKS;
     }
 }

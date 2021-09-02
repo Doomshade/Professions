@@ -38,13 +38,8 @@ import java.io.Serializable;
  * @since 1.0
  */
 public abstract class AbstractProfessionSettings extends AbstractSettings {
-    private transient static final String SECTION = "profession";
-    private transient static ConfigurationSection section = config.getConfigurationSection(SECTION);
-
-    @Override
-    protected ConfigurationSection getDefaultSection() {
-        return section;
-    }
+    private final transient static String SECTION = "profession";
+    private transient ConfigurationSection section = config.getConfigurationSection(SECTION);
 
     /**
      * Try to set the section first, then check if it exists
@@ -55,6 +50,11 @@ public abstract class AbstractProfessionSettings extends AbstractSettings {
     public void setup() throws ConfigurationException {
         section = config.getConfigurationSection(SECTION);
         super.setup();
+    }
+
+    @Override
+    protected ConfigurationSection getDefaultSection() {
+        return section;
     }
 
     @Override

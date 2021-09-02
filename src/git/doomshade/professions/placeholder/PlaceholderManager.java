@@ -31,8 +31,8 @@ import git.doomshade.professions.utils.ISetup;
  * @version 1.0
  * @since 1.0
  */
-public class PlaceholderManager implements ISetup {
-    private static final PlaceholderManager instance = new PlaceholderManager();
+public final class PlaceholderManager implements ISetup {
+    private static final PlaceholderManager INSTANCE = new PlaceholderManager();
     private static boolean registered = false;
     private ProfessionPlaceholders placeholders = null;
 
@@ -40,7 +40,7 @@ public class PlaceholderManager implements ISetup {
     }
 
     public static PlaceholderManager getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     public static boolean usesPlaceholders() {
@@ -53,13 +53,14 @@ public class PlaceholderManager implements ISetup {
             return;
         }
 
-        placeholders = new ProfessionPlaceholders();
+        placeholders = ProfessionPlaceholders.getInstance();
 
-        if (!(registered = placeholders.register())) {
+        registered = placeholders.register();
+        if (!registered) {
             String msg = "Failed to register placeholders";
             /*ProfessionLogger.log(msg, Level.CONFIG);
             ProfessionLogger.log(msg, Level.WARNING);*/
-            throw new Exception(msg);
+            throw new IllegalStateException(msg);
         }
     }
 }

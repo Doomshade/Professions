@@ -37,10 +37,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.logging.Level;
+import java.util.Set;
 
 /**
  * A profession settings manager
@@ -50,7 +49,7 @@ import java.util.logging.Level;
  * @since 1.0
  */
 public final class ProfessionSettingsManager extends AbstractSettings {
-    private transient final HashSet<AbstractProfessionSpecificSettings> SETTINGS = new HashSet<>();
+    private transient final Set<AbstractProfessionSpecificSettings> settings = new HashSet<>();
     private transient final Profession profession;
 
     public ProfessionSettingsManager(Profession profession) {
@@ -63,7 +62,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         T theSettings = null;
         try {
             AbstractProfessionSpecificSettings settings =
-                    Utils.findInIterable(SETTINGS, x -> x.getClass().getName().equals(settingsClass.getName()));
+                    Utils.findInIterable(this.settings, x -> x.getClass().getName().equals(settingsClass.getName()));
             if (settings instanceof Cloneable) {
                 theSettings = (T) settings.getClass().getMethod("clone").invoke(settings);
             } else {
@@ -74,7 +73,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
                 theSettings = settingsClass.getDeclaredConstructor(Profession.class).newInstance(profession);
                 theSettings.setup();
                 Professions.getInstance().registerSetup(theSettings);
-                SETTINGS.add(theSettings);
+                settings.add(theSettings);
             } catch (ConfigurationException ex) {
                 ProfessionLogger.logError(ex, false);
                 /*ProfessionLogger.log("Could not load " + settingsClass.getSimpleName() + " settings!" + "\n" +
@@ -91,7 +90,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
     void register(AbstractProfessionSpecificSettings settings) throws ConfigurationException {
         settings.setup();
-        SETTINGS.add(settings);
+        this.settings.add(settings);
     }
 
     @Override
@@ -108,12 +107,12 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
 
     public void save() throws IOException {
-        if (SETTINGS.isEmpty()) {
-            throw new RuntimeException("Settings are empty! #save method was likely called before #setup method!");
+        if (settings.isEmpty()) {
+            throw new IOException("Settings are empty! #save method was likely called before #setup method!");
         }
         final File f = IOManager.getProfessionFile(profession);
         FileConfiguration loader = YamlConfiguration.loadConfiguration(f);
-        for (AbstractProfessionSpecificSettings settings : SETTINGS) {
+        for (AbstractProfessionSpecificSettings settings : settings) {
             loader.addDefaults(Objects.requireNonNull(settings.getDefaultSection().getRoot()));
         }
         loader.options().copyDefaults(true);
@@ -122,7 +121,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
     @Override
     public void cleanup() {
-        SETTINGS.clear();
+        settings.clear();
     }
 
     @Override

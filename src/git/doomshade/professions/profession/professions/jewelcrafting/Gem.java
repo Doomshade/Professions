@@ -58,7 +58,7 @@ import static git.doomshade.professions.utils.Strings.GemEnum.*;
  * @version 1.0
  * @since 1.0
  */
-public class Gem extends Element {
+public final class Gem extends Element {
 
     // TODO settings
     public static final String EMPTY_GEM = "(Místo pro klenot)";
@@ -73,8 +73,8 @@ public class Gem extends Element {
             GemEquipmentSlot.ARMOR
     );
 
-    private static final HashMap<UUID, Set<Gem>> ACTIVE_GEMS = new HashMap<>();
-    private static final HashSet<String> LOGGED_ERROR_GEMS = new HashSet<>();
+    private static final Map<UUID, Set<Gem>> ACTIVE_GEMS = new HashMap<>();
+    private static final Set<String> LOGGED_ERROR_GEMS = new HashSet<>();
     private final List<String> context;
     private final ItemStack gem;
     private final GemEffect gemEffect;
@@ -290,7 +290,7 @@ public class Gem extends Element {
         return insert(item, false);
     }
 
-    public InsertResult insert(ItemStack item, boolean ignoreMisto) {
+    public InsertResult insert(ItemStack item, boolean ignoreSpace) {
 
         if (item == null) {
             return InsertResult.INVALID_ITEM;
@@ -335,7 +335,7 @@ public class Gem extends Element {
                 }
             });
         } catch (Utils.SearchNotFoundException e) {
-            if (!ignoreMisto) {
+            if (!ignoreSpace) {
                 return NO_GEM_SPACE_RESULT;
             }
         }*/
@@ -344,7 +344,7 @@ public class Gem extends Element {
             lore.set(idx, getName());
             meta.setLore(lore);
             item.setItemMeta(meta);
-        } else if (!ignoreMisto) {
+        } else if (!ignoreSpace) {
             return InsertResult.NO_GEM_SPACE;
         }
 

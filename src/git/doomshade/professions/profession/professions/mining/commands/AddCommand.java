@@ -75,7 +75,6 @@ public class AddCommand extends AbstractEditCommand {
             respawnTime = Range.fromString(args[2]).orElseThrow(() -> new IllegalArgumentException(
                     String.format("Could not get " +
                             "range from '%s'", args[2])));
-            ;
         } catch (Exception e) {
             ProfessionLogger.logError(e);
         }

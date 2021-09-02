@@ -32,9 +32,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Class for {@link Profession} drop settings.
@@ -46,7 +44,9 @@ import java.util.Objects;
 public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSettings {
     private transient static final String SECTION = "drop", INCREMENT_BY = "increment-by", INCREMENT_SINCE =
             "increment-since";
-    private final LinkedList<Drop> DROPS = new LinkedList<>();
+    public static final int DEFAULT_INCREMENT_SINCE = 15;
+    public static final double DEFAULT_INCREMENT_BY = 0.1;
+    private final List<Drop> drops = new ArrayList<>();
 
     /**
      * The default constructor of settings
@@ -69,7 +69,7 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
      */
     public int getDropAmount(UserProfessionData upd, ItemType<?> item) {
 
-        return DROPS.stream()
+        return drops.stream()
                 .filter(drop -> Math.random() < drop.getDropChance(upd.getLevel(), item.getLevelReq()))
                 .findFirst()
                 .map(drop -> drop.drop)
@@ -94,10 +94,11 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
             return section.getConfigurationSection(SECTION);
         } else {
             ConfigurationSection sec = section.createSection(SECTION);
+            // okay I have no clue either
             for (int i = 2; i < 4; i++) {
                 ConfigurationSection specificDropSec = sec.createSection(i + "");
-                specificDropSec.set(INCREMENT_SINCE, 15);
-                specificDropSec.set(INCREMENT_BY, 0.1);
+                specificDropSec.set(INCREMENT_SINCE, DEFAULT_INCREMENT_SINCE);
+                specificDropSec.set(INCREMENT_BY, DEFAULT_INCREMENT_BY);
             }
 
             return sec;
@@ -113,17 +114,17 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
         // add all drops to the list
         for (String s : section.getKeys(false)) {
             ConfigurationSection dropSection = section.getConfigurationSection(s);
-            DROPS.add(new Drop(Integer.parseInt(s), Objects.requireNonNull(dropSection).getInt(INCREMENT_SINCE),
+            drops.add(new Drop(Integer.parseInt(s), Objects.requireNonNull(dropSection).getInt(INCREMENT_SINCE),
                     dropSection.getDouble(INCREMENT_BY)));
         }
 
         // sort the list in descending order
-        DROPS.sort(Comparator.naturalOrder());
+        drops.sort(Comparator.naturalOrder());
     }
 
     @Override
     public void cleanup() {
-        DROPS.clear();
+        drops.clear();
     }
 
     @Override
@@ -134,7 +135,7 @@ public class ProfessionSpecificDropSettings extends AbstractProfessionSpecificSe
     /**
      * Just a class to store 3 variables and a single compute method
      */
-    private static class Drop implements Comparable<Drop>, Serializable {
+    private static final class Drop implements Comparable<Drop>, Serializable {
         /**
          * The drop amount
          */

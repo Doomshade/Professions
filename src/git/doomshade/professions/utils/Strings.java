@@ -31,7 +31,6 @@ import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.api.spawn.ext.Element;
 import git.doomshade.professions.api.spawn.ext.Spawnable;
 import git.doomshade.professions.enums.SortType;
-import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
@@ -69,6 +68,9 @@ public final class Strings {
         register(PreyEnum.CONFIG_NAME);
         register(SpawnPointEnum.RESPAWN_TIME);
         register(SpawnableElementEnum.PARTICLE);
+    }
+
+    private Strings() {
     }
 
     private static void register(FileEnum e) {
@@ -151,8 +153,6 @@ public final class Strings {
      */
     private static void putDefaults(Map<String, Object> map, Map<FileEnum, Object> defaults, FileEnum fe) {
         if (fe == null) {
-            ProfessionLogger.logError(new NullPointerException(
-                    String.format("Null FileEnum parameter\nmap=%s\ndefaults=%s", map, defaults)));
             return;
         }
         for (Map.Entry<? extends FileEnum, Object> e : fe.getDefaultValues().entrySet()) {
@@ -197,6 +197,7 @@ public final class Strings {
         SOUND_CRAFTING("crafting-sound"),
         SOUND_CRAFTED("crafted-sound");
 
+        private static final double DEFAULT_CRAFTING_TIME = 5d;
         public final String s;
 
         ICraftableEnum(String s) {
@@ -225,7 +226,7 @@ public final class Strings {
                     put(CRAFTABLE_ITEM_REQ,
                             new Requirements(Collections.singletonList(ItemUtils.EXAMPLE_REQUIREMENT)).serialize());
                     put(RESULT, ItemUtils.EXAMPLE_RESULT.serialize());
-                    put(CRAFTING_TIME, 5d);
+                    put(CRAFTING_TIME, DEFAULT_CRAFTING_TIME);
                     put(SOUND_CRAFTING, "block.fire.ambient");
                     put(SOUND_CRAFTED, "block.fire.extinguish");
                 }
@@ -367,6 +368,7 @@ public final class Strings {
         ENABLE_SPAWN("enable-spawn"),
         TIME_GATHER("gather-duration");
 
+        private static final int DEFAULT_GATHER_TIME = 5;
         public final String s;
 
         HerbEnum(String s) {
@@ -394,7 +396,7 @@ public final class Strings {
                 {
                     put(GATHER_ITEM, ItemUtils.EXAMPLE_RESULT.serialize());
                     put(ENABLE_SPAWN, false);
-                    put(TIME_GATHER, 5);
+                    put(TIME_GATHER, DEFAULT_GATHER_TIME);
                 }
             };
         }
@@ -503,6 +505,7 @@ public final class Strings {
         POTION("potion");
 
         private static final String SPLIT_CHAR = ":";
+        private static final int DEFAULT_POTION_DURATION = 80;
         public final String s;
 
         PotionEnum(String s) {
@@ -535,7 +538,7 @@ public final class Strings {
                             String.format("sance_na_kriticky_zasah%s80", SPLIT_CHAR),
                             String.format("poskozeni%s40", SPLIT_CHAR),
                             String.format("zivoty%s30", SPLIT_CHAR)));
-                    put(POTION_DURATION, 80);
+                    put(POTION_DURATION, DEFAULT_POTION_DURATION);
                     put(POTION_TYPE, PotionType.FIRE_RESISTANCE.name());
                     put(POTION, Potion.EXAMPLE_POTION.serialize());
                 }

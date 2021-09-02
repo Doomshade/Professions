@@ -40,6 +40,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
@@ -49,8 +50,8 @@ import java.util.UUID;
  * @since 1.0
  */
 public class PluginProfessionListener implements Listener {
-    public static final HashMap<UUID, CraftingTask> PENDING_REPEAT_AMOUNT = new HashMap<>();
-    private static final Random random = new Random();
+    public static final Map<UUID, CraftingTask> PENDING_REPEAT_AMOUNT = new HashMap<>();
+    private static final Random RANDOM = new Random();
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onExpGain(ProfessionExpGainEvent e) {
@@ -61,7 +62,7 @@ public class PluginProfessionListener implements Listener {
             return;
         } //else {
 
-        int rand = random.nextInt(100) + 1;
+        int rand = RANDOM.nextInt(100) + 1;
         final double chance = e.getSkillupColor().getChance();
 
         e.setCancelled(rand > chance);

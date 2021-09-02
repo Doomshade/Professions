@@ -64,7 +64,7 @@ public class MiningCommandHandler extends AbstractCommandHandler {
             return super.onCommand(sender, cmd, label, args);
         }
 
-        AbstractCommand acmd = INSTANCE_COMMANDS.get(args[0]);
+        AbstractCommand acmd = instanceCommands.get(args[0]);
         if (acmd instanceof AbstractEditCommand && !isBackedUp) {
             IOManager.backup();
             isBackedUp = true;

@@ -44,16 +44,16 @@ public class MaxProfessionsSettings extends AbstractProfessionSettings {
     public void setup() throws ConfigurationException {
 
         super.setup();
-        final String SECTION = "max-professions";
+        final String s = "max-professions";
 
         ConfigurationSection section = getDefaultSection();
 
-        ConfigurationSection maxSection = section.getConfigurationSection(SECTION);
+        ConfigurationSection maxSection = section.getConfigurationSection(s);
         if (maxSection != null) {
             this.maxPrimaryProfessions = maxSection.getInt("primary", 1);
             this.maxSecondaryProfessions = maxSection.getInt("secondary", 1);
         } else {
-            printError(SECTION, 1);
+            printError(s, 1);
         }
     }
 

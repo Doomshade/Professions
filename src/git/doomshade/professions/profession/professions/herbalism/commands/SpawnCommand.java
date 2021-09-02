@@ -26,6 +26,7 @@ package git.doomshade.professions.profession.professions.herbalism.commands;
 
 import git.doomshade.professions.api.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
+import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.command.CommandSender;
 
@@ -73,7 +74,7 @@ public class SpawnCommand extends AbstractSpawnCommand {
                     x.spawn();
                 }
             } catch (SpawnException e) {
-                e.printStackTrace();
+                ProfessionLogger.logError(e);
             }
         };
     }
