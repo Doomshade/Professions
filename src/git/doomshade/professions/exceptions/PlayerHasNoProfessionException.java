@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.exceptions;
 
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.user.User;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

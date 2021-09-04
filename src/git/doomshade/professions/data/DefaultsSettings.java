@@ -24,7 +24,6 @@
 
 package git.doomshade.professions.data;
 
-import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -41,7 +40,7 @@ import java.util.List;
 public class DefaultsSettings extends AbstractProfessionSettings {
 
     private static final String DEFAULTS = "defaults", SORTED_BY = "sorted-by";
-    private List<String> sortedBy = new ArrayList<>();
+    private final List<String> sortedBy = new ArrayList<>();
 
     DefaultsSettings() {
     }
@@ -54,18 +53,19 @@ public class DefaultsSettings extends AbstractProfessionSettings {
 
         ConfigurationSection defaultsSection = section.getConfigurationSection(DEFAULTS);
         if (defaultsSection != null) {
-            this.sortedBy = defaultsSection.getStringList(SORTED_BY);
+            final List<String> stringList = defaultsSection.getStringList(SORTED_BY);
+            this.sortedBy.addAll(stringList);
         } else {
             printError(DEFAULTS, null);
         }
     }
 
     public List<String> getSortedBy() {
-        return ImmutableList.copyOf(sortedBy);
+        return List.copyOf(sortedBy);
     }
 
     @Override
     public void cleanup() {
-        sortedBy = new ArrayList<>();
+        sortedBy.clear();
     }
 }

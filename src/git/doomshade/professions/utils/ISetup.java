@@ -25,18 +25,18 @@
 package git.doomshade.professions.utils;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.commands.ReloadCommand;
 
 /**
  * This interface is only for this plugin's purposes, not the API's, the {@link #setup()} method will not be called
  * during {@link Professions#onEnable()} even if you register it!
- * <p>Note that both setup and cleanup methods could possibly return a boolean inducing the result, but perhaps it's too
- * late for that (too lazy)</p>
  *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
 public interface ISetup {
+
     /**
      * A method in which the implementing class should put all needed data to memory. Called during {@link
      * Professions#onEnable()}
@@ -46,8 +46,7 @@ public interface ISetup {
     void setup() throws Exception;
 
     /**
-     * A method in which the implementing class should clean up all the data. Called in {@link
-     * git.doomshade.professions.commands.ReloadCommand}
+     * A method in which the implementing class should clean up all the data. Called in {@link ReloadCommand}
      *
      * @throws Exception when needed
      */

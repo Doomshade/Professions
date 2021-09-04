@@ -25,10 +25,10 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.ItemType;
-import git.doomshade.professions.api.spawn.ISpawnPoint;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.object.spawn.ISpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;

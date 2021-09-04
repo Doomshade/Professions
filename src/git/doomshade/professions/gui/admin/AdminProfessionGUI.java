@@ -25,7 +25,7 @@
 package git.doomshade.professions.gui.admin;
 
 import git.doomshade.guiapi.*;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.listeners.UserListener;
 import git.doomshade.professions.utils.Strings;
 import org.bukkit.Bukkit;

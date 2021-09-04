@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.task;
 
-import git.doomshade.professions.api.spawn.ext.SpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.SpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ExtendedBukkitRunnable;

@@ -24,12 +24,12 @@
 
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
-import git.doomshade.professions.api.Range;
+import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
-import git.doomshade.professions.api.spawn.ext.SpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.SpawnPoint;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;

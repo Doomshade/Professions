@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.smelting;
 
-import git.doomshade.professions.api.spawn.ext.Element;
+import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.inventory.ItemStack;

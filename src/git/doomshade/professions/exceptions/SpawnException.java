@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.exceptions;
 
-import git.doomshade.professions.api.spawn.ISpawnable;
+import git.doomshade.professions.api.item.object.spawn.ISpawnable;
 import git.doomshade.professions.io.ProfessionLogger;
 
 import java.util.logging.Level;

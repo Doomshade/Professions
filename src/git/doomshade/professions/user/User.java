@@ -24,11 +24,10 @@
 
 package git.doomshade.professions.user;
 
-import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.Profession.ProfessionType;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.profession.Profession.ProfessionType;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.MaxProfessionsSettings;
@@ -269,7 +268,7 @@ public final class User implements IUser {
 
     @Override
     public Collection<IUserProfessionData> getProfessions() {
-        return ImmutableSet.copyOf(professions.values());
+        return Set.copyOf(professions.values());
     }
 
     @Override

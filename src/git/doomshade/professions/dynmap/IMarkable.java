@@ -22,49 +22,62 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api;
+package git.doomshade.professions.dynmap;
+
+import git.doomshade.professions.dynmap.ext.Markable;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 /**
- * Data needed for a spawn of particle
+ * Class related to dynmap markers
  *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public interface IParticleData {
+public interface IMarkable extends ConfigurationSerializable {
 
     /**
-     * @return the particle ID
+     * @return the dynmap marker set ID
      */
-    String getParticle();
+    String getMarkerSetId();
 
     /**
-     * @return the amount of particles spawned
+     * Sets the dynmap marker set ID
+     *
+     * @param markerSetId the marker set ID
      */
-    int getCount();
+    void setMarkerSetId(String markerSetId);
 
     /**
-     * @return the period in ticks of a spawn
+     * Sets the dynmap marker set ID
+     *
+     * @param from the comparing layer of the markable
      */
-    int getPeriod();
+    void setMarkerSetId(Markable from);
+
+    boolean isGreaterLayer(Markable comparing, boolean override);
 
     /**
-     * @return the speed of the particle (or some extra)
+     * @return the layer of this markable class, used to set marker set IDs based on this layer
      */
-    double getSpeed();
+    int getLayer();
 
     /**
-     * @return the x offset to the location
+     * @return whether the marker is visible on dynmap
      */
-    double getXOffset();
+    boolean isVisible();
 
     /**
-     * @return the x offset to the location
+     * Sets whether the marker is visible on dynmap
+     *
+     * @param visible {@code true} if the marker should be visible, {@code false} otherwise
      */
-    double getYOffset();
+    void setVisible(boolean visible);
 
     /**
-     * @return the x offset to the location
+     * Sets whether the marker is visible on dynmap
+     *
+     * @param comparing the comparing layer of the markable
      */
-    double getZOffset();
+    void setVisible(Markable comparing);
 }

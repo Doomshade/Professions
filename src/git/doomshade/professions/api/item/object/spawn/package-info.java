@@ -23,10 +23,10 @@
  */
 
 /**
- * Implementation of block spawn related stuff. You may extend these in your own project
+ * Block spawn related classes
  *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-package git.doomshade.professions.api.spawn.ext;
+package git.doomshade.professions.api.item.object.spawn;

@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.jewelcrafting.commands;
 
-import git.doomshade.professions.api.spawn.ext.Element;
+import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.jewelcrafting.Gem;
 import git.doomshade.professions.utils.Permissions;

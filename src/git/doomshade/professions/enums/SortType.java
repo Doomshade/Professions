@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.enums;
 
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import org.bukkit.ChatColor;
 
 import java.util.Comparator;

@@ -24,8 +24,8 @@
 
 package git.doomshade.professions.api.user;
 
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.exceptions.PlayerHasNoProfessionException;
 import git.doomshade.professions.user.User;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public interface IUser {
     boolean unprofess(Profession prof);
 
     /**
-     * Adds exp to the player.
+     * Adds exp to the player
      *
      * @param exp    the amount of exp to give
      * @param prof   the profession of this user
@@ -129,7 +129,7 @@ public interface IUser {
     boolean isBypass();
 
     /**
-     * Sets whether or not this user should bypass level requirement. Usable for admins. Sets {@link
+     * Sets whether this user should bypass level requirement. Usable for admins. Sets {@link
      * #setSuppressExpEvent(boolean)} to {@code false} if {@code bypass} is {@code false}
      *
      * @param bypass the bypass

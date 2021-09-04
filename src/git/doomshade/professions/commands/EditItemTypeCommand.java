@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.commands;
 
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ItemUtils;

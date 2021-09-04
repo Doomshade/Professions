@@ -26,8 +26,8 @@ package git.doomshade.professions.profession.professions.mining;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.item.ext.ItemType;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;

@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.herbalism.commands;
 
-import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.ISpawnPoint;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.Permissions;

@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 

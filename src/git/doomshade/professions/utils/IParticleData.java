@@ -22,41 +22,49 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.professions.skinning;
-
-import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.event.ProfessionEventWrapper;
+package git.doomshade.professions.utils;
 
 /**
+ * Data needed for a spawn of particle
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public final class SkinningProfession extends Profession {
+public interface IParticleData {
 
-    @Override
-    public void onLoad() {
-        utils.addItems(PreyItemType.class);
-    }
+    /**
+     * @return the particle ID
+     */
+    String getParticle();
 
-    @Override
-    public String getID() {
-        return "skinning";
-    }
+    /**
+     * @return the amount of particles spawned
+     */
+    int getCount();
 
-    @Override
-    public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> ev) {
-        final ProfessionEvent<A> e = ev.event;
-        if (!utils.playerMeetsLevelRequirements(e)) {
-            return;
-        }
-        utils.addExp(e);
-    }
+    /**
+     * @return the period in ticks of a spawn
+     */
+    int getPeriod();
 
-    @Override
-    public boolean isSubprofession() {
-        return false;
-    }
+    /**
+     * @return the speed of the particle (or some extra)
+     */
+    double getSpeed();
+
+    /**
+     * @return the x offset to the location
+     */
+    double getXOffset();
+
+    /**
+     * @return the x offset to the location
+     */
+    double getYOffset();
+
+    /**
+     * @return the x offset to the location
+     */
+    double getZOffset();
 }

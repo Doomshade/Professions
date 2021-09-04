@@ -24,13 +24,11 @@
 
 package git.doomshade.professions.api.item;
 
-import git.doomshade.professions.api.IProfessionManager;
-import git.doomshade.professions.api.dynmap.Markable;
-import git.doomshade.professions.api.item.ext.ItemType;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.GenerateDefaultsCommand;
 import git.doomshade.professions.data.DefaultsSettings;
 import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.dynmap.ext.Markable;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.io.ProfessionLogger;
@@ -56,18 +54,18 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.ItemTypeHolderEnum.*;
 
 /**
- * Manager of {@link ItemType}. To register this holder call {@link IProfessionManager#registerItemTypeHolder(Class,
- * ConfigurationSerializable, Consumer)} )}.
+ * Implementation of {@link IItemTypeHolder}
  *
- * @param <Type> the ItemType
+ * @param <T>    {@inheritDoc}
+ * @param <Type> {@inheritDoc}
  *
  * @author Doomshade
  * @version 1.0
- * @see IProfessionManager
+ * @see IItemTypeHolder
  * @since 1.0
  */
-public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends Markable
-        implements Iterable<Type> {
+public final class ItemTypeHolder<T extends ConfigurationSerializable, Type extends ItemType<T>> extends Markable
+        implements IItemTypeHolder<T, Type> {
     /**
      * The dynmap marker layer
      */
@@ -121,23 +119,13 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         }
     }
 
-    /**
-     * Saves and loads the item type holder
-     *
-     * @throws IOException if an error occurs
-     */
+    @Override
     public void update() throws IOException {
         save(true);
         load();
     }
 
-    /**
-     * Adds defaults and saves files
-     *
-     * @param override whether to override or only add default
-     *
-     * @throws IOException if the save is unsuccessful
-     */
+    @Override
     public final void save(boolean override) throws IOException {
         File itemFile = ItemUtils.getItemTypeFile(itemType.getClass());
         FileConfiguration loader = getLoader(itemFile);
@@ -175,7 +163,8 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         loader.save(itemFile);
     }
 
-    private void updateLoader(ConfigurationSection section, String path, Object value, boolean isDefault) {
+    @Override
+    public void updateLoader(ConfigurationSection section, String path, Object value, boolean isDefault) {
         if (section == null || path == null) {
             return;
         }
@@ -186,8 +175,9 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         }
     }
 
+    @Override
     @Nullable
-    private FileConfiguration getLoader(File itemFile) throws IOException {
+    public FileConfiguration getLoader(File itemFile) throws IOException {
         if (itemFile == null) {
             return null;
         }
@@ -206,11 +196,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
 
-    /**
-     * Loads the item type holder from file
-     *
-     * @throws IOException the item type file could not be loaded
-     */
+    @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void load() throws IOException {
         final Class<? extends ItemType> clazz = itemType.getClass();
@@ -291,13 +277,12 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         sortItems();
     }
 
-    /**
-     * Sorts the item types by comparator generated from "sorted-by" values
-     */
+    @Override
     public void sortItems() {
         this.itemTypes = Utils.sortMapByValue(this.itemTypes, this.comparator);
     }
 
+    @Override
     public void sortItems(List<Type> items) {
         if (items == null) {
             return;
@@ -305,29 +290,22 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
         items.sort(this.comparator);
     }
 
-    /**
-     * @return the error message
-     */
+    @Override
     public List<String> getErrorMessage() {
         return errorMessage;
     }
 
-    /**
-     * @return the new items message
-     */
+    @Override
     public List<String> getNewItemsMessage() {
         return newItemsMessage;
     }
 
+    @Override
     public Comparator<Type> getComparator() {
         return comparator;
     }
 
-    /**
-     * Used for generating defaults
-     *
-     * @return the example item type this holder holds
-     */
+    @Override
     public final Type getExampleItemType() {
         return itemType;
     }

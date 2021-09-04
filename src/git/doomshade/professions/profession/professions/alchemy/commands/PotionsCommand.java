@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.alchemy.commands;
 
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.commands.AbstractCommand;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.utils.Permissions;

@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
+ * Cache that allows both read and write from a cache file
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0

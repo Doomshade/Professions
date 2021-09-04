@@ -22,12 +22,13 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api;
+package git.doomshade.professions.api.profession;
 
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.data.ProfessionSettingsManager;
 import git.doomshade.professions.data.ProfessionSpecificDefaultsSettings;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
@@ -86,14 +87,15 @@ public abstract class Profession implements IProfession {
         ensureNotInitialized(ignoreInitializationError);
 
         // initialize settings AFTER initializing file as settings require the profession file!
-        ProfessionSettingsManager settings = new ProfessionSettingsManager(this);
+        ProfessionSettingsManager settings = Settings.getProfessionSettingsManager(this);
         try {
             settings.setup();
         } catch (Exception e) {
             ProfessionLogger.logError(e);
         }
         this.professionSettings = settings;
-        ProfessionSpecificDefaultsSettings defaults = settings.getSettings(ProfessionSpecificDefaultsSettings.class);
+
+        ProfessionSpecificDefaultsSettings defaults = settings.getDefaultsSettings();
         this.name = defaults.getName();
         this.icon = defaults.getIcon();
         this.pt = defaults.getProfessionType();

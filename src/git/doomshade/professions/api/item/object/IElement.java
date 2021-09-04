@@ -22,9 +22,17 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.api.item.object;
+
+import org.bukkit.inventory.ItemStack;
 
 /**
+ * An element.
+ * <p>
+ * This can for example be an {@link ItemStack} that can be crafted.
+ * <p>
+ * Extend the class {@link Element} to create an element, i.e. something that can be found in a world.
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0

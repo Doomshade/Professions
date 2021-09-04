@@ -22,21 +22,33 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn;
+package git.doomshade.professions.api.item.object.spawn;
 
-import git.doomshade.professions.api.IParticleData;
+import git.doomshade.professions.utils.IParticleData;
+import git.doomshade.professions.api.item.object.IElement;
+import git.doomshade.professions.api.item.object.Element;
+import git.doomshade.professions.profession.professions.herbalism.Herb;
+import git.doomshade.professions.profession.professions.mining.Ore;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * A spawnable element
+ * An element that can be spawned in a {@link World}
+ * <p>
+ * This can be for example be an {@link Ore} or a {@link Herb}
+ * <p>
+ * Extend the class {@link Spawnable} to make an {@link Element} that can be spawned in a world.
  *
  * @author Doomshade
  * @version 1.0
+ * @see Element
+ * @see Ore
+ * @see Herb
  * @since 1.0
  */
 public interface ISpawnable extends Iterable<ISpawnPoint>, IElement {

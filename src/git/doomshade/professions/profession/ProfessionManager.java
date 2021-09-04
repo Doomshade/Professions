@@ -24,13 +24,11 @@
 
 package git.doomshade.professions.profession;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.IProfessionManager;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.profession.IProfessionManager;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.alchemy.AlchemyProfession;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
@@ -94,28 +92,28 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
     }
 
     public static Collection<Class<? extends Profession>> getInitedProfessions() {
-        return ImmutableSet.copyOf(getInstance().initedProfessions);
+        return Set.copyOf(getInstance().initedProfessions);
     }
 
     /**
      * @return all registered {@link Profession}s
      */
     public Set<Class<? extends Profession>> getRegisteredProfessions() {
-        return ImmutableSet.copyOf(registeredProfessions);
+        return Set.copyOf(registeredProfessions);
     }
 
     /**
-     * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getID()}
+     * @return a sorted {@link Map} of {@link Profession}s by {@link Profession#getID()}
      */
     public Map<String, Profession> getProfessionsById() {
-        return ImmutableMap.copyOf(professionsIds);
+        return Map.copyOf(professionsIds);
     }
 
     /**
-     * @return a sorted {@link ImmutableMap} of {@link Profession}s by {@link Profession#getName()}
+     * @return a sorted {@link Map} of {@link Profession}s by {@link Profession#getName()}
      */
     public Map<String, Profession> getProfessionsByName() {
-        return ImmutableMap.copyOf(professionsName);
+        return Map.copyOf(professionsName);
     }
 
     @Override
@@ -452,7 +450,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
      * @return all registered {@link ItemTypeHolder}s
      */
     public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
-        return ImmutableSet.copyOf(items.values());
+        return Set.copyOf(items.values());
     }
 
     /**

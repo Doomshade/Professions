@@ -27,10 +27,10 @@ package git.doomshade.professions.task;
 import git.doomshade.guiapi.CraftingItem;
 import git.doomshade.guiapi.GUI;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.CraftableItemType;
-import git.doomshade.professions.api.item.ICraftable;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.item.CraftableItemType;
+import git.doomshade.professions.api.item.ICraftableItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.event.EventManager;
@@ -134,7 +134,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
     }
 
     @Nullable
-    public ICraftable getCraftable() {
+    public ICraftableItemType getCraftable() {
         return item;
     }
 
@@ -217,7 +217,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
             item.consumeCraftingRequirements(player);
             player.getInventory().addItem(item.getResult());
 
-            player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.ON_CRAFT), 1, 1);
+            player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftableItemType.Sound.ON_CRAFT), 1, 1);
 
             if (repeat || repeatAmount > 0) {
                 ProfessionLogger.log("Running anoda one");
@@ -231,7 +231,7 @@ public class CraftingTask extends BukkitRunnable implements Cloneable {
         craftingItem.addProgress(craftingItem.new Progress(Professions.getInstance(),
                 item.getCraftingTime(), gui, UPDATE_INTERVAL));
 
-        player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftable.Sound.CRAFTING), 1, 1);
+        player.getWorld().playSound(player.getLocation(), item.getSounds().get(ICraftableItemType.Sound.CRAFTING), 1, 1);
 
     }
 }

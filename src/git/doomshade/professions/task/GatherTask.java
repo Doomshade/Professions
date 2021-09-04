@@ -25,7 +25,7 @@
 package git.doomshade.professions.task;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.ISpawnPoint;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.user.UserProfessionData;

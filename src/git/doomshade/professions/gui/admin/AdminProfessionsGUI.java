@@ -26,7 +26,7 @@ package git.doomshade.professions.gui.admin;
 
 import git.doomshade.guiapi.*;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;

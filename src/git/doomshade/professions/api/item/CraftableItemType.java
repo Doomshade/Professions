@@ -22,12 +22,9 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.item.ext;
+package git.doomshade.professions.api.item;
 
-import com.google.common.collect.ImmutableMap;
-import git.doomshade.professions.api.item.ICraftable;
 import git.doomshade.professions.api.user.IUserProfessionData;
-import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionInitializationException;
@@ -53,15 +50,16 @@ import java.util.regex.Pattern;
 import static git.doomshade.professions.utils.Strings.ICraftableEnum.*;
 
 /**
- * An {@link ItemType} that allows for crafting an ItemStack
+ * Implementation of {@link ICraftableItemType}
  *
- * @param <T> the item type to look for in {@link ProfessionEvent}
+ * @param <T> {@inheritDoc}
  *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public abstract class CraftableItemType<T extends ConfigurationSerializable> extends ItemType<T> implements ICraftable {
+public abstract class CraftableItemType<T extends ConfigurationSerializable> extends ItemType<T> implements
+        ICraftableItemType<T> {
 
     private static final double DEFAULT_CRAFTING_TIME = 5d;
     private double craftingTime = DEFAULT_CRAFTING_TIME;
@@ -113,17 +111,6 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
     }
 
     @Override
-    public @NotNull Map<String, Object> serialize() {
-        final Map<String, Object> map = super.serialize();
-        map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
-        map.put(RESULT.s, ItemUtils.serialize(getResult()));
-        map.put(CRAFTING_TIME.s, getCraftingTime());
-        map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
-        map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
-        return map;
-    }
-
-    @Override
     public ItemStack getIcon(IUserProfessionData upd) {
         final ItemStack icon = super.getIcon(upd);
         ItemMeta meta = icon.getItemMeta();
@@ -147,18 +134,6 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
         return icon;
     }
 
-    @Override
-    public String toString() {
-        return "\ncrafting time: " +
-                getCraftingTime() +
-                "\ncrafting result: " +
-                getResult() +
-                "\ncrafting reqs: " +
-                getCraftingRequirements() +
-                "\ninv reqs: " +
-                getInventoryRequirements();
-    }
-
     /**
      * Determines whether or not the player meets crafting requirements
      *
@@ -169,6 +144,29 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
     @Override
     public boolean meetsRequirements(Player player) {
         return super.meetsRequirements(player) && getCraftingRequirements().meetsRequirements(player);
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        final Map<String, Object> map = super.serialize();
+        map.put(CRAFTABLE_ITEM_REQ.s, getCraftingRequirements().serialize());
+        map.put(RESULT.s, ItemUtils.serialize(getResult()));
+        map.put(CRAFTING_TIME.s, getCraftingTime());
+        map.put(SOUND_CRAFTED.s, getSounds().get(Sound.ON_CRAFT));
+        map.put(SOUND_CRAFTING.s, getSounds().get(Sound.CRAFTING));
+        return map;
+    }
+
+    @Override
+    public String toString() {
+        return "\ncrafting time: " +
+                getCraftingTime() +
+                "\ncrafting result: " +
+                getResult() +
+                "\ncrafting reqs: " +
+                getCraftingRequirements() +
+                "\ninv reqs: " +
+                getInventoryRequirements();
     }
 
     @Override
@@ -197,7 +195,7 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
 
     @Override
     public final Map<Sound, String> getSounds() {
-        return ImmutableMap.copyOf(sounds);
+        return Map.copyOf(sounds);
     }
 
     /**

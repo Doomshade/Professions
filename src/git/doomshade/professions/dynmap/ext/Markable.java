@@ -22,23 +22,16 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.dynmap;
+package git.doomshade.professions.dynmap.ext;
 
+import git.doomshade.professions.dynmap.IMarkable;
 import git.doomshade.professions.utils.Strings;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Class related to dynmap markers
- *
- * @author Doomshade
- * @version 1.0
- * @since 1.0
- */
-public abstract class Markable implements ConfigurationSerializable {
+public abstract class Markable implements IMarkable {
 
     private String markerSetId = "";
     private boolean visible = false;
@@ -52,27 +45,17 @@ public abstract class Markable implements ConfigurationSerializable {
         return map;
     }
 
-    /**
-     * @return the dynmap marker set ID
-     */
+    @Override
     public final String getMarkerSetId() {
         return markerSetId;
     }
 
-    /**
-     * Sets the dynmap marker set ID
-     *
-     * @param markerSetId the marker set ID
-     */
+    @Override
     public final void setMarkerSetId(String markerSetId) {
         this.markerSetId = markerSetId;
     }
 
-    /**
-     * Sets the dynmap marker set ID
-     *
-     * @param from the comparing layer of the markable
-     */
+    @Override
     public final void setMarkerSetId(Markable from) {
         if (from == null) {
             return;
@@ -83,36 +66,22 @@ public abstract class Markable implements ConfigurationSerializable {
         }
     }
 
-    private boolean isGreaterLayer(Markable comparing, boolean override) {
+    @Override
+    public boolean isGreaterLayer(Markable comparing, boolean override) {
         return comparing != null && (override || comparing.getLayer() >= getLayer());
     }
 
-    /**
-     * @return the layer of this markable class, used to set marker set IDs based on this layer
-     */
-    public abstract int getLayer();
-
-    /**
-     * @return whether the marker is visible on dynmap
-     */
+    @Override
     public final boolean isVisible() {
         return visible;
     }
 
-    /**
-     * Sets whether the marker is visible on dynmap
-     *
-     * @param visible {@code true} if the marker should be visible, {@code false} otherwise
-     */
+    @Override
     public final void setVisible(boolean visible) {
         this.visible = visible;
     }
 
-    /**
-     * Sets whether the marker is visible on dynmap
-     *
-     * @param comparing the comparing layer of the markable
-     */
+    @Override
     public final void setVisible(Markable comparing) {
         if (comparing == null) {
             return;

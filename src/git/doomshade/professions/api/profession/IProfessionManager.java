@@ -22,10 +22,10 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api;
+package git.doomshade.professions.api.profession;
 
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 

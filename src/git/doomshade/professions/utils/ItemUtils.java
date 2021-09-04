@@ -27,7 +27,7 @@ package git.doomshade.professions.utils;
 import git.doomshade.diablolike.DiabloLike;
 import git.doomshade.diablolike.utils.DiabloItem;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
 import git.doomshade.professions.commands.ReloadCommand;

@@ -22,41 +22,11 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.profession.professions.skinning;
-
-import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.item.ItemType;
-import git.doomshade.professions.event.ProfessionEvent;
-import git.doomshade.professions.event.ProfessionEventWrapper;
-
 /**
+ * Profession related classes
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-public final class SkinningProfession extends Profession {
-
-    @Override
-    public void onLoad() {
-        utils.addItems(PreyItemType.class);
-    }
-
-    @Override
-    public String getID() {
-        return "skinning";
-    }
-
-    @Override
-    public <A extends ItemType<?>> void onEvent(ProfessionEventWrapper<A> ev) {
-        final ProfessionEvent<A> e = ev.event;
-        if (!utils.playerMeetsLevelRequirements(e)) {
-            return;
-        }
-        utils.addExp(e);
-    }
-
-    @Override
-    public boolean isSubprofession() {
-        return false;
-    }
-}
+package git.doomshade.professions.api.profession;

@@ -26,13 +26,13 @@ package git.doomshade.professions.profession.professions.mining.spawn;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.Range;
+import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.exceptions.SpawnException;
 import git.doomshade.professions.gui.mining.OreGUI;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.profession.professions.mining.OreItemType;
-import git.doomshade.professions.api.spawn.ext.SpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.SpawnPoint;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;

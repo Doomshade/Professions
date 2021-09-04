@@ -22,11 +22,10 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn.ext;
+package git.doomshade.professions.api.item.object.spawn;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Range;
-import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
@@ -51,10 +50,12 @@ import java.util.logging.Level;
 
 import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.SPAWN_POINT;
 
-
 /**
+ * The {@link ISpawnPoint} implementation
+ *
  * @author Doomshade
  * @version 1.0
+ * @see ISpawnPoint
  * @since 1.0
  */
 public final class SpawnPoint implements ISpawnPoint {

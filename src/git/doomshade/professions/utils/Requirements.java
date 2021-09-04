@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.api.item.ICraftable;
+import git.doomshade.professions.api.item.ICraftableItemType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import org.bukkit.ChatColor;
@@ -44,16 +44,16 @@ import java.util.stream.IntStream;
  *
  * @author Doomshade
  * @version 1.0
- * @see ICraftable
+ * @see ICraftableItemType
  * @since 1.0
  */
 public class Requirements implements ConfigurationSerializable, Iterable<ItemStack> {
 
     // keep it as a list due to indexing in file
-    private final List<ItemStack> items;
+    private final List<ItemStack> items = new ArrayList<>();
 
     /**
-     * Calls {@link Requirements#Requirements(List)} with an empty {@link ArrayList}.
+     * Calls {@link Requirements#Requirements(List)} with an empty {@link List}.
      */
     public Requirements() {
         this(new ArrayList<>());
@@ -63,7 +63,9 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @param items the requirements
      */
     public Requirements(List<ItemStack> items) {
-        this.items = items;
+        if (items != null) {
+            this.items.addAll(items);
+        }
     }
 
     /**
@@ -97,7 +99,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return the list of requirements
      */
     public List<ItemStack> getRequirements() {
-        return items;
+        return Collections.unmodifiableList(items);
     }
 
     /**
@@ -106,7 +108,7 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @param requirement the requirement to add
      */
     public void addRequirement(ItemStack requirement) {
-        items.add(requirement);
+        items.add(Objects.requireNonNull(requirement));
     }
 
     /**
@@ -117,13 +119,16 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
     public boolean meetsRequirements(Player player) {
         Set<ItemStack> itemz = getMetRequirements(player);
         if (itemz.size() > items.size()) {
-            throw new IllegalStateException("This should not happen???");
+            throw new IllegalStateException("Met requirements are somehow greater than needed requirements");
         }
         return itemz.size() == items.size();
     }
 
     private Set<ItemStack> getMetRequirements(Player player) {
-        HashSet<ItemStack> itemz = new HashSet<>();
+        Set<ItemStack> itemz = new HashSet<>();
+        if (player == null) {
+            return itemz;
+        }
         for (ItemStack itemContent : player.getInventory()) {
             if (itemContent == null) {
                 continue;
@@ -143,9 +148,9 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return the missing requirements of player
      */
     public Collection<ItemStack> getMissingRequirements(Player player) {
-        HashSet<ItemStack> items = new HashSet<>(this.items);
+        Collection<ItemStack> items = new HashSet<>(this.items);
         items.removeAll(getMetRequirements(player));
-        return items;
+        return Collections.unmodifiableCollection(items);
     }
 
     /**
@@ -176,27 +181,40 @@ public class Requirements implements ConfigurationSerializable, Iterable<ItemSta
      * @return the {@link String} representation of this class
      */
     public String toString(Player player, ChatColor requirementMet, ChatColor requirementNotMet) {
-        StringBuilder sb = new StringBuilder();
-        Iterator<ItemStack> iterator = iterator();
-        Set<ItemStack> metRequirements = player != null ? getMetRequirements(player) : new HashSet<>();
-        while (iterator.hasNext()) {
-            ItemStack item = iterator.next();
-            if (metRequirements.contains(item) && requirementMet != null) {
-                sb.append(requirementMet);
+        final Set<ItemStack> metRequirements = getMetRequirements(player);
+        final String[] strings = new String[items.size()];
 
-            } else if (requirementNotMet != null) {
-                sb.append(requirementNotMet);
-            }
-            sb.append(item.getAmount())
-                    .append("x ")
-                    .append(item.getItemMeta() != null && item.getItemMeta().hasDisplayName()
-                            ? item.getItemMeta().getDisplayName()
-                            : item.getType().toString());
-            if (iterator.hasNext()) {
-                sb.append(", ");
-            }
+        final ListIterator<ItemStack> li = items.listIterator();
+        while (li.hasNext()) {
+            StringBuilder sb = new StringBuilder();
+            ItemStack item = li.next();
+            addColor(requirementMet, requirementNotMet, sb, metRequirements, item);
+            addItem(sb, item);
+            appendItem(strings, li, sb);
         }
-        return sb.toString();
+
+        return String.join(", ", strings);
+    }
+
+    private void appendItem(String[] strings, ListIterator<ItemStack> li, StringBuilder sb) {
+        strings[li.previousIndex() + 1] = sb.toString();
+    }
+
+    private void addItem(StringBuilder sb, ItemStack item) {
+        sb.append(item.getAmount())
+                .append("x ")
+                .append(item.getItemMeta() != null && item.getItemMeta().hasDisplayName()
+                        ? item.getItemMeta().getDisplayName()
+                        : item.getType().toString());
+    }
+
+    private void addColor(ChatColor requirementMet, ChatColor requirementNotMet, StringBuilder sb,
+                          Set<ItemStack> metRequirements, ItemStack item) {
+        if (metRequirements.contains(item) && requirementMet != null) {
+            sb.append(requirementMet);
+        } else if (requirementNotMet != null) {
+            sb.append(requirementNotMet);
+        }
     }
 
     @Override

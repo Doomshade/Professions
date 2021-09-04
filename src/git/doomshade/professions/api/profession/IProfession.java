@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api;
+package git.doomshade.professions.api.profession;
 
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.event.ProfessionEventWrapper;
 import org.bukkit.event.Listener;
 

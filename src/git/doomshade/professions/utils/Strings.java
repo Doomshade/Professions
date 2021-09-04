@@ -24,12 +24,11 @@
 
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.api.Range;
-import git.doomshade.professions.api.item.ICraftable;
-import git.doomshade.professions.api.item.ext.CraftableItemType;
-import git.doomshade.professions.api.item.ext.ItemType;
-import git.doomshade.professions.api.spawn.ext.Element;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.item.ICraftableItemType;
+import git.doomshade.professions.api.item.CraftableItemType;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.object.Element;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.enums.SortType;
 import git.doomshade.professions.profession.professions.alchemy.Potion;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
@@ -194,7 +193,7 @@ public final class Strings {
     }
 
     /**
-     * The enum for {@link ICraftable}
+     * The enum for {@link ICraftableItemType}
      */
     public enum ICraftableEnum implements FileEnum {
         CRAFTABLE_ITEM_REQ("item-requirements"),

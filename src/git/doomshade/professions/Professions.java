@@ -28,11 +28,11 @@ package git.doomshade.professions;
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.api.IProfessionAPI;
-import git.doomshade.professions.api.IProfessionManager;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.IProfessionManager;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.item.ext.ItemType;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
@@ -229,7 +229,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             }
         }
 
-        // finally load users
+        // finally, load users
         for (Player p : Bukkit.getOnlinePlayers()) {
             try {
                 User.loadUser(p);

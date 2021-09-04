@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.dynmap;
 
-import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.ISpawnPoint;
 import org.bukkit.Location;
 import org.dynmap.bukkit.DynmapPlugin;
 import org.dynmap.markers.Marker;

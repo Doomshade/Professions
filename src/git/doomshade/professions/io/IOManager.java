@@ -25,8 +25,9 @@
 package git.doomshade.professions.io;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
-import git.doomshade.professions.api.item.ext.ItemType;
+import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.task.BackupTask;
 import git.doomshade.professions.user.User;
 import git.doomshade.professions.utils.Utils;
@@ -48,6 +49,7 @@ import java.util.Locale;
  */
 public final class IOManager {
     public static final String LANG_PATH = "lang/";
+    public static final String CACHE_EXTENSION = ".cache";
     private static final Professions PLUGIN = Professions.getInstance();
     private static final File CACHE_FOLDER = new File(PLUGIN.getDataFolder(), "cache");
     private static final File PLAYER_FOLDER = new File(PLUGIN.getDataFolder(), "playerdata");
@@ -289,11 +291,25 @@ public final class IOManager {
         return getFolder(PLAYER_FOLDER);
     }
 
-    public static File createCacheFile(String fileName) throws IOException {
+    /**
+     * Creates a cache file for the given cacheable element
+     *
+     * @param cacheable the cacheable element
+     *
+     * @return a cache file
+     *
+     * @throws IOException if the file could not be created
+     */
+    public static File createCacheFile(Cacheable cacheable) throws IOException {
+        if (cacheable == null) {
+            throw new IllegalArgumentException("Cacheable cannot be null");
+        }
+        String fileName = cacheable.getFileName();
         if (fileName == null) {
             throw new IllegalArgumentException("Filename cannot be null");
         }
-        File file = new File(getCacheFolder(), fileName + ".cache");
+        fileName = fileName.endsWith(CACHE_EXTENSION) ? fileName : fileName.concat(CACHE_EXTENSION);
+        File file = new File(getCacheFolder(), fileName);
         if (!file.exists()) {
             file.createNewFile();
         }

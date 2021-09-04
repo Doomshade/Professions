@@ -24,7 +24,6 @@
 
 package git.doomshade.professions.utils;
 
-import git.doomshade.professions.api.IParticleData;
 import git.doomshade.professions.io.ProfessionLogger;
 import org.bukkit.Particle;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;

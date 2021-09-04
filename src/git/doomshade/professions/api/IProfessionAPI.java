@@ -25,6 +25,7 @@
 package git.doomshade.professions.api;
 
 import git.doomshade.professions.Professions;
+import git.doomshade.professions.api.profession.IProfessionManager;
 import git.doomshade.professions.api.user.IUser;
 import org.bukkit.entity.Player;
 

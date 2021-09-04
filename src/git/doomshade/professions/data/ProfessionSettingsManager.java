@@ -25,7 +25,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
@@ -54,6 +54,10 @@ public final class ProfessionSettingsManager extends AbstractSettings {
 
     public ProfessionSettingsManager(Profession profession) {
         this.profession = profession;
+    }
+
+    public ProfessionSpecificDropSettings getDropSettings() {
+        return getSettings(ProfessionSpecificDropSettings.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -88,9 +92,8 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         return theSettings;
     }
 
-    void register(AbstractProfessionSpecificSettings settings) throws ConfigurationException {
-        settings.setup();
-        this.settings.add(settings);
+    public ProfessionSpecificDefaultsSettings getDefaultsSettings() {
+        return getSettings(ProfessionSpecificDefaultsSettings.class);
     }
 
     @Override
@@ -105,6 +108,10 @@ public final class ProfessionSettingsManager extends AbstractSettings {
         }
     }
 
+    void register(AbstractProfessionSpecificSettings settings) throws ConfigurationException {
+        settings.setup();
+        this.settings.add(settings);
+    }
 
     public void save() throws IOException {
         if (settings.isEmpty()) {
@@ -120,12 +127,12 @@ public final class ProfessionSettingsManager extends AbstractSettings {
     }
 
     @Override
-    public void cleanup() {
-        settings.clear();
+    public String getSetupName() {
+        return profession.getColoredName() + ChatColor.RESET + " settings";
     }
 
     @Override
-    public String getSetupName() {
-        return profession.getColoredName() + ChatColor.RESET + " settings";
+    public void cleanup() {
+        settings.clear();
     }
 }

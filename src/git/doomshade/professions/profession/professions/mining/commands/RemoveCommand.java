@@ -25,7 +25,7 @@
 package git.doomshade.professions.profession.professions.mining.commands;
 
 import git.doomshade.professions.profession.professions.mining.Ore;
-import git.doomshade.professions.api.spawn.ext.Spawnable;
+import git.doomshade.professions.api.item.object.spawn.Spawnable;
 import git.doomshade.professions.utils.Permissions;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.Location;

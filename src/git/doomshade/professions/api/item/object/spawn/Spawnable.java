@@ -22,13 +22,10 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn.ext;
+package git.doomshade.professions.api.item.object.spawn;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.item.ItemTypeHolder;
-import git.doomshade.professions.api.spawn.ISpawnPoint;
-import git.doomshade.professions.api.spawn.ISpawnable;
+import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.exceptions.SpawnException;
@@ -56,14 +53,12 @@ import java.util.stream.Collectors;
 import static git.doomshade.professions.utils.Strings.SpawnableElementEnum.*;
 
 /**
- * A spawnable element.
- * <p>
- * This can be for example be an ore or a herb
- * <p>
- * Extend this class to make an {@link Element} that can be spawned in a world.
+ * The {@link ISpawnable} implementation
  *
  * @author Doomshade
  * @version 1.0
+ * @see Element
+ * @see ISpawnable
  * @since 1.0
  */
 public abstract class Spawnable extends Element
@@ -143,7 +138,7 @@ public abstract class Spawnable extends Element
      * @return a map of spawnable elements based on the given spawnable class
      */
     public static <E extends Spawnable> Map<String, E> getSpawnableElements(Class<E> clazz) {
-        return ImmutableMap.copyOf(getElements(clazz));
+        return Map.copyOf(getElements(clazz));
     }
 
     /**
@@ -176,7 +171,7 @@ public abstract class Spawnable extends Element
 
         // log
         ProfessionLogger.log("Spawnable elements: " + spawnables, Level.FINEST);
-        return spawnables;
+        return Collections.unmodifiableCollection(spawnables);
     }
 
     /**
@@ -209,7 +204,7 @@ public abstract class Spawnable extends Element
         }
         // log
         ProfessionLogger.log(map, Level.FINEST);
-        return ImmutableMap.copyOf(map);
+        return Map.copyOf(map);
     }
 
     /**
@@ -369,9 +364,11 @@ public abstract class Spawnable extends Element
     }
 
     public static void unloadSpawnables() throws IOException {
+        // first cache the elements, this should cache the
+        cacheElements();
         despawnAll(x -> true);
         SpawnPoint.unloadAll();
-        unloadElements();
+        unloadAllElements();
     }
 
     /**
@@ -530,7 +527,7 @@ public abstract class Spawnable extends Element
 
     @Override
     public Collection<ISpawnPoint> getSpawnPoints() {
-        return ImmutableList.copyOf(spawnPoints.values());
+        return List.copyOf(spawnPoints.values());
     }
 
     @Override

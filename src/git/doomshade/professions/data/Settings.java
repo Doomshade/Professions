@@ -25,7 +25,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
@@ -61,6 +61,7 @@ public final class Settings implements ISetup {
     private static Material editItem = Material.GOLD_NUGGET;
     private static boolean autoSave = true;
     private static boolean handleMineEvents = false;
+    private static boolean cache = true;
 
     // TODO: 08.04.2020 make this a BossBarOptions and create a new path for bossbars (adding the customizability for
     //  BossBars)
@@ -100,6 +101,34 @@ public final class Settings implements ISetup {
 
     public static Settings getInstance() {
         return INSTANCE;
+    }
+
+    public static DefaultsSettings getDefaultsSettings() {
+        return getSettings(DefaultsSettings.class);
+    }
+
+    public static ExpSettings getExpSettings() {
+        return getSettings(ExpSettings.class);
+    }
+
+    public static GUISettings getGUISettings() {
+        return getSettings(GUISettings.class);
+    }
+
+    public static ItemSettings getItemSettings() {
+        return getSettings(ItemSettings.class);
+    }
+
+    public static MaxProfessionsSettings getMaxProfessionSettings() {
+        return getSettings(MaxProfessionsSettings.class);
+    }
+
+    public static ProfessionExpSettings getProfessionExpSettings() {
+        return getSettings(ProfessionExpSettings.class);
+    }
+
+    public static ProfessionSettingsManager getProfessionSettingsManager(Profession profession) {
+        return new ProfessionSettingsManager(profession);
     }
 
     @SuppressWarnings("unchecked")
@@ -162,6 +191,10 @@ public final class Settings implements ISetup {
         return useBossBar;
     }
 
+    public static boolean isCache() {
+        return cache;
+    }
+
     private void printError(String section, Object value) {
         if (!isOutdated()) {
             ProfessionLogger.log("Your configuration file is outdated!", LEVEL);
@@ -207,6 +240,7 @@ public final class Settings implements ISetup {
                 // makes the worlds lower case
                 x -> x.stream().map(String::toLowerCase).collect(Collectors.toList()));
         handleMineEvents = setupVariable("handle-mine-events", false);
+        cache = setupVariable("cache-data", false);
 
         // setup lang as last as it could throw an exception
         setupLang();

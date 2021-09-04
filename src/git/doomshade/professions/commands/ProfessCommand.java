@@ -25,7 +25,7 @@
 package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.Profession;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.enums.Messages;
 import git.doomshade.professions.enums.Messages.Global;
 import git.doomshade.professions.enums.Messages.MessageBuilder;

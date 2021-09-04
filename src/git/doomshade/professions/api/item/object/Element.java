@@ -22,23 +22,22 @@
  * THE SOFTWARE.
  */
 
-package git.doomshade.professions.api.spawn.ext;
+package git.doomshade.professions.api.item.object;
 
-import com.google.common.collect.ImmutableMap;
-import git.doomshade.professions.api.spawn.IElement;
 import git.doomshade.professions.cache.Cache;
 import git.doomshade.professions.cache.Cacheable;
+import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.utils.FileEnum;
+import git.doomshade.professions.utils.ILoadable;
 import git.doomshade.professions.utils.Strings;
 import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
@@ -47,17 +46,14 @@ import java.util.function.Function;
 import static git.doomshade.professions.utils.Strings.ElementEnum.ID;
 
 /**
- * An element.
- * <p>
- * This can for example be an {@link org.bukkit.inventory.ItemStack} that can be crafted.
- * <p>
- * Extend this class to create an element, i.e. something that can be found in a world.
+ * The {@link IElement} implementation
  *
  * @author Doomshade
  * @version 1.0
+ * @see IElement
  * @since 1.0
  */
-public abstract class Element implements IElement, ConfigurationSerializable, Cacheable {
+public abstract class Element implements IElement, ConfigurationSerializable, Cacheable, ILoadable {
     private static final Map<
             Class<? extends Element>,
             Map<String, Element>
@@ -196,21 +192,45 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     }
 
     /**
-     * Caches and unloads all elements
+     * Caches all elements
      */
-    protected static void unloadElements() throws IOException {
-        // cache it first
-        Cache cache = new Cache(IOManager.createCacheFile("elements"));
-        for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : getAllElements().entrySet()) {
-            for (Map.Entry<String, Element> entry1 : entry.getValue().entrySet()) {
-                // TODO cache
-            }
+    protected static void cacheElements() throws IOException {
+        if (!Settings.isCache()) {
+            return;
         }
-        ELEMENTS.clear();
+
+        for (Map.Entry<Class<? extends Element>, Map<String, Element>> allElements : getAllElements().entrySet()) {
+            final Map<String, Element> elementMap = allElements.getValue();
+
+            final int dataSize = elementMap.size();
+            if (dataSize == 0) {
+                continue;
+            }
+
+            // now store the data in a cache
+            final Cacheable[] data = new Cacheable[dataSize];
+            int i = 0;
+            for (Map.Entry<String, Element> elementEntry : elementMap.entrySet()) {
+                data[i++] = elementEntry.getValue();
+            }
+
+            Cache cache = new Cache(IOManager.createCacheFile(data[0]));
+            cache.save(data);
+        }
     }
 
     public static Map<Class<? extends Element>, Map<String, Element>> getAllElements() {
-        return ImmutableMap.copyOf(ELEMENTS);
+        return Map.copyOf(ELEMENTS);
+    }
+
+    /**
+     * Dereferences all elements from the memory
+     */
+    protected static void unloadAllElements() {
+        ELEMENTS.clear();
+
+        // call the garbage collect as there will be a lot of unused references
+        System.gc();
     }
 
     public static <E extends Element> E getElement(Class<E> of, String id) {
@@ -219,7 +239,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
 
     @SuppressWarnings("unchecked")
     public static <E extends Element> Map<String, E> getElements(Class<E> of) {
-        return (Map<String, E>) ImmutableMap.copyOf(ELEMENTS.get(of));
+        return (Map<String, E>) Map.copyOf(ELEMENTS.get(of));
     }
 
     @NotNull
@@ -244,7 +264,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
      * @return all known elements (e.g. all herbs)
      */
     public Map<String, ? extends Element> getElements() {
-        return ImmutableMap.copyOf(ELEMENTS.get(getClass()));
+        return Map.copyOf(ELEMENTS.get(getClass()));
     }
 
     @Override
@@ -259,6 +279,11 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    @Override
+    public final String getFileName() {
+        return getId();
     }
 
     @Override

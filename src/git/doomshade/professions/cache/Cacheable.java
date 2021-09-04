@@ -67,4 +67,6 @@ public interface Cacheable {
      * @return the offset in data for further caching
      */
     int getOffset();
+
+    String getFileName();
 }

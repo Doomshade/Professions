@@ -22,11 +22,39 @@
  * THE SOFTWARE.
  */
 
+package git.doomshade.professions.utils;
+
 /**
- * The API and Dynmap related classes
- *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-package git.doomshade.professions.api.dynmap;
+public interface ILoadable {
+
+    /**
+     * Called after plugin is reloaded. Useful for reassigning objects to memory
+     */
+    default void onPluginAfterReload() {
+    }
+
+
+    /**
+     * Called before plugin is reloaded. Useful for cleanups
+     */
+    default void onPluginBeforeReload() {
+    }
+
+    /**
+     * Called once plugin is fully loaded
+     */
+    default void onPluginEnable() {
+
+    }
+
+    /**
+     * Called once plugin is being disabled
+     */
+    default void onPluginDisable() {
+
+    }
+}

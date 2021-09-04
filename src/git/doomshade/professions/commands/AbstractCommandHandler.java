@@ -24,8 +24,6 @@
 
 package git.doomshade.professions.commands;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.io.ProfessionLogger;
 import git.doomshade.professions.utils.ISetup;
@@ -78,10 +76,10 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
     /**
      * Keep in mind that this method CREATES a copy of the command handlers
      *
-     * @return an immutable set of all command handlers
+     * @return a set of all command handlers
      */
     public static Collection<AbstractCommandHandler> getInstances() {
-        return ImmutableSet.copyOf(INSTANCES.values());
+        return Set.copyOf(INSTANCES.values());
     }
 
     /**
@@ -126,7 +124,7 @@ public abstract class AbstractCommandHandler implements CommandExecutor, TabComp
      * @return a copy of the command handler's commands
      */
     public final Map<String, AbstractCommand> getCommands() {
-        return ImmutableSortedMap.copyOf(instanceCommands);
+        return Map.copyOf(instanceCommands);
     }
 
     /**

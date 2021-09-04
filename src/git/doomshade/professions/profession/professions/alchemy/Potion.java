@@ -25,7 +25,7 @@
 package git.doomshade.professions.profession.professions.alchemy;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.spawn.ext.Element;
+import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;

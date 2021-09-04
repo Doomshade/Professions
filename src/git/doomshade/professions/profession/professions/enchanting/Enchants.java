@@ -26,7 +26,7 @@ package git.doomshade.professions.profession.professions.enchanting;
 
 import com.sucy.skill.SkillAPI;
 import com.sucy.skill.manager.AttributeManager;
-import git.doomshade.professions.api.Range;
+import git.doomshade.professions.utils.Range;
 import git.doomshade.professions.utils.ItemAttribute;
 import git.doomshade.professions.utils.ItemUtils;
 import git.doomshade.professions.utils.Utils;

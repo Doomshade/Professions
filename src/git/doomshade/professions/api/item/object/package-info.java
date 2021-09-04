@@ -23,10 +23,10 @@
  */
 
 /**
- * Implementation of item related stuff. You may extend these in your own project
+ * Item object related classes
  *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
  */
-package git.doomshade.professions.api.item.ext;
+package git.doomshade.professions.api.item.object;

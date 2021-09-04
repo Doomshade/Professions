@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.blacksmithing;
 
-import git.doomshade.professions.api.spawn.ext.Element;
+import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
 import git.doomshade.professions.io.ProfessionLogger;

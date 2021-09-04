@@ -24,9 +24,14 @@
 
 package git.doomshade.professions.cache;
 
+import git.doomshade.professions.data.Settings;
+import git.doomshade.professions.io.IOManager;
+
 import java.io.*;
 
 /**
+ * Read-only cache that only allows loading from the cache file
+ *
  * @author Doomshade
  * @version 1.0
  * @since 1.0
@@ -35,7 +40,17 @@ public class ReadOnlyCache {
     protected File file;
     protected ObjectOutputStream out;
 
-    public ReadOnlyCache(File file) throws IOException {
+    /**
+     * @param file the file to cache to
+     *
+     * @throws IOException           if an output stream could not be created
+     * @throws IllegalStateException if the plugin does not allow caching
+     * @see IOManager#createCacheFile(Cacheable)
+     */
+    public ReadOnlyCache(File file) throws IOException, IllegalStateException {
+        if (!Settings.isCache()) {
+            throw new IllegalStateException("Plugin does not allow caching!");
+        }
         this.file = file;
         this.out = new ObjectOutputStream(new FileOutputStream(file));
     }
@@ -59,7 +74,7 @@ public class ReadOnlyCache {
                 try {
                     arr[i] = readObjects(in, size);
                 } catch (ClassNotFoundException e) {
-                    throw new IOException("Could not read file!", e);
+                    throw new IOException("Could not read from the cache for some reason", e);
                 }
             }
         }

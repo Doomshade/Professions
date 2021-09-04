@@ -24,7 +24,7 @@
 
 package git.doomshade.professions.profession.professions.herbalism;
 
-import git.doomshade.professions.api.spawn.ISpawnPoint;
+import git.doomshade.professions.api.item.object.spawn.ISpawnPoint;
 import git.doomshade.professions.task.GatherTask;
 import git.doomshade.professions.user.UserProfessionData;
 import org.bukkit.boss.BarColor;
