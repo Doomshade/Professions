@@ -30,9 +30,9 @@ import git.doomshade.guiapi.GUIInventory.Builder;
 import git.doomshade.guiapi.GUIItem;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.data.GUISettings;
 import git.doomshade.professions.data.Settings;
 import git.doomshade.professions.enums.Messages;
@@ -51,7 +51,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -60,14 +59,14 @@ import java.util.UUID;
  * @since 1.0
  */
 public class ProfessionGUI extends GUI {
-    static final String POSITION_GUI = "position";
     public static final int MAX_DELAY = 60;
+    static final String POSITION_GUI = "position";
     private final int levelThreshold;
     private Profession prof;
 
     protected ProfessionGUI(Player guiHolder, GUIManager manager) {
         super(guiHolder, manager);
-        levelThreshold = Settings.getSettings(GUISettings.class).getLevelThreshold();
+        levelThreshold = Settings.getGUISettings().getLevelThreshold();
     }
 
     @Override
@@ -81,7 +80,7 @@ public class ProfessionGUI extends GUI {
         List<String> lore = prof.getProfessionInformation(upd);
         final boolean profHasLore = lore != null && !lore.isEmpty();
 
-        GUISettings settings = Settings.getSettings(GUISettings.class);
+        GUISettings settings = Settings.getGUISettings();
 
         String signName = settings.getSignName();
 
@@ -90,25 +89,23 @@ public class ProfessionGUI extends GUI {
                 if (pos == 5 && profHasLore) {
                     GUIItem infoItem = new GUIItem(Material.OAK_SIGN, pos, 1, (short) 0);
                     final ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(Material.OAK_SIGN);
-
-                    Objects.requireNonNull(itemMeta).setDisplayName(signName);
+                    if (itemMeta == null) {
+                        continue;
+                    }
+                    itemMeta.setDisplayName(signName);
                     itemMeta.setLore(lore);
                     infoItem.changeItem(this, () -> itemMeta);
                     builder = builder.withItem(infoItem);
                     pos++;
                     continue;
                 }
+
                 ItemStack icon = item.getIcon(upd);
                 GUIItem guiItem = new GUIItem(icon.getType(), pos, icon.getAmount(), icon.getDurability());
                 boolean hasRecipe = upd.hasTrained(item);
                 boolean meetsLevel = item.meetsLevelReq(upd.getLevel() + levelThreshold);
 
-                //if (item.isHiddenWhenUnavailable())
                 guiItem.setHidden(!(hasRecipe && meetsLevel));
-                /*else if (hasRecipe)
-                    guiItem.setHidden(false);
-                else
-                    guiItem.setHidden(!meetsLevel);*/
                 guiItem.changeItem(this, icon::getItemMeta);
 
                 if (!guiItem.isHidden()) {
@@ -118,7 +115,7 @@ public class ProfessionGUI extends GUI {
             }
         }
         setInventory(builder.build());
-        setNextGui(TestThreeGui.class, Professions.getGUIManager());
+        setNextGui(TestThreeGui.class, Professions.getGUIMan());
 
     }
 

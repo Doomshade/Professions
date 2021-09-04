@@ -24,6 +24,8 @@
 
 package git.doomshade.professions.api;
 
+import git.doomshade.guiapi.GUIApi;
+import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.profession.IProfessionManager;
 import git.doomshade.professions.api.user.IUser;
@@ -44,6 +46,13 @@ public interface IProfessionAPI {
     static IProfessionAPI getApi() {
         return Professions.getInstance();
     }
+
+    /**
+     * {@link GUIApi}'s {@link GUIManager} instance
+     *
+     * @return the {@link GUIManager} instance
+     */
+    GUIManager getGUIManager();
 
     /**
      * @return the profession manager

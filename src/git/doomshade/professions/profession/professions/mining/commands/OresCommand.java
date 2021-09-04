@@ -53,7 +53,7 @@ public class OresCommand extends AbstractEditCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
         final Player player = (Player) sender;
-        final Optional<? extends GUI> opt = Professions.getGUIManager().getGui(OreGUI.class, player);
+        final Optional<? extends GUI> opt = Professions.getGUIMan().getGui(OreGUI.class, player);
         if (opt.isEmpty()) {
             return;
         }
@@ -70,7 +70,7 @@ public class OresCommand extends AbstractEditCommand {
             }
         }
         gui.getContext().addContext("ignore", ignore);
-        Professions.getGUIManager().openGui(gui);
+        Professions.getGUIMan().openGui(gui);
     }
 
     @Override

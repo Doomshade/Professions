@@ -25,6 +25,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -57,7 +58,7 @@ public class MaxProfessionsSettings extends AbstractProfessionSettings {
         }
     }
 
-    public int getMaxProfessions(Profession.ProfessionType type) {
-        return type == Profession.ProfessionType.PRIMARY ? maxPrimaryProfessions : maxSecondaryProfessions;
+    public int getMaxProfessions(ProfessionType type) {
+        return type == ProfessionType.PRIMARY ? maxPrimaryProfessions : maxSecondaryProfessions;
     }
 }

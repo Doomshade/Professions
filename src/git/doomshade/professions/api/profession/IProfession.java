@@ -25,8 +25,24 @@
 package git.doomshade.professions.api.profession;
 
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
+import git.doomshade.professions.data.ProfessionSettingsManager;
+import git.doomshade.professions.enums.Messages;
+import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.event.ProfessionEventWrapper;
+import git.doomshade.professions.listeners.ProfessionListener;
+import git.doomshade.professions.user.UserProfessionData;
+import git.doomshade.professions.utils.ISetup;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Doomshade
@@ -51,4 +67,81 @@ public interface IProfession extends Listener, Comparable<Profession> {
      * @return {@code true} if this profession is a subprofession, {@code false} otherwise
      */
     boolean isSubprofession();
+
+    /**
+     * @return the icon of this profession (for GUI purposes)
+     */
+    ItemStack getIcon();
+
+    /**
+     * @return the handled {@link ItemType}'s holders
+     */
+    Iterable<ItemTypeHolder<?, ?>> getItems();
+
+    /**
+     * @return the profession settings
+     */
+    ProfessionSettingsManager getProfessionSettings();
+
+    /**
+     * @return the profession type
+     */
+    ProfessionType getProfessionType();
+
+    /**
+     * The colored name of this profession. Use this instead of getName() as that method does not translate the colour.
+     *
+     * @return the colored name of this profession
+     */
+    String getColoredName();
+
+    /**
+     * @return the name of this profession
+     */
+    String getName();
+
+    /**
+     * Called after being loaded from a file
+     */
+    void onLoad();
+
+    /**
+     * Called when a user levels up
+     *
+     * @param upd the user profession data
+     */
+    void onLevelUp(UserProfessionData upd);
+
+    /**
+     * @return the required plugin IDs
+     */
+    Collection<String> getRequiredPlugins();
+
+    /**
+     * Adds a plugin requirement
+     *
+     * @param plugin the plugin ID
+     */
+    void addRequiredPlugin(String plugin);
+
+    /**
+     * Handles the called profession event from {@link ProfessionListener} <br> Cancels the event if the player does not
+     * have this profession and is a rank lower than builder <br> If the player has this profession and the profession
+     * event is correct, {@link #onEvent(ProfessionEventWrapper)} is called
+     *
+     * @param event   the profession event
+     * @param <IType> the item type argument of the event (this prevents wildcards)
+     */
+    @EventHandler
+    <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event);
+
+    @Nullable
+    List<String> getProfessionInformation(UserProfessionData upd);
+
+    /**
+     * @return a collection of subprofessions of this profession
+     */
+    Collection<Class<? extends Profession>> getSubprofessions();
+
+
 }

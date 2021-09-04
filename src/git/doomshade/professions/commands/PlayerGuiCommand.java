@@ -54,7 +54,7 @@ public class PlayerGuiCommand extends AbstractCommand {
     @Override
     public void onCommand(CommandSender sender, String[] args) {
 //		GUI.getGui((Player) sender, MainGui.class).openGui();
-        Professions.getGUIManager().openGui(PlayerProfessionsGUI.class, (Player) sender);
+        Professions.getGUIMan().openGui(PlayerProfessionsGUI.class, (Player) sender);
     }
 
     @Override

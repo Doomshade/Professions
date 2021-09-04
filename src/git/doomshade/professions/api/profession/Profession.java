@@ -111,23 +111,17 @@ public abstract class Profession implements IProfession {
 
     }
 
-    /**
-     * @return the icon of this profession (for GUI purposes)
-     */
+    @Override
     public ItemStack getIcon() {
         return icon;
     }
 
-    /**
-     * @return the handled {@link ItemType}'s holders
-     */
+    @Override
     public final Iterable<ItemTypeHolder<?, ?>> getItems() {
         return items;
     }
 
-    /**
-     * @return the profession settings
-     */
+    @Override
     public ProfessionSettingsManager getProfessionSettings() {
         return professionSettings;
     }
@@ -138,25 +132,17 @@ public abstract class Profession implements IProfession {
         return getColoredName() + ChatColor.RESET + ", " + type;
     }
 
-    /**
-     * @return the profession type
-     */
+    @Override
     public ProfessionType getProfessionType() {
         return pt;
     }
 
-    /**
-     * The colored name of this profession. Use this instead of getName() as that method does not translate the colour.
-     *
-     * @return the colored name of this profession
-     */
+    @Override
     public final String getColoredName() {
         return ChatColor.translateAlternateColorCodes('&', getName());
     }
 
-    /**
-     * @return the name of this profession
-     */
+    @Override
     public String getName() {
         return this.name;
     }
@@ -177,45 +163,26 @@ public abstract class Profession implements IProfession {
         return compare;
     }
 
-    /**
-     * Called after being loaded from a file
-     */
+    @Override
     public void onLoad() {
     }
 
-    /**
-     * Called when a user levels up
-     *
-     * @param upd the user profession data
-     */
+    @Override
     public void onLevelUp(UserProfessionData upd) {
 
     }
 
-    /**
-     * @return the required plugin IDs
-     */
-    public final Set<String> getRequiredPlugins() {
-        return requiredPlugins;
+    @Override
+    public final Collection<String> getRequiredPlugins() {
+        return Collections.unmodifiableCollection(requiredPlugins);
     }
 
-    /**
-     * Adds a plugin requirement
-     *
-     * @param plugin the plugin ID
-     */
-    protected void addRequiredPlugin(String plugin) {
+    @Override
+    public final void addRequiredPlugin(String plugin) {
         requiredPlugins.add(plugin);
     }
 
-    /**
-     * Handles the called profession event from {@link ProfessionListener} <br> Cancels the event if the player does not
-     * have this profession and is a rank lower than builder <br> If the player has this profession and the profession
-     * event is correct, {@link #onEvent(ProfessionEventWrapper)} is called
-     *
-     * @param event   the profession event
-     * @param <IType> the item type argument of the event (this prevents wildcards)
-     */
+    @Override
     @EventHandler
     public final <IType extends ItemType<?>> void handleEvent(ProfessionEvent<IType> event) {
         final Class<? extends IProfession>[] profs = event.getProfessions();
@@ -250,74 +217,15 @@ public abstract class Profession implements IProfession {
         }
     }
 
+    @Override
     @Nullable
     public List<String> getProfessionInformation(UserProfessionData upd) {
         return null;
     }
 
-    /**
-     * @return a collection of subprofessions of this profession
-     */
+    @Override
     public Collection<Class<? extends Profession>> getSubprofessions() {
         return null;
     }
 
-    /**
-     * The profession types
-     */
-    public enum ProfessionType implements ISetup {
-        PRIMARY("Primary"),
-        SECONDARY("Secondary");
-
-        private String name;
-
-        ProfessionType(String name) {
-            this.name = name;
-        }
-
-        /**
-         * @param professionType the string
-         *
-         * @return the converted profession type from a string
-         */
-        public static ProfessionType fromString(String professionType) {
-            for (ProfessionType type : values()) {
-                if (type.name.equalsIgnoreCase(professionType) || type.name().equalsIgnoreCase(professionType)) {
-                    return type;
-                }
-            }
-            String sb = Arrays.stream(values())
-                    .map(type -> type.ordinal() + "=" + type)
-                    .collect(Collectors.joining("", professionType + " is not a valid profession type! (", ")"));
-            throw new IllegalArgumentException(sb);
-        }
-
-        /**
-         * @param id the id
-         *
-         * @return the converted profession type from an id based on ordinal() method
-         */
-        public static ProfessionType fromId(int id) {
-            for (ProfessionType type : values()) {
-                if (type.ordinal() == id) {
-                    return type;
-                }
-            }
-            String sb = Arrays.stream(values())
-                    .map(type -> type.ordinal() + "=" + type)
-                    .collect(Collectors.joining("", id + " is not a valid profession id type! (", ")"));
-            throw new IllegalArgumentException(sb);
-        }
-
-        @Override
-        public String toString() {
-            return String.valueOf(name.toCharArray()[0]).toUpperCase() + name.toLowerCase().substring(1);
-        }
-
-        @Override
-        public void setup() {
-            PRIMARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_PRIMARY).build();
-            SECONDARY.name = new Messages.MessageBuilder(Messages.Global.PROFTYPE_SECONDARY).build();
-        }
-    }
 }

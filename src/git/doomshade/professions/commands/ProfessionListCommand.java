@@ -26,7 +26,7 @@ package git.doomshade.professions.commands;
 
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.profession.Profession.ProfessionType;
+import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.profession.ProfessionManager;
 import git.doomshade.professions.utils.Permissions;
 import org.bukkit.ChatColor;

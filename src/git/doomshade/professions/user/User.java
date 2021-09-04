@@ -27,7 +27,7 @@ package git.doomshade.professions.user;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.profession.Profession.ProfessionType;
+import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.data.MaxProfessionsSettings;

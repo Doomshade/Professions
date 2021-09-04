@@ -74,7 +74,7 @@ public class TrainerTrait extends Trait {
     }
 
     public void openTrainerGUI(Player player) {
-        final Optional<? extends GUI> opt = Professions.getGUIManager().getGui(TrainerGUI.class, player);
+        final Optional<? extends GUI> opt = Professions.getGUIMan().getGui(TrainerGUI.class, player);
 
         opt.ifPresent(x -> {
             GUI gui = opt.get();
@@ -83,12 +83,12 @@ public class TrainerTrait extends Trait {
                 gui.getInventory().setTitle(npc.getName());
                 return null;
             });
-            Professions.getGUIManager().openGui(gui);
+            Professions.getGUIMan().openGui(gui);
         });
     }
 
     public void openTrainerChooserGUI(Player player) {
-        final GUIManager guiManager = Professions.getGUIManager();
+        final GUIManager guiManager = Professions.getGUIMan();
         final Optional<? extends GUI> opt = guiManager.getGui(TrainerChooserGUI.class, player);
         opt.ifPresent(x -> {
             GUI gui = opt.get();

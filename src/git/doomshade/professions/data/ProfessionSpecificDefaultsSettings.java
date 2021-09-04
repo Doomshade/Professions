@@ -25,6 +25,7 @@
 package git.doomshade.professions.data;
 
 import git.doomshade.professions.api.profession.Profession;
+import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.dynmap.MarkerManager;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
@@ -61,7 +62,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
             .withLore(Arrays.asList("The", "Lore"))
             .withDisplayName("&aThe display name")
             .build();
-    private Profession.ProfessionType professionType = Profession.ProfessionType.PRIMARY;
+    private ProfessionType professionType = ProfessionType.PRIMARY;
 
     /**
      * The default constructor of settings
@@ -89,7 +90,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         return icon;
     }
 
-    public Profession.ProfessionType getProfessionType() {
+    public ProfessionType getProfessionType() {
         return professionType;
     }
 
@@ -117,7 +118,7 @@ public class ProfessionSpecificDefaultsSettings extends AbstractProfessionSpecif
         } catch (InitializationException e) {
             ProfessionLogger.logError(e, false);
         }
-        this.professionType = Profession.ProfessionType.fromString(section.getString(TYPE));
+        this.professionType = ProfessionType.fromString(section.getString(TYPE));
         this.showOnDynmap = section.getBoolean(SHOW_ON_DYNMAP);
         this.markerSetId = section.getString(MARKER_SET_ID);
     }

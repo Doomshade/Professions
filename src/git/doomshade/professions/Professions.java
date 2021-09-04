@@ -28,11 +28,11 @@ package git.doomshade.professions;
 import git.doomshade.guiapi.GUIApi;
 import git.doomshade.guiapi.GUIManager;
 import git.doomshade.professions.api.IProfessionAPI;
-import git.doomshade.professions.api.profession.IProfessionManager;
-import git.doomshade.professions.api.profession.Profession;
-import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.item.object.spawn.Spawnable;
+import git.doomshade.professions.api.profession.IProfessionManager;
+import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.api.user.IUser;
 import git.doomshade.professions.commands.AbstractCommandHandler;
 import git.doomshade.professions.commands.CommandHandler;
@@ -120,15 +120,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         return econ;
     }
 
-    /**
-     * {@link GUIApi}'s {@link GUIManager} instance
-     *
-     * @return the {@link GUIManager} instance
-     */
-    public static GUIManager getGUIManager() {
-        return guiManager;
-    }
-
     @Nullable
     public static MarkerManager getMarkerManager() {
         return MarkerManager.getInstance();
@@ -161,7 +152,6 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
     public static boolean isDiabloLikeHook() {
         return diabloLike;
     }
-
 
     /**
      * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
@@ -384,7 +374,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         }
         // then the rest
         registerSetup(ItemUtils.INSTANCE);
-        registerSetup(Profession.ProfessionType.PRIMARY);
+        registerSetup(ProfessionType.PRIMARY);
 
         registerCommandHandler(new CommandHandler());
         registerCommandHandler(new MiningCommandHandler());
@@ -531,7 +521,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
 
                 // NOPES: UTF-16, ISO, UTF-16BE
                 try (OutputStreamWriter out =
-                        new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
+                             new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
                     final int bufSize = 1024;
                     char[] buf = new char[bufSize];
 
@@ -547,6 +537,20 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
             ProfessionLogger.logError(e);
         }
 
+    }
+
+    @Override
+    public GUIManager getGUIManager() {
+        return getGUIMan();
+    }
+
+    /**
+     * {@link GUIApi}'s {@link GUIManager} instance
+     *
+     * @return the {@link GUIManager} instance
+     */
+    public static GUIManager getGUIMan() {
+        return guiManager;
     }
 
     @Override

@@ -58,7 +58,7 @@ public class AdminProfessionsGUI extends GUI {
         }
 
         setInventory(builder.build());
-        setNextGui(AdminProfessionGUI.class, Professions.getGUIManager());
+        setNextGui(AdminProfessionGUI.class, Professions.getGUIMan());
     }
 
     @Override
@@ -71,6 +71,6 @@ public class AdminProfessionsGUI extends GUI {
         }
         GUI gui = getNextGui();
         gui.getContext().addContext(ID_PROFESSION, Professions.getProfMan().getProfession(currentItem));
-        Professions.getGUIManager().openGui(gui);
+        Professions.getGUIMan().openGui(gui);
     }
 }
