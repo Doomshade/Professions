@@ -126,6 +126,9 @@ public final class Strings {
      * @return a set of missing keys
      */
     public static Set<String> toSet(Map<FileEnum, Object> map) {
+        if (map == null) {
+            return Collections.emptySet();
+        }
         return map.keySet().stream().map(FileEnum::getKey).collect(Collectors.toSet());
     }
 
@@ -138,6 +141,9 @@ public final class Strings {
     @SafeVarargs
     public static Map<FileEnum, Object> getMissingKeys(Map<String, Object> map, Class<? extends FileEnum>... enums) {
         Map<FileEnum, Object> m = new HashMap<>();
+        if (map == null || enums == null) {
+            return m;
+        }
         for (Class<? extends FileEnum> clazz : enums) {
             putDefaults(map, m, REGISTERED_FILE_ENUMS.get(clazz));
         }

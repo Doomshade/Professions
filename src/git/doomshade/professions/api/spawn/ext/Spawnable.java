@@ -368,7 +368,7 @@ public abstract class Spawnable extends Element
         }
     }
 
-    public static void unloadSpawnables() {
+    public static void unloadSpawnables() throws IOException {
         despawnAll(x -> true);
         SpawnPoint.unloadAll();
         unloadElements();

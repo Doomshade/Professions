@@ -115,7 +115,7 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
      * @param itemType the ItemType to create a holder for
      */
     public ItemTypeHolder(Class<Type> itemType, T o, Consumer<Type> additionalFunction) {
-        this.itemType = ItemType.getExampleItemType(itemType, o);
+        this.itemType = ItemType.getExampleItemType(Objects.requireNonNull(itemType), Objects.requireNonNull(o));
         if (additionalFunction != null) {
             additionalFunction.accept(this.itemType);
         }
@@ -176,6 +176,9 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
     private void updateLoader(ConfigurationSection section, String path, Object value, boolean isDefault) {
+        if (section == null || path == null) {
+            return;
+        }
         if (isDefault) {
             section.addDefault(path, value);
         } else {
@@ -185,6 +188,9 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
 
     @Nullable
     private FileConfiguration getLoader(File itemFile) throws IOException {
+        if (itemFile == null) {
+            return null;
+        }
         FileConfiguration loader = YamlConfiguration.loadConfiguration(itemFile);
         try {
             loader.load(itemFile);
@@ -293,6 +299,9 @@ public class ItemTypeHolder<T extends ConfigurationSerializable, Type extends It
     }
 
     public void sortItems(List<Type> items) {
+        if (items == null) {
+            return;
+        }
         items.sort(this.comparator);
     }
 

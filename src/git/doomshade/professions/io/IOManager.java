@@ -77,10 +77,10 @@ public final class IOManager {
     }
 
     /**
-     * @return the cache folder directory
+     * @return the folder with additional data that does not belong to any other file (user, itemtype, ...)
      */
-    public static File getCacheFolder() {
-        return getFolder(CACHE_FOLDER);
+    public static File getAdditionalDataFolder() {
+        return getFolder(DATA_FOLDER);
     }
 
     /**
@@ -95,13 +95,6 @@ public final class IOManager {
             file.mkdirs();
         }
         return file;
-    }
-
-    /**
-     * @return the folder with additional data that does not belong to any other file (user, itemtype, ...)
-     */
-    public static File getAdditionalDataFolder() {
-        return getFolder(DATA_FOLDER);
     }
 
     /**
@@ -275,11 +268,6 @@ public final class IOManager {
         return task.getResult();
     }
 
-    /*public static void saveUser(User user) throws IOException {
-        File file = getUserFile(user);
-        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
-    }*/
-
     private static File getUserFile(User user) throws IOException {
         File file = getFile(getPlayerFolder(),
                 user.getPlayer().getUniqueId().toString().concat(Utils.YML_EXTENSION));
@@ -289,11 +277,34 @@ public final class IOManager {
         return file;
     }
 
+    /*public static void saveUser(User user) throws IOException {
+        File file = getUserFile(user);
+        FileConfiguration loader = YamlConfiguration.loadConfiguration(file);
+    }*/
+
     /**
      * @return the {@link User} folder directory
      */
     public static File getPlayerFolder() {
         return getFolder(PLAYER_FOLDER);
+    }
+
+    public static File createCacheFile(String fileName) throws IOException {
+        if (fileName == null) {
+            throw new IllegalArgumentException("Filename cannot be null");
+        }
+        File file = new File(getCacheFolder(), fileName + ".cache");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        return file;
+    }
+
+    /**
+     * @return the cache folder directory
+     */
+    public static File getCacheFolder() {
+        return getFolder(CACHE_FOLDER);
     }
 
     public static void loadSpawnableCache() {

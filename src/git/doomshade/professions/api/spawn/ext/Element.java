@@ -26,8 +26,10 @@ package git.doomshade.professions.api.spawn.ext;
 
 import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.spawn.IElement;
+import git.doomshade.professions.cache.Cache;
 import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.exceptions.ProfessionObjectInitializationException;
+import git.doomshade.professions.io.IOManager;
 import git.doomshade.professions.profession.professions.herbalism.Herb;
 import git.doomshade.professions.profession.professions.mining.Ore;
 import git.doomshade.professions.utils.FileEnum;
@@ -36,6 +38,8 @@ import git.doomshade.professions.utils.Utils;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
@@ -84,9 +88,10 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
      *                                  with the same ID, but not a {@link Herb} and an {@link Ore} with the same ID
      */
     protected Element(String id, String name, boolean registerElement) throws IllegalArgumentException {
-        this.id = id;
-        this.name = name;
-        if (!Utils.EXAMPLE_ID.equalsIgnoreCase(id) && registerElement) {
+        this.id = Objects.requireNonNull(id);
+        this.name = Objects.requireNonNull(name);
+        final boolean isExampleId = Utils.EXAMPLE_ID.equalsIgnoreCase(id);
+        if (!isExampleId && registerElement) {
             Map<String, Element> map = ELEMENTS.getOrDefault(getClass(), new HashMap<>());
             final Element el = map.putIfAbsent(id, this);
             if (el != null) {
@@ -172,7 +177,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
      * @param ignoredKeys the ignored {@link FileEnum} keys
      * @param keys        the {@link FileEnum} keys
      *
-     * @throws ProfessionObjectInitializationException
+     * @throws ProfessionObjectInitializationException if there are missing keys
      */
     @SafeVarargs
     protected static void checkForMissingKeys(Map<String, Object> map,
@@ -181,7 +186,9 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
                                               Class<? extends FileEnum>... keys)
             throws ProfessionObjectInitializationException {
         Set<String> missingKeys = Strings.getMissingKeysSet(map, keys);
-        missingKeys.removeAll(ignoredKeys);
+        if (ignoredKeys != null) {
+            missingKeys.removeAll(ignoredKeys);
+        }
         if (!missingKeys.isEmpty()) {
             throw new ProfessionObjectInitializationException(clazz, missingKeys,
                     ProfessionObjectInitializationException.ExceptionReason.MISSING_KEYS);
@@ -189,10 +196,11 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     }
 
     /**
-     *
+     * Caches and unloads all elements
      */
-    public static void unloadElements() {
+    protected static void unloadElements() throws IOException {
         // cache it first
+        Cache cache = new Cache(IOManager.createCacheFile("elements"));
         for (Map.Entry<Class<? extends Element>, Map<String, Element>> entry : getAllElements().entrySet()) {
             for (Map.Entry<String, Element> entry1 : entry.getValue().entrySet()) {
                 // TODO cache

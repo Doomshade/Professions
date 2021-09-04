@@ -168,7 +168,7 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
      * only to save text resources in UTF-8 formatting.
      *
      * @param resource the path of file
-     * @param replace  whether or not to replace if the file already exists
+     * @param replace  whether to replace if the file already exists
      */
     public static void createResource(String resource, boolean replace) {
         instance.saveResource(resource, replace);
@@ -183,7 +183,11 @@ public final class Professions extends JavaPlugin implements ISetup, IProfession
         boolean successful = true;
 
         // call before reload on item types
-        Spawnable.unloadSpawnables();
+        try {
+            Spawnable.unloadSpawnables();
+        } catch (IOException e) {
+            ProfessionLogger.logError(e);
+        }
         //SpawnPoint.unloadAll();
         for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
             for (ItemType<?> itemType : holder) {
