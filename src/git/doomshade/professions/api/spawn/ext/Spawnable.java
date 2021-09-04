@@ -175,7 +175,7 @@ public abstract class Spawnable extends Element
         }
 
         // log
-        ProfessionLogger.log("Spawnable elements: " + spawnables);
+        ProfessionLogger.log("Spawnable elements: " + spawnables, Level.FINEST);
         return spawnables;
     }
 

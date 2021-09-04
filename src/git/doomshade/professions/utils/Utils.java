@@ -219,10 +219,20 @@ public final class Utils {
      * @return translated string
      */
     public static String translateColour(String s) {
-        return s.isEmpty() ? s : ChatColor.translateAlternateColorCodes('&', s);
+        return s == null || s.isEmpty() ? s : ChatColor.translateAlternateColorCodes('&', s);
     }
 
+    /**
+     * Better looking toString representation of a {@link Location}
+     *
+     * @param loc the location
+     *
+     * @return a good-looking String representation of a {@link Location}
+     */
     public static String locationToString(Location loc) {
+        if (loc == null) {
+            return "";
+        }
         return loc.getBlock().getLocation().toVector().toString();
     }
 

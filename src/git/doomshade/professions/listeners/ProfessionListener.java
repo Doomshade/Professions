@@ -466,9 +466,12 @@ public class ProfessionListener extends AbstractProfessionListener {
             return;
         }
 
+        // update the location as the player's location won't update until he stops moving
+        playerMove.to = event.getTo();
+        ProfessionLogger.log(String.format("Player curr: %s, to: %s", Utils.locationToString(player.getLocation()),
+                Utils.locationToString(event.getTo())), Level.FINEST);
         final double length = playerMove.computeLength();
         GatherTask.onGathererMoved(player, length);
-        MOVE_LEN.put(uuid, playerMove);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -588,14 +591,16 @@ public class ProfessionListener extends AbstractProfessionListener {
     private static final class PlayerMove {
         private final Player movingPlayer;
         private final Location start;
+        private Location to;
 
         private PlayerMove(Player movingPlayer, Location herbLocation) {
             this.movingPlayer = movingPlayer;
+            this.to = movingPlayer.getLocation();
             this.start = herbLocation;
         }
 
         private double computeLength() {
-            return start.distance(movingPlayer.getLocation());
+            return start.distance(to);
         }
     }
 

@@ -105,6 +105,9 @@ public class GatherTask extends ExtendedBukkitRunnable {
      * @param damageEvent the damage event
      */
     public static void onGathererDamaged(EntityDamageEvent damageEvent) {
+        if (damageEvent == null) {
+            return;
+        }
 
         // check if the damaged entity was actually a player
         final Entity entity = damageEvent.getEntity();
@@ -195,7 +198,7 @@ public class GatherTask extends ExtendedBukkitRunnable {
     }
 
     @Override
-    protected void onStart() {
+    protected final void onStart() {
         // if ANY gather task is active on this player, do not run the task
         final Player player = Bukkit.getPlayer(this.player);
         if (player == null || isActive(player)) {
@@ -219,17 +222,17 @@ public class GatherTask extends ExtendedBukkitRunnable {
     }
 
     @Override
-    protected void onCancel() {
+    protected final void onCancel() {
         cleanup();
     }
 
     @Override
-    protected long delay() {
+    protected final long delay() {
         return gatherTime;
     }
 
     @Override
-    protected long period() {
+    protected final long period() {
         return 0;
     }
 
@@ -374,8 +377,6 @@ public class GatherTask extends ExtendedBukkitRunnable {
                 "result=" + result +
                 ", player=" + player +
                 ", gatherTime=" + gatherTime +
-                ", damageEventPredicate=" + damageEventPredicate +
-                ", movePredicate=" + movePredicate +
                 '}';
     }
 
