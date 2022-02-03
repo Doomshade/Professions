@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.api.item.object;
 
+import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.cache.Cache;
 import git.doomshade.professions.cache.Cacheable;
 import git.doomshade.professions.data.Settings;
@@ -220,7 +221,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
     }
 
     public static Map<Class<? extends Element>, Map<String, Element>> getAllElements() {
-        return Map.copyOf(ELEMENTS);
+        return ImmutableMap.copyOf(ELEMENTS);
     }
 
     /**
@@ -239,7 +240,7 @@ public abstract class Element implements IElement, ConfigurationSerializable, Ca
 
     @SuppressWarnings("unchecked")
     public static <E extends Element> Map<String, E> getElements(Class<E> of) {
-        return (Map<String, E>) Map.copyOf(ELEMENTS.get(of));
+        return (Map<String, E>) ImmutableMap.copyOf(ELEMENTS.get(of));
     }
 
     @NotNull

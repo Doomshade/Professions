@@ -24,6 +24,8 @@
 
 package git.doomshade.professions.profession;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import git.doomshade.professions.Professions;
 import git.doomshade.professions.api.item.ItemType;
 import git.doomshade.professions.api.item.ItemTypeHolder;
@@ -90,14 +92,14 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 	@SuppressWarnings("rawtypes")
 	private final Map<Class<? extends ItemType>, ItemTypeHolder<?, ?>> items = new HashMap<>();
 	private final PluginManager pm = Bukkit.getPluginManager();
-	private Map<String, Profession> professionsIds = new HashMap<>();
-	private Map<String, Profession> professionsName = new HashMap<>();
+	private Map<String, Profession> professionsIds = new LinkedHashMap<>();
+	private Map<String, Profession> professionsName = new LinkedHashMap<>();
 
 	private ProfessionManager() {
 	}
 
 	public Collection<Class<? extends Profession>> getInitedProfessions() {
-		return Set.copyOf(getInstance().initedProfessions);
+		return ImmutableSet.copyOf(initedProfessions);
 	}
 
 	/**
@@ -111,21 +113,21 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 	 * @return all registered {@link Profession}s
 	 */
 	public Set<Class<? extends Profession>> getRegisteredProfessions() {
-		return Set.copyOf(registeredProfessions);
+		return ImmutableSet.copyOf(registeredProfessions);
 	}
 
 	/**
 	 * @return a sorted {@link Map} of {@link Profession}s by {@link Profession#getID()}
 	 */
 	public Map<String, Profession> getProfessionsById() {
-		return Map.copyOf(professionsIds);
+		return ImmutableMap.copyOf(professionsIds);
 	}
 
 	/**
 	 * @return a sorted {@link Map} of {@link Profession}s by {@link Profession#getName()}
 	 */
 	public Map<String, Profession> getProfessionsByName() {
-		return Map.copyOf(professionsName);
+		return ImmutableMap.copyOf(professionsName);
 	}
 
 	@Override
@@ -333,7 +335,6 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 		}
 
 		Profession prof = professionsName.get(ChatColor.stripColor(name.toLowerCase()));
-
 		if (prof == null) {
 			try {
 				prof = Utils.findInIterable(professionsIds.values(),
@@ -472,7 +473,7 @@ public final class ProfessionManager implements ISetup, IProfessionManager {
 	 * @return all registered {@link ItemTypeHolder}s
 	 */
 	public Collection<ItemTypeHolder<?, ?>> getItemTypeHolders() {
-		return Set.copyOf(items.values());
+		return ImmutableSet.copyOf(items.values());
 	}
 
 	/**

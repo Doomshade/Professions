@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.data;
 
+import com.google.common.collect.ImmutableList;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -61,7 +62,7 @@ public class DefaultsSettings extends AbstractProfessionSettings {
     }
 
     public List<String> getSortedBy() {
-        return List.copyOf(sortedBy);
+        return ImmutableList.copyOf(sortedBy);
     }
 
     @Override

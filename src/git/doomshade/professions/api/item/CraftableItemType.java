@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.api.item;
 
+import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.user.IUserProfessionData;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import git.doomshade.professions.exceptions.InitializationException;
@@ -195,7 +196,7 @@ public abstract class CraftableItemType<T extends ConfigurationSerializable> ext
 
     @Override
     public final Map<Sound, String> getSounds() {
-        return Map.copyOf(sounds);
+        return ImmutableMap.copyOf(sounds);
     }
 
     /**

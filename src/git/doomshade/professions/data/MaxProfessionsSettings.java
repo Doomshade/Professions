@@ -24,7 +24,6 @@
 
 package git.doomshade.professions.data;
 
-import git.doomshade.professions.api.profession.Profession;
 import git.doomshade.professions.api.profession.ProfessionType;
 import git.doomshade.professions.exceptions.ConfigurationException;
 import org.bukkit.configuration.ConfigurationSection;
@@ -39,26 +38,29 @@ import org.bukkit.configuration.ConfigurationSection;
  */
 public class MaxProfessionsSettings extends AbstractProfessionSettings {
 
-    private int maxPrimaryProfessions = 1, maxSecondaryProfessions = 1;
+	private int maxPrimaryProfessions = 1, maxSecondaryProfessions = 1;
 
-    @Override
-    public void setup() throws ConfigurationException {
+	MaxProfessionsSettings() {
+	}
 
-        super.setup();
-        final String s = "max-professions";
+	@Override
+	public void setup() throws ConfigurationException {
 
-        ConfigurationSection section = getDefaultSection();
+		super.setup();
+		final String s = "max-professions";
 
-        ConfigurationSection maxSection = section.getConfigurationSection(s);
-        if (maxSection != null) {
-            this.maxPrimaryProfessions = maxSection.getInt("primary", 1);
-            this.maxSecondaryProfessions = maxSection.getInt("secondary", 1);
-        } else {
-            printError(s, 1);
-        }
-    }
+		ConfigurationSection section = getDefaultSection();
 
-    public int getMaxProfessions(ProfessionType type) {
-        return type == ProfessionType.PRIMARY ? maxPrimaryProfessions : maxSecondaryProfessions;
-    }
+		ConfigurationSection maxSection = section.getConfigurationSection(s);
+		if (maxSection != null) {
+			this.maxPrimaryProfessions = maxSection.getInt("primary", 1);
+			this.maxSecondaryProfessions = maxSection.getInt("secondary", 1);
+		} else {
+			printError(s, 1);
+		}
+	}
+
+	public int getMaxProfessions(ProfessionType type) {
+		return type == ProfessionType.PRIMARY ? maxPrimaryProfessions : maxSecondaryProfessions;
+	}
 }

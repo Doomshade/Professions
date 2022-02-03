@@ -52,7 +52,7 @@ public final class ProfessionSettingsManager extends AbstractSettings {
     private transient final Set<AbstractProfessionSpecificSettings> settings = new HashSet<>();
     private transient final Profession profession;
 
-    public ProfessionSettingsManager(Profession profession) {
+    ProfessionSettingsManager(Profession profession) {
         this.profession = profession;
     }
 

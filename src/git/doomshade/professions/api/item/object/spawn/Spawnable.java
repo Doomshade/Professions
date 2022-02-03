@@ -24,6 +24,7 @@
 
 package git.doomshade.professions.api.item.object.spawn;
 
+import com.google.common.collect.ImmutableMap;
 import git.doomshade.professions.api.item.ItemTypeHolder;
 import git.doomshade.professions.api.item.object.Element;
 import git.doomshade.professions.cache.Cacheable;
@@ -138,7 +139,7 @@ public abstract class Spawnable extends Element
      * @return a map of spawnable elements based on the given spawnable class
      */
     public static <E extends Spawnable> Map<String, E> getSpawnableElements(Class<E> clazz) {
-        return Map.copyOf(getElements(clazz));
+        return ImmutableMap.copyOf(getElements(clazz));
     }
 
     /**
