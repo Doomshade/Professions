@@ -99,474 +99,477 @@ import java.util.logging.Level;
  */
 public final class Professions extends JavaPlugin implements ISetup, IProfessionAPI {
 
-    private static final List<ISetup> SETUPS = new ArrayList<>();
-    private static Professions instance;
-    private static boolean diabloLike = false;
-    private static ProfessionManager profMan;
-    private static EventManager eventMan;
-    private static GUIManager guiManager;
-    private static LuckPerms permMan;
-    private static Economy econ;
-    private final File configFile = new File(getDataFolder(), "config.yml");
+	private static final List<ISetup> SETUPS = new ArrayList<>();
+	private static Professions instance;
+	private static boolean diabloLike = false;
+	private static ProfessionManager profMan;
+	private static EventManager eventMan;
+	private static GUIManager guiManager;
+	private static LuckPerms permMan;
+	private static Economy econ;
+	private final File configFile = new File(getDataFolder(), "config.yml");
 
-    private FileConfiguration configLoader;
+	private FileConfiguration configLoader;
 
-    /**
-     * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
-     *
-     * @return the {@link Economy} instance
-     */
-    public static Economy getEconomy() {
-        return econ;
-    }
+	/**
+	 * {@link net.milkbowl.vault.Vault}'s {@link Economy} instance
+	 *
+	 * @return the {@link Economy} instance
+	 */
+	public static Economy getEconomy() {
+		return econ;
+	}
 
-    @Nullable
-    public static MarkerManager getMarkerManager() {
-        return MarkerManager.getInstance();
-    }
+	@Nullable
+	public static MarkerManager getMarkerManager() {
+		return MarkerManager.getInstance();
+	}
 
-    public static LuckPerms getPermissionManager() {
-        return permMan;
-    }
+	public static LuckPerms getPermissionManager() {
+		return permMan;
+	}
 
-    /**
-     * The instance of this plugin
-     *
-     * @return instance of this class
-     */
-    public static Professions getInstance() {
-        return instance;
-    }
+	/**
+	 * The instance of this plugin
+	 *
+	 * @return instance of this class
+	 */
+	public static Professions getInstance() {
+		return instance;
+	}
 
-    private static void setInstance(Professions instance) {
-        Professions.instance = instance;
-    }
+	private static void setInstance(Professions instance) {
+		Professions.instance = instance;
+	}
 
-    /**
-     * @return instance of {@link EventManager}
-     */
-    public static EventManager getEventManager() {
-        return eventMan;
-    }
+	/**
+	 * @return instance of {@link EventManager}
+	 */
+	public static EventManager getEventManager() {
+		return eventMan;
+	}
 
-    public static boolean isDiabloLikeHook() {
-        return diabloLike;
-    }
+	public static boolean isDiabloLikeHook() {
+		return diabloLike;
+	}
 
-    /**
-     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
-     * only to save text resources in UTF-8 formatting.
-     *
-     * @param resource the path of file
-     * @param replace  whether to replace if the file already exists
-     */
-    public static void createResource(String resource, boolean replace) {
-        instance.saveResource(resource, replace);
-    }
+	/**
+	 * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+	 * only to save text resources in UTF-8 formatting.
+	 *
+	 * @param resource the path of file
+	 * @param replace  whether to replace if the file already exists
+	 */
+	public static void createResource(String resource, boolean replace) {
+		instance.saveResource(resource, replace);
+	}
 
-    /**
-     * Reloads the plugin
-     *
-     * @return {@code true} if the plugin reload was successful, {@code false} otherwise
-     */
-    public boolean reload() {
-        boolean successful = true;
+	/**
+	 * Reloads the plugin
+	 *
+	 * @return {@code true} if the plugin reload was successful, {@code false} otherwise
+	 */
+	public boolean reload() {
+		boolean successful = true;
 
-        // call before reload on item types
-        try {
-            Spawnable.unloadSpawnables();
-        } catch (IOException e) {
-            ProfessionLogger.logError(e);
-        }
-        //SpawnPoint.unloadAll();
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                try {
-                    itemType.onPluginBeforeReload();
-                } catch (Exception e) {
-                    logExError("Failed to reload itemtype " + itemType.getName() + ".", e);
-                    successful = false;
-                }
-            }
-        }
+		// call before reload on item types
+		try {
+			Spawnable.unloadSpawnables();
+		} catch (IOException e) {
+			ProfessionLogger.logError(e);
+		}
+		//SpawnPoint.unloadAll();
+		for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+			for (ItemType<?> itemType : holder) {
+				try {
+					itemType.onPluginBeforeReload();
+				} catch (Exception e) {
+					logExError("Failed to reload itemtype " + itemType.getName() + ".", e);
+					successful = false;
+				}
+			}
+		}
 
-        // then cleanup
-        cleanup();
+		// then cleanup
+		cleanup();
 
-        // then save/unload users
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            try {
-                User.unloadUser(p);
-            } catch (IOException e) {
-                logExError("Failed to unload user " + p.getName() + ".", e);
-                successful = false;
-            }
-        }
+		// then save/unload users
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			try {
+				User.unloadUser(p);
+			} catch (IOException e) {
+				logExError("Failed to unload user " + p.getName() + ".", e);
+				successful = false;
+			}
+		}
 
-        // then setup
-        setup();
+		// then setup
+		setup();
 
-        // call after reload
-        Spawnable.scheduleSpawnAll(x -> true);
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                try {
-                    itemType.onPluginAfterReload();
-                } catch (Exception e) {
-                    logExError("Failed to reload itemtype " + itemType.getName(), e);
-                    successful = false;
-                }
-            }
-        }
+		// call after reload
+		Spawnable.scheduleSpawnAll(x -> true);
+		for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+			for (ItemType<?> itemType : holder) {
+				try {
+					itemType.onPluginAfterReload();
+				} catch (Exception e) {
+					logExError("Failed to reload itemtype " + itemType.getName(), e);
+					successful = false;
+				}
+			}
+		}
 
-        // finally, load users
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            try {
-                User.loadUser(p);
-            } catch (IOException e) {
-                logExError("Failed to load user " + p.getName() + ".", e);
-                successful = false;
-            }
-        }
+		// finally, load users
+		for (Player p : Bukkit.getOnlinePlayers()) {
+			try {
+				User.loadUser(p);
+			} catch (IOException e) {
+				logExError("Failed to load user " + p.getName() + ".", e);
+				successful = false;
+			}
+		}
 
-        return successful;
-    }
+		return successful;
+	}
 
-    /**
-     * Logs an exception error
-     *
-     * @param errMsg the error message
-     * @param e      the exception
-     */
-    private void logExError(String errMsg, Throwable e) {
-        ProfessionLogger.log(errMsg.concat(". Check log file for exception message."));
-        ProfessionLogger.logError(e);
-    }
+	/**
+	 * Logs an exception error
+	 *
+	 * @param errMsg the error message
+	 * @param e      the exception
+	 */
+	private void logExError(String errMsg, Throwable e) {
+		ProfessionLogger.log(errMsg.concat(". Check log file for exception message."));
+		ProfessionLogger.logError(e);
+	}
 
-    @Override
-    public void setup() {
-        for (ISetup setup : SETUPS) {
-            try {
-                setup.setup();
-            } catch (Exception e) {
-                ProfessionLogger.log("Could not load " + setup.getSetupName(), Level.SEVERE);
-                ProfessionLogger.logError(e);
-            }
-        }
-    }
+	@Override
+	public void setup() {
+		for (ISetup setup : SETUPS) {
+			try {
+				setup.setup();
+			} catch (Exception e) {
+				ProfessionLogger.log("Could not load " + setup.getSetupName(), Level.SEVERE);
+				ProfessionLogger.logError(e);
+			}
+		}
+	}
 
-    @Override
-    public void cleanup() {
-        for (ISetup setup : SETUPS) {
-            try {
-                setup.cleanup();
-            } catch (Exception e) {
-                ProfessionLogger.log("Could not cleanup " + setup.getSetupName(), Level.SEVERE);
-                ProfessionLogger.logError(e);
-            }
-        }
-    }
+	@Override
+	public void cleanup() {
+		for (ISetup setup : SETUPS) {
+			try {
+				setup.cleanup();
+			} catch (Exception e) {
+				ProfessionLogger.log("Could not cleanup " + setup.getSetupName(), Level.SEVERE);
+				ProfessionLogger.logError(e);
+			}
+		}
+	}
 
-    @Override
-    public @NotNull FileConfiguration getConfig() {
-        return configLoader;
-    }
+	@Override
+	public @NotNull FileConfiguration getConfig() {
+		return configLoader;
+	}
 
-    /**
-     * Reloads the config
-     */
-    @Override
-    public void reloadConfig() {
-        configLoader = YamlConfiguration.loadConfiguration(configFile);
-    }
+	/**
+	 * Reloads the config
+	 */
+	@Override
+	public void reloadConfig() {
+		configLoader = YamlConfiguration.loadConfiguration(configFile);
+	}
 
-    /**
-     * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
-     * only to save text resources in UTF-8 formatting.
-     *
-     * @param resourcePath the path of file
-     * @param replace      whether or not to replace if the file already exists
-     */
-    @Override
-    public void saveResource(@NotNull String resourcePath, boolean replace) throws IllegalArgumentException {
-        saveResource(resourcePath, resourcePath, replace);
-    }
+	/**
+	 * Overridden method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+	 * only to save text resources in UTF-8 formatting.
+	 *
+	 * @param resourcePath the path of file
+	 * @param replace      whether or not to replace if the file already exists
+	 */
+	@Override
+	public void saveResource(@NotNull String resourcePath, boolean replace) throws IllegalArgumentException {
+		saveResource(resourcePath, resourcePath, replace);
+	}
 
-    @Override
-    public void onDisable() {
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                itemType.onPluginDisable();
-            }
-        }
-        Spawnable.despawnAll(x -> true);
-        cleanup();
-        Bukkit.getScheduler().cancelTasks(this);
-        try {
-            IOManager.saveFiles();
-        } catch (IOException e) {
-            ProfessionLogger.logError(e);
-        }
-        IOManager.closeLogFile();
-    }
+	@Override
+	public void onDisable() {
+		for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+			for (ItemType<?> itemType : holder) {
+				itemType.onPluginDisable();
+			}
+		}
+		Spawnable.despawnAll(x -> true);
+		cleanup();
+		Bukkit.getScheduler().cancelTasks(this);
+		try {
+			IOManager.saveFiles();
+		} catch (IOException e) {
+			ProfessionLogger.logError(e);
+		}
+		IOManager.closeLogFile();
+	}
 
-    @Override
-    public void onEnable() {
-        setInstance(this);
-        hookPlugins();
+	@Override
+	public void onEnable() {
+		setInstance(this);
+		hookPlugins();
 
-        profMan = ProfessionManager.getInstance();
-        eventMan = EventManager.getInstance();
-        //SerializationRegistry.init();
+		profMan = ProfessionManager.getInstance();
+		eventMan = EventManager.getInstance();
+		//SerializationRegistry.init();
 
-        try {
-            IOManager.setupFiles();
-            registerSetups();
-            setup();
-        } catch (Exception e) {
-            ProfessionLogger.logError(e);
-        }
+		try {
+			IOManager.setupFiles();
+			registerSetups();
+			setup();
+		} catch (Exception e) {
+			ProfessionLogger.logError(e);
+		}
 
-        // Hook dynmap after setups as it uses config
-        hookPlugin("dynmap", x -> {
-            // sets the dynmap plugin to marker manager
-            //MarkerManager.createInstance(DynmapPlugin.plugin);
-            return true;
-        });
-        scheduleTasks();
+		// Hook dynmap after setups as it uses config
+		hookPlugin("dynmap", x -> {
+			// sets the dynmap plugin to marker manager
+			//MarkerManager.createInstance(DynmapPlugin.plugin);
+			return true;
+		});
+		scheduleTasks();
 
-        registerListeners();
+		registerListeners();
 
-        Spawnable.scheduleSpawnAll(x -> true);
-        for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
-            for (ItemType<?> itemType : holder) {
-                itemType.onPluginEnable();
-            }
-        }
-    }
+		Spawnable.scheduleSpawnAll(x -> true);
+		for (ItemTypeHolder<?, ?> holder : profMan.getItemTypeHolders()) {
+			for (ItemType<?> itemType : holder) {
+				itemType.onPluginEnable();
+			}
+		}
+	}
 
-    /**
-     * Registers all setups
-     */
-    private void registerSetups() {
+	/**
+	 * Registers all setups
+	 */
+	private void registerSetups() {
 
-        // register main settings first
-        try {
-            registerSetup(Settings.getInstance());
-        } catch (Exception e) {
-            ProfessionLogger.logError(e);
-        }
+		// register main settings first
+		try {
+			registerSetup(Settings.getInstance());
+		} catch (Exception e) {
+			ProfessionLogger.logError(e);
+		}
 
-        // then other settings
-        for (AbstractSettings s : Settings.getSettings()) {
-            try {
-                registerSetup(s);
-            } catch (Exception e) {
-                ProfessionLogger.logError(e);
-            }
-        }
+		// then other settings
+		for (AbstractSettings s : Settings.getSettings()) {
+			try {
+				registerSetup(s);
+			} catch (Exception e) {
+				ProfessionLogger.logError(e);
+			}
+		}
 
-        // then messages
-        try {
-            registerSetup(Messages.getInstance());
-        } catch (Exception e) {
-            ProfessionLogger.logError(e);
-        }
-        // then the rest
-        registerSetup(ItemUtils.INSTANCE);
-        registerSetup(ProfessionType.PRIMARY);
+		// then messages
+		try {
+			registerSetup(Messages.getInstance());
+		} catch (Exception e) {
+			ProfessionLogger.logError(e);
+		}
+		// then the rest
+		registerSetup(ItemUtils.INSTANCE);
+		registerSetup(ProfessionType.PRIMARY);
 
-        registerCommandHandler(new CommandHandler());
-        registerCommandHandler(new MiningCommandHandler());
-        registerCommandHandler(new HerbalismCommandHandler());
-        registerCommandHandler(new AlchemyCommandHandler());
-        registerCommandHandler(new JewelcraftingCommandHandler());
+		registerCommandHandler(new CommandHandler());
+		registerCommandHandler(new MiningCommandHandler());
+		registerCommandHandler(new HerbalismCommandHandler());
+		registerCommandHandler(new AlchemyCommandHandler());
+		registerCommandHandler(new JewelcraftingCommandHandler());
 
-        // and lastly professions
-        registerSetup(ProfessionManager.getInstance());
-    }
+		// and lastly professions
+		registerSetup(ProfessionManager.getInstance());
+	}
 
-    private void registerCommandHandler(AbstractCommandHandler commandHandler) {
-        AbstractCommandHandler.register(commandHandler);
-        registerSetup(commandHandler);
-    }
+	private void registerCommandHandler(AbstractCommandHandler commandHandler) {
+		AbstractCommandHandler.register(commandHandler);
+		registerSetup(commandHandler);
+	}
 
-    private void registerListeners() {
-        PluginManager pm = Bukkit.getPluginManager();
-        pm.registerEvents(new UserListener(), this);
-        pm.registerEvents(new ProfessionListener(), this);
-        pm.registerEvents(new PluginProfessionListener(), this);
-        pm.registerEvents(new OreEditListener(), this);
-        pm.registerEvents(new JewelcraftingListener(), this);
-    }
+	private void registerListeners() {
+		PluginManager pm = Bukkit.getPluginManager();
+		pm.registerEvents(new UserListener(), this);
+		pm.registerEvents(new ProfessionListener(), this);
+		pm.registerEvents(new PluginProfessionListener(), this);
+		pm.registerEvents(new OreEditListener(), this);
+		pm.registerEvents(new JewelcraftingListener(), this);
+	}
 
-    private void scheduleTasks() {
-        new SaveTask().startTask();
-        new BackupTask().startTask();
-        new LogTask().startTask();
-    }
+	private void scheduleTasks() {
+		new SaveTask().startTask();
+		new BackupTask().startTask();
+		new LogTask().startTask();
+	}
 
-    private void hookPlugins() {
-        hookPlugin("GUIApi", x -> {
-            guiManager = GUIApi.getGuiManager(this);
-            guiManager.registerGui(PlayerProfessionsGUI.class);
-            guiManager.registerGui(ProfessionGUI.class);
-            guiManager.registerGui(TestThreeGui.class);
-            guiManager.registerGui(AdminProfessionsGUI.class);
-            guiManager.registerGui(AdminProfessionGUI.class);
-            guiManager.registerGui(OreGUI.class);
-            guiManager.registerGui(TrainerGUI.class);
-            guiManager.registerGui(TrainerChooserGUI.class);
+	private void hookPlugins() {
+		hookPlugin("GUIApi", x -> {
+			guiManager = GUIApi.getGuiManager(this);
+			guiManager.registerGui(PlayerProfessionsGUI.class);
+			guiManager.registerGui(ProfessionGUI.class);
+			guiManager.registerGui(TestThreeGui.class);
+			guiManager.registerGui(AdminProfessionsGUI.class);
+			guiManager.registerGui(AdminProfessionGUI.class);
+			guiManager.registerGui(OreGUI.class);
+			guiManager.registerGui(TrainerGUI.class);
+			guiManager.registerGui(TrainerChooserGUI.class);
 
-            // could be unsafe, idk
-            guiManager.getGui(TrainerGUI.class, null).ifPresent(y -> registerSetup((ISetup) y));
-            return true;
-        });
-        hookPlugin("Citizens", x -> {
-            CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(TrainerTrait.class));
-            Bukkit.getPluginManager().registerEvents(new TrainerListener(), this);
-            return true;
-        });
-        hookPlugin("SkillAPI", x -> {
-            Bukkit.getPluginManager().registerEvents(new SkillAPIListener(), this);
-            return true;
-        });
-        hookPlugin("Vault", x -> {
-            RegisteredServiceProvider<Economy> rsp =
-                    this.getServer().getServicesManager().getRegistration(Economy.class);
-            if (rsp == null) {
-                return false;
-            }
+			guiManager.getGui(TrainerGUI.class, null).ifPresent(y -> {
+				if (y instanceof ISetup) {
+					registerSetup((ISetup) y);
+				}
+			});
+			return true;
+		});
+		hookPlugin("Citizens", x -> {
+			CitizensAPI.getTraitFactory().registerTrait(TraitInfo.create(TrainerTrait.class));
+			Bukkit.getPluginManager().registerEvents(new TrainerListener(), this);
+			return true;
+		});
+		hookPlugin("SkillAPI", x -> {
+			Bukkit.getPluginManager().registerEvents(new SkillAPIListener(), this);
+			return true;
+		});
+		hookPlugin("Vault", x -> {
+			RegisteredServiceProvider<Economy> rsp =
+					this.getServer().getServicesManager().getRegistration(Economy.class);
+			if (rsp == null) {
+				return false;
+			}
 
-            econ = rsp.getProvider();
-            return true;
-        });
-        hookPlugin("LuckPerms", x -> {
-            permMan = LuckPermsProvider.get();
-            return true;
-        });
+			econ = rsp.getProvider();
+			return true;
+		});
+		hookPlugin("LuckPerms", x -> {
+			permMan = LuckPermsProvider.get();
+			return true;
+		});
 
-        hookPlugin("DiabloLike", x -> {
-            diabloLike = true;
-            return true;
-        });
+		hookPlugin("DiabloLike", x -> {
+			diabloLike = true;
+			return true;
+		});
 
-        hookPlugin("PlaceholderAPI", x -> {
-            registerSetup(PlaceholderManager.getInstance());
-            return true;
-        });
+		hookPlugin("PlaceholderAPI", x -> {
+			registerSetup(PlaceholderManager.getInstance());
+			return true;
+		});
 
-    }
+	}
 
-    /**
-     * Registers a setup class
-     *
-     * @param setup the setup to register
-     */
-    public void registerSetup(ISetup setup) {
-        if (!SETUPS.contains(setup)) {
-            SETUPS.add(setup);
-        }
-    }
+	/**
+	 * Registers a setup class
+	 *
+	 * @param setup the setup to register
+	 */
+	public void registerSetup(ISetup setup) {
+		if (!SETUPS.contains(setup)) {
+			SETUPS.add(setup);
+		}
+	}
 
-    private void hookPlugin(String plugin, Predicate<Plugin> func) {
-        final Plugin plug = Bukkit.getPluginManager().getPlugin(plugin);
-        if (plug == null || !plug.isEnabled()) {
-            return;
-        }
+	private void hookPlugin(String plugin, Predicate<Plugin> func) {
+		final Plugin plug = Bukkit.getPluginManager().getPlugin(plugin);
+		if (plug == null || !plug.isEnabled()) {
+			return;
+		}
 
-        final boolean bool;
-        try {
-            bool = func.test(plug);
-        } catch (Exception e) {
-            ProfessionLogger.log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
-            ProfessionLogger.logError(e, false);
-            return;
-        }
-        if (bool) {
-            ProfessionLogger.log(String.format("Successfully hooked with %s plugin", plugin), Level.INFO);
-        } else {
-            ProfessionLogger.log(String.format("Could not hook with %s plugin", plugin), Level.INFO);
-        }
-    }
+		final boolean bool;
+		try {
+			bool = func.test(plug);
+		} catch (Exception e) {
+			ProfessionLogger.log(String.format("Could not hook with %s plugin!", plugin), Level.WARNING);
+			ProfessionLogger.logError(e, false);
+			return;
+		}
+		if (bool) {
+			ProfessionLogger.log(String.format("Successfully hooked with %s plugin", plugin), Level.INFO);
+		} else {
+			ProfessionLogger.log(String.format("Could not hook with %s plugin", plugin), Level.INFO);
+		}
+	}
 
-    /**
-     * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
-     * only to save text resources in UTF-8 formatting.
-     *
-     * @param resourcePath the path of resource
-     * @param replace      whether or not to replace if the file already exists
-     * @param fileName     the file name
-     */
-    public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
-        if (resourcePath == null || resourcePath.isEmpty()) {
-            throw new IllegalArgumentException("ResourcePath cannot be null or empty");
-        }
+	/**
+	 * Overloaded method from {@link JavaPlugin#saveResource(String, boolean)}, removes unnecessary message and made
+	 * only to save text resources in UTF-8 formatting.
+	 *
+	 * @param resourcePath the path of resource
+	 * @param replace      whether or not to replace if the file already exists
+	 * @param fileName     the file name
+	 */
+	public void saveResource(String resourcePath, String fileName, boolean replace) throws IllegalArgumentException {
+		if (resourcePath == null || resourcePath.isEmpty()) {
+			throw new IllegalArgumentException("ResourcePath cannot be null or empty");
+		}
 
-        resourcePath = resourcePath.replace('\\', '/');
-        File outFile = new File(this.getDataFolder(), fileName);
-        int lastIndex = resourcePath.lastIndexOf(47);
-        File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
-        if (!outDir.exists()) {
-            outDir.mkdirs();
-        }
-        try (Reader in = this.getTextResource(resourcePath)) {
-            if (in == null) {
-                throw new IllegalArgumentException(
-                        "The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
-            }
+		resourcePath = resourcePath.replace('\\', '/');
+		File outFile = new File(this.getDataFolder(), fileName);
+		int lastIndex = resourcePath.lastIndexOf(47);
+		File outDir = new File(this.getDataFolder(), resourcePath.substring(0, Math.max(lastIndex, 0)));
+		if (!outDir.exists()) {
+			outDir.mkdirs();
+		}
+		try (Reader in = this.getTextResource(resourcePath)) {
+			if (in == null) {
+				throw new IllegalArgumentException(
+						"The embedded resource '" + resourcePath + "' cannot be found in " + super.getFile());
+			}
 
 
-            if (!outFile.exists() || replace) {
+			if (!outFile.exists() || replace) {
 
-                // NOPES: UTF-16, ISO, UTF-16BE
-                try (OutputStreamWriter out =
-                             new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
-                    final int bufSize = 1024;
-                    char[] buf = new char[bufSize];
+				// NOPES: UTF-16, ISO, UTF-16BE
+				try (OutputStreamWriter out =
+						     new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8)) {
+					final int bufSize = 1024;
+					char[] buf = new char[bufSize];
 
-                    int len;
+					int len;
 
-                    while ((len = in.read(buf)) > 0) {
-                        out.write(buf, 0, len);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            ProfessionLogger.log("Could not save " + outFile.getName() + " to " + outFile);
-            ProfessionLogger.logError(e);
-        }
+					while ((len = in.read(buf)) > 0) {
+						out.write(buf, 0, len);
+					}
+				}
+			}
+		} catch (IOException e) {
+			ProfessionLogger.log("Could not save " + outFile.getName() + " to " + outFile);
+			ProfessionLogger.logError(e);
+		}
 
-    }
+	}
 
-    @Override
-    public GUIManager getGUIManager() {
-        return getGUIMan();
-    }
+	@Override
+	public GUIManager getGUIManager() {
+		return getGUIMan();
+	}
 
-    /**
-     * {@link GUIApi}'s {@link GUIManager} instance
-     *
-     * @return the {@link GUIManager} instance
-     */
-    public static GUIManager getGUIMan() {
-        return guiManager;
-    }
+	/**
+	 * {@link GUIApi}'s {@link GUIManager} instance
+	 *
+	 * @return the {@link GUIManager} instance
+	 */
+	public static GUIManager getGUIMan() {
+		return guiManager;
+	}
 
-    @Override
-    public IProfessionManager getProfessionManager() {
-        return getProfMan();
-    }
+	@Override
+	public IProfessionManager getProfessionManager() {
+		return getProfMan();
+	}
 
-    /**
-     * @return the {@link ProfessionManager} instance
-     */
-    public static ProfessionManager getProfMan() {
-        return profMan;
-    }
+	/**
+	 * @return the {@link ProfessionManager} instance
+	 */
+	public static ProfessionManager getProfMan() {
+		return profMan;
+	}
 
-    @Override
-    public IUser getUser(Player player) {
-        return User.getUser(player);
-    }
+	@Override
+	public IUser getUser(Player player) {
+		return User.getUser(player);
+	}
 }

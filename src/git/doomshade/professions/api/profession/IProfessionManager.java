@@ -95,6 +95,15 @@ public interface IProfessionManager {
     }
 
     /**
+     * Unregisters a profession<br>
+     * Make sure you only create a single instance of the profession, multiple instances
+     * are disallowed and will throw an exception
+     *
+     * @param prof the profession to unregister
+     */
+    void unregisterProfession(Profession prof);
+
+    /**
      * Registers a profession<br> Make sure you only create a single instance of the profession, multiple instances are
      * disallowed and will throw an exception
      *

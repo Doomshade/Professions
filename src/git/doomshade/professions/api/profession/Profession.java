@@ -103,7 +103,7 @@ public abstract class Profession implements IProfession {
     }
 
     private void ensureNotInitialized(boolean ignoreError) throws IllegalStateException {
-        if (ProfessionManager.getInitedProfessions().contains(getClass()) && !ignoreError) {
+        if (ProfessionManager.getInstance().getInitedProfessions().contains(getClass()) && !ignoreError) {
             throw new IllegalStateException(
                     "Do not access professions by their constructor, use ProfessionManager#getProfession(String) " +
                             "instead");
