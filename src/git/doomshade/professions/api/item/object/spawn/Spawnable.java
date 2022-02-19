@@ -426,8 +426,8 @@ public abstract class Spawnable extends Element
             int serialNumber = (int) data[i];
             int respawnTime = (int) data[i + 1];
 
-            final SpawnPoint sp = (SpawnPoint) getSpawnPoint(serialNumber);
-            sp.getSpawnTask().setRespawnTime(respawnTime);
+            // update the respawn time accordingly
+            ((SpawnPoint) getSpawnPoint(serialNumber)).getSpawnTask().setRespawnTime(respawnTime);
         }
     }
 

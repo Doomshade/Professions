@@ -120,7 +120,9 @@ public abstract class ItemType<T extends ConfigurationSerializable> extends Mark
             Class<Obj> clazz, T object)
             throws IllegalArgumentException {
         try {
-            return (Obj) clazz.getDeclaredConstructors()[0].newInstance(object);
+            // TODO this needs testing
+            // changed getDeclaredConstructors[0] to getDeclaredConstructor(object.getClass())
+            return (Obj) clazz.getDeclaredConstructor(object.getClass()).newInstance(object);
         } catch (Exception e) {
             throw new IllegalArgumentException(clazz.getSimpleName() + " does not implement ItemType(T) constructor!",
                     e);

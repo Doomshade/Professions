@@ -70,9 +70,8 @@ public class ReadOnlyCache {
             arr = new Serializable[header.length][];
 
             for (int i = 0; i < header.length; i++) {
-                final int size = header[i];
                 try {
-                    arr[i] = readObjects(in, size);
+                    arr[i] = readObjects(in, header[i]);
                 } catch (ClassNotFoundException e) {
                     throw new IOException("Could not read from the cache for some reason", e);
                 }

@@ -25,8 +25,8 @@
 package git.doomshade.professions.listeners;
 
 import git.doomshade.professions.Professions;
-import git.doomshade.professions.api.profession.IProfession;
 import git.doomshade.professions.api.item.ItemType;
+import git.doomshade.professions.api.profession.IProfession;
 import git.doomshade.professions.event.EventManager;
 import git.doomshade.professions.event.ProfessionEvent;
 import git.doomshade.professions.user.User;
@@ -55,63 +55,63 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public abstract class AbstractProfessionListener implements Listener {
 
-    private static final Map<UUID, List<UUID>> PICKUPS = new HashMap<>();
-    private static final EventManager EM = Professions.getEventManager();
+	private static final Map<UUID, List<UUID>> PICKUPS = new HashMap<>();
+	private static final EventManager EM = Professions.getEventManager();
 
-    /**
-     * @param type
-     * @param player
-     * @param extras
-     *
-     * @return
-     */
-    @SafeVarargs
-    @Nullable
-    private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, List<Object> extras, Class<?
-            extends IProfession>... professions) {
-        if (type != null) {
-            return EM.callEvent(type, User.getUser(player), extras, professions);
-        }
-        return null;
-    }
+	/**
+	 * @param type
+	 * @param player
+	 * @param extras
+	 *
+	 * @return
+	 */
+	@SafeVarargs
+	@Nullable
+	private static <T extends ItemType<?>> ProfessionEvent<T> callEvent(T type, Player player, List<Object> extras,
+	                                                                    Class<? extends IProfession>... professions) {
+		if (type != null) {
+			return EM.callEvent(type, User.getUser(player), extras, professions);
+		}
+		return null;
+	}
 
-    @EventHandler
-    public void onCraft(CraftItemEvent e) {
+	@EventHandler
+	public void onCraft(CraftItemEvent e) {
 
-    }
+	}
 
-    @EventHandler
-    public void onEnchant(PlayerInteractEvent e) {
-    }
+	@EventHandler
+	public void onEnchant(PlayerInteractEvent e) {
+	}
 
-    @EventHandler
-    public void onGather(PlayerInteractEvent e) {
+	@EventHandler
+	public void onGather(PlayerInteractEvent e) {
 
-    }
+	}
 
-    /**
-     * @param e
-     */
-    @EventHandler
-    public void onKill(EntityDeathEvent e) {
+	/**
+	 * @param e
+	 */
+	@EventHandler
+	public void onKill(EntityDeathEvent e) {
 
-    }
+	}
 
-    /**
-     * @param e
-     */
-    @EventHandler
-    public void onMine(BlockBreakEvent e) {
+	/**
+	 * @param e
+	 */
+	@EventHandler
+	public void onMine(BlockBreakEvent e) {
 
-    }
+	}
 
-    @EventHandler
-    public void onGatherPickup(EntityPickupItemEvent e) {
-        if (e.isCancelled() || !(e.getEntity() instanceof Player)) {
-            return;
-        }
-        Player player = (Player) e.getEntity();
-        Item item = e.getItem();
+	@EventHandler
+	public void onGatherPickup(EntityPickupItemEvent e) {
+		if (e.isCancelled() || !(e.getEntity() instanceof Player)) {
+			return;
+		}
+		Player player = (Player) e.getEntity();
+		Item item = e.getItem();
         /*
         if (callEvent(player, new Herb(item.getItemStack(), null), HerbItemType.class, IGathering.class) == null) {
             return;
@@ -123,53 +123,62 @@ public abstract class AbstractProfessionListener implements Listener {
         PICKUPS.put(player.getUniqueId(), uuids);
          */
 
-    }
+	}
 
-    /**
-     * @param player        the player that calls this event
-     * @param item          the generic object of {@link ItemType}
-     * @param itemTypeClass the custom ItemType class
-     * @param extras        the extras to retrieve in profession class
-     *
-     * @return an event that gets called or {@code null} if invalid parameters were provided
-     */
-    @SafeVarargs
-    protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(
-            Player player, Obj item,
-            Class<T> itemTypeClass, List<Object> extras, Class<?
-            extends IProfession>... professions) {
-        final ProfessionEvent<T> event = getEvent(player, item, itemTypeClass, extras, professions);
+	/**
+	 * @param player        the player that calls this event
+	 * @param item          the generic object of {@link ItemType}
+	 * @param itemTypeClass the custom ItemType class
+	 * @param extras        the extras to retrieve in profession class
+	 *
+	 * @return an event that gets called or {@code null} if invalid parameters were provided
+	 */
+	@SafeVarargs
+	protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> callEvent(
+			Player player, Obj item,
+			Class<T> itemTypeClass, List<Object> extras, Class<?
+			extends IProfession>... professions) {
+		final ProfessionEvent<T> event = getEvent(player, item, itemTypeClass, extras, professions);
 
-        return event == null ? null : callEvent(event);
-    }
+		return event == null ? null : callEvent(event);
+	}
 
-    protected final <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
-        return EM.callEvent(event);
-    }
+	/**
+	 * Calls an event to handle
+	 *
+	 * @param event the event to call
+	 * @param <T>   the item type
+	 *
+	 * @return the called event
+	 */
+	protected final <T extends ItemType<?>> ProfessionEvent<T> callEvent(ProfessionEvent<T> event) {
+		return event == null ? null : EM.callEvent(event);
+	}
 
-    /**
-     * @param player        the player that calls this event
-     * @param item          the generic object of {@link ItemType}
-     * @param itemTypeClass the custom ItemType class
-     * @param extras        the extras to retrieve in profession class
-     *
-     * @return an event or {@code null} if invalid parameters were provided
-     */
-    @SafeVarargs
-    @Nullable
-    protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(
-            Player player, Obj item,
-            Class<T> itemTypeClass, List<Object> extras, Class<?
-            extends IProfession>... professions) {
-        if (player == null || item == null) {
-            return null;
-        }
+	/**
+	 * @param player        the player that calls this event
+	 * @param item          the generic object of {@link ItemType}
+	 * @param itemTypeClass the custom ItemType class
+	 * @param extras        the extras to retrieve in profession class
+	 * @param professions   the professions that should handle the event
+	 *
+	 * @return an event or {@code null} if invalid parameters were provided
+	 */
+	@SafeVarargs
+	@Nullable
+	protected final <Obj extends ConfigurationSerializable, T extends ItemType<Obj>> ProfessionEvent<T> getEvent(
+			Player player, Obj item,
+			Class<T> itemTypeClass, List<Object> extras, Class<?
+			extends IProfession>... professions) {
+		if (player == null || item == null) {
+			return null;
+		}
 
-        T itemType = EM.getItemType(item, itemTypeClass);
-        if (itemType == null) {
-            return null;
-        }
-        return EM.getEvent(itemType, User.getUser(player), extras, professions);
-    }
+		T itemType = EM.getItemType(item, itemTypeClass);
+		if (itemType == null) {
+			return null;
+		}
+		return EM.getEvent(itemType, User.getUser(player), extras, professions);
+	}
 
 }

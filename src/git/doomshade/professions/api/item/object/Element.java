@@ -55,10 +55,7 @@ import static git.doomshade.professions.utils.Strings.ElementEnum.ID;
  * @since 1.0
  */
 public abstract class Element implements IElement, ConfigurationSerializable, Cacheable, ILoadable {
-    private static final Map<
-            Class<? extends Element>,
-            Map<String, Element>
-            > ELEMENTS = new HashMap<>();
+    private static final Map<Class<? extends Element>, Map<String, Element>> ELEMENTS = new HashMap<>();
     private final String id;
     private final String name;
 
