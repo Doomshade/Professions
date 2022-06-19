@@ -55,7 +55,12 @@ public interface IMarkable extends ConfigurationSerializable {
      */
     void setMarkerSetId(Markable from);
 
-    boolean isGreaterLayer(Markable comparing, boolean override);
+    /**
+     *
+     * @param comparing
+     * @return
+     */
+    boolean isGreaterLayer(Markable comparing);
 
     /**
      * @return the layer of this markable class, used to set marker set IDs based on this layer
@@ -77,7 +82,7 @@ public interface IMarkable extends ConfigurationSerializable {
     /**
      * Sets whether the marker is visible on dynmap
      *
-     * @param comparing the comparing layer of the markable
+     * @param comparing the comparing layer of the markable, if the comparing layer is greater or equal, this sets
      */
     void setVisible(Markable comparing);
 }

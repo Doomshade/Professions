@@ -33,63 +33,66 @@ import java.util.Map;
 
 public abstract class Markable implements IMarkable {
 
-    private String markerSetId = "";
-    private boolean visible = false;
+	private String markerSetId = "";
+	private boolean visible = false;
 
-    @NotNull
-    @Override
-    public Map<String, Object> serialize() {
-        Map<String, Object> map = new HashMap<>();
-        map.put(Strings.MarkableEnum.MARKER_SET_ID.s, getMarkerSetId());
-        map.put(Strings.MarkableEnum.MARKER_VISIBLE.s, isVisible());
-        return map;
-    }
+	@NotNull
+	@Override
+	public Map<String, Object> serialize() {
+		Map<String, Object> map = new HashMap<>();
+		map.put(Strings.MarkableEnum.MARKER_SET_ID.s, getMarkerSetId());
+		map.put(Strings.MarkableEnum.MARKER_VISIBLE.s, isVisible());
+		return map;
+	}
 
-    @Override
-    public final String getMarkerSetId() {
-        return markerSetId;
-    }
+	@Override
+	public final String getMarkerSetId() {
+		return markerSetId;
+	}
 
-    @Override
-    public final void setMarkerSetId(String markerSetId) {
-        this.markerSetId = markerSetId;
-    }
+	@Override
+	public final void setMarkerSetId(String markerSetId) {
+		if (markerSetId == null) {
+			return;
+		}
+		this.markerSetId = markerSetId;
+	}
 
-    @Override
-    public final void setMarkerSetId(Markable from) {
-        if (from == null) {
-            return;
-        }
+	@Override
+	public final void setMarkerSetId(Markable from) {
+		if (from == null) {
+			return;
+		}
 
-        if (isGreaterLayer(from, markerSetId.isEmpty())) {
-            this.markerSetId = from.getMarkerSetId();
-        }
-    }
+		if (markerSetId.isEmpty() || isGreaterLayer(from)) {
+			setMarkerSetId(from.getMarkerSetId());
+		}
+	}
 
-    @Override
-    public boolean isGreaterLayer(Markable comparing, boolean override) {
-        return comparing != null && (override || comparing.getLayer() >= getLayer());
-    }
+	@Override
+	public boolean isGreaterLayer(Markable comparing) {
+		return comparing != null && comparing.getLayer() >= getLayer();
+	}
 
-    @Override
-    public final boolean isVisible() {
-        return visible;
-    }
+	@Override
+	public final boolean isVisible() {
+		return visible;
+	}
 
-    @Override
-    public final void setVisible(boolean visible) {
-        this.visible = visible;
-    }
+	@Override
+	public final void setVisible(boolean visible) {
+		this.visible = visible;
+	}
 
-    @Override
-    public final void setVisible(Markable comparing) {
-        if (comparing == null) {
-            return;
-        }
+	@Override
+	public final void setVisible(Markable comparing) {
+		if (comparing == null) {
+			return;
+		}
 
-        if (isGreaterLayer(comparing, false)) {
-            this.visible = comparing.isVisible();
-        }
-    }
+		if (isGreaterLayer(comparing)) {
+			this.visible = comparing.isVisible();
+		}
+	}
 
 }
